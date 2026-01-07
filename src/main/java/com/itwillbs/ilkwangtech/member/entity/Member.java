@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 // 확인용
-// test
+// 내 작업
 @Getter
 @Entity
 @Table(name = "members")

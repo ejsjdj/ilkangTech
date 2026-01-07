@@ -8,7 +8,7 @@ public class IlkwangTechApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(IlkwangTechApplication.class, args);
-        System.out.print("hello");
+        System.out.print("스프링프로젝트 실행(dsds)");
     }
 
 }

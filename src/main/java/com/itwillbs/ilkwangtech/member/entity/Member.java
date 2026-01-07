@@ -1,10 +1,17 @@
 package com.itwillbs.ilkwangtech.member.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+// 확인용
 @Getter
 @Entity
 @Table(name = "members")
@@ -14,29 +21,42 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 50, nullable = false)
-    private String name;
-
-    @Column(length = 50, nullable = false, unique = true)
-    private String loginId;
-
-    @Column(length = 64, nullable = false)
-    private String loginPw;
-
-    @Column(length = 16, nullable = false)
-    private String loginPwSalt;
-
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     @CreationTimestamp
-    private LocalDateTime created;
+    private LocalDateTime createdAt;
 
-    public Member(){
+    @Column(nullable = false)
+    private LocalDate joinDate;
+
+    @Column(nullable = false)
+    private LocalDate birthDate;
+
+    @Column(length = 20, nullable = false)
+    @Pattern(regexp = "^01[0-9]-\\d{3,4}-\\d{4}$", message = "올바른 핸드폰 형식이 아닙니다")
+    private String phoneNumber;
+
+    @Column(length = 10, nullable = false)
+    private String gender;
+
+    @Column(length = 100, nullable = false, unique = true)
+    @Email(message = "올바른 이메일 형식이 아닙니다")
+    @NotBlank(message = "이메일은 필수입니다")
+    private String email;
+
+    @Column(length = 50)
+    private String position;
+
+    @Column(length = 50)
+    private String department;
+
+    @Column
+    private LocalDate lastLogin;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    public Member() {
     }
 
-    public Member(String name, String loginId, String loginPw, String loginPwSalt) {
-        this.name = name;
-        this.loginId = loginId;
-        this.loginPw = loginPw;
-        this.loginPwSalt = loginPwSalt;
-    }
 }

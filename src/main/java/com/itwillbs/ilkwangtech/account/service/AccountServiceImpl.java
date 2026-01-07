@@ -2,11 +2,9 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import org.springframework.stereotype.Service;
 
-public interface AccountService {
+@Service
+public class AccountServiceImpl implements AccountService {
 
-    // 회원 등록
 
-
-    // 로그인
 
 }

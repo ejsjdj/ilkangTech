@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
+// 확인용
 @Getter
 @Entity
 @Table(name = "members")

@@ -11,6 +11,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+//확인용
+//내 작업
 @Getter
 @Entity
 @Table(name = "members")
@@ -31,7 +33,7 @@ public class Member {
     private LocalDate birthDate;
 
     @Column(length = 20, nullable = false)
-    @Pattern(regexp = "^01[0-9]-\\d{3,4}-\\d{4}$", message = "올바른 형식이 아닙니다")
+    @Pattern(regexp = "^01[0-9]-\\d{3,4}-\\d{4}$", message = "올바른 핸드폰 형식이 아닙니다")
     private String phoneNumber;
 
     @Column(length = 10, nullable = false)

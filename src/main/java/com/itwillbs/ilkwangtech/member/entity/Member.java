@@ -96,10 +96,6 @@ public class Member {
     @Pattern(regexp = "^\\d{10,16}$")
     private String accountNumber;
 
-    // 예금주
-    @Column(length = 50)
-    private String accountOwner;
-
     // 통장사본 첨부(추후 구현)
     private String accountPictureLink;
 

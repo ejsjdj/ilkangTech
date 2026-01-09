@@ -1,41 +1,55 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
-import ch.qos.logback.core.model.Model;
+import org.springframework.ui.Model;
 import com.itwillbs.ilkwangtech.account.dto.AccountDTO;
 import com.itwillbs.ilkwangtech.account.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-//test
-@Controller("/account")
+@Controller
+@RequestMapping("/account")
 @RequiredArgsConstructor
 public class AccountController {
 
     private final AccountService accountService;
 
+    @GetMapping("/join")
+    public String join() {
+        return "/join";
+    }
+
     @PostMapping("/join")
-    public String join(@Valid @RequestBody AccountDTO.AccountJoinRequest req,
-                       Model model,
-                       RedirectAttributes redirectAttributes) {
+    public String join(@Valid AccountDTO.AccountJoinRequest req,
+                       Model model) {
 
-            AccountDTO.AccountJoinResponse res = accountService.join(req);
+        System.out.println(req.name());
+        System.out.println(req.gender());
+        System.out.println(req.hireDate());
+        System.out.println(req.residentNumber());
+        System.out.println(req.email());
+        System.out.println(req.phoneNumber());
+        System.out.println(req.password());
+        System.out.println(req.department());
+        System.out.println(req.position());
+        System.out.println(req.bank());
+        System.out.println(req.accountNumber());
 
-        return "index.html";
+        return "index";  // 뷰 이름 또는 리다이렉트
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody AccountDTO.AccountLoginRequest req) {
+    public String login(@Valid AccountDTO.AccountLoginRequest req) {
 
-        return "index.html";
+
+
+        return "join";
     }
+
+
 
 }

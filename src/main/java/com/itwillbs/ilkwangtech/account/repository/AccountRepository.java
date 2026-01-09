@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountRepository extends JpaRepository<Member, Long> {
 
-    boolean existByresidentNumber(String s);
+
 
 }

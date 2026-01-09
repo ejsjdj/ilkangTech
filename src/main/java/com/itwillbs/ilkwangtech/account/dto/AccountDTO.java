@@ -22,7 +22,7 @@ public class AccountDTO {
 
             @NotNull(message = "입사일은 필수입니다")
             @PastOrPresent(message = "입사일은 현재 또는 과거여야 합니다")
-            LocalDate joinDate,     // 입사일
+            LocalDate hireDate,     // 입사일
 
             @NotBlank(message = "주민등록번호는 필수입니다")
             @Pattern(regexp = "^\\d{6}-\\d{7}$", message = "주민등록번호 형식이 올바르지 않습니다 (예: 123456-1234567)")
@@ -32,7 +32,7 @@ public class AccountDTO {
             @Email(message = "올바른 이메일 형식이 아닙니다")
             String email,           // 이메일
 
-            @NotBlank(message = "전화번호는 필수입니다")
+            @NotBlank(message = "연락처는 필수입니다")
             @Pattern(regexp = "^01[0-9]-\\d{3,4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다 (예: 010-1234-5678)")
             String phoneNumber,     // 전화번호
 
@@ -50,12 +50,8 @@ public class AccountDTO {
             String bank,            // 은행
 
             @NotBlank(message = "계좌번호는 필수입니다")
-            @Pattern(regexp = "^[0-9]{10,20}$", message = "계좌번호는 10~20자의 숫자여야 합니다")
-            String accountNumber,   // 계좌번호
+            String accountNumber   // 계좌번호
 
-            @NotBlank(message = "예금주는 필수입니다")
-            @Size(min = 2, max = 50, message = "예금주는 2자 이상 50자 이하여야 합니다")
-            String bankbookOwner    // 예금주
     ) {}
 
     // 회원가입 응답 DTO

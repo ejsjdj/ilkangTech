@@ -1,8 +1,11 @@
 package com.itwillbs.ilkwangtech.account.dto;
 
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.validation.constraints.*;
 
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class AccountDTO {
 
@@ -52,6 +55,7 @@ public class AccountDTO {
             @NotBlank(message = "계좌번호는 필수입니다")
             String accountNumber   // 계좌번호
 
+
     ) {}
 
     // 회원가입 응답 DTO
@@ -73,7 +77,7 @@ public class AccountDTO {
             String name,            // 이름
             String employeeNumber,  // 사원번호
             String gender,          // 성별
-            LocalDate joinDate,     // 입사일
+            LocalDateTime joinDate,     // 입사일
             String residentNumber,  // 주민등록번호
             String email,           // 이메일
             String phoneNumber,     // 전화번호
@@ -81,8 +85,31 @@ public class AccountDTO {
             String position,        // 직급
             String bank,            // 은행
             String accountNumber,   // 계좌번호
-            String bankbookOwner,    // 예금주
-            LocalDate lastLogin     // 마지막 로그인시간
+            LocalDateTime lastLogin     // 마지막 로그인시간
     ) {}
 
+    public record AccountListResponse(
+            Long memberId,
+            String employeeNumber,
+            String name,
+            String department,
+            String position,
+            LocalDateTime joinDate,
+            LocalDateTime lastLogin
+    ) implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        public static AccountListResponse from(Member member) {
+            return new AccountListResponse(
+                    member.getId(),
+                    member.getEmployeeNumber(),
+                    member.getName(),
+                    member.getDepartment(),
+                    member.getPosition(),
+                    member.getJoinDate(),
+                    member.getLastLogin()
+            );
+        }
+
+    }
 }

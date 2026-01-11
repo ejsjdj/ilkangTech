@@ -33,7 +33,6 @@ dependencies {
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0'
 
     // 데이터베이스 클라이언트
-    runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
 

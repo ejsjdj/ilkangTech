@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountRepository extends JpaRepository<Member, Long> {
 
+    Member save(Member member);
 
+    Member findByEmployeeNumberAndPassword(String employeeNumber, String password);
 
 }

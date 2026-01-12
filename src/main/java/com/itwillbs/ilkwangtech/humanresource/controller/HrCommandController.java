@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController("/HR")
 public class HrCommandController {
 
-
 //    인사 조회
 //    @GetMapping("/test")
 //    public void getMember(){

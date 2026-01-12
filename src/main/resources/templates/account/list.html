@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계정 목록</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 28px;
+        }
+
+        /* 테이블 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        thead {
+            background: #2c3e50;
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        /* 페이징 스타일 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .pagination a,
+        .pagination span,
+        .pagination button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination a:hover {
+            background: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+        }
+
+        .pagination .current {
+            background: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
+        }
+
+        .pagination .disabled:hover {
+            background: #f5f5f5;
+            color: #999;
+            border-color: #ddd;
+        }
+
+        /* 로그아웃 버튼 */
+        .button-group {
+            text-align: center;
+        }
+
+        .logout-btn {
+            padding: 10px 30px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        /* 페이지 크기 선택 */
+        .page-size-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .page-size-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>👥 직원 목록</h1>
+
+    <!-- 페이지 정보 -->
+    <div class="info" th:if="${page != null}">
+        총 <strong th:text="${page.totalElements}"></strong>명
+        | 현재 페이지: <strong th:text="${page.number + 1}"></strong> / <strong th:text="${page.totalPages}"></strong>
+    </div>
+
+    <!-- 페이지 크기 선택 -->
+    <div class="page-size-selector">
+        <label for="pageSize">페이지당 인원:</label>
+        <select id="pageSize" onchange="changePageSize()">
+            <option value="10" th:selected="${page.size == 10}">10명</option>
+            <option value="20" th:selected="${page.size == 20}">20명</option>
+            <option value="50" th:selected="${page.size == 50}">50명</option>
+            <option value="100" th:selected="${page.size == 100}">100명</option>
+        </select>
+    </div>
+
+    <!-- 테이블 -->
+    <table>
+        <thead>
+        <tr>
+            <th>사원번호</th>
+            <th>이름</th>
+            <th>부서</th>
+            <th>직급</th>
+            <th>입사일</th>
+            <th>마지막 로그인</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="account : ${list}" th:if="${list != null and list.size() > 0}">
+            <td th:text="${account.employeeNumber()}"></td>
+            <td th:text="${account.name()}"></td>
+            <td th:text="${account.department()}"></td>
+            <td th:text="${account.position()}"></td>
+            <td th:text="${#temporals.format(account.joinDate(), 'yyyy-MM-dd')}"></td>
+            <td th:text="${account.lastLogin() != null ? #temporals.format(account.lastLogin(), 'yyyy-MM-dd HH:mm') : '-'}"></td>
+        </tr>
+        <tr th:if="${list == null or list.size() == 0}">
+            <td colspan="6" style="text-align: center; padding: 30px; color: #999;">
+                등록된 직원이 없습니다.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 페이징 -->
+    <div class="pagination" th:if="${page != null and page.totalPages > 1}">
+        <!-- 처음 페이지 -->
+        <a th:if="${page.first}" class="disabled" href="#">◀◀</a>
+        <a th:if="${!page.first}" href="?page=0&size=${page.size}">◀◀</a>
+
+        <!-- 이전 페이지 -->
+        <a th:if="${page.hasPrevious()}" href="?page=${page.number - 1}&size=${page.size}">◀</a>
+        <span th:if="${!page.hasPrevious()}" class="disabled">◀</span>
+
+        <!-- 페이지 번호 -->
+        <th:block th:each="pageNum : ${#numbers.sequence(0, page.totalPages - 1)}">
+            <!-- 현재 페이지 앞뒤 3개씩만 표시 (총 7개) -->
+            <th:block th:if="${pageNum >= page.number - 3 and pageNum <= page.number + 3}">
+                <a th:if="${pageNum != page.number}"
+                   class="page-btn"
+                   th:href="'?page=' + ${pageNum} + '&size=' + ${page.size}"
+                   th:text="${pageNum + 1}"></a>
+                <span th:if="${pageNum == page.number}"
+                      class="current"
+                      th:text="${pageNum + 1}"></span>
+            </th:block>
+        </th:block>
+
+        <!-- 다음 페이지 -->
+        <a th:if="${page.hasNext()}" href="?page=${page.number + 1}&size=${page.size}">▶</a>
+        <span th:if="${!page.hasNext()}" class="disabled">▶</span>
+
+        <!-- 마지막 페이지 -->
+        <a th:if="${!page.isLast()}" href="?page=${page.totalPages - 1}&size=${page.size}">▶▶</a>
+        <a th:if="${page.isLast()}" class="disabled" href="#">▶▶</a>
+    </div>
+
+    <!-- 로그아웃 -->
+    <div class="button-group">
+        <form method="get" action="/account/logout" style="display: inline;">
+            <button type="submit" class="logout-btn">🚪 로그아웃</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function changePageSize() {
+        const pageSize = document.getElementById('pageSize').value;
+        window.location.href = '?page=0&size=' + pageSize;
+    }
+</script>
+</body>
+</html>

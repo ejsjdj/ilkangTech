@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>Insert title here</title>
+	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css">
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+	<link rel="stylesheet" th:href="@{/css/layout.css}" />
+	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+	
+<style>
+	html, body {
+	  height: 100%;
+	  margin: 0;
+	}
+	
+	.layout {
+	  display: flex;
+	  min-height: 100vh;
+	  background: #f5f6f8;
+	}
+	
+	/* ===== Sidebar ===== */
+	.sidebar {
+	  width: 200px;
+	  background: #ffffff;
+	  border-right: 1px solid #e5e7eb;
+	  padding: 16px 12px;
+	}
+	
+	.sidebar-nav {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 18px;
+	}
+	
+	.nav-group-title {
+	  display: flex;
+	  align-items: center;
+	  gap: 10px;
+	  font-weight: 700;
+	  color: #1f2937;
+	  padding: 8px 10px;
+	}
+	
+	.nav-item {
+	  display: flex;
+	  align-items: center;
+	  gap: 10px;
+	  padding: 10px 12px;
+	  margin: 4px 6px;
+	  border-radius: 12px;
+	  color: #111827;
+	  text-decoration: none;
+	  font-weight: 600;
+	}
+	.nav-icon {
+	  width: 22px;
+	  display: inline-flex;
+	  justify-content: center;
+	}
+	
+	/* ===== Main ===== */
+	.main {
+	  flex: 1;
+	  display: flex;
+	  flex-direction: column;
+	}
+	
+	/* ===== Header ===== */
+	.header {
+	  background: transparent;
+	  padding: 14px 18px;   /* 위/아래 간격 동일 */
+	}
+	.header-box {
+	  width: 95%;
+	  height: 56px;
+	
+	  background: #ffffff;
+	  border-radius: 18px;
+	
+	  display: flex;
+	  align-items: center;          /* 세로 중앙 */
+	  justify-content: flex-end;    /* 오른쪽 정렬 */
+	
+	  padding: 0 16px;
+	  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+	}
+	.messenger-btn {
+	  width: 40px;
+	  height: 40px;
+	  border-radius: 12px;
+	  display: inline-flex;
+	  align-items: center;
+	  justify-content: center;
+	  text-decoration: none;
+	}
+	
+	.messenger-btn:hover {
+	  background: #f3f4f6;
+	}
+	
+	.messenger-btn img {
+	  width: 22px;
+	  height: 22px;
+	  display: block;
+	}
+	.nav-menu {
+		font-size: 14px;
+	}
+	/* ===== Content ===== */
+	.content {
+	  flex: 1;
+	  padding: 0 18px 18px 18px;
+	}
+	.nav-group { margin-bottom: 10px; }
+
+	.nav-parent {
+	  width: 100%;
+	  background: transparent;
+	  border: none;
+	  cursor: pointer;
+	
+	  display: flex;
+	  align-items: center;
+	  gap: 10px;
+	
+	  padding: 10px 10px;
+	  border-radius: 12px;
+	
+	  font-weight: 700;
+	  color: #1f2937;
+	  text-align: left;
+	}
+	
+	.nav-parent:hover{
+	  background: #f3f4f6;
+	}
+	
+	.nav-arrow{
+	  margin-left: auto;
+	  font-size: 12px;
+	  color: #6b7280;
+	}
+	
+	.nav-children{
+	  list-style: none;
+	  margin: 6px 0 0 0;
+	  padding: 0 0 0 24px;
+	
+	  overflow: hidden;
+	  max-height: 0;
+	  opacity: 0;
+	  transform: translateY(-6px);
+	  transition: max-height 0.25s ease, opacity 0.2s ease, transform 0.2s ease;
+	}
+	
+	.nav-children.open{
+	  max-height: 500px;  
+	  opacity: 1;
+	  transform: translateY(0);
+	}
+	
+	.nav-child{
+	  display: block;
+	  padding: 8px 10px;
+	  margin: 4px 6px;
+	  border-radius: 10px;
+	
+	  color: #111827;
+	  text-decoration: none;
+	  font-weight: 600;
+	  font-size: 14px;
+	}
+	
+	.nav-child:hover{
+	  background: #f3f4f6;
+	}
+	
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+	<div class="sidebar">
+		<nav class="sidebar-nav">
+
+	      <div class="nav-group">
+		    <button type="button" class="nav-parent" data-target="menu-hr" aria-expanded="true">
+		      <span class="nav-icon">👤</span>
+		      <span class="nav-menu">인사관리</span>
+		      <span class="nav-arrow">▾</span>
+		    </button>
+		
+		    <ul class="nav-children" id="menu-hr">
+		      <li><a class="nav-child" th:href="@{/hr/employee}">사원목록</a></li>
+		      <li><a class="nav-child" th:href="@{/hr/manage}">인사발령 관리</a></li>
+		      <li><a class="nav-child" th:href="@{/hr/org}">조직도</a></li>
+		    </ul>
+		  </div>
+		
+		  <!-- 근태관리 -->
+		  <div class="nav-group">
+		    <button type="button" class="nav-parent" data-target="menu-att" aria-expanded="true">
+		      <span class="nav-icon">☑️</span>
+		      <span class="nav-menu">근태관리</span>
+		      <span class="nav-arrow">▾</span>
+		    </button>
+		
+		    <ul class="nav-children" id="menu-att">
+		      <li><a class="nav-child" th:href="@{/hr/attendance/status}">출퇴근 현황</a></li>
+		      <li><a class="nav-child" th:href="@{/hr/work}">근무 현황</a></li>
+		      <li><a class="nav-child" th:href="@{/hr/vacation}">휴가 관리</a></li>
+		    </ul>
+		  </div>
+		
+		  <!-- 전자결재 -->
+		  <div class="nav-group">
+		    <button type="button" class="nav-parent" data-target="menu-appr" aria-expanded="false">
+		      <span class="nav-icon">📋</span>
+		      <span class="nav-menu">전자결재</span>
+		      <span class="nav-arrow">▸</span>
+		    </button>
+		
+		    <ul class="nav-children" id="menu-appr">
+		      <li><a class="nav-child" th:href="@{/approval/hr}">인사결재 목록</a></li>
+		      <li><a class="nav-child" th:href="@{/approval/sales}">영업결재 목록</a></li>
+		    </ul>
+		  </div>
+		
+		  <!-- 영업관리 -->
+		  <div class="nav-group">
+		    <button type="button" class="nav-parent" data-target="menu-sales" aria-expanded="false">
+		      <span class="nav-icon">💼</span>
+		      <span class="nav-menu">영업관리</span>
+		      <span class="nav-arrow">▸</span>
+		    </button>
+		
+		    <ul class="nav-children" id="menu-sales">
+		      <li><a class="nav-child" th:href="@{/sales/orders}">수주 관리</a></li>
+		      <li><a class="nav-child" th:href="@{/sales/production}">발주 관리</a></li>
+		    </ul>
+		  </div>
+
+    	</nav>
+	</div>
+	
+	
+	<div class="main">
+		<div class="header">
+			<div class="header-box">
+				<a href="/messenger" class="messenger-btn"><img th:src="@{/img/chat.png}" alt="메신저"></a>
+			</div>
+		</div>
+		<div class="content"></div>
+	</div>
+	
+</div>
+	
+<script>
+  document.querySelectorAll(".nav-parent").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      const targetId = btn.getAttribute("data-target");
+      const currentList = document.getElementById(targetId);
+
+      const willOpen = !currentList.classList.contains("open");
+
+      // 1) 다른 메뉴 전부 닫기
+      document.querySelectorAll(".nav-children.open").forEach(function(list){
+        if (list !== currentList) list.classList.remove("open");
+      });
+
+      // 2) 모든 화살표/aria 상태도 기본(닫힘)으로 맞추기
+      document.querySelectorAll(".nav-parent").forEach(function(otherBtn){
+        if (otherBtn !== btn) {
+          otherBtn.setAttribute("aria-expanded", "false");
+          const otherArrow = otherBtn.querySelector(".nav-arrow");
+          if (otherArrow) otherArrow.textContent = "▸";
+        }
+      });
+
+      // 3) 클릭한 메뉴는 토글 (닫혀있으면 열고, 열려있으면 닫기)
+      if (willOpen) {
+        currentList.classList.add("open");
+        btn.setAttribute("aria-expanded", "true");
+        const arrow = btn.querySelector(".nav-arrow");
+        if (arrow) arrow.textContent = "▾";
+      } else {
+        currentList.classList.remove("open");
+        btn.setAttribute("aria-expanded", "false");
+        const arrow = btn.querySelector(".nav-arrow");
+        if (arrow) arrow.textContent = "▸";
+      }
+    });
+  });
+</script>
+
+	
+</body>
+</html>

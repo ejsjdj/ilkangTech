@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>사원 대시보드</title>
+
+<!-- Toast UI Calendar -->
+<link rel="stylesheet"
+      href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
+
+<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<style>
+/* ===== 공통 ===== */
+body {
+    margin: 0;
+    font-family: "Noto Sans KR", Arial, sans-serif;
+    background: #7f8c8d;
+}
+
+.dashboard {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+/* ===== 캘린더 영역 ===== */
+.calendar-wrapper {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    flex: 3;
+}
+
+/* 상단 헤더 */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.calendar-header .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.calendar-header .right span {
+    margin-left: 10px;
+    font-size: 13px;
+}
+
+.badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.badge.company { background: #ff5b7f; }
+.badge.dept { background: #3da5ff; }
+.badge.personal { background: #f1c40f; }
+
+/* 뷰 버튼 */
+.view-buttons button {
+    margin-right: 5px;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 15px;
+    background: #ecf0f1;
+    cursor: pointer;
+}
+
+.view-buttons button:hover {
+    background: #dcdde1;
+}
+
+/* ===== 사이드바 ===== */
+.sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 카드 공통 */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+/* 프로필 카드 */
+.profile {
+    text-align: center;
+}
+
+.profile .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.profile button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.btn-work { background: #2ecc71; color: #fff; }
+.btn-out { background: #e67e22; color: #fff; }
+
+.profile .name {
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* 빈 영역용 */
+.empty-box {
+    height: 80px;
+    background: #f4f6f7;
+    border-radius: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- ===== 왼쪽 캘린더 ===== -->
+    <div class="calendar-wrapper">
+
+        <!-- 캘린더 상단 -->
+        <div class="calendar-header">
+            <div class="left">
+                <button>◀</button>
+                <strong>2026년 1월</strong>
+                <button>▶</button>
+            </div>
+
+            <div class="right">
+                <span><span class="badge company"></span> 회사</span>
+                <span><span class="badge dept"></span> 팀</span>
+                <span><span class="badge personal"></span> 개인</span>
+            </div>
+        </div>
+
+        <!-- 뷰 버튼 -->
+        <div class="view-buttons">
+            <button>목록</button>
+            <button onclick="setMonth()">월</button>
+    		<button onclick="setWeek()">주</button>
+    		<button onclick="setDay()">일</button>
+        </div>
+
+        <!-- 캘린더 -->
+        <div id="calendar" style="height:750px; margin-top:10px;"></div>
+    </div>
+
+    <!-- ===== 오른쪽 사이드바 ===== -->
+    <div class="sidebar">
+
+        <!-- 프로필 -->
+        <div class="card profile">
+            <div class="btn-group">
+                <button class="btn-work">출근</button>
+                <button class="btn-out">외근</button>
+            </div>
+            <div>인사팀</div>
+            <div class="name">홍길동 사원</div>
+        </div>
+
+        <!-- 공지사항 -->
+        <div class="card">
+            <strong>회사 내 공지사항</strong>
+            <div class="empty-box"></div>
+        </div>
+
+        <!-- 결재 -->
+        <div class="card">
+            <strong>결재건 (0건)</strong>
+            <div class="empty-box"></div>
+        </div>
+
+        <!-- API 슬롯 -->
+        <div class="card">
+            <strong>free API 슬롯</strong>
+            <div class="empty-box"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* Toast UI Calendar 초기화 (표시용) */
+const calendar = new tui.Calendar('#calendar', {
+    defaultView: 'month',
+    taskView: false,
+    scheduleView: ['time'],
+    useFormPopup: false,
+    useDetailPopup: false,
+    week: { startDayOfWeek: 0 }
+});
+
+/* 샘플 일정 */
+calendar.createSchedules([{
+    id: '1',
+    calendarId: 'personal',
+    title: '00:00 연차',
+    category: 'allday',
+    start: '2026-01-20',
+    end: '2026-01-23'
+}]);
+
+/* 5️⃣ 뷰 전환 함수 */
+function setMonth() {
+    calendar.changeView('month');
+}
+
+function setWeek() {
+    calendar.changeView('week');
+}
+
+function setDay() {
+    calendar.changeView('day');
+}
+</script>
+
+</body>
+</html>

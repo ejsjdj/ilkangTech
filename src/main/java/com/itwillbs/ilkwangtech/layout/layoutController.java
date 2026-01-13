@@ -8,6 +8,7 @@ public class layoutController {
 
 	@GetMapping("/layout/layout")
     public String layout() {
+		System.out.println("test");
         return "/layout/layout";
     }
 	

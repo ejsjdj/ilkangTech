@@ -128,34 +128,44 @@ body {
 
 /* ===== 세그먼트 버튼 ===== */
 .view-buttons.segmented {
+    position: relative;
     display: inline-flex;
     border: 1px solid #bfc7d5;
-    border-radius: 6px;
-    overflow: hidden;
+    border-radius: 20px;
+    padding: 3px;
+    background: #fff;
 }
 
 .view-buttons.segmented button {
+    position: relative;
+    z-index: 2;
     border: none;
-    background: #fff;
-    padding: 6px 14px;
+    background: transparent;
+    padding: 6px 16px;
     font-size: 13px;
     cursor: pointer;
     color: #555;
-}
-
-.view-buttons.segmented button:not(:last-child) {
-    border-right: 1px solid #bfc7d5;
+    border-radius: 16px;
 }
 
 .view-buttons.segmented button.active {
-    background: #6c7ae0;
     color: #fff;
     font-weight: 600;
 }
 
-.view-buttons.segmented button:hover {
-    background: #eef1ff;
+/* 파란 포인트 */
+.view-buttons.segmented .indicator {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    height: calc(100% - 6px);
+    width: 0;
+    background: #6c7ae0;
+    border-radius: 16px;
+    transition: all 0.25s ease;
+    z-index: 1;
 }
+
 </style>
 </head>
 
@@ -286,6 +296,50 @@ function moveNext() {
 
 /* ===== 최초 로딩 시 타이틀 세팅 ===== */
 updateCalendarTitle();
+
+const indicator = document.querySelector('.view-buttons.segmented .indicator');
+const tabs = document.querySelectorAll('.view-buttons.segmented button');
+
+/* 인디케이터 이동 */
+function moveIndicator(btn) {
+    const parent = btn.parentElement;
+    const left = btn.offsetLeft;
+    const width = btn.offsetWidth;
+
+    indicator.style.left = left + 'px';
+    indicator.style.width = width + 'px';
+
+    tabs.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+/* 최초 로딩 시 위치 세팅 */
+window.addEventListener('load', () => {
+    const activeBtn = document.querySelector('.view-buttons.segmented button.active');
+    if (activeBtn) {
+        moveIndicator(activeBtn);
+    }
+});
+
+function setList(btn) {
+    moveIndicator(btn);
+    // 목록 뷰 예정
+}
+
+function setMonth(btn) {
+    calendar.changeView('month');
+    moveIndicator(btn);
+}
+
+function setWeek(btn) {
+    calendar.changeView('week');
+    moveIndicator(btn);
+}
+
+function setDay(btn) {
+    calendar.changeView('day');
+    moveIndicator(btn);
+}
 </script>
 
 </body>

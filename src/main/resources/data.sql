@@ -248,5 +248,37 @@ SELECT
 FROM DUAL 
 CONNECT BY LEVEL <= 50;
 
+-- DraftEntity 더미 데이터 10개 생성
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '휴가신청서', '연차 신청합니다.', '개인 사정으로 인한 연차 신청', 'download/illkang/vacation_request.pdf',TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-28 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file,draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '지출결의서', '비품 구매 건', '사무용품(A4용지 등) 구매', 'download/illkang/expense_report.docx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-17 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-02-28 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '기안서', '신규 프로젝트 제안', 'AI 기반 서비스 도입 제안서', 'download/illkang/proposal_v1.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-03-09 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '반려');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '휴가신청서', '오후 반차 신청', '병원 방문', 'download/illkang/sick.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-08-11 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '출장신청서', '서울 본사 출장', '업무 협의 및 미팅', 'download/illkang/business_trip.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-05-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '지출결의서', '회식비 청구', '개발팀 정기 회식', 'download/illkang/receipt_01.jpg', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-05-27 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '반려');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '기안서', '노후 장비 교체', '개발용 모니터 교체 요청', 'download/illkang/hardware_list.xlsx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-08 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '휴가신청서', '여름 휴가 신청', '가족 여행', 'download/illkang/summer_vacation.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-18 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '지출결의서', '도서 구입비', '자바 최적화 가이드 등 3권', 'download/illkang/croma/crime/candy/book_receipt.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_approval_date, draft_status)
+VALUES (1, '기안서', '워크샵 기안', '상반기 팀 워크샵 장소 선정', 'download/illkang/vincent/workshop_plan.pptx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-07-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+
 -- 반영
 COMMIT;

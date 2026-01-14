@@ -29,7 +29,7 @@
 
     /* ===== [왼쪽] 메인 사이드바 (Navigation) ===== */
     .sidebar {
-        width: 250px; /* 너비 약간 늘림 */
+        width: 200px; /* 너비 약간 늘림 */
         background: #ffffff;
         border-right: 1px solid #e5e7eb;
         padding: 16px 12px;
@@ -65,7 +65,7 @@
 
     .nav-parent:hover { background: #f3f4f6; }
     .nav-icon { width: 24px; display: inline-flex; justify-content: center; font-size: 18px; }
-    .nav-menu { font-size: 15px; }
+    .nav-menu { font-size: 13px; }
     .nav-arrow { margin-left: auto; font-size: 12px; color: #6b7280; }
 
     .nav-children {
@@ -94,7 +94,7 @@
         color: #4b5563;
         text-decoration: none;
         font-weight: 500;
-        font-size: 14px;
+        font-size: 13px;
     }
 
     .nav-child:hover { background: #f3f4f6; color: #111827; }
@@ -115,7 +115,7 @@
     }
     
     .header-box {
-        width: 100%;
+        width: 96%;
         height: 60px;
         background: #ffffff;
         border-radius: 16px;
@@ -142,6 +142,36 @@
         padding: 0 20px 20px 20px;
         overflow-y: auto; /* 세로 스크롤 허용 */
     }
+    
+    /* ===== 로고 버튼 ===== */
+	.logo {
+	    display: flex;
+	    align-items: center;
+	    padding-bottom: 20px;
+	    margin-bottom: 10px;
+	    border-bottom: 1px solid #e5e7eb; /* 사이드바와 자연스럽게 구분 */
+	}
+	
+	.logo-link {
+	    display: inline-flex;
+	    align-items: center;
+	    justify-content: center;
+	    padding: 6px 10px;
+	    border-radius: 10px;
+	    transition: background 0.2s ease;
+	}
+	
+	.logo-link:hover {
+	    background: #f3f4f6;
+	}
+	
+	.logo img {
+	    width: 150px;        /* ⭐ 핵심 */
+	    height: 53px;
+	    object-fit: contain;
+	    margin-left: 20px;
+	}
+    
 
     /* ===== [대시보드] 레이아웃 ===== */
     .dashboard {
@@ -247,6 +277,11 @@
 
 <div class="layout">
     <div class="sidebar">
+    	<div class="logo">
+    		<a href="/layout/layout">
+                   <img th:src="@{/img/logo.png}" alt="ERP Logo"> 
+                </a>
+    	</div>
         <nav class="sidebar-nav">
 
             <div class="nav-group">

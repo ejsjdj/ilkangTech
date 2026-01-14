@@ -1,4 +1,4 @@
-package com.itwillbs.ilkwangtech.erpdashboard.controller;
+package com.itwillbs.ilkwangtech.schedule.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

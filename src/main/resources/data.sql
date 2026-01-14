@@ -201,3 +201,52 @@ INSERT INTO members (name, employee_number, gender, join_date, resident_number, 
 INSERT INTO members (name, employee_number, gender, join_date, resident_number, email, phone_number, password, department, position, bank, account_number, updated_at) VALUES ('서은비', '2021-5002', '여', SYSTIMESTAMP, '960625-2012345', 'seo.eunbi@company.com', '010-1234-5687', 'Password123!', '재무회계부', '사원', '전북은행', '777-111-777788', SYSTIMESTAMP);
 
 INSERT INTO members (name, employee_number, gender, join_date, resident_number, email, phone_number, password, department, position, bank, account_number, updated_at) VALUES ('남궁민', '2021-5003', '남', SYSTIMESTAMP, '920730-1123456', 'namgung.min@company.com', '010-2345-6788', 'Password123!', '재무회계부', '사원', '경남은행', '888-222-888899', SYSTIMESTAMP);
+
+-- [1] 1~50번 사원의 '회사(COMPANY)' 일정 일괄 등록
+INSERT INTO IK_SCHEDULE (
+    schedule_id, 
+    member_id, 
+    schedule_title,    -- 수정됨 (title -> schedule_title)
+    schedule_memo,     -- 수정됨 (content -> schedule_memo)
+    schedule_type,     -- 수정됨 (type -> schedule_type)
+    start_date, 
+    end_date, 
+    reg_date
+)
+SELECT 
+    SEQ_SCHEDULE.NEXTVAL,
+    LEVEL,
+    '1월 전사 정기 회의',
+    '2026년 상반기 목표 공유 및 부서별 현황 발표',
+    'COMPANY',
+    TO_DATE('2026-01-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    TO_DATE('2026-01-20 11:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    SYSDATE
+FROM DUAL 
+CONNECT BY LEVEL <= 50;
+
+-- [2] 1~50번 사원의 '개인(PERSONAL)' 일정 일괄 등록
+INSERT INTO IK_SCHEDULE (
+    schedule_id, 
+    member_id, 
+    schedule_title,    -- 수정됨
+    schedule_memo,     -- 수정됨
+    schedule_type,     -- 수정됨
+    start_date, 
+    end_date, 
+    reg_date
+)
+SELECT 
+    SEQ_SCHEDULE.NEXTVAL,
+    LEVEL,
+    '개인 연차/반차 (사원 ' || LEVEL || ')',
+    '개인 사정으로 인한 연차 사용',
+    'PERSONAL',
+    TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS') + MOD(LEVEL, 5), 
+    TO_DATE('2026-01-21 18:00:00', 'YYYY-MM-DD HH24:MI:SS') + MOD(LEVEL, 5), 
+    SYSDATE
+FROM DUAL 
+CONNECT BY LEVEL <= 50;
+
+-- 반영
+COMMIT;

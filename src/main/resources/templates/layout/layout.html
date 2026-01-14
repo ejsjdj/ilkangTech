@@ -360,7 +360,7 @@
 
                         <div class="view-buttons segmented">
                             <div class="indicator"></div>
-                            <button class="active" onclick="setList(this)">목록</button>
+                            <button class="active" th:onclick="|location.href='@{/schedule/list}'|">목록</button>
                             <button onclick="setMonth(this)">월</button>
                             <button onclick="setWeek(this)">주</button>
                             <button onclick="setDay(this)">일</button>

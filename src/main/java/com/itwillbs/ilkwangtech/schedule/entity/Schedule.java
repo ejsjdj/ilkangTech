@@ -34,7 +34,7 @@ import lombok.Setter;
 public class Schedule {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_schedule_gen")
+	@GeneratedValue(strategy = GenerationType.IDENTITY, generator = "seq_schedule_gen")
 	@SequenceGenerator(name = "seq_schedule_gen", sequenceName = "SEQ_SCHEDULE", allocationSize = 1)
 	@Column(name = "schedule_id")
 	private Long id;

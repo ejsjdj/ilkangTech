@@ -6,14 +6,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.log4j.Log4j2;
 
 @Controller
 @RequestMapping("/schedule/*")
+@Log4j2
 public class ScheduleController {
 	
 	@GetMapping("/list")
-	public String getMethodName(Model model, HttpSession session) {
-		return new String();
+	public String scheduleListGET(Model model, HttpSession session) {
+		log.info("scheduleListGET() 실행!");
+		
+		log.info("scheduleListGET() 종료!");
+		return "/schedule/list";
 	}
 	
 

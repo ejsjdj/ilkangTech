@@ -50,9 +50,9 @@ public class Member {
     @Column(length = 20, nullable = false, unique = true)
     private String employeeNumber;
 
-    // 성별
+    // 성별 (1은 남자 2는 여자)
     @Column(length = 10, nullable = false)
-    private String gender;
+    private int gender;
 
     // 입사일
     @Column(nullable = false)
@@ -82,17 +82,20 @@ public class Member {
     @Column(length = 255, nullable = false)
     private String password;
 
-    // 부서
+    // 부서 (0 법인장 1 인사 2 구매 3 영업 4 재무회계 5 정보시스템 6 경영 7 안전 8 법무 100 공장장 101 프레스 102 사출 103 도장 104 조립 105 품질 106 금형 107 생산관리 108)
     @Column(length = 50)
-    private String department;
+    private int department;
 
-    // 직급
+    // 직급 (1 부장 2 차장 3 과장 4 대리 5 주임 6 사원 51 이사 52 상무이사 53 전무이사 54 부사장 55 사장 56 대표이사)
+    //     (101 기능공 102 기능사 103 선임기능사 104 기능장 105 수석기능장)
     @Column(length = 50)
-    private String position;
+    private int position;
 
-    // 은행
+    // 은행 (4 국민은행 20 우리은행 88 신한은행 81 하나은행 11 농협은행 23 SC제일은행 27 시티은행)
+    //     (90 카카오뱅크 92 토스뱅크)
+    //     (48 신용협동조합 45 새마을금고 2 산업은행)
     @Column(length = 50)
-    private String bank;
+    private int bank;
 
     // 계좌번호
     @Column(length = 30)

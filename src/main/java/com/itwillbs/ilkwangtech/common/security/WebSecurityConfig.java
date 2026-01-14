@@ -9,7 +9,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class WebSecurityConfig {
-	
+
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		// HttpSecurity 객체의 다양한 메서드를 메서트 체이닝 형태로 호출하여 스프링 시큐리티 관련 설정을 수행하고
@@ -18,16 +18,17 @@ public class WebSecurityConfig {
 				// 요청에 대한 접근 허용 여부 등의 권한 설정 생략 (접속시 무조건 login 페이지로 가도록 설정)
 				.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
 						// 로그인 페이지에는 모든 사용자가 접속 가능
-						.requestMatchers("/account/login").permitAll()
+//						.requestMatchers("/account/login").permitAll()
 						// 로그인 페이지 외에 모든 요청은 인증된 사용자만 가능
-						.anyRequest().authenticated()
+//						.anyRequest().authenticated()
+						.anyRequest().permitAll()
 				)
 				// 로그인 처리 설정
 				.formLogin(formLogin -> formLogin
 						// 스프링 시큐리티에서 로그인 요청을 위한 폼 요청 주소
-						.loginPage("/account/login") 
+						.loginPage("/account/login")
 						 // 로그인 폼에서 제풀한 데이터 처리(로그인 처리)용 요청 주소
-						.loginProcessingUrl("/acccount/login")
+						.loginProcessingUrl("/account/login")
 						// 로그인 과정에서 로그인에 사용되는 UserDetailsService 객체의 loadByUsername() 메서드가 자동 호출됨
 						// 로그인에 사용할 아이디는 사원번호로 설정
 						.usernameParameter("employeeNumber")
@@ -44,7 +45,7 @@ public class WebSecurityConfig {
 				)
 				.build();
 	}
-	
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();

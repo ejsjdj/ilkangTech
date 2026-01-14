@@ -21,17 +21,18 @@ import lombok.ToString;
 @Setter
 @ToString
 public class CommonCode {
-	@Id @GeneratedValue(strategy = GenerationType.AUTO)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
 	@Column(name = "group_code", nullable = true, length = 20)
 	private String groupCode;	// 상위 공통 코드 (=공통 코드 그룹)
 	
 	@Column(name = "common_code", nullable = false, length = 50)
-	private String CommonCode;	// 공통코드(하위 = 실제 사용하는 공통코드)
+	private String commonCode;	// 공통코드(하위 = 실제 사용하는 공통코드)
 	
 	@Column(name = "common_code_name", nullable = false, length = 20)
-	private String CommonCodeName;	// 공통코드명(코드를 한국어로 표기할 컬럼)
+	private String commonCodeName;	// 공통코드명(코드를 한국어로 표기할 컬럼)
 	
 	@Column(name = "description")
 	private String description;	// 공통코드 상세 설명

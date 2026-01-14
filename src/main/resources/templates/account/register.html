@@ -19,8 +19,8 @@
         <label for="gender">성별</label>
         <select id="gender" name="gender" required>
             <option value="">선택</option>
-            <option value="남">남</option>
-            <option value="여">여</option>
+            <option value="1">남</option>
+            <option value="2">여</option>
         </select>
     </div>
 
@@ -57,15 +57,15 @@
 
     <div>
         <label for="department">부서</label>
-        <select id="department" name="department" required>
-            <option value="">선택</option>
-            <option value="개발부">개발부</option>
-            <option value="마케팅부">마케팅부</option>
-            <option value="생산부">생산부</option>
-            <option value="영업부">영업부</option>
-            <option value="인사부">인사부</option>
-            <option value="품질관리부">품질관리부</option>
-            <option value="물류관리부">물류관리부</option>
+        <select id="department" name="department">
+            <option value="">-- 선택 --</option>
+
+            <optgroup th:each="category : ${categories}" th:label="${category}">
+                <option th:each="dept : ${departmentsByCategory.get(category)}"
+                        th:value="${dept.id}"
+                        th:text="${dept.departmentName}">
+                </option>
+            </optgroup>
         </select>
     </div>
     <div>

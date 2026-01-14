@@ -1,5 +1,7 @@
 package com.itwillbs.ilkwangtech.account.service;
 
+import com.itwillbs.ilkwangtech.account.entity.Departments;
+import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +13,8 @@ import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 // 컨트롤러에서는 사용자가 요청을 하면 그 요청에 맞는 함수를 AccountService 에서 호출을 한다.
 // AccountService 에서는 컨트롤러가 받은 요청을 처리를 할때
@@ -24,11 +28,11 @@ import lombok.RequiredArgsConstructor;
 public class AccountServiceImpl implements AccountService {
 
 	private final AccountRepository accountRepository;
+	private final DepartmentRepository departmentRepository;
 	private final ModelMapper modelMapper;
 
 	static int idx = 0;
 
-	@Override
 	public AccountRegisterResponseDTO create(AccountDTO req) {
 		// 컨트롤러에서 올바른 값이 넘어왔다면 DB에 해당 정보가 중복되는게 있는지 확인
 		AccountRegisterResponseDTO res = validateDuplicates(req);
@@ -71,14 +75,9 @@ public class AccountServiceImpl implements AccountService {
 		
 	}
 
-	@Override
-	public AccountDTO.AccountLoginResponse login(String employeeNumber, String password) {
-		return res;
-	}
-
-	@Override
-	public Page<AccountDTO.AccountListResponse> getListPage(Pageable pageable) {
-		return accountRepository.findAll(pageable).map(AccountDTO.AccountListResponse::from);
+	// 활성화된 부서 목록 조회
+	public List<Departments> getActiveDepartments() {
+		return departmentRepository.findByIsActiveTrue();
 	}
 
 }

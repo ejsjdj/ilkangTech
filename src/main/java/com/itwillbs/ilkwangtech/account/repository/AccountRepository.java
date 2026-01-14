@@ -1,7 +1,10 @@
 package com.itwillbs.ilkwangtech.account.repository;
 
+import java.util.List;
 import java.util.Optional;
 
+import com.itwillbs.ilkwangtech.account.entity.Departments;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,5 +24,8 @@ public interface AccountRepository extends JpaRepository<Member, Long> {
 	boolean existsByPhoneNumber(String phoneNumber);
 
 	boolean existsByResidentNumber(String residentNumber);
+
+	boolean existsByAccountNumber(@NotBlank(message = "계좌번호는 필수입니다") String accountNumber);
+
 
 }

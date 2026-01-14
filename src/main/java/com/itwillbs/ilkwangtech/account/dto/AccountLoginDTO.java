@@ -19,14 +19,14 @@ public class AccountLoginDTO implements UserDetails {
     String name;            	// 이름
     String employeeNumber;  	// 사원번호
     String password;			// 비밀번호
-    String gender;          	// 성별
+    int gender;          	// 성별
     LocalDateTime joinDate;     // 입사일
     String residentNumber;  	// 주민등록번호
     String email;           	// 이메일
     String phoneNumber;     	// 전화번호
-    String department;      	// 부서
-    String position;        	// 직급
-    String bank;            	// 은행
+    int department;      	// 부서
+    int position;        	// 직급
+    int bank;            	// 은행
     String accountNumber;   	// 계좌번호
     LocalDateTime lastLogin;	// 마지막 로그인시간
     
@@ -54,13 +54,13 @@ public class AccountLoginDTO implements UserDetails {
  	// => 현재 사용자명을 이메일로 대체하여 사용하므로 이메일 주소값 리턴
  	@Override
  	public String getUsername() {
- 		return employeeNumber;
+ 		return this.employeeNumber;
  	}
  	
  	// 3) 사용자 패스워드를 리턴하는 메서드
  	@Override
  	public String getPassword() {
- 		return password;
+ 		return this.password;
  	}
 
  	// ----------------------------------------------------------

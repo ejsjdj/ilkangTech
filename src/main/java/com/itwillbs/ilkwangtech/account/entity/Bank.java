@@ -4,12 +4,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "banks")
 @ToString
-public class Banks {
+public class Bank {
 
     // 은행 (4 국민은행 20 우리은행 88 신한은행 81 하나은행 11 농협은행 23 SC제일은행 27 시티은행)
     //     (90 카카오뱅크 92 토스뱅크)

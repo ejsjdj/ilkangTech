@@ -1,9 +1,12 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
-import com.itwillbs.ilkwangtech.account.entity.Departments;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import com.itwillbs.ilkwangtech.account.service.AccountService;
+import com.itwillbs.ilkwangtech.account.service.BankService;
 import com.itwillbs.ilkwangtech.account.service.DepartmentService;
-import com.itwillbs.ilkwangtech.account.service.DepartmentServiceImpl;
-import org.springframework.data.domain.Page;
+import com.itwillbs.ilkwangtech.account.service.PositionService;
+import jakarta.servlet.ServletOutputStream;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -14,15 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountDTO;
-import com.itwillbs.ilkwangtech.account.dto.AccountLoginDTO;
-import com.itwillbs.ilkwangtech.account.service.AccountService;
-
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 
 @Controller
@@ -30,26 +26,36 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountController {
 
-    private final AccountService accountService;
     private final DepartmentService departmentService;
+    private final PositionService positionService;
+    private final BankService bankService;
+    private final AccountService accountService;
+
     // 회원가입페이지 요청
     @GetMapping("/register")
     public String register(Model model) {
-        List<Departments> departments = departmentService.getActiveDepartments();
-        model.addAttribute("departments", departments);
+
+        // 부서 데이터
+        model.addAttribute("departments", departmentService.getActiveDepartments());
+
+        // 직급 데이터
+        model.addAttribute("positions", positionService.getActivePositions());
+
+        // 은행 데이터
+        model.addAttribute("banks", bankService.getActiveBanks());
+
         return "account/register";
     }
 
     // 회원가입요청
     @PostMapping("/register")
-    // 입력값이 올바르게 들어왔는데 AccountDTO 에 Validation 어노테이션으로 확인
-    // 잘못된 값이 있으면 경고메시지를 출력
-    public String create(@Valid AccountDTO req) {
-    	// 회원가입 값이 올바르게 입력되었다면 service 의 회원가입 처리 메서드를 호출
-//        accountService.create(req);
+    public String register(Model model, AccountRegisterRequest req) {
+        AccountRegisterResponse res = accountService.register(req);
+        System.out.println(res);
+        model.addAttribute("response",res);
         return "/account/register";
     }
-    
+
     // 로그인 페이지 요청
     @GetMapping("/login")
     public String login() {return "/account/login";}
@@ -75,7 +81,7 @@ public class AccountController {
 
         return "/account/list";
     }
-    
-    
+
+
 
 }

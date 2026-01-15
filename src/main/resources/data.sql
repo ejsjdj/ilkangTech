@@ -1,24 +1,45 @@
 -- Members 테이블 초기 데이터 (5명)
 
 -- 1. 법인장 (임원)
-INSERT INTO members (id, name, employee_number, gender, join_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at)
-VALUES (1, '김대표', 'EMP-001', 1, SYSDATE, '780515-1234567', NULL, 'kim.ceo@company.com', '010-1234-5678', '$2a$12$3dc1HJ6I8hiDWr3fwACzYOdGBBmhw6LNg2htLP5v5Th9N7tCQgpwy', 0, 56, 4, '110-123456-789', NULL, NULL, SYSDATE);
+INSERT INTO members (
+    id,
+    name,
+    employee_number,
+    gender,
+    hire_date,
+    resident_number,
+    profile_photo_link,
+    email,
+    phone_number,
+    password,
+    department,
+    position,
+    bank,
+    account_number,
+    account_picture_link,
+    last_login,
+    updated_at
+) VALUES (
+             4,                                  -- id
+             '홍길동',                           -- name
+             '260000',                           -- employee_number
+             1,                                  -- gender
+             TO_DATE('2026-01-15', 'YYYY-MM-DD'),-- hire_date (26/01/15 기준)
+             '900101-1234567',                   -- resident_number
+             NULL,                               -- profile_photo_link
+             'name@yeoun.com',                   -- email
+             '010-1234-5678',                    -- phone_number
+             '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', -- password
+             1,                                  -- department
+             55,                                 -- position
+             0,                                  -- bank
+             '123-456-789012',                   -- account_number
+             NULL,                               -- account_picture_link
+             TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), -- last_login
+             TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9')  -- updated_at
+         );
 
--- 2. 인사부 부장 (관리자)
-INSERT INTO members (id, name, employee_number, gender, join_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at)
-VALUES (2, '이인사', 'EMP-002', 1, SYSDATE, '850823-2345678', NULL, 'lee.hr@company.com', '010-2345-6789', '$2a$10$slYQmyNdGzin7olVAklJoinvalidpassword', 1, 1, 20, '120-234567-890', NULL, NULL, SYSDATE);
 
--- 3. 구매부 과장
-INSERT INTO members (id, name, employee_number, gender, join_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at)
-VALUES (3, '박구매', 'EMP-003', 1, SYSDATE, '900112-3456789', NULL, 'park.purchase@company.com', '010-3456-7890', '$2a$10$slYQmyNdGzin7olVAklJoinvalidpassword', 2, 3, 88, '130-345678-901', NULL, NULL, SYSDATE);
-
--- 4. 영업부 대리 (여직원)
-INSERT INTO members (id, name, employee_number, gender, join_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at)
-VALUES (4, '최영업', 'EMP-004', 2, SYSDATE, '920306-2567890', NULL, 'choi.sales@company.com', '010-4567-8901', '$2a$10$slYQmyNdGzin7olVAklJoinvalidpassword', 3, 4, 81, '140-456789-012', NULL, NULL, SYSDATE);
-
--- 5. 생산부 기능사 (공장)
-INSERT INTO members (id, name, employee_number, gender, join_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at)
-VALUES (5, '정생산', 'EMP-005', 1, SYSDATE, '880718-1678901', NULL, 'jung.production@company.com', '010-5678-9012', '$2a$10$slYQmyNdGzin7olVAklJoinvalidpassword', 101, 102, 11, '150-567890-123', NULL, NULL, SYSDATE);
 
 COMMIT;
 

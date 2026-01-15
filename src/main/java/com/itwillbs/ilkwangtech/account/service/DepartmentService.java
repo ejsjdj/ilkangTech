@@ -1,6 +1,6 @@
 package com.itwillbs.ilkwangtech.account.service;
 
-import com.itwillbs.ilkwangtech.account.entity.Departments;
+import com.itwillbs.ilkwangtech.account.entity.Department;
 
 import java.util.List;
 
@@ -10,5 +10,5 @@ import java.util.List;
 public interface DepartmentService {
 
     // 활성화된 부서 목록 조회
-    public List<Departments> getActiveDepartments();
+    public List<Department> getActiveDepartments();
 }

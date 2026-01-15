@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountLoginDTO;
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 
@@ -28,10 +28,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 		Member member = accountRepository.findByEmployeeNumber(employeeNumber)
 				.orElseThrow(() -> new UsernameNotFoundException(employeeNumber + " : + 사용자 조회 실패!"));
 
-		AccountLoginDTO accountLoginDTO = modelMapper.map(member, AccountLoginDTO.class);
-		log.info("◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆ accountLoginResponse 가 문제없이 작동하는가 마는가? : " + accountLoginDTO.getUsername());
-		
-		
+		AccountLogin accountLoginDTO = modelMapper.map(member, AccountLogin.class);
+
 		return accountLoginDTO;
 	}
 

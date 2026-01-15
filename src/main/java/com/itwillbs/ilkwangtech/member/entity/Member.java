@@ -57,7 +57,7 @@ public class Member {
     // 입사일
     @Column(nullable = false)
     @CreationTimestamp
-    private LocalDateTime joinDate;
+    private LocalDateTime hireDate;
 
     // 주민등록번호
     @Column(length = 20)

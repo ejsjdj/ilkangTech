@@ -37,6 +37,7 @@ public class WebSecurityConfig {
 						.defaultSuccessUrl("/layout/layout", true) // 로그인 성공 시 리디렉션 URL 설정
 						.permitAll() // 로그인 관련 요청 주소를 모두 허용 경로로 등록
 				)
+				.csrf(csrf -> csrf.disable())
 				// 로그아웃 처리 설정
 				.logout(logoutCustomizer -> logoutCustomizer
 						.logoutUrl("/accounts/logout")

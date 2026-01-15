@@ -26,24 +26,24 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class MemberRole {
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	// 사용자(Member) 엔티티와의 연관관계 설정
-	// MemberRole(N) : Member(1) 이므로 @ManyToOne 어노테이션 지정
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id", nullable = false)
-	private Member member;
-	
-	// 공통코드(Commoncode) 엔티티와의 연관관계 설정
-	// MemberRole(N) : CommonCode(1) 이므로 @ManyToOne 어노테이션 지정
-	@ManyToOne(fetch = FetchType.LAZY)	// 지연로딩 설정(상대방이 현재 엔티티까지 무조건 조회하지 않고, 현재 엔티티에 접근하는 시점에 조회)
-	@JoinColumn(name = "member_role_id", nullable = false) // common_code 테이블에 연결할 컬럼을 member_role 테이블의 member_role_id 컬럼으로 지정(FK 설정)
-	private CommonCode role;
-	
-	// id 를 제외한 Member, CommonCode 엔티티를 전달받아 객체 초기화하는 파라미터 생성자 정의
-	public MemberRole(Member member, CommonCode role) {
-		this.member = member;
-		this.role = role;
-	}
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // 사용자(Member) 엔티티와의 연관관계 설정
+    // MemberRole(N) : Member(1) 이므로 @ManyToOne 어노테이션 지정
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    // 공통코드(Commoncode) 엔티티와의 연관관계 설정
+    // MemberRole(N) : CommonCode(1) 이므로 @ManyToOne 어노테이션 지정
+    @ManyToOne(fetch = FetchType.LAZY)	// 지연로딩 설정(상대방이 현재 엔티티까지 무조건 조회하지 않고, 현재 엔티티에 접근하는 시점에 조회)
+    @JoinColumn(name = "member_role_id", nullable = false) // common_code 테이블에 연결할 컬럼을 member_role 테이블의 member_role_id 컬럼으로 지정(FK 설정)
+    private CommonCode role;
+
+    // id 를 제외한 Member, CommonCode 엔티티를 전달받아 객체 초기화하는 파라미터 생성자 정의
+    public MemberRole(Member member, CommonCode role) {
+        this.member = member;
+        this.role = role;
+    }
 }

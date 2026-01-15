@@ -1,8 +1,7 @@
 package com.itwillbs.ilkwangtech.account.service;
 
-import com.itwillbs.ilkwangtech.account.entity.Departments;
-
-import java.util.List;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
 
 // 컨트롤러에서는 사용자가 요청을 하면 그 요청에 맞는 함수를 AccountService 에서 호출을 한다.
 // AccountService 에서는 컨트롤러가 받은 요청을 처리를 할때
@@ -11,6 +10,8 @@ import java.util.List;
 // 그 외에 기타사항은 자체적으로 처리한다.
 // 최종적으로 DB 에 CRUD 기능은 repository 를 이용한다.
 public interface AccountService {
+
+    AccountRegisterResponse register(AccountRegisterRequest request);
 
 
 }

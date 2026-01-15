@@ -63,6 +63,7 @@ public class AccountServiceImpl implements AccountService {
         Member member = accountRepository.findByEmployeeNumberAndPassword(req.employeeNumber(), req.passWord());
 
         AccountDTO.AccountLoginResponse res = new AccountDTO.AccountLoginResponse(
+        		member.getId(),
                 member.getName(),
                 member.getEmployeeNumber(),
                 member.getGender(),

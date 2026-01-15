@@ -74,10 +74,11 @@ public class AccountDTO {
 
     // 로그인 응답 DTO
     public record AccountLoginResponse (
+    		Long id,
             String name,            // 이름
             String employeeNumber,  // 사원번호
             String gender,          // 성별
-            LocalDateTime joinDate,     // 입사일
+            LocalDateTime joinDate, // 입사일
             String residentNumber,  // 주민등록번호
             String email,           // 이메일
             String phoneNumber,     // 전화번호

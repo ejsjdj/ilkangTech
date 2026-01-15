@@ -1,15 +1,276 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 <head>
-	<meta charset="UTF-8">
-	<title>Insert title here</title>
-	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css">
-	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
-	<link rel="stylesheet" th:href="@{/css/layout.css}" />
-	
+    <title>일정 관리</title>
+    
+    <th:block layout:fragment="style">
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+        <style>
+            /* 전체 컨테이너 스타일 */
+            .page-container {
+                background: #ffffff;
+                border-radius: 8px;
+                padding: 25px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                min-height: 800px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* 타이틀 영역 */
+            .page-header {
+                margin-bottom: 20px;
+            }
+            .page-title {
+                font-size: 24px;
+                font-weight: 700;
+                color: #333;
+                margin-bottom: 10px;
+            }
+
+            /* 테이블 스타일 */
+            .custom-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+                border: 1px solid #e0e0e0;
+            }
+            .custom-table thead th {
+                background-color: #f8f9fa;
+                color: #495057;
+                font-weight: 600;
+                text-align: center;
+                border-bottom: 1px solid #dee2e6;
+                padding: 12px;
+                vertical-align: middle;
+            }
+            .custom-table tbody td {
+                padding: 12px;
+                border-bottom: 1px solid #f0f0f0;
+                color: #333;
+                vertical-align: middle;
+            }
+            .custom-table tbody tr:hover {
+                background-color: #f1f3f5;
+            }
+            
+            /* 정렬 아이콘 흉내 */
+            .sort-icon {
+                font-size: 10px;
+                color: #aaa;
+                margin-left: 4px;
+                cursor: pointer;
+            }
+
+            /* No Data 스타일 */
+            .no-data {
+                text-align: center;
+                padding: 50px 0;
+                color: #adb5bd;
+                font-size: 14px;
+            }
+
+            /* 버튼 스타일 */
+            .btn-custom-blue {
+                background-color: #5c6bc0;
+                border-color: #5c6bc0;
+                color: white;
+            }
+            .btn-custom-blue:hover {
+                background-color: #4c5bb0;
+                color: white;
+            }
+            .btn-outline-custom {
+                border-color: #5c6bc0;
+                color: #5c6bc0;
+            }
+            .btn-outline-custom:hover {
+                background-color: #5c6bc0;
+                color: white;
+            }
+
+            /* 페이지네이션 (하단 고정 및 중앙 정렬) */
+            .pagination-container {
+                margin-top: auto; /* 컨테이너 하단으로 밀기 */
+                padding-top: 30px;
+                display: flex;
+                justify-content: center;
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-	<h1>/schedule/list.html</h1>
-	<h3>일정 등록 리스트</h3>
+
+<div layout:fragment="content">
+    <div class="page-container">
+        
+        <div class="page-header">
+            <h2 class="page-title">일정관리</h2>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm" style="width: 60px;">뒤로</a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            
+            <form action="/schedule/list" method="get" id="searchForm" class="d-flex gap-2 align-items-center">
+                
+                <input type="hidden" name="page" id="page" value="1">
+                
+                <input type="hidden" name="startDate" id="startDate" th:value="${searchParams.startDate}">
+                <input type="hidden" name="endDate" id="endDate" th:value="${searchParams.endDate}">
+
+                <div class="input-group" style="width: 280px;">
+                    <span class="input-group-text bg-white"><i class="fs-6">📅</i></span>
+                    <input type="text" id="daterange" class="form-control" readonly placeholder="기간 선택">
+                </div>
+
+                <select name="type" class="form-select" style="width: 120px;">
+                    <option value="">전체</option>
+                    <option value="COMPANY" th:selected="${searchParams.type == 'COMPANY'}">회사</option>
+                    <option value="PERSONAL" th:selected="${searchParams.type == 'PERSONAL'}">개인</option>
+                </select>
+
+                <input type="text" name="keyword" class="form-control" style="width: 150px;" 
+                       placeholder="제목 검색" th:value="${searchParams.keyword}">
+
+                <button type="submit" class="btn btn-outline-custom">조회</button>
+                <a href="/schedule/list" class="btn btn-outline-secondary">초기화</a>
+            </form>
+
+            <a th:href="@{/schedule/register}" class="btn btn-custom-blue">일정등록</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table custom-table text-center">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No.</th>
+                        <th>일정제목 <span class="sort-icon">▼</span></th>
+                        <th style="width: 80px;">종류 <span class="sort-icon">▼</span></th>
+                        <th style="width: 160px;">일정시작 <span class="sort-icon">▼</span></th>
+                        <th style="width: 160px;">일정마감 <span class="sort-icon">▼</span></th>
+                        <th style="width: 100px;">작성자 <span class="sort-icon">▼</span></th>
+                        <th>내용 <span class="sort-icon">▼</span></th>
+                        <th style="width: 80px;">상세</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${schedules.totalElements == 0}">
+                        <td colspan="8" class="no-data">
+                            등록된 일정이 없습니다.
+                        </td>
+                    </tr>
+
+                    <tr th:each="dto, state : ${schedules}">
+                        <td th:text="${(schedules.number * schedules.size) + state.count}">1</td>
+                        
+                        <td class="text-start fw-bold text-dark">
+                            <a th:href="@{/schedule/detail(id=${dto.id})}" th:text="${dto.title}" class="text-decoration-none text-dark">
+                                제목
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill" 
+                                  th:classappend="${dto.type == 'COMPANY' ? 'bg-danger' : 'bg-primary'}"
+                                  th:text="${dto.type == 'COMPANY' ? '회사' : '개인'}">
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(dto.startDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${#temporals.format(dto.endDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${dto.writerName}"></td>
+                        <td class="text-start text-muted text-truncate" style="max-width: 200px;" th:text="${dto.content}">내용</td>
+                        <td>
+                            <a th:href="@{/schedule/detail(id=${dto.id})}" class="btn btn-sm btn-outline-secondary" style="font-size: 12px;">상세</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container" th:if="${schedules.totalElements > 0}">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(1)'">«</a>
+                    </li>
+                    
+                    <li class="page-item" th:classappend="${schedules.first} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${currentPage - 1} + ')'">‹</a>
+                    </li>
+
+                    <li class="page-item" th:each="page: ${#numbers.sequence(startPage, endPage)}"
+                        th:classappend="${page == currentPage} ? 'active'">
+                        <a class="page-link" href="javascript:void(0)" th:text="${page}" th:onclick="'goPage(' + ${page} + ')'">1</a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${schedules.last} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${currentPage + 1} + ')'">›</a>
+                    </li>
+                    
+                    <li class="page-item" th:classappend="${currentPage == schedules.totalPages} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${schedules.totalPages} + ')'">»</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+    </div> </div>
+
+<th:block layout:fragment="script">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+    <script th:inline="javascript">
+        // 1. 페이지 이동 함수
+        function goPage(page) {
+            document.getElementById('page').value = page;
+            document.getElementById('searchForm').submit();
+        }
+
+        // 2. Date Range Picker 초기화
+        $(function() {
+            var serverStart = document.getElementById('startDate').value;
+            var serverEnd = document.getElementById('endDate').value;
+
+            // 초기값 설정
+            var start = serverStart ? moment(serverStart) : moment().startOf('month');
+            var end = serverEnd ? moment(serverEnd) : moment().endOf('month');
+
+            function cb(start, end) {
+                // UI 표시용 (예: 2026-01-01 ~ 2026-01-31)
+                $('#daterange').val(start.format('YYYY-MM-DD') + ' ~ ' + end.format('YYYY-MM-DD'));
+                // 서버 전송용
+                $('#startDate').val(start.format('YYYY-MM-DD') + 'T00:00');
+                $('#endDate').val(end.format('YYYY-MM-DD') + 'T23:59');
+            }
+
+            $('#daterange').daterangepicker({
+                startDate: start,
+                endDate: end,
+                opens: 'right', // 달력이 오른쪽으로 열리도록
+                locale: {
+                    format: 'YYYY-MM-DD',
+                    separator: ' ~ ',
+                    applyLabel: '적용',
+                    cancelLabel: '취소',
+                    daysOfWeek: ['일', '월', '화', '수', '목', '금', '토'],
+                    monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    firstDay: 0
+                },
+                ranges: {
+                   '오늘': [moment(), moment()],
+                   '이번 달': [moment().startOf('month'), moment().endOf('month')],
+                   '지난 달': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, cb);
+
+            // 최초 실행 시 서버 값이 있으면 반영, 없으면 기본값 반영
+            cb(start, end);
+        });
+    </script>
+</th:block>
+
 </body>
 </html>

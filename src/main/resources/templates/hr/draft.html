@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>전자결재</title>
+
+    <!-- 이 페이지 전용 CSS -->
+    <th:block layout:fragment="style">
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #fff;
+            }
+            th, td {
+                padding: 10px;
+                border-bottom: 1px solid #e5e7eb;
+                text-align: center;
+            }
+            th {
+                background: #f9fafb;
+                font-weight: 700;
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+
+<!-- ⭐ 레이아웃의 content 영역에 들어갈 부분 -->
+<div layout:fragment="content">
+
+    <h1>전자결재 문서 목록</h1>
+
+    <table>
+        <thead>
+        <tr>
+            <th>결재 ID</th>
+            <th>제목</th>
+            <th>내용</th>
+            <th>시작 날짜</th>
+            <th>종료 날짜</th>
+            <th>승인 날짜</th>
+            <th>결과</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="d : ${draftList}">
+            <td th:text="${d.draft_id}">1</td>
+            <td th:text="${d.draft_title}">제목</td>
+            <td th:text="${#temporals.format(d.draft_startTime, 'yyyy-MM-dd')}"></td>
+            <td th:text="${#temporals.format(d.draft_endDate, 'yyyy-MM-dd')}"></td>
+            <td th:text="${d.draft_approvalDate != null
+                           ? #temporals.format(d.draft_approvalDate, 'yyyy-MM-dd')
+                           : '미승인'}">
+            </td>
+            <td th:text="${d.draft_status}">대기</td>
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(draftList)}">
+            <td colspan="7">문서가 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<!-- 이 페이지 전용 JS -->
+<th:block layout:fragment="script">
+    <script>
+        console.log("전자결재 리스트 페이지 로드됨");
+    </script>
+</th:block>
+
+</body>
+</html>

@@ -13,6 +13,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ScheduleController {
 	
+	@GetMapping("/calendar")
+    public String calendar() {
+        return "/schedule/calendar";
+    }
+	
 	@GetMapping("/list")
 	public String scheduleListGET(Model model, HttpSession session) {
 		log.info("scheduleListGET() 실행!");

@@ -46,7 +46,7 @@ public class AccountController {
         AccountDTO.AccountLoginResponse res = accountService.login(req);
         session.setAttribute("loginMember", res);
         System.out.println("로그인 완료");
-        return "redirect:/account/list";
+        return "redirect:/schedule/calendar";
     }
 
     @GetMapping("/logout")

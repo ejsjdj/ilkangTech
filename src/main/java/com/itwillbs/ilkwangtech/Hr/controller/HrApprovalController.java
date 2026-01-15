@@ -27,6 +27,9 @@ public class HrApprovalController {
         return "/hr/draft";
     }
 
+    // 기안서 작성
+
+
     // 기안서 작성 중 양식 선택
     @GetMapping("/status")
     public String getDraftStatus(

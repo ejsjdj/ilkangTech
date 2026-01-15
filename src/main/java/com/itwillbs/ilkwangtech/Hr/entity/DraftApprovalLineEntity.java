@@ -13,24 +13,22 @@ import lombok.Setter;
 public class DraftApprovalLineEntity {
 
     // 결재 라인 ID
+    // 기본키
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String lind_id;
+    private long lineId;
 
     // 결재 양식 종류
     @Column(nullable = false)
-    private String draft_type;
+    private String draftType;
 
-    // 승인자
+    // 승인자 ID
+    // 사원 고유번호
     @ManyToOne
     @JoinColumn(name="common_id")
     private Member member;
 
     // 결재 순서
     @Column(nullable = false)
-    private int sequence;
-
-    // 승인 상태
-    @Column(nullable = false)
-    private int status;
+    private long sequence;
 }

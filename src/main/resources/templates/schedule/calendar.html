@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>일정 관리</title>
+    
+    <th:block layout:fragment="style">
+        <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
+        <style>
+            .dashboard { display: flex; gap: 20px; height: 100%; min-height: 700px; }
+            .calendar-wrapper { flex: 3; background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+            .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+            .calendar-header .left { display: flex; align-items: center; gap: 15px; }
+            .calendar-header strong { font-size: 20px; color: #333; }
+            .calendar-header button { border: none; background: none; font-size: 18px; cursor: pointer; color: #555; }
+            
+            .badge { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+            .badge.company { background: #ff5b7f; }
+            .badge.dept { background: #3da5ff; }
+            .badge.personal { background: #f1c40f; }
+            .badge.pto { background: #b7f3c4; }
+            #calendar { flex: 1; min-height: 0; }
+        
+            .right-sidebar { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 250px; }
+            .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+            
+            .profile { position: relative; }
+            
+            .status-badges { display: flex; gap: 10px; margin-bottom: 15px; }
+            .status-badges button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+            .status-badges button:active { transform: scale(0.98); }
+            .btn-work { background: #4caf50; color: #fff; }
+            .btn-out { background: #ff9800; color: #fff; }
+            
+            .profile-content { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+            .profile-icon { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e3f2fd; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .profile-icon svg { width: 36px; height: 36px; fill: #666; }
+            .profile-info { flex: 1; text-align: left; }
+            .profile-info .dept { font-size: 12px; color: #888; margin-bottom: 4px; }
+            .profile-info .name { font-size: 16px; color: #333; font-weight: 600; }
+            
+            .btn-detail { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #1976d2; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+            .btn-detail:hover { background: #1565c0; }
+            .btn-detail:active { transform: scale(0.98); }
+        
+            .card-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: block; color: #444; }
+            .empty-box { height: 60px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
+        
+            .view-buttons.segmented { position: relative; display: inline-flex; background: #f1f3f5; border-radius: 8px; padding: 4px; }
+            .view-buttons.segmented button { position: relative; z-index: 2; border: none; background: transparent; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; border-radius: 6px; }
+            .view-buttons.segmented button.active { color: #fff; }
+            .view-buttons.segmented .indicator { position: absolute; top: 4px; left: 4px; bottom: 4px; background: #4b6ef5; border-radius: 6px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; width: 0; }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="dashboard">
+        <div class="calendar-wrapper">
+            <div class="calendar-header">
+                <div class="left">
+                    <button onclick="movePrev()">◀</button>
+                    <strong id="calendarTitle">2026년 1월</strong>
+                    <button onclick="moveNext()">▶</button>
+                </div>
+    
+                <div class="view-buttons segmented">
+                    <div class="indicator"></div>
+                    <button class="active" th:onclick="|location.href='@{/schedule/list}'|">목록</button>
+                    <button onclick="setMonth(this)">월</button>
+                    <button onclick="setWeek(this)">주</button>
+                    <button onclick="setDay(this)">일</button>
+                </div>
+            </div>
+            
+            <div style="text-align: right; margin-bottom: 10px; font-size: 12px;">
+                <span class="badge company"></span> 회사
+                <span class="badge dept"></span> 팀
+                <span class="badge personal"></span> 개인
+                <span class="badge pto"></span> 연차
+            </div>
+    
+            <div id="calendar"></div>
+        </div>
+
+        <div class="right-sidebar">
+            <div class="status-badges">
+                <button class="btn-work">출근</button>
+                <button class="btn-out">외근</button>
+            </div>
+            <div class="card profile" th:if="${session.loginMember != null}">
+                
+                <div class="profile-content">
+                    <div class="profile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <div class="profile-info">
+                        <div class="dept" th:text="${session.loginMember.department}">부서명</div>
+                        <div class="name" th:text="|${session.loginMember.name} ${session.loginMember.position}|">홍길동 사원</div>
+                    </div>
+                </div>
+                
+                <button class="btn-detail">내 정보</button>
+            </div>
+            <div class="card profile" th:unless="${session.loginMember != null}">
+		        <div class="name"><a href="/account/login">로그인이 필요합니다</a></div>
+		    </div>
+
+            <div class="card">
+                <span class="card-title">📢 사내 공지사항</span>
+                <div class="empty-box"></div>
+            </div>
+
+            <div class="card">
+                <span class="card-title">📄 결재 대기 (0건)</span>
+                <div class="empty-box"></div>
+            </div>
+
+            <div class="card">
+                <span class="card-title">☁️ API 사용량</span>
+                <div class="empty-box"></div>
+            </div>
+        </div> 
+    </div> 
+</div>
+
+<th:block layout:fragment="script">
+    <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+
+    <script>
+        /* 라이브러리 로드 후 실행 */
+        const Calendar = tui.Calendar;
+        const calendar = new Calendar('#calendar', {
+            defaultView: 'month',
+            taskView: false,
+            scheduleView: ['time'],
+            useFormPopup: false,
+            useDetailPopup: false,
+            isReadOnly: true,
+            week: { startDayOfWeek: 0, dayNames: ['일','월','화','수','목','금','토'] },
+            month: { dayNames: ['일','월','화','수','목','금','토'] }
+        });
+
+        /* 샘플 일정 */
+        calendar.createEvents([
+            { id: '1', calendarId: 'personal', title: '설날 연휴', category: 'allday', start: '2026-02-16', end: '2026-02-18', backgroundColor: '#ff5b7f', borderColor: '#ff5b7f' },
+            { id: '2', calendarId: 'work', title: '프로젝트 회의', category: 'time', start: '2026-01-15T10:00:00', end: '2026-01-15T12:00:00', backgroundColor: '#3da5ff' }
+        ]);
+
+        /* 날짜 제어 */
+        function updateCalendarTitle() {
+            const date = calendar.getDate();
+            document.getElementById('calendarTitle').innerText = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
+        }
+
+        function movePrev() { calendar.prev(); updateCalendarTitle(); }
+        function moveNext() { calendar.next(); updateCalendarTitle(); }
+        function moveToday() { calendar.today(); updateCalendarTitle(); }
+
+        /* 뷰 전환 탭 */
+        const indicator = document.querySelector('.view-buttons.segmented .indicator');
+        const tabs = document.querySelectorAll('.view-buttons.segmented button');
+
+        function moveIndicator(btn) {
+            indicator.style.left = btn.offsetLeft + 'px';
+            indicator.style.width = btn.offsetWidth + 'px';
+            tabs.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function setMonth(btn) { calendar.changeView('month'); moveIndicator(btn); }
+        function setWeek(btn) { calendar.changeView('week'); moveIndicator(btn); }
+        function setDay(btn) { calendar.changeView('day'); moveIndicator(btn); }
+        function setList(btn) { moveIndicator(btn); }
+
+        /* 초기 실행 */
+        window.addEventListener('load', () => {
+            updateCalendarTitle();
+
+            // 1. '월' 버튼을 찾습니다. (두 번째 버튼)
+            // querySelectorAll로 모든 버튼을 가져온 뒤 인덱스[1] 사용 ('목록'이 0, '월'이 1)
+            const monthBtn = document.querySelectorAll('.view-buttons.segmented button')[1];
+            
+            // 2. '월' 버튼으로 인디케이터(파란 배경) 이동 및 active 클래스 적용
+            if (monthBtn) {
+                moveIndicator(monthBtn);
+                // 캘린더 뷰도 'month'로 확실하게 설정
+                calendar.changeView('month');
+            }
+
+            setTimeout(() => { calendar.render(); }, 100);
+        });
+
+        window.addEventListener('resize', () => {
+            const activeBtn = document.querySelector('.view-buttons.segmented button.active');
+            if (activeBtn) moveIndicator(activeBtn);
+        });
+    </script>
+</th:block>
+</body>
+</html>

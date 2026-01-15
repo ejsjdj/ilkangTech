@@ -1,6 +1,5 @@
 package com.itwillbs.ilkwangtech.Hr.entity;
 
-
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;

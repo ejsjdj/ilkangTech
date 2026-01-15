@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>전자결재</title>
+</head>
+<body>
+
+<h1>전자결재 문서 목록</h1>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>결재 ID</th>
+        <th>제목</th>
+        <th>내용</th>
+        <th>시작 날짜</th>
+        <th>종료 날짜</th>
+        <th>승인 날짜</th>
+        <th>결과</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="d : ${draftList}">
+        <td th:text="${d.draft_id}">1</td>
+        <td th:text="${d.draft_title}">제목</td>
+        <td th:text="${d.draft_content}">내용</td>
+        <td th:text="${#temporals.format(d.draft_startTime, 'yyyy-MM-dd')}">2026-01-01</td>
+        <td th:text="${#temporals.format(d.draft_endDate, 'yyyy-MM-dd')}">2026-01-02</td>
+        <td th:text="${d.draft_approvalDate != null
+                       ? #temporals.format(d.draft_approvalDate, 'yyyy-MM-dd')
+                       : '미승인'}">
+            미승인
+        </td>
+        <td th:text="${d.draft_status}">대기</td>
+    </tr>
+
+    <!-- 데이터 없을 때 -->
+    <tr th:if="${#lists.isEmpty(draftList)}">
+        <td colspan="7">문서가 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

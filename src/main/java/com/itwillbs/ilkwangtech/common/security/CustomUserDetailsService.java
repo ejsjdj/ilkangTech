@@ -24,13 +24,19 @@ public class CustomUserDetailsService implements UserDetailsService {
 	
 	@Override
 	public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
-		
-		Member member = accountRepository.findByEmployeeNumber(employeeNumber)
+		log.info("========== loadUserByUsername 시작 ==========");
+		log.info("검색할 사원번호: {}", employeeNumber);
+		Member member = accountRepository.findByEmployeeNumberWithMemberRoles(employeeNumber)
 				.orElseThrow(() -> new UsernameNotFoundException(employeeNumber + " : + 사용자 조회 실패!"));
 
-		AccountLogin accountLoginDTO = modelMapper.map(member, AccountLogin.class);
-
-		return accountLoginDTO;
+		log.info("✅ 사용자 조회 성공");
+		log.info("  - 이름: {}", member.getName());
+		log.info("  - 이메일: {}", member.getEmail());
+		log.info("  - DB에 저장된 비밀번호 (첫 20글자): {}",
+				member.getPassword() == null ? "null" :
+						member.getPassword().substring(0, Math.min(20, member.getPassword().length())));
+				AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
+		log.info("========== loadUserByUsername 종료 ==========");
+		return accountLogin;
 	}
-
 }

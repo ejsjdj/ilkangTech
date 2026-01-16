@@ -2,13 +2,11 @@ package com.itwillbs.ilkwangtech.account.dto;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +16,9 @@ import com.itwillbs.ilkwangtech.member.entity.MemberRole;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString
+@Builder
 public class AccountLogin implements UserDetails {
 	
 	private static final long serialVersionUID = 1L;
@@ -45,18 +45,17 @@ public class AccountLogin implements UserDetails {
     // ----------------------------------------------------------
  	// 필수 오버라이딩 메서드
  	// 1) 사용자의 권한 목록 리턴하는 메서드
- 	@Override
- 	public Collection<? extends GrantedAuthority> getAuthorities() {
- 		// return roles; // 오류 발생! (Type mismatch: cannot convert from List<MemberRole> to Collection<? extends GrantedAuthority>)
- 		// => 주의! 사용자 권한 목록을 저장하는 List<MemberRole> 타입은 개발자가 사용하는 컬렉션 타입이며
- 		//    스프링 시큐리티가 관리하는 권한 목록은 Collection<? extends GrantedAuthority> 타입 객체가 리턴되어야 함
- 		// -----------------------------
- 		// 컬렉션(List, Set 등)을 또 다른 컬렉션 형태로 변환
- 		return roles.stream() // 컬렉션 요소를 자바 스트림 형태로 변환(Stream<MemberRole> 타입으로 변환)
- 				.map(role -> new SimpleGrantedAuthority(role.getRole().getCommonCode())) // 스트림의 각 요소(각각의 MemberRole 객체)를 다른 객체(스프링 시큐리티가 관리하는 권한 객체(SimpleGrantedAuthority)) 형태로 변환
- 				// => 이 때, 권한 목록을 각각 분리(roles -> role)해서 각 권한에 대한 공통코드(common_code 컬럼값)만 꺼내서 변환
- 				.collect(Collectors.toList()); // 권한 정보 1개를 갖는 SimpleGrantedAuthority 객체들을 List 객체로 모아서 리턴
- 	}
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		// 임시 해결: 권한이 없으면 기본 권한 부여
+		if (roles == null || roles.isEmpty()) {
+			return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+		}
+
+		return roles.stream()
+				.map(role -> new SimpleGrantedAuthority(role.getRole().getCommonCode()))
+				.collect(Collectors.toList());
+	}
 
  	// 2) 사용자명(= 아이디 역할)을 리턴하는 메서드
  	// => 현재 사용자명을 이메일로 대체하여 사용하므로 이메일 주소값 리턴

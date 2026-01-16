@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">>
 <head>
     <meta charset="UTF-8">
     <title>로그인</title>
@@ -12,11 +13,12 @@
 
 <form method="post" action="/account/login">
     <div>
-        <label for="employeeId">사원번호</label>
+        <label for="employeeNumber">사원번호</label>
         <input
                 type="text"
-                id="employeeId"
-                name="employeeNumber"
+                id="employeeNumber"
+                name="username"
+                value="26-00000"
                 placeholder="사원번호를 입력하세요"
                 required
                 autofocus
@@ -27,11 +29,14 @@
         <input
                 type="password"
                 id="password"
-                name="passWord"
+                name="password"
+                value="1234"
                 placeholder="비밀번호를 입력하세요"
                 required
         >
     </div>
+    <input type="hidden" name="${_csrf.parameterName }"
+           value="${_csrf.token }" >
 
     <button type="submit">로그인</button>
 </form>

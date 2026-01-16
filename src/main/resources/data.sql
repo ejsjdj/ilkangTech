@@ -1,4 +1,20 @@
+
+
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'MEMBER_ROLE', '사용자권한', '사용자권한 상위코드', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_ADMIN', '전체 관리자 권한', '', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_USER', '일반 사용자 권한', '', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_ADMIN_SUB', '보조 관리자 권한', '', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'MENU', '시스템 메뉴', '시스템 메뉴 상위코드', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', '1', '메뉴 - 공지사항', '', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', '2', '메뉴 - 상품페이지', '', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'BOARD', '게시판', '게시판 상위코드', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'BOARD', 'NOTICE', '공지사항', '게시판 - 공지사항', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'BOARD', 'FREE', '자유게시판', '게시판 - 자유게시판', 'Y');
+
+
 -- Members 테이블 초기 데이터 (5명)
+
+
 
 -- 1. 법인장 (임원)
 INSERT INTO members (
@@ -20,9 +36,9 @@ INSERT INTO members (
     last_login,
     updated_at
 ) VALUES (
-             4,                                  -- id
-             '홍길동',                           -- name
-             '260000',                           -- employee_number
+             1,                                  -- id
+             '이순신',                           -- name
+             '26-00000',                           -- employee_number
              1,                                  -- gender
              TO_DATE('2026-01-15', 'YYYY-MM-DD'),-- hire_date (26/01/15 기준)
              '900101-1234567',                   -- resident_number
@@ -39,11 +55,54 @@ INSERT INTO members (
              TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9')  -- updated_at
          );
 
-
+INSERT INTO members (
+    id,
+    name,
+    employee_number,
+    gender,
+    hire_date,
+    resident_number,
+    profile_photo_link,
+    email,
+    phone_number,
+    password,
+    department,
+    position,
+    bank,
+    account_number,
+    account_picture_link,
+    last_login,
+    updated_at
+) VALUES (
+             2,                                  -- id
+             '넬슨',                           -- name
+             '26-00001',                           -- employee_number
+             1,                                  -- gender
+             TO_DATE('2026-01-15', 'YYYY-MM-DD'),-- hire_date (26/01/15 기준)
+             '900102-1234567',                   -- resident_number
+             NULL,                               -- profile_photo_link
+             'nama@yeoun.com',                   -- email
+             '010-1234-5679',                    -- phone_number
+             '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', -- password
+             1,                                  -- department
+             55,                                 -- position
+             0,                                  -- bank
+             '123-456-789013',                   -- account_number
+             NULL,                               -- account_picture_link
+             TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), -- last_login
+             TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9')  -- updated_at
+         );
 
 COMMIT;
 
+INSERT INTO member_role(id, member_id, member_role_id)
+VALUES (member_role_seq.NEXTVAL, 1, 101);
 
+INSERT INTO member_role(id, member_id, member_role_id)
+VALUES (member_role_seq.NEXTVAL, 2, 101);
+
+INSERT INTO member_role(id, member_id, member_role_id)
+VALUES (member_role_seq.NEXTVAL, 2, 51);
 
 ------------------------- 여기서 부터 멤버 참조에 필요한 데이터 ---------------------------------------------------------------------------------
 -- 시중은행

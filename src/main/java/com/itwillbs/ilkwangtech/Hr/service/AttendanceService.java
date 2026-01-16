@@ -26,7 +26,7 @@ public class AttendanceService {
     
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("a hh:mm");
     
- // 1. 현재 상태 조회
+    // 1. 현재 상태 조회
     @Transactional(readOnly = true)
     public AttendanceDTO getTodayStatus(Long memberId) {
         return attendanceRepository.findByMemberIdAndWorkDate(memberId, LocalDate.now())
@@ -103,7 +103,7 @@ public class AttendanceService {
         LocalDateTime now = LocalDateTime.now();
         Member member = attendance.getMember();
 
-        attendance.changeStatus(AttendanceStatus.ON_DUTY); // 다시 근무 상태로
+        attendance.recordReturn(); // 다시 근무 상태로
 
         String message = String.format("%s %s님! %s 분 복귀입니다. 어서오세요!",
                 member.getName(), member.getPosition(), now.format(timeFormatter));

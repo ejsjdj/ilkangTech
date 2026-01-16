@@ -35,20 +35,18 @@ public class HrApprovalController {
 
     // 기안서 작성 중 양식 선택
     @GetMapping("/type")
-    public String getDraftStatus(
-            @RequestParam(value = "type", required = false) String draftStatus,
-            Model model
+    @ResponseBody
+    public List<DraftApprovalLineDTO> getDraftStatus(
+            @RequestParam(value = "type", required = false) String draftType
     ){
-        List<DraftApprovalLineDTO> approvalLine = draftApprovalLineService.getLineByType(draftStatus);
-        model.addAttribute("approvalLine", approvalLine);
-
-        return "/hr/approvalLineTest";
+        return draftApprovalLineService.getLineByType(draftType);
     }
 
     // 결재 등록
     // 결재 문서 테이블에 정보 저장
-    @PostMapping("/approver")
-    public void createApproval(@ModelAttribute DraftRegistDTO draftRegistDTO){
+    @PostMapping("/register")
+    @ResponseBody
+    public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO){
         // 결재 문서 타입 --> 결재 문서 테이블에 저장
         // 결재 문서 제목 --> 결재 문서 테이블에 저장
         // 결재 문서 내용 --> 결재 문서 테이블에 저장
@@ -61,6 +59,8 @@ public class HrApprovalController {
         // 결재 순서 --> 결재 상태 테이블에 저장
 
         // 결재 상태 --> 결재 문서 테이블, 결재 상태 테이블(1차 결재자 결재 상태 컬럼)에 저장
+
+        System.out.println(draftRegistDTO);
 
         draftRegistService.putDraft(draftRegistDTO);
     }

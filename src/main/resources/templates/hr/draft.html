@@ -24,6 +24,35 @@
                 background: #f9fafb;
                 font-weight: 700;
             }
+            /* 1. 모달 전체 배경 (어둡게 처리) */
+            .modal {
+                display: none;        /* 초기 상태: 숨김 (가장 중요!) */
+                position: fixed;      /* 화면에 고정 */
+                z-index: 1000;        /* 페이지의 다른 요소들보다 위로 */
+                left: 0;
+                top: 0;
+                width: 100%;          /* 화면 꽉 채우기 */
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5); /* 반투명한 검은색 배경 */
+            }
+
+            /* 2. 모달 하얀색 박스 (작성 양식) */
+            .modalBody {
+                background-color: #fff;
+                margin: 5% auto;      /* 위에서 5% 띄우고 가로 중앙 정렬 */
+                padding: 20px;
+                width: 50%;           /* 너비 설정 */
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                max-height: 80vh;     /* 높이 제한 */
+                overflow-y: auto;     /* 내용이 길어지면 박스 내부 스크롤 */
+            }
+
+            /* 폼 그룹 간격 */
+            .form-group { margin-bottom: 15px; }
+            .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+            .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; }
+
         </style>
     </th:block>
 </head>
@@ -34,6 +63,74 @@
 <div layout:fragment="content">
 
     <h1>전자결재 문서 목록</h1>
+
+    <button typ="button" onclick="openModal()">결재 등록</button>
+
+    <!-- 문서 작성 모달 -->
+    <div id="draftModal" class="modal">
+        <div class="modalBody">
+
+            <h3>결재 문서 작성</h3>
+
+            <!-- 결재 문서 양식 -->
+            <div class="form-group">
+                <label for="draftType">결재양식 선택</label>
+                <select id="draftType" name="draftType" onchange="loadApprovalLine(this.value)">
+                    <option value="PTO">휴가</option>
+                    <option value="HDF">반차</option>
+                    <option value="BUY">구매</option>
+                    <option value="APP">발령</option>
+                </select>
+            </div>
+
+            <!-- 제목 -->
+            <div class="form-group">
+                <label for="draftTitle">제목</label>
+                <input type="text" id="draftTitle" name="draftTitle" placeholder="제목을 입력하세요">
+            </div>
+
+            <!-- 내용 -->
+            <div class="form-group">
+                <label for="draftContent">내용</label>
+                <textarea id="draftContent" name="draftContent" rows="5"
+                          placeholder="결재 내용을 입력하세요"></textarea>
+            </div>
+
+            <!-- 파일 업로드 -->
+            <div class="form-group">
+                <label for="draftFile">첨부 파일</label>
+                <input type="file" id="draftFile" name="draftFile">
+            </div>
+
+            <!-- 날짜 -->
+            <div class="form-group">
+                <label>결재 기간</label>
+                <div class="date-group">
+                    <input type="date" id="startDate" name="startDate">
+                    <span>~</span>
+                    <input type="date" id="endDate" name="endDate">
+                </div>
+            </div>
+
+            <!-- 결재자 라인 -->
+            <div class="form-group">
+                <label>결재 라인</label>
+                <div class="approval-line-box">
+                    <!-- JS로 결재자 동적 추가 -->
+                    <input type="text" id="approver1" name="draftTitle" placeholder="1치 결재자">
+                    <input type="text" id="approver2" name="draftTitle" placeholder="2치 결재자">
+                    <input type="text" id="approver3" name="draftTitle" placeholder="3차 결재자">
+                </div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+                <button type="button" class="btn-submit" onclick="postDraft()">등록</button>
+            </div>
+
+        </div>
+    </div>
 
     <table>
         <thead>
@@ -69,12 +166,99 @@
 
 </div>
 
+
+
 <!-- 이 페이지 전용 JS -->
 <th:block layout:fragment="script">
     <script>
         console.log("전자결재 리스트 페이지 로드됨");
+
+        function openModal() {
+            const modal = document.getElementById('draftModal');
+            modal.style.display = 'block'
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('draftModal');
+            modal.style.display = 'none'
+        }
+
+        function loadApprovalLine(draftType) {
+            if (!draftType) return;
+
+            fetch(`/draft/type?type=${draftType}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 1. 기존 input들 초기화 (이전 데이터 삭제)
+                    document.getElementById('approver1').value = '';
+                    document.getElementById('approver2').value = '';
+                    document.getElementById('approver3').value = '';
+
+                    // 2. sequence 기준으로 오름차순 정렬 (1, 2, 3...)
+                    data.sort((a, b) => a.sequence - b.sequence);
+
+                    // 3. 정렬된 데이터를 각 input에 할당
+                    data.forEach((item) => {
+                        // sequence가 1이면 approver1, 2이면 approver2에 넣음
+                        const inputId = `approver${item.sequence}`;
+                        const targetInput = document.getElementById(inputId);
+
+                        if (targetInput) {
+                            targetInput.value = `${item.id} ${item.position} ${item.name}`;
+                        }
+                    });
+                })
+                .catch(error => console.error('결재 라인 로드 실패:', error));
+        }
+
+        async function postDraft(){
+
+            const draftData = {
+                draftTitle: document.getElementById('draftTitle').value,
+                draftContent: document.getElementById('draftContent').value,
+                draftType: document.getElementById('draftType').value,
+                draftFile: document.getElementById('draftFile').value,
+                draftStartDate: document.getElementById('startDate').value,
+                draftEndDate: document.getElementById('endDate').value,
+                draftStatus: "WAT",
+            }
+
+            const draftApprover = [
+                document.getElementById('approver1').value,
+                document.getElementById('approver2').value,
+                document.getElementById('approver3').value
+            ];
+
+            console.log(draftData, draftApprover);
+
+            // 전송
+            try {
+                const response = await fetch('/draft/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(draftData)
+                });
+
+                // 3. 응답 처리
+                if (response.ok) {
+                    alert('결재 등록이 완료되었습니다.');
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error:', errorText);
+                    alert('등록에 실패했습니다.');
+                }
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('서버와 통신 중 오류가 발생했습니다.');
+            }
+
+        }
     </script>
 </th:block>
+
 
 </body>
 </html>

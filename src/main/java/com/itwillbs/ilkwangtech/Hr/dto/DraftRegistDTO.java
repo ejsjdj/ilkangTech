@@ -1,11 +1,13 @@
 package com.itwillbs.ilkwangtech.Hr.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 
 // 결재 문서 등록 요청 DTO
@@ -13,31 +15,32 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 public class DraftRegistDTO {
-    private String draft_type;
-    private String draft_title;
-    private String draft_content;
-    private LocalDate draft_startDate;
-    private LocalDate draft_endDate;
-    private String draft_file;
-    private long draft_id;
-    private String draft_approver;
-    private long draft_sequence;
-    private String draft_status;
+    //======================사용자 입력===============================//
+    private String draftType;
+    private String draftTitle;
+    private String draftContent;
+    private String draftStatus;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate draftStartDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate draftEndDate;
+    private List<String> draftApprover;
+    private String draftFile;
+
+
 
     @Builder
-    public DraftRegistDTO(String draft_type, String draft_title, String draft_content, LocalDate draft_startDate, LocalDate draft_endDate, String draft_file, long draft_id, String draft_approver, long draft_sequence, String draft_status){
+    public DraftRegistDTO(String draftType, String draftTitle, String draftContent, LocalDate draftStartDate, LocalDate draftEndDate, List<String> draftApprover, String draftFile, String draftStatus){
         super();
-        this.draft_type = draft_type;
-        this.draft_title = draft_title;
-        this.draft_content = draft_content;
-        this.draft_startDate = draft_startDate;
-        this.draft_endDate = draft_endDate;
-        this.draft_file = draft_file;
-
-        this.draft_id = draft_id;
-        this.draft_approver = draft_approver;
-        this.draft_sequence = draft_sequence;
-        this.draft_status = draft_status;
+        this.draftType = draftType;
+        this.draftTitle = draftTitle;
+        this.draftContent = draftContent;
+        this.draftStartDate = draftStartDate;
+        this.draftEndDate = draftEndDate;
+        this.draftApprover = draftApprover;
+        this.draftFile = draftFile;
+        this.draftStatus = draftStatus;
     }
 
 }

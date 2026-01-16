@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.Hr.service;
 import com.itwillbs.ilkwangtech.Hr.dto.DraftApprovalLineDTO;
 import com.itwillbs.ilkwangtech.Hr.entity.DraftApprovalLineEntity;
 import com.itwillbs.ilkwangtech.Hr.repository.DraftApprovalLineRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class DraftApprovalLineService {
         this.draftApprovalLineRepository = draftApprovalLineRepository;
     }
 
+    @Transactional
     public List<DraftApprovalLineDTO> getLineByType(String type) {
 
         List<DraftApprovalLineEntity> approvalLine = draftApprovalLineRepository.findByDraftType(type);
@@ -26,6 +28,7 @@ public class DraftApprovalLineService {
                 .map(line -> DraftApprovalLineDTO.builder()
                         .draft_type(line.getDraftType())
                         .sequence(line.getSequence())
+                        .id(line.getMember().getId())
                         .name(line.getMember().getName())
                         .position(line.getMember().getPosition())
                         .build())

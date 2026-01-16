@@ -20,28 +20,25 @@ public class DraftEntity {
     @JoinColumn(name = "common_id")
     private Member member;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String draft_type;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String draft_title;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String draft_content;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String draft_file;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate draft_startDate;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate draft_endDate;
 
     @Column(nullable = true)
-    private LocalDate draft_approvalDate;
-
-    @Column(nullable = false)
     private String draft_status;
 
 }

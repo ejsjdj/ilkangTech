@@ -22,17 +22,19 @@ public class DraftApprovalLineService {
     @Transactional
     public List<DraftApprovalLineDTO> getLineByType(String type) {
 
-        List<DraftApprovalLineEntity> approvalLine = draftApprovalLineRepository.findByDraftType(type);
+//        List<DraftApprovalLineEntity> approvalLine = draftApprovalLineRepository.findByDraftType(type);
+//
+//        return approvalLine.stream()
+//                .map(line -> DraftApprovalLineDTO.builder()
+//                        .draft_type(line.getDraftType())
+//                        .sequence(line.getSequence())
+//                        .id(line.getMember().getId())
+//                        .name(line.getMember().getName())
+//                        .position(line.getMember().getPosition())
+//                        .build())
+//                .collect(Collectors.toList());
 
-        return approvalLine.stream()
-                .map(line -> DraftApprovalLineDTO.builder()
-                        .draft_type(line.getDraftType())
-                        .sequence(line.getSequence())
-                        .id(line.getMember().getId())
-                        .name(line.getMember().getName())
-                        .position(line.getMember().getPosition())
-                        .build())
-                .collect(Collectors.toList());
+        return null;
 
     }
 }

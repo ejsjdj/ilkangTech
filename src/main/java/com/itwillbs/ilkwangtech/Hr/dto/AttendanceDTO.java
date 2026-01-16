@@ -42,7 +42,7 @@ private Long id;
                 .id(entity.getId())
                 .memberId(entity.getMember().getId())
                 .memberName(entity.getMember().getName())
-                .memberPosition(entity.getMember().getPosition())
+                .memberPosition(String.valueOf(entity.getMember().getPosition()))
                 .workDate(entity.getWorkDate())
                 .inTime(entity.getInTime())
                 .outTime(entity.getOutTime())

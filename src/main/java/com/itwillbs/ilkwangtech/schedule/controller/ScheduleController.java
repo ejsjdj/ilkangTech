@@ -1,7 +1,6 @@
 package com.itwillbs.ilkwangtech.schedule.controller;
 
-import java.util.List;
-
+import com.itwillbs.ilkwangtech.account.dto.AccountDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountDTO;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleSearchDTO;
 import com.itwillbs.ilkwangtech.schedule.service.ScheduleService;
@@ -40,7 +38,7 @@ public class ScheduleController {
 	                             @RequestParam(name = "page", defaultValue = "1") int page) { // 페이지 번호 받기
 	    
 	    // 1. 로그인 체크 (기존 코드 유지)
-	    AccountDTO.AccountLoginResponse loginMember = 
+	    AccountDTO.AccountLoginResponse loginMember =
 	            (AccountDTO.AccountLoginResponse) session.getAttribute("loginMember");
 	    if (loginMember == null) return "redirect:/account/login";
 

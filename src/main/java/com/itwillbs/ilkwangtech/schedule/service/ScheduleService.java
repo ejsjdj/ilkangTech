@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.schedule.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
+import com.itwillbs.ilkwangtech.schedule.dto.ScheduleSearchDTO;
 import com.itwillbs.ilkwangtech.schedule.entity.Schedule;
 import com.itwillbs.ilkwangtech.schedule.repository.ScheduleRepository;
 
@@ -30,13 +32,22 @@ public class ScheduleService {
 	
 	// 일정 리스트 조회
 	@Transactional(readOnly = true)
-	public Page<ScheduleDTO> getScheduleList(Long loginMemberId, ScheduleDTO params, int page) {
+	public Page<ScheduleDTO> getScheduleList(Long loginMemberId, ScheduleSearchDTO params, int page) {
+		
+		LocalDateTime startDateTime;
+	    LocalDateTime endDateTime;
         
         // 날짜 기본값 설정 (기존 코드 유지)
         if (params.getStartDate() == null) {
-            LocalDateTime now = LocalDateTime.now();
-            params.setStartDate(now.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN));
-            params.setEndDate(now.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX));
+        	startDateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+            endDateTime = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+        } else {
+        	// 사용자가 '2026-01-16'을 선택했다면?
+            // 시작: 2026-01-16 00:00:00
+            startDateTime = params.getStartDate().atStartOfDay(); 
+            
+            // 끝: 2026-01-16 23:59:59.999999 (이래야 그날 일정 다 나옴)
+            endDateTime = params.getEndDate().atTime(LocalTime.MAX);
         }
 
         // [추가] 페이징 객체 생성 (화면은 1부터 시작하므로 page-1 처리, 10개씩, 날짜순 정렬)
@@ -45,8 +56,8 @@ public class ScheduleService {
         // 리포지토리 호출
         Page<Schedule> pageResult = scheduleRepository.findMyAndCompanySchedules(
                 loginMemberId,
-                params.getStartDate(),
-                params.getEndDate(),
+                startDateTime,
+                endDateTime,
                 params.getKeyword(),
                 pageable
         );

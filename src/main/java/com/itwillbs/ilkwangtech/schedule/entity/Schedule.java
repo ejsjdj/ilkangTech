@@ -39,7 +39,7 @@ public class Schedule {
 	@Column(name = "schedule_id")
 	private Long id;
 	
-	// 작성자 (FK) - 지연 로딩 권장
+	// 작성자 (FK)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member writer;

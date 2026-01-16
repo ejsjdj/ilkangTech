@@ -7,7 +7,7 @@
     <th:block layout:fragment="style">
         <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
         <style>
-            /* 기존 스타일 유지 */
+            /* --- [기존 스타일] 캘린더 및 레이아웃 --- */
             .dashboard { display: flex; gap: 20px; height: 100%; min-height: 700px; }
             .calendar-wrapper { flex: 3; background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
             .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -27,15 +27,15 @@
             
             .profile { position: relative; }
             
-            /* [수정] 상태 버튼 스타일 보강 */
+            /* --- [기존 스타일] 버튼 및 배지 --- */
             .status-badges { display: flex; gap: 10px; margin-bottom: 15px; }
             .status-badges button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
             .status-badges button:disabled { opacity: 0.5; cursor: not-allowed; background-color: #e0e0e0; color: #888; }
             
-            .btn-work { background: #4caf50; color: #fff; } /* 출근/근무중 색상 */
-            .btn-work.off { background: #1976d2; } /* 출근전(파랑) */
+            .btn-work { background: #4caf50; color: #fff; } 
+            .btn-work.off { background: #1976d2; } 
             
-            .btn-out { background: #ff9800; color: #fff; } /* 외근/휴식 색상 */
+            .btn-out { background: #ff9800; color: #fff; } 
             .btn-out.active { background: #f57c00; border: 2px solid #e65100; } 
             
             .profile-content { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
@@ -51,16 +51,127 @@
             .card-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: block; color: #444; }
             .empty-box { height: 60px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
         
+            /* --- [기존 스타일] 뷰 전환 버튼 --- */
             .view-buttons.segmented { position: relative; display: inline-flex; background: #f1f3f5; border-radius: 8px; padding: 4px; }
             .view-buttons.segmented button { position: relative; z-index: 2; border: none; background: transparent; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; border-radius: 6px; }
             .view-buttons.segmented button.active { color: #fff; }
             .view-buttons.segmented .indicator { position: absolute; top: 4px; left: 4px; bottom: 4px; background: #4b6ef5; border-radius: 6px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; width: 0; }
+        	/* --- [커스텀 모달 스타일] --- */
+			.custom-modal-overlay {
+		        position: fixed;
+		        top: 0; left: 0; width: 100%; height: 100%;
+		        background-color: rgba(0, 0, 0, 0.4); /* 배경을 조금 더 연하게 */
+		        display: none;
+		        justify-content: center;
+		        align-items: center;
+		        z-index: 9999;
+		        backdrop-filter: blur(2px); /* 배경 살짝 흐리게 효과 */
+		    }
+		    
+		    .custom-modal-content {
+		        background-color: #fff;
+		        width: 580px; /* 너비를 조금 더 넓게 */
+		        max-width: 90%;
+		        border-radius: 20px; /* 둥근 모서리 강조 */
+		        box-shadow: 0 20px 50px rgba(0,0,0,0.15); /* 부드러운 그림자 */
+		        padding: 0;
+		        overflow: hidden;
+		        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* 부드러운 등장 애니메이션 */
+		    }
+		    
+		    /* 헤더: 선 없음, 여백 넉넉하게 */
+		    .custom-modal-header {
+		        padding: 30px 40px 10px 40px;
+		        border-bottom: none; 
+		        display: flex;
+		        justify-content: space-between;
+		        align-items: flex-start;
+		    }
+		    .custom-modal-header h5 {
+		        font-size: 1.2rem;
+		        color: #333;
+		        font-weight: 700;
+		        letter-spacing: -0.5px;
+		    }
+		    
+		    /* 바디: 입력창 디자인 */
+		    .custom-modal-body {
+		        padding: 10px 40px 20px 40px;
+		    }
+		    .form-label {
+		        font-size: 0.85rem;
+		        color: #6b7280; /* 회색 텍스트 */
+		        font-weight: 600;
+		        margin-bottom: 8px;
+		        display: block;
+		    }
+		    .custom-input {
+		        width: 100%;
+		        box-sizing: border-box; /* 패딩 포함 너비 계산 */
+		        padding: 12px 15px;
+		        font-size: 0.95rem;
+		        border: 1px solid #e5e7eb;
+		        border-radius: 12px;
+		        background-color: #f9fafb;
+		        transition: all 0.2s;
+		        outline: none;
+		        resize: none; /* 사용자 임의 크기 조절 방지 */
+		    }
+		    .custom-input:focus {
+		        background-color: #fff;
+		        border-color: #6366f1; /* 포커스시 보라색 테두리 */
+		        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); /* 포커스시 빛 번짐 효과 */
+		    }
+		    
+		    /* 푸터: 버튼 오른쪽 정렬, 선 없음 */
+		    .custom-modal-footer {
+		        padding: 10px 40px 30px 40px;
+		        border-top: none;
+		        display: flex;
+		        justify-content: flex-end;
+		        gap: 12px;
+		    }
+		    
+		    /* 버튼 스타일 */
+		    .btn-cancel {
+		        background: transparent;
+		        border: none;
+		        color: #6b7280;
+		        font-weight: 600;
+		        padding: 10px 20px;
+		        border-radius: 10px;
+		        transition: background 0.2s;
+		    }
+		    .btn-cancel:hover {
+		        background-color: #f3f4f6;
+		    }
+		    
+		    .btn-submit {
+		        background-color: #6366f1; /* 캡처와 비슷한 보라색 */
+		        color: white;
+		        border: none;
+		        padding: 12px 28px;
+		        border-radius: 10px;
+		        font-weight: 600;
+		        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+		        transition: all 0.2s;
+		    }
+		    .btn-submit:hover {
+		        background-color: #4f46e5;
+		        transform: translateY(-2px);
+		    }
+		    
+		    @keyframes slideUp {
+		        from { transform: translateY(30px); opacity: 0; }
+		        to { transform: translateY(0); opacity: 1; }
+		    }
         </style>
     </th:block>
 </head>
 <body>
 
 <div layout:fragment="content">
+    
     <div class="dashboard">
         <div class="calendar-wrapper">
             <div class="calendar-header">
@@ -90,7 +201,6 @@
         </div>
 
         <div class="right-sidebar">
-            
             <div class="status-badges">
                 <button type="button" id="btnClock" class="btn-work off" onclick="handleClock()">출근</button>
                 <button type="button" id="btnOutside" class="btn-out" onclick="handleOutside()" disabled>외근</button>
@@ -121,52 +231,53 @@
                 <span class="card-title">📢 사내 공지사항</span>
                 <div class="empty-box"></div>
             </div>
-             </div> 
-    </div>
-    
-    <div class="modal fade" id="outsideModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">외근 / 휴식 등록</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">구분</label>
-                        <select id="outsideType" class="form-select">
-                            <option value="OUT_WORK">외근</option>
-                            <option value="LEAVE">장기 휴식</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">사유 / 메모</label>
-                        <textarea id="outsideMemo" class="form-control" rows="3" placeholder="예: 거래처 미팅, 병원 진료 등 상세 사유를 입력하세요."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary" onclick="submitOutside()">등록</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        </div> 
+    </div> 
+    <div id="customModal" class="custom-modal-overlay">
+	    <div class="custom-modal-content">
+	        <div class="custom-modal-header">
+	            <h5 class="m-0">외근 / 휴식 등록</h5>
+	            <button type="button" class="btn-close" onclick="closeModal()" style="opacity: 0.3;"></button>
+	        </div>
+	        
+	        <div class="custom-modal-body">
+	            <div class="mb-4">
+	                <label class="form-label">구분</label>
+	                <select id="outsideType" class="custom-input form-select">
+	                    <option value="OUT_WORK">외근</option>
+	                    <option value="LEAVE">장기 휴식</option>
+	                </select>
+	            </div>
+	            <div class="mb-2">
+	                <label class="form-label">사유 / 메모</label>
+	                <textarea id="outsideMemo" class="custom-input form-control" rows="5" 
+	                          style="resize: none;"
+	                          placeholder="예: 거래처 미팅, 병원 진료 등 상세 사유를 입력하세요."></textarea>
+	            </div>
+	        </div>
+	
+	        <div class="custom-modal-footer">
+	            <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+	            <button type="button" class="btn-submit" onclick="submitOutside()">등록</button>
+	        </div>
+	    </div>
+	</div>
     
 </div>
 
 <th:block layout:fragment="script">
     <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        // 1. 근태 관리 로직 (JS)
-        let currentStatus = 'OFF_DUTY'; // 현재 상태 (초기값)
+        // --- 1. 근태 관리 로직 ---
+        let currentStatus = 'OFF_DUTY'; // 초기 상태
 
-        // 페이지 로드 시 현재 상태 확인
         document.addEventListener('DOMContentLoaded', function() {
             checkCurrentStatus();
         });
 
-        // 상태 조회 API 호출
+        // 1) 상태 조회
         function checkCurrentStatus() {
             fetch('/api/attendance/status')
                 .then(res => res.json())
@@ -176,50 +287,46 @@
                 .catch(err => console.error("상태 조회 실패", err));
         }
 
-        // 버튼 UI 업데이트 함수
+        // 2) UI 업데이트
         function updateButtonUI(status, memo) {
             currentStatus = status;
             const btnClock = document.getElementById('btnClock');
             const btnOutside = document.getElementById('btnOutside');
 
-            // 초기화
+            // 버튼 초기화
             btnClock.disabled = false;
             btnOutside.disabled = false;
             btnClock.classList.remove('btn-secondary', 'btn-success', 'off');
             btnOutside.classList.remove('active');
 
             if (status === 'ON_DUTY') {
-                // 근무 중
                 btnClock.textContent = '근무 중...';
-                btnClock.classList.add('btn-work'); // 초록색(CSS정의 필요하면 .btn-success 등 사용)
+                btnClock.classList.add('btn-work'); 
                 btnOutside.textContent = '외근';
                 btnOutside.disabled = false;
             } else if (status === 'OFF_DUTY') {
-                // 퇴근 상태 (출근 전)
                 btnClock.textContent = '출근';
-                btnClock.classList.add('btn-work', 'off'); // 파란색
+                btnClock.classList.add('btn-work', 'off'); 
                 btnOutside.textContent = '외근';
-                btnOutside.disabled = true; // 출근 전엔 외근 불가
+                btnOutside.disabled = true; 
             } else if (status === 'OUT_WORK' || status === 'LEAVE') {
-                // 외근 or 휴식 중
                 btnClock.textContent = '부재 중';
                 btnClock.disabled = true; 
-                btnClock.classList.add('btn-secondary'); // 회색
+                btnClock.classList.add('btn-secondary'); 
 
                 const label = (status === 'LEAVE') ? '휴식 중...' : '외근 중...';
                 btnOutside.textContent = label;
-                btnOutside.classList.add('active'); // 강조
+                btnOutside.classList.add('active'); 
             }
         }
 
-        // [출근/퇴근] 버튼 클릭
+        // 3) 출퇴근 버튼 핸들러
         function handleClock() {
             const name = document.getElementById('loginName')?.value || '';
             const pos = document.getElementById('loginPos')?.value || '';
             const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
             if (currentStatus === 'OFF_DUTY') {
-                // 출근 API
                 fetch('/api/attendance/in', { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
@@ -227,7 +334,6 @@
                         updateButtonUI(data.status);
                     });
             } else if (currentStatus === 'ON_DUTY') {
-                // 퇴근 확인
                 if(confirm(`${name} ${pos}님! 현재 ${now} 입니다. 정말 퇴근하시겠습니까?`)) {
                      fetch('/api/attendance/out', { method: 'POST' })
                         .then(res => res.json())
@@ -239,10 +345,10 @@
             }
         }
 
-        // [외근/복귀] 버튼 클릭
-        function handleOutside() {
+        // 4) 외근 버튼 핸들러 (모달 열기)
+		function handleOutside() {
             if (currentStatus === 'OUT_WORK' || currentStatus === 'LEAVE') {
-                // 복귀 처리
+                // 이미 외근 중이면 복귀 처리
                 const name = document.getElementById('loginName')?.value || '';
                 const pos = document.getElementById('loginPos')?.value || '';
                 
@@ -255,19 +361,27 @@
                         });
                 }
             } else {
-                // 외근 등록 모달 열기
-                const modalEl = document.getElementById('outsideModal');
-                const modal = new bootstrap.Modal(modalEl);
-                
-                // 입력창 초기화
-                document.getElementById('outsideMemo').value = '';
-                document.getElementById('outsideType').value = 'OUT_WORK';
-                
-                modal.show();
+                // [변경] 부트스트랩 모달 대신 커스텀 모달 열기 함수 호출
+                openModal();
             }
         }
 
-        // 모달 내 [등록] 버튼 클릭
+        // [추가] 모달 열기 함수
+        function openModal() {
+            // 입력창 초기화
+            document.getElementById('outsideMemo').value = '';
+            document.getElementById('outsideType').value = 'OUT_WORK';
+            
+            // 모달 보이기 (CSS display: flex 변경)
+            document.getElementById('customModal').style.display = 'flex';
+        }
+
+        // [추가] 모달 닫기 함수
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+        }
+
+        // [수정] 5) 모달 등록 버튼 핸들러
         function submitOutside() {
             const type = document.getElementById('outsideType').value;
             const memo = document.getElementById('outsideMemo').value;
@@ -286,16 +400,14 @@
             .then(data => {
                 alert(data.message);
                 
-                // 모달 닫기
-                const modalEl = document.getElementById('outsideModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
+                // [변경] 커스텀 모달 닫기
+                closeModal();
                 
                 updateButtonUI(data.status);
             });
         }
         
-        // 2. 캘린더 로직 (기존 코드)
+        // --- 2. 캘린더 로직 (기존 유지) ---
         const Calendar = tui.Calendar;
         const calendar = new Calendar('#calendar', {
             defaultView: 'month',
@@ -308,20 +420,15 @@
             month: { dayNames: ['일','월','화','수','목','금','토'] }
         });
 
-        // ... (이하 캘린더 관련 기존 코드들: updateCalendarTitle, view-buttons 등 동일하게 유지) ...
-        
-        /* 초기 실행 */
         window.addEventListener('load', () => {
             updateCalendarTitle();
             const monthBtn = document.querySelectorAll('.view-buttons.segmented button')[1];
             if (monthBtn) {
-                // setMonth 함수 호출로 active 처리 및 뷰 변경
                 setMonth(monthBtn);
             }
             setTimeout(() => { calendar.render(); }, 100);
         });
 
-        // ...
         function updateCalendarTitle() {
             const date = calendar.getDate();
             document.getElementById('calendarTitle').innerText = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;

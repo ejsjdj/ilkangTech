@@ -56,6 +56,14 @@ public class Attendance {
     // 퇴근 시간
     @Column(name = "out_time")
     private LocalDateTime outTime;
+    
+    // 외근 시작 시간
+    @Column(name = "go_out_time")
+    private LocalDateTime goOutTime; 
+
+    // 복귀 시간
+    @Column(name = "return_time")
+    private LocalDateTime returnTime; 
 
     // 근무 상태
     @Enumerated(EnumType.STRING)
@@ -81,6 +89,13 @@ public class Attendance {
     public void updateOutsideInfo(AttendanceStatus newStatus, String memo) {
         this.status = newStatus;
         this.memo = memo;
+        this.goOutTime = LocalDateTime.now(); 
+    }
+    
+    // 4. 복귀 처리 메서드
+    public void recordReturn() {
+        this.status = AttendanceStatus.ON_DUTY;
+        this.returnTime = LocalDateTime.now(); 
     }
 
 }

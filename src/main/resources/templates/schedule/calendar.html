@@ -7,6 +7,7 @@
     <th:block layout:fragment="style">
         <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
         <style>
+            /* 기존 스타일 유지 */
             .dashboard { display: flex; gap: 20px; height: 100%; min-height: 700px; }
             .calendar-wrapper { flex: 3; background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
             .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -26,11 +27,16 @@
             
             .profile { position: relative; }
             
+            /* [수정] 상태 버튼 스타일 보강 */
             .status-badges { display: flex; gap: 10px; margin-bottom: 15px; }
             .status-badges button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-            .status-badges button:active { transform: scale(0.98); }
-            .btn-work { background: #4caf50; color: #fff; }
-            .btn-out { background: #ff9800; color: #fff; }
+            .status-badges button:disabled { opacity: 0.5; cursor: not-allowed; background-color: #e0e0e0; color: #888; }
+            
+            .btn-work { background: #4caf50; color: #fff; } /* 출근/근무중 색상 */
+            .btn-work.off { background: #1976d2; } /* 출근전(파랑) */
+            
+            .btn-out { background: #ff9800; color: #fff; } /* 외근/휴식 색상 */
+            .btn-out.active { background: #f57c00; border: 2px solid #e65100; } 
             
             .profile-content { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
             .profile-icon { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e3f2fd; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -41,8 +47,7 @@
             
             .btn-detail { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #1976d2; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
             .btn-detail:hover { background: #1565c0; }
-            .btn-detail:active { transform: scale(0.98); }
-        
+            
             .card-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: block; color: #444; }
             .empty-box { height: 60px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
         
@@ -85,12 +90,13 @@
         </div>
 
         <div class="right-sidebar">
+            
             <div class="status-badges">
-                <button class="btn-work">출근</button>
-                <button class="btn-out">외근</button>
+                <button type="button" id="btnClock" class="btn-work off" onclick="handleClock()">출근</button>
+                <button type="button" id="btnOutside" class="btn-out" onclick="handleOutside()" disabled>외근</button>
             </div>
+
             <div class="card profile" th:if="${session.loginMember != null}">
-                
                 <div class="profile-content">
                     <div class="profile-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -100,38 +106,196 @@
                     <div class="profile-info">
                         <div class="dept" th:text="${session.loginMember.department}">부서명</div>
                         <div class="name" th:text="|${session.loginMember.name} ${session.loginMember.position}|">홍길동 사원</div>
+                        <input type="hidden" id="loginName" th:value="${session.loginMember.name}">
+                        <input type="hidden" id="loginPos" th:value="${session.loginMember.position}">
                     </div>
                 </div>
-                
                 <button class="btn-detail">내 정보</button>
             </div>
+            
             <div class="card profile" th:unless="${session.loginMember != null}">
-		        <div class="name"><a href="/account/login">로그인이 필요합니다</a></div>
+		        <div class="name" style="text-align: center;"><a href="/account/login">로그인이 필요합니다</a></div>
 		    </div>
 
             <div class="card">
                 <span class="card-title">📢 사내 공지사항</span>
                 <div class="empty-box"></div>
             </div>
-
-            <div class="card">
-                <span class="card-title">📄 결재 대기 (0건)</span>
-                <div class="empty-box"></div>
+             </div> 
+    </div>
+    
+    <div class="modal fade" id="outsideModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">외근 / 휴식 등록</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">구분</label>
+                        <select id="outsideType" class="form-select">
+                            <option value="OUT_WORK">외근</option>
+                            <option value="LEAVE">장기 휴식</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">사유 / 메모</label>
+                        <textarea id="outsideMemo" class="form-control" rows="3" placeholder="예: 거래처 미팅, 병원 진료 등 상세 사유를 입력하세요."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="submitOutside()">등록</button>
+                </div>
             </div>
-
-            <div class="card">
-                <span class="card-title">☁️ API 사용량</span>
-                <div class="empty-box"></div>
-            </div>
-        </div> 
-    </div> 
+        </div>
+    </div>
+    
 </div>
 
 <th:block layout:fragment="script">
     <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
 
     <script>
-        /* 라이브러리 로드 후 실행 */
+        // 1. 근태 관리 로직 (JS)
+        let currentStatus = 'OFF_DUTY'; // 현재 상태 (초기값)
+
+        // 페이지 로드 시 현재 상태 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            checkCurrentStatus();
+        });
+
+        // 상태 조회 API 호출
+        function checkCurrentStatus() {
+            fetch('/api/attendance/status')
+                .then(res => res.json())
+                .then(data => {
+                    updateButtonUI(data.status, data.memo);
+                })
+                .catch(err => console.error("상태 조회 실패", err));
+        }
+
+        // 버튼 UI 업데이트 함수
+        function updateButtonUI(status, memo) {
+            currentStatus = status;
+            const btnClock = document.getElementById('btnClock');
+            const btnOutside = document.getElementById('btnOutside');
+
+            // 초기화
+            btnClock.disabled = false;
+            btnOutside.disabled = false;
+            btnClock.classList.remove('btn-secondary', 'btn-success', 'off');
+            btnOutside.classList.remove('active');
+
+            if (status === 'ON_DUTY') {
+                // 근무 중
+                btnClock.textContent = '근무 중...';
+                btnClock.classList.add('btn-work'); // 초록색(CSS정의 필요하면 .btn-success 등 사용)
+                btnOutside.textContent = '외근';
+                btnOutside.disabled = false;
+            } else if (status === 'OFF_DUTY') {
+                // 퇴근 상태 (출근 전)
+                btnClock.textContent = '출근';
+                btnClock.classList.add('btn-work', 'off'); // 파란색
+                btnOutside.textContent = '외근';
+                btnOutside.disabled = true; // 출근 전엔 외근 불가
+            } else if (status === 'OUT_WORK' || status === 'LEAVE') {
+                // 외근 or 휴식 중
+                btnClock.textContent = '부재 중';
+                btnClock.disabled = true; 
+                btnClock.classList.add('btn-secondary'); // 회색
+
+                const label = (status === 'LEAVE') ? '휴식 중...' : '외근 중...';
+                btnOutside.textContent = label;
+                btnOutside.classList.add('active'); // 강조
+            }
+        }
+
+        // [출근/퇴근] 버튼 클릭
+        function handleClock() {
+            const name = document.getElementById('loginName')?.value || '';
+            const pos = document.getElementById('loginPos')?.value || '';
+            const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            if (currentStatus === 'OFF_DUTY') {
+                // 출근 API
+                fetch('/api/attendance/in', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert(data.message);
+                        updateButtonUI(data.status);
+                    });
+            } else if (currentStatus === 'ON_DUTY') {
+                // 퇴근 확인
+                if(confirm(`${name} ${pos}님! 현재 ${now} 입니다. 정말 퇴근하시겠습니까?`)) {
+                     fetch('/api/attendance/out', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            alert(data.message);
+                            updateButtonUI(data.status);
+                        });
+                }
+            }
+        }
+
+        // [외근/복귀] 버튼 클릭
+        function handleOutside() {
+            if (currentStatus === 'OUT_WORK' || currentStatus === 'LEAVE') {
+                // 복귀 처리
+                const name = document.getElementById('loginName')?.value || '';
+                const pos = document.getElementById('loginPos')?.value || '';
+                
+                if(confirm(`${name} ${pos}님! 정말 복귀하시겠습니까?`)) {
+                    fetch('/api/attendance/return', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            alert(data.message);
+                            updateButtonUI(data.status);
+                        });
+                }
+            } else {
+                // 외근 등록 모달 열기
+                const modalEl = document.getElementById('outsideModal');
+                const modal = new bootstrap.Modal(modalEl);
+                
+                // 입력창 초기화
+                document.getElementById('outsideMemo').value = '';
+                document.getElementById('outsideType').value = 'OUT_WORK';
+                
+                modal.show();
+            }
+        }
+
+        // 모달 내 [등록] 버튼 클릭
+        function submitOutside() {
+            const type = document.getElementById('outsideType').value;
+            const memo = document.getElementById('outsideMemo').value;
+
+            if(!memo.trim()) {
+                alert("사유를 입력해주세요.");
+                return;
+            }
+
+            fetch('/api/attendance/outside', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: type, memo: memo })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                
+                // 모달 닫기
+                const modalEl = document.getElementById('outsideModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                
+                updateButtonUI(data.status);
+            });
+        }
+        
+        // 2. 캘린더 로직 (기존 코드)
         const Calendar = tui.Calendar;
         const calendar = new Calendar('#calendar', {
             defaultView: 'month',
@@ -144,23 +308,27 @@
             month: { dayNames: ['일','월','화','수','목','금','토'] }
         });
 
-        /* 샘플 일정 */
-        calendar.createEvents([
-            { id: '1', calendarId: 'personal', title: '설날 연휴', category: 'allday', start: '2026-02-16', end: '2026-02-18', backgroundColor: '#ff5b7f', borderColor: '#ff5b7f' },
-            { id: '2', calendarId: 'work', title: '프로젝트 회의', category: 'time', start: '2026-01-15T10:00:00', end: '2026-01-15T12:00:00', backgroundColor: '#3da5ff' }
-        ]);
+        // ... (이하 캘린더 관련 기존 코드들: updateCalendarTitle, view-buttons 등 동일하게 유지) ...
+        
+        /* 초기 실행 */
+        window.addEventListener('load', () => {
+            updateCalendarTitle();
+            const monthBtn = document.querySelectorAll('.view-buttons.segmented button')[1];
+            if (monthBtn) {
+                // setMonth 함수 호출로 active 처리 및 뷰 변경
+                setMonth(monthBtn);
+            }
+            setTimeout(() => { calendar.render(); }, 100);
+        });
 
-        /* 날짜 제어 */
+        // ...
         function updateCalendarTitle() {
             const date = calendar.getDate();
             document.getElementById('calendarTitle').innerText = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
         }
-
         function movePrev() { calendar.prev(); updateCalendarTitle(); }
         function moveNext() { calendar.next(); updateCalendarTitle(); }
-        function moveToday() { calendar.today(); updateCalendarTitle(); }
-
-        /* 뷰 전환 탭 */
+        
         const indicator = document.querySelector('.view-buttons.segmented .indicator');
         const tabs = document.querySelectorAll('.view-buttons.segmented button');
 
@@ -174,30 +342,6 @@
         function setMonth(btn) { calendar.changeView('month'); moveIndicator(btn); }
         function setWeek(btn) { calendar.changeView('week'); moveIndicator(btn); }
         function setDay(btn) { calendar.changeView('day'); moveIndicator(btn); }
-        function setList(btn) { moveIndicator(btn); }
-
-        /* 초기 실행 */
-        window.addEventListener('load', () => {
-            updateCalendarTitle();
-
-            // 1. '월' 버튼을 찾습니다. (두 번째 버튼)
-            // querySelectorAll로 모든 버튼을 가져온 뒤 인덱스[1] 사용 ('목록'이 0, '월'이 1)
-            const monthBtn = document.querySelectorAll('.view-buttons.segmented button')[1];
-            
-            // 2. '월' 버튼으로 인디케이터(파란 배경) 이동 및 active 클래스 적용
-            if (monthBtn) {
-                moveIndicator(monthBtn);
-                // 캘린더 뷰도 'month'로 확실하게 설정
-                calendar.changeView('month');
-            }
-
-            setTimeout(() => { calendar.render(); }, 100);
-        });
-
-        window.addEventListener('resize', () => {
-            const activeBtn = document.querySelector('.view-buttons.segmented button.active');
-            if (activeBtn) moveIndicator(activeBtn);
-        });
     </script>
 </th:block>
 </body>

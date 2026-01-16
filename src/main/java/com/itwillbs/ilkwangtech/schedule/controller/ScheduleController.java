@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountDTO;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
+import com.itwillbs.ilkwangtech.schedule.dto.ScheduleSearchDTO;
 import com.itwillbs.ilkwangtech.schedule.service.ScheduleService;
 
 import jakarta.servlet.http.HttpSession;
@@ -35,7 +36,7 @@ public class ScheduleController {
 	
 	@GetMapping("/list")
 	public String scheduleListGET(Model model, HttpSession session,
-	                             @ModelAttribute("searchParams") ScheduleDTO params,
+	                             @ModelAttribute("searchParams") ScheduleSearchDTO params,
 	                             @RequestParam(name = "page", defaultValue = "1") int page) { // 페이지 번호 받기
 	    
 	    // 1. 로그인 체크 (기존 코드 유지)

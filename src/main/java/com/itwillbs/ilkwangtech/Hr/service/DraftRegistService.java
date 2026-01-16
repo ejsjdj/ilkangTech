@@ -15,27 +15,27 @@ public class DraftRegistService {
 
 
     private final DraftRegistRepository draftRegistRepository;
-    private final ModelMapper modelMapper;
+    //private final ModelMapper modelMapper;
 
-    public DraftRegistService(DraftRegistRepository draftRegistRepository, ModelMapper modelMapper) {
+    public DraftRegistService(DraftRegistRepository draftRegistRepository ) {
         this.draftRegistRepository = draftRegistRepository;
-        this.modelMapper = modelMapper;
+
     }
 
     @Transactional
     public void putDraft(DraftRegistDTO draftRegistDTO) {
 
         // 결재 목록 테이블
-        DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class);
+        // DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class);
 
         // 결재 상태 테이블
         DraftRegistEntity draftRegistEntity = new DraftRegistEntity();
-        Member member = new Member();
-
-        draftRegistEntity.setDraftEntity(draftEntity); // 결재 문서 id
-        draftRegistEntity.setMember(member); // 사원 고유 id
-        draftRegistEntity.setStatus("대기"); // 결재 상태
-        draftRegistEntity.setSequence(1L); // 결재 순서
+//        Member member = new Member();
+//
+//        draftRegistEntity.setDraftEntity(draftEntity); // 결재 문서 id
+//        draftRegistEntity.setMember(member); // 사원 고유 id
+//        draftRegistEntity.setStatus("대기"); // 결재 상태
+//        draftRegistEntity.setSequence(1L); // 결재 순서
 
         draftRegistRepository.save(draftRegistEntity);
     }

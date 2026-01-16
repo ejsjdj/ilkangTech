@@ -23,8 +23,8 @@ public interface AccountRepository extends JpaRepository<Member, Long> {
 	// email 을 기준으로 Member 엔티티와 함께 사용자 권한을 관리하는 MemberRole 엔티티도 함께 조회될 수 있도록 JPQL 을 사용하여 JOIN 구문 작성(JOIN FETCH 활용)
 	// => 이 때, Member 엔티티의 roles 에 해당하는 MemberRole 엔티티의 CommonCode 엔티티(role)까지도 JOIN 해야함
 	@Query("SELECT m FROM Member m"			// FROM 절 뒤에 테이블명 member 가 아닌 엔티티명 Member 로 지정
-			+ " JOIN FETCH m.roles r"		// Member 엔티티의 roles 컬렉션에 해당하는 MemberRole 엔티티를 즉시 로딩(= EAGER)하여 가져오기 위한 JOIN(즉, JOIN FETCH 는 연관된 엔티티까지 한꺼번에 SELECT)
-			+ " JOIN FETCH r.role"			// 중간 엔티티에 해당하는 MemberRole 내부의 CommonCode 엔티티를 다시 JOIN 해서 가져오기
+			+ " LEFT JOIN FETCH m.roles r"		// Member 엔티티의 roles 컬렉션에 해당하는 MemberRole 엔티티를 즉시 로딩(= EAGER)하여 가져오기 위한 JOIN(즉, JOIN FETCH 는 연관된 엔티티까지 한꺼번에 SELECT)
+			+ " LEFT JOIN FETCH r.role"			// 중간 엔티티에 해당하는 MemberRole 내부의 CommonCode 엔티티를 다시 JOIN 해서 가져오기
 			+ " WHERE m.employeeNumber = :employeeNumber")	// Member 엔티티의 employeeNumber(m.employeeNumber)이 메서드 파라미터로 전달된 email(:email)과 같은 조건 설정
 	// 이 때, :employereNumber 로 지정한 email 파라미터를 JPQL 에서 접근하기 위해 @Param 어노테이션 적용하여 파라미터명 지정(org.springframework.data.repository.query.Param)
 	Optional<Member> findByEmployeeNumberWithMemberRoles(@Param("employeeNumber") String employeeNumber);

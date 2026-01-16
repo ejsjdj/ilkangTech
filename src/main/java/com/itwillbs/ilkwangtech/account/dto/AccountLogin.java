@@ -18,27 +18,26 @@ import com.itwillbs.ilkwangtech.member.entity.MemberRole;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Builder
 public class AccountLogin implements UserDetails {
 	
 	private static final long serialVersionUID = 1L;
 	
-	Long id;					// 아이디
-    String name;            	// 이름
-    String employeeNumber;  	// 사원번호
-    String password;			// 비밀번호
-    int gender;          	// 성별
-    LocalDateTime joinDate;     // 입사일
-    String residentNumber;  	// 주민등록번호
-    String email;           	// 이메일
-    String phoneNumber;     	// 전화번호
-    int department;      	// 부서
-    int position;        	// 직급
-    int bank;            	// 은행
-    String accountNumber;   	// 계좌번호
-    LocalDateTime lastLogin;	// 마지막 로그인시간
-    
-    List<MemberRole> roles; 	// 사용자 권한 목록
+	private Long id;					// 아이디
+	private String name;            	// 이름
+	private String employeeNumber;  	// 사원번호
+	private String password;			// 비밀번호
+	private int gender;          	// 성별
+	private LocalDateTime hireDate;     // 입사일
+	private String residentNumber;  	// 주민등록번호
+	private String email;           	// 이메일
+	private String phoneNumber;     	// 전화번호
+	private int department;      	// 부서
+	private int position;        	// 직급
+	private int bank;            	// 은행
+	private String accountNumber;   	// 계좌번호
+	private LocalDateTime lastLogin;	// 마지막 로그인시간
+
+	private List<MemberRole> roles; 	// 사용자 권한 목록
     
     
     

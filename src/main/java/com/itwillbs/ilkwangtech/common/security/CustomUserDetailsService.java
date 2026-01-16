@@ -29,13 +29,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 		Member member = accountRepository.findByEmployeeNumberWithMemberRoles(employeeNumber)
 				.orElseThrow(() -> new UsernameNotFoundException(employeeNumber + " : + 사용자 조회 실패!"));
 
-		log.info("✅ 사용자 조회 성공");
-		log.info("  - 이름: {}", member.getName());
-		log.info("  - 이메일: {}", member.getEmail());
-		log.info("  - DB에 저장된 비밀번호 (첫 20글자): {}",
-				member.getPassword() == null ? "null" :
-						member.getPassword().substring(0, Math.min(20, member.getPassword().length())));
-				AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
+		// 매핑 수행
+		AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
+
+		// ✅ [진단 로그] 이 부분이 false라면 ModelMapper 설정 문제입니다!
+		log.info("👉 매핑 직후 DTO 비밀번호 확인: {}", accountLogin.getPassword());
+		log.info("👉 매핑 성공 여부: {}", (accountLogin.getPassword() != null));
+
 		log.info("========== loadUserByUsername 종료 ==========");
 		return accountLogin;
 	}

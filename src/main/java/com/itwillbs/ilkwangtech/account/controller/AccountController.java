@@ -68,7 +68,6 @@ public class AccountController {
         return "redirect:/";  // ← 데이터와 함께 전달
     }
 
-    // 페이징 목록 (권장)
     @GetMapping("/list")
     public String listPage(
             @PageableDefault(size = 20, direction = Sort.Direction.DESC)
@@ -81,7 +80,4 @@ public class AccountController {
 
         return "/account/list";
     }
-
-
-
 }

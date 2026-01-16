@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.account.service;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class AccountServiceImpl implements AccountService {
 
 	private final AccountRepository accountRepository;
-	private final PasswordEncoder passwordEncoder;
+	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
 
 	static int idx = 10;
@@ -39,11 +40,20 @@ public class AccountServiceImpl implements AccountService {
 		}
 
 		req.setEmployeeNumber(++idx);
-		System.out.println(req.getEmployeeNumber());
-		req.setPassword(passwordEncoder.encode(req.getPassword()));
-		Member member = accountRepository.save(modelMapper.map(req, Member.class));
+		// 3. DTO -> Entity 변환
+		Member member = modelMapper.map(req, Member.class);
+		// 4. ✅ 비밀번호 암호화 (Entity에 설정)
+		// DTO를 건드리지 않고 Member 객체의 비밀번호를 암호화해서 덮어씀
+		String rawPassword = req.getPassword();
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+		member.setPassword(encodedPassword);
+
+		// 5. DB 저장
+		Member savedMember = accountRepository.save(member);
+
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!! 여기는 서비스 " + req.getEmployeeNumber());
 		res.setSuccess(true);
-		res.setEmployeeNumber(member.getEmployeeNumber());
+		res.setEmployeeNumber(savedMember.getEmployeeNumber());
 		res.setMessage("회원가입 성공");
 
 		return res;

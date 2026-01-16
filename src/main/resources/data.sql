@@ -1,5 +1,4 @@
 
-
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'MEMBER_ROLE', '사용자권한', '사용자권한 상위코드', 'Y');
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_ADMIN', '전체 관리자 권한', '', 'Y');
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_USER', '일반 사용자 권한', '', 'Y');
@@ -13,8 +12,6 @@ INSERT INTO common_code(id, group_code, common_code, common_code_name, descripti
 
 
 -- Members 테이블 초기 데이터 (5명)
-
-
 
 -- 1. 법인장 (임원)
 INSERT INTO members (

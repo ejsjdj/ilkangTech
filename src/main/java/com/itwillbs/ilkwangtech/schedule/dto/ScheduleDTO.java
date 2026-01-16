@@ -51,8 +51,8 @@ public class ScheduleDTO {
                 .endDate(entity.getEndDate())
                 .writerId(entity.getWriter().getId())
                 .writerName(entity.getWriter().getName())
-                .writerDepartment(entity.getWriter().getDepartment())
-                .writerPosition(entity.getWriter().getPosition())
+                .writerDepartment(String.valueOf(entity.getWriter().getDepartment()))
+                .writerPosition(String.valueOf(entity.getWriter().getPosition()))
                 .build();
     }
 

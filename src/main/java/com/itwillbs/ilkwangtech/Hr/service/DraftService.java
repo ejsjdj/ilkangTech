@@ -26,7 +26,6 @@ public class DraftService {
                         .draft_title(draft.getDraft_title())
                         .draft_startTime(draft.getDraft_startDate())
                         .draft_endDate(draft.getDraft_endDate())
-                        .draft_approvalDate(draft.getDraft_approvalDate())
                         .draft_status(draft.getDraft_status())
                         .build())
                 .collect(Collectors.toList());

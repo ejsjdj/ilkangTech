@@ -29,7 +29,7 @@ public class DraftEntity {
     @Column(nullable = false)
     private String draft_content;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String draft_file;
 
     @Column(nullable = false)
@@ -37,9 +37,6 @@ public class DraftEntity {
 
     @Column(nullable = false)
     private LocalDate draft_endDate;
-
-    @Column(nullable = true)
-    private LocalDate draft_approvalDate;
 
     @Column(nullable = false)
     private String draft_status;

@@ -59,6 +59,7 @@ public class HrApprovalController {
         // 결재 순서 --> 결재 상태 테이블에 저장
 
         // 결재 상태 --> 결재 문서 테이블, 결재 상태 테이블(1차 결재자 결재 상태 컬럼)에 저장
+        //dddd
 
         System.out.println(draftRegistDTO);
 

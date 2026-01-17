@@ -56,7 +56,6 @@ public class AttendanceApiController {
     // 세션에서 MemberDTO의 ID 추출
     private Long getMemberId(HttpSession session) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
     	AccountLogin loginMember = (AccountLogin) authentication.getPrincipal();
         if (loginMember == null) throw new IllegalStateException("로그인이 필요합니다.");
         return loginMember.getId();

@@ -34,7 +34,7 @@ public class WebSecurityConfig {
 						.loginProcessingUrl("/account/login")
 						.usernameParameter("username")
 						.passwordParameter("password") // 기본값이
-						.defaultSuccessUrl("/layout/layout", true)
+						.defaultSuccessUrl("/schedule/calendar", true)
 						.failureHandler(authenticationFailureHandler)
 						.permitAll() // 로그인 관련 요청 주소를 모두 허용 경로로 등록
 				)

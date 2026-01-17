@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<form action="/account/create" method="post">
+<form action="/account/register" method="post">
 
     <div>
         <label for="name">이름</label>
@@ -19,8 +19,8 @@
         <label for="gender">성별</label>
         <select id="gender" name="gender" required>
             <option value="">선택</option>
-            <option value="남">남</option>
-            <option value="여">여</option>
+            <option value="1">남</option>
+            <option value="2">여</option>
         </select>
     </div>
 
@@ -57,28 +57,22 @@
 
     <div>
         <label for="department">부서</label>
-        <select id="department" name="department" required>
-            <option value="">선택</option>
-            <option value="개발부">개발부</option>
-            <option value="마케팅부">마케팅부</option>
-            <option value="생산부">생산부</option>
-            <option value="영업부">영업부</option>
-            <option value="인사부">인사부</option>
-            <option value="품질관리부">품질관리부</option>
-            <option value="물류관리부">물류관리부</option>
+        <select id="department" name="department">
+            <option value="">-- 선택 --</option>
+            <option th:each="dept : ${departments}"
+                    th:value="${dept.id}"
+                    th:text="${dept.departmentName}">
+            </option>
         </select>
     </div>
     <div>
         <label for="position">직급</label>
         <select id="position" name="position" required>
             <option value="">선택</option>
-            <option value="사원">사원</option>
-            <option value="대리">대리</option>
-            <option value="과장">과장</option>
-            <option value="차장">차장</option>
-            <option value="부장">부장</option>
-            <option value="이사">이사</option>
-            <option value="사장">사장</option>
+            <option th:each="pos : ${positions}"
+            th:value="${pos.id}"
+            th:text="${pos.positionName}">
+            </option>
         </select>
     </div>
 
@@ -88,16 +82,10 @@
         <label for="bank">은행</label>
         <select id="bank" name="bank" required>
             <option value="">선택</option>
-            <option value="국민은행">국민은행</option>
-            <option value="농협은행">농협은행</option>
-            <option value="우리은행">우리은행</option>
-            <option value="하나은행">하나은행</option>
-            <option value="신한은행">신한은행</option>
-            <option value="케이뱅크">케이뱅크</option>
-            <option value="카카오뱅크">카카오뱅크</option>
-            <option value="토스뱅크">토스뱅크</option>
-            <option value="기업은행">기업은행</option>
-            <option value="수협은행">수협은행</option>
+            <option th:each="bank : ${banks}"
+            th:value="${bank.id}"
+            th:text="${bank.bankName}">
+            </option>
         </select>
     </div>
 

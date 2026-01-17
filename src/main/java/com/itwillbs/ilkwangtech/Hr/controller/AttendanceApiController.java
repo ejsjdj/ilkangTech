@@ -1,6 +1,9 @@
 package com.itwillbs.ilkwangtech.Hr.controller;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.itwillbs.ilkwangtech.Hr.dto.AttendanceDTO;
 import com.itwillbs.ilkwangtech.Hr.service.AttendanceService;
-import com.itwillbs.ilkwangtech.account.dto.AccountDTO.AccountLoginResponse;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -53,9 +55,11 @@ public class AttendanceApiController {
 
     // 세션에서 MemberDTO의 ID 추출
     private Long getMemberId(HttpSession session) {
-    	AccountLoginResponse loginMember = (AccountLoginResponse) session.getAttribute("loginMember");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    	AccountLogin loginMember = (AccountLogin) authentication.getPrincipal();
         if (loginMember == null) throw new IllegalStateException("로그인이 필요합니다.");
-        return loginMember.id();
+        return loginMember.getId();
     }
 
 }

@@ -1,0 +1,50 @@
+package com.itwillbs.ilkwangtech.common.security;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@RequiredArgsConstructor
+@EnableWebSecurity
+public class WebSecurityConfig {
+
+	private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+
+	@Bean
+	public BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+		return httpSecurity
+				// 접근 권한 설정
+				.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+						.requestMatchers("/account/login", "/account/register").permitAll()
+						.anyRequest().authenticated()
+				)
+				// 로그인 설정
+				.formLogin(formLogin -> formLogin
+						.loginPage("/account/login")
+						.loginProcessingUrl("/account/login")
+						.usernameParameter("username")
+						.passwordParameter("password") // 기본값이
+						.defaultSuccessUrl("/layout/layout", true)
+						.failureHandler(authenticationFailureHandler)
+						.permitAll() // 로그인 관련 요청 주소를 모두 허용 경로로 등록
+				)
+				.csrf(csrf -> csrf.disable())
+				// 로그아웃 처리 설정
+				.logout(logoutCustomizer -> logoutCustomizer
+						.logoutUrl("/accounts/logout")
+						.logoutSuccessUrl("/")
+						.permitAll()
+				)
+				.build();
+	}
+}

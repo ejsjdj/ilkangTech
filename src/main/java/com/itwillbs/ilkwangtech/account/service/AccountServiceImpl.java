@@ -1,18 +1,16 @@
 package com.itwillbs.ilkwangtech.account.service;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountDTO;
-import com.itwillbs.ilkwangtech.account.helper.AccountHelper;
-import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
-import com.itwillbs.ilkwangtech.member.entity.Member;
-import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
+import com.itwillbs.ilkwangtech.member.entity.Member;
+
+import lombok.RequiredArgsConstructor;
 
 // 컨트롤러에서는 사용자가 요청을 하면 그 요청에 맞는 함수를 AccountService 에서 호출을 한다.
 // AccountService 에서는 컨트롤러가 받은 요청을 처리를 할때
@@ -25,67 +23,71 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
-    private final AccountRepository accountRepository;
-    private final AccountHelper accountHelper;
+	private final AccountRepository accountRepository;
+	private final BCryptPasswordEncoder passwordEncoder;
+	private final ModelMapper modelMapper;
 
-    static int idx = 0;
+	static int idx = 10;
 
-    @Override
-    public AccountDTO.AccountJoinResponse create(AccountDTO.AccountJoinRequest req) {
+	public AccountRegisterResponse register(AccountRegisterRequest req) {
 
-        // 중복검사
+		// 컨트롤러에서 올바른 값이 넘어왔다면 DB에 해당 정보가 중복되는게 있는지 확인
+		AccountRegisterResponse res = validateDuplicates(req);
+		if (res != null) {
+			return res;
+		} else {
+			res = new AccountRegisterResponse();
+		}
 
-        // 암호화
+		req.setEmployeeNumber(++idx);
+		// 3. DTO -> Entity 변환
+		Member member = modelMapper.map(req, Member.class);
+		// 4. ✅ 비밀번호 암호화 (Entity에 설정)
+		// DTO를 건드리지 않고 Member 객체의 비밀번호를 암호화해서 덮어씀
+		String rawPassword = req.getPassword();
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+		member.setPassword(encodedPassword);
 
-        // 저장
-        Member createdMember = Member.builder()
-                .name(req.name())
-                .email(req.email())
-                .accountNumber(req.accountNumber())
-                .bank(req.bank())
-                .employeeNumber(LocalDateTime.now().getYear() + "-" + (1000 + ++idx))
-                .gender(req.gender())
-                .department(req.department())
-                .password(req.password())
-                .phoneNumber(req.phoneNumber())
-                .position(req.position())
-                .residentNumber(req.residentNumber())
-                .build();
+		// 5. DB 저장
+		Member savedMember = accountRepository.save(member);
 
-        Member member = accountRepository.save(createdMember);
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!! 여기는 서비스 " + req.getEmployeeNumber());
+		res.setSuccess(true);
+		res.setEmployeeNumber(savedMember.getEmployeeNumber());
+		res.setMessage("회원가입 성공");
 
-        return null;
-    }
+		return res;
+	}
 
-    @Override
-    public AccountDTO.AccountLoginResponse login(AccountDTO.AccountLoginRequest req) {
+	private AccountRegisterResponse validateDuplicates(AccountRegisterRequest req) {
 
-        Member member = accountRepository.findByEmployeeNumberAndPassword(req.employeeNumber(), req.passWord());
+		AccountRegisterResponse res = new AccountRegisterResponse();
+		res.setSuccess(false);
 
-        AccountDTO.AccountLoginResponse res = new AccountDTO.AccountLoginResponse(
-        		member.getId(),
-                member.getName(),
-                member.getEmployeeNumber(),
-                member.getGender(),
-                member.getJoinDate(),
-                member.getResidentNumber(),
-                member.getEmail(),
-                member.getPhoneNumber(),
-                member.getDepartment(),
-                member.getPosition(),
-                member.getBank(),
-                member.getAccountNumber(),
-                member.getLastLogin()
-        );
+		// 이메일 중복 검사
+		if (accountRepository.existsByEmail(req.getEmail())) {
+			res.setMessage("이메일을 다시 확인해 주세요!");
+			return res;
+		}
 
-        return res;
-    }
+		// 전화번호 중복 검사
+		if (accountRepository.existsByPhoneNumber(req.getPhoneNumber())) {
+			res.setMessage("전화번호를 다시 확인해 주세요!");
+			return res;
+		}
 
-    @Override
-    public Page<AccountDTO.AccountListResponse> getListPage(Pageable pageable) {
-        return accountRepository.findAll(pageable)
-                .map(AccountDTO.AccountListResponse::from);
-    }
+		// 주민등록번호 중복 검사
+		if (accountRepository.existsByResidentNumber(req.getResidentNumber())) {
+			res.setMessage("이미 가입했되어 있습니다.");
+			return res;
+		}
 
+		// 계좌번호 중복 검사
+		if (accountRepository.existsByAccountNumber(req.getAccountNumber())) {
+			res.setMessage("계좌번호를 변경해주세요");
+			return res;
+		}
+		return null;
+	}
 
 }

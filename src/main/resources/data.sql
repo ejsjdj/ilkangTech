@@ -10,6 +10,43 @@ INSERT INTO common_code(id, group_code, common_code, common_code_name, descripti
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'BOARD', 'NOTICE', '공지사항', '게시판 - 공지사항', 'Y');
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'BOARD', 'FREE', '자유게시판', '게시판 - 자유게시판', 'Y');
 
+INSERT INTO members (
+    id,
+    name,
+    employee_number,
+    gender,
+    hire_date,
+    resident_number,
+    profile_photo_link,
+    email,
+    phone_number,
+    password,
+    department,
+    position,
+    bank,
+    account_number,
+    account_picture_link,
+    last_login,
+    updated_at
+) VALUES (
+             1,                                  -- id
+             '이순신',                           -- name
+             '26-00000',                           -- employee_number
+             1,                                  -- gender
+             TO_DATE('2026-01-15', 'YYYY-MM-DD'),-- hire_date (26/01/15 기준)
+             '900102-1234561',                   -- resident_number
+             NULL,                               -- profile_photo_link
+             'navma@yeoun.com',                   -- email
+             '010-1234-5672',                    -- phone_number
+             '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', -- password
+             1,                                  -- department
+             55,                                 -- position
+             0,                                  -- bank
+             '122-456-789013',                   -- account_number
+             NULL,                               -- account_picture_link
+             TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), -- last_login
+             TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9')  -- updated_at
+         );
 
 INSERT INTO members (
     id,
@@ -173,115 +210,4 @@ INSERT INTO positions (id, position_name, position_type, is_active)
 VALUES (104, '기능장', '기술직', 1);
 INSERT INTO positions (id, position_name, position_type, is_active)
 VALUES (105, '수석기능장', '기술직', 1);
-COMMIT;
--- [1] 1~50번 사원의 '회사(COMPANY)' 일정 일괄 등록
-INSERT INTO IK_SCHEDULE (
-    schedule_id,
-    member_id,
-    schedule_title,    -- 수정됨 (title -> schedule_title)
-    schedule_memo,     -- 수정됨 (content -> schedule_memo)
-    schedule_type,     -- 수정됨 (type -> schedule_type)
-    start_date,
-    end_date,
-    reg_date
-)
-SELECT
-    SEQ_SCHEDULE.NEXTVAL,
-    LEVEL,
-    '1월 전사 정기 회의',
-    '2026년 상반기 목표 공유 및 부서별 현황 발표',
-    'COMPANY',
-    TO_DATE('2026-01-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'),
-    TO_DATE('2026-01-20 11:00:00', 'YYYY-MM-DD HH24:MI:SS'),
-    SYSDATE
-FROM DUAL
-CONNECT BY LEVEL <= 50;
-
--- [2] 1~50번 사원의 '개인(PERSONAL)' 일정 일괄 등록
-INSERT INTO IK_SCHEDULE (
-    schedule_id,
-    member_id,
-    schedule_title,    -- 수정됨
-    schedule_memo,     -- 수정됨
-    schedule_type,     -- 수정됨
-    start_date,
-    end_date,
-    reg_date
-)
-SELECT
-    SEQ_SCHEDULE.NEXTVAL,
-    LEVEL,
-    '개인 연차/반차 (사원 ' || LEVEL || ')',
-    '개인 사정으로 인한 연차 사용',
-    'PERSONAL',
-    TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS') + MOD(LEVEL, 5),
-    TO_DATE('2026-01-21 18:00:00', 'YYYY-MM-DD HH24:MI:SS') + MOD(LEVEL, 5),
-    SYSDATE
-FROM DUAL
-CONNECT BY LEVEL <= 50;
-
--- DraftDocument 더미 데이터 10개 생성
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (1, '휴가신청서', '연차 신청합니다.', '개인 사정으로 인한 연차 신청', 'download/illkang/vacation_request.pdf',TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),  '승인');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file,draft_start_date, draft_end_date, draft_status)
-VALUES (1, '지출결의서', '비품 구매 건', '사무용품(A4용지 등) 구매', 'download/illkang/expense_report.docx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-17 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (1, '기안서', '신규 프로젝트 제안', 'AI 기반 서비스 도입 제안서', 'download/illkang/proposal_v1.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-03-09 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '반려');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (1, '휴가신청서', '오후 반차 신청', '병원 방문', 'download/illkang/sick.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-08-11 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),  '승인');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (2, '출장신청서', '서울 본사 출장', '업무 협의 및 미팅', 'download/illkang/business_trip.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-05-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (2, '지출결의서', '회식비 청구', '개발팀 정기 회식', 'download/illkang/receipt_01.jpg', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-05-27 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '반려');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (2, '기안서', '노후 장비 교체', '개발용 모니터 교체 요청', 'download/illkang/hardware_list.xlsx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-08 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (3, '휴가신청서', '여름 휴가 신청', '가족 여행', 'download/illkang/summer_vacation.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-18 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (3, '지출결의서', '도서 구입비', '자바 최적화 가이드 등 3권', 'download/illkang/croma/crime/candy/book_receipt.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
-
-INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (4, '기안서', '워크샵 기안', '상반기 팀 워크샵 장소 선정', 'download/illkang/vincent/workshop_plan.pptx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-07-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),  '승인');
-
--- Draft_Approval_line 더미 데이터
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('PTO', 10, 1);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('PTO', 11, 2);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('BUY', 20, 1);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('BUY', 21, 2);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('BUY', 22, 3);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('HDF', 30, 1);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('HDF', 31, 2);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('HDF', 32, 3);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('APP', 1, 1);
-
-INSERT INTO draft_approval_line (draft_type, common_id, sequence)
-VALUES ('APP', 2, 2);
-
-
--- 반영
 COMMIT;

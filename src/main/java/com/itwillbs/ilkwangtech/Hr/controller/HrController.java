@@ -25,6 +25,9 @@ public class HrController {
 //  발령 등록
     @GetMapping("/appointment/insert")
     public String getAppointmentInsert(){
+
+
+
         return "hr/appointmentInsert";
     }
 

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>전자결재</title>
+
+    <!-- 이 페이지 전용 CSS -->
+    <th:block layout:fragment="style">
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #fff;
+            }
+            th, td {
+                padding: 10px;
+                border-bottom: 1px solid #e5e7eb;
+                text-align: center;
+            }
+            th {
+                background: #f9fafb;
+                font-weight: 700;
+            }
+        </style>
+    </th:block>
+</head>
+
+<body layout:fragment = 'content'>
+    <h1>결재라인 불러오기 테스트</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>결재 양식</th>
+            <th>결재 순서</th>
+            <th>사원명</th>
+            <th>직급</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="d : ${approvalLine}">
+            <td th:text="${d.draft_type}">결재 양식</td>
+            <td th:text="${d.sequence}">순서</td>
+            <td th:text="${d.name}">이름</td>
+            <td th:text="${d.position}">직급</td>
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(approvalLine)}">
+            <td colspan="7">문서가 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div id="approvalLayer">
+        <th:block th:each="line, stat : ${approvalLine}">
+            <input type="hidden" th:name="|lines[${stat.index}].sequence|" th:value="${line.sequence}" />
+            <input type="hidden" th:name="|lines[${stat.index}].common_id|" th:value="${line.memberId}" />
+            <input type="hidden" th:name="|lines[${stat.index}].draft_type|" th:value="${line.draft_type}" />
+            <p>
+                <span th:text="${line.sequence} + '차 결재자: '"></span>
+                <span th:text="${line.name} + ' (' + ${line.position} + ')'"></span>
+            </p>
+        </th:block>
+    </div>
+
+    <th:block layout:fragment="script">
+        <script>
+            console.log("결재라인 로드됨");
+        </script>
+    </th:block>
+
+</body>
+</html>

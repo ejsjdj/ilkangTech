@@ -1,259 +1,67 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
 <meta charset="UTF-8">
 <title>ERP Dashboard</title>
+
 <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css">
 <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
 <link rel="stylesheet" th:href="@{/css/layout.css}" />
 
-<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
-<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
-<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+<th:block layout:fragment="style"></th:block>
 
 <style>
-    /* 기본 설정 */
-    html, body {
-        height: 100%;
-        margin: 0;
-        font-family: 'Noto Sans KR', sans-serif; /* 폰트 예시 */
-    }
-
-    .layout {
-        display: flex;
-        height: 100vh; /* min-height 대신 height로 고정하여 스크롤 관리 */
-        background: #f5f6f8;
-        overflow: hidden; /* 전체 화면 스크롤 방지 */
-    }
-
-    /* ===== [왼쪽] 메인 사이드바 (Navigation) ===== */
-    .sidebar {
-        width: 250px; /* 너비 약간 늘림 */
-        background: #ffffff;
-        border-right: 1px solid #e5e7eb;
-        padding: 16px 12px;
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0; /* 줄어들지 않도록 고정 */
-        overflow-y: auto; /* 메뉴가 길어지면 스크롤 */
-    }
-
-    .sidebar-nav {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    /* 네비게이션 스타일 유지 */
-    .nav-group { margin-bottom: 5px; }
+    /* 공통 스타일 */
+    html, body { height: 100%; margin: 0; font-family: 'Noto Sans KR', sans-serif; }
+    .layout { display: flex; height: 100vh; background: #f5f6f8; overflow: hidden; }
     
-    .nav-parent {
-        width: 100%;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 10px;
-        border-radius: 12px;
-        font-weight: 700;
-        color: #1f2937;
-        text-align: left;
-    }
-
+    /* 사이드바 */
+    .sidebar { width: 200px; background: #ffffff; border-right: 1px solid #e5e7eb; padding: 16px 12px; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 10px; }
+    .nav-group { margin-bottom: 5px; }
+    .nav-parent { width: 100%; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 12px; font-weight: 700; color: #1f2937; text-align: left; }
     .nav-parent:hover { background: #f3f4f6; }
     .nav-icon { width: 24px; display: inline-flex; justify-content: center; font-size: 18px; }
-    .nav-menu { font-size: 15px; }
+    .nav-menu { font-size: 13px; }
     .nav-arrow { margin-left: auto; font-size: 12px; color: #6b7280; }
-
-    .nav-children {
-        list-style: none;
-        margin: 0;
-        padding: 0 0 0 10px;
-        overflow: hidden;
-        max-height: 0;
-        opacity: 0;
-        transform: translateY(-6px);
-        transition: all 0.3s ease;
-    }
-
-    .nav-children.open {
-        max-height: 500px;  
-        opacity: 1;
-        transform: translateY(0);
-        margin-top: 5px;
-    }
-
-    .nav-child {
-        display: block;
-        padding: 8px 10px 8px 34px; /* 들여쓰기 조정 */
-        margin: 2px 0;
-        border-radius: 8px;
-        color: #4b5563;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 14px;
-    }
-
+    .nav-children { list-style: none; margin: 0; padding: 0 0 0 10px; overflow: hidden; max-height: 0; opacity: 0; transform: translateY(-6px); transition: all 0.3s ease; }
+    .nav-children.open { max-height: 500px; opacity: 1; transform: translateY(0); margin-top: 5px; }
+    .nav-child { display: block; padding: 8px 10px 8px 34px; margin: 2px 0; border-radius: 8px; color: #4b5563; text-decoration: none; font-weight: 500; font-size: 13px; }
     .nav-child:hover { background: #f3f4f6; color: #111827; }
 
-    /* ===== [가운데] 메인 영역 ===== */
-    .main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden; /* 내부 스크롤을 위해 숨김 */
-    }
-
-    /* 헤더 */
-    .header {
-        background: transparent;
-        padding: 14px 20px;
-        flex-shrink: 0;
-    }
-    
-    .header-box {
-        width: 100%;
-        height: 60px;
-        background: #ffffff;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        padding: 0 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    
-    .messenger-btn {
-        width: 40px; height: 40px;
-        border-radius: 50%;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: #f3f4f6;
-        transition: background 0.2s;
-    }
+    /* 메인 영역 */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .header { background: transparent; padding: 14px 20px; flex-shrink: 0; }
+    .header-box { width: 97.5%; height: 60px; background: #ffffff; border-radius: 16px; display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .messenger-btn { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #f3f4f6; transition: background 0.2s; }
     .messenger-btn:hover { background: #e5e7eb; }
     .messenger-btn img { width: 20px; height: 20px; }
+    .content { flex: 1; padding: 0 20px 20px 20px; overflow-y: auto; }
 
-    /* 콘텐츠 영역 (여기에 대시보드가 들어감) */
-    .content {
-        flex: 1;
-        padding: 0 20px 20px 20px;
-        overflow-y: auto; /* 세로 스크롤 허용 */
-    }
-
-    /* ===== [대시보드] 레이아웃 ===== */
-    .dashboard {
-        display: flex;
-        gap: 20px;
-        height: 100%; /* 부모 높이 꽉 채우기 */
-        min-height: 700px; /* 최소 높이 보장 */
-    }
-
-    /* 캘린더 래퍼 (왼쪽 큰 영역) */
-    .calendar-wrapper {
-        flex: 3; /* 비율 3 */
-        background: #fff;
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    }
-
-    /* 캘린더 상단 헤더 */
-    .calendar-header {
-        display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
-    }
-    .calendar-header .left { display: flex; align-items: center; gap: 15px; }
-    .calendar-header strong { font-size: 20px; color: #333; }
-    .calendar-header button {
-        border: none; background: none; font-size: 18px; cursor: pointer; color: #555;
-    }
-    
-    .badge { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
-    .badge.company { background: #ff5b7f; }
-    .badge.dept { background: #3da5ff; }
-    .badge.personal { background: #f1c40f; }
-
-    /* 캘린더 본체 */
-    #calendar {
-        flex: 1; /* 남은 높이 모두 차지 */
-        min-height: 0; /* flex 자식 스크롤 이슈 방지 */
-    }
-
-    /* ===== [오른쪽 사이드바] (클래스명 변경: sidebar -> right-sidebar) ===== */
-    .right-sidebar {
-        flex: 1; /* 비율 1 */
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        min-width: 250px; /* 너무 좁아지지 않도록 */
-    }
-
-    .card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    }
-
-    /* 프로필 */
-    .profile { text-align: center; }
-    .profile .name { font-size: 18px; margin-top: 10px; color: #333; }
-    .profile .dept { font-size: 13px; color: #888; margin-bottom: 15px; }
-    
-    .btn-group { display: flex; justify-content: center; gap: 10px; }
-    .btn-group button {
-        padding: 8px 20px; border: none; border-radius: 20px; 
-        font-weight: 600; font-size: 14px; cursor: pointer; transition: transform 0.1s;
-    }
-    .btn-group button:active { transform: scale(0.95); }
-    
-    .btn-work { background: #e8f5e9; color: #2e7d32; }
-    .btn-out { background: #fff3e0; color: #ef6c00; }
-
-    .card-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: block; color: #444; }
-    .empty-box { height: 60px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
-
-    /* 뷰 버튼 (Segmented Control) */
-    .view-buttons.segmented {
-        position: relative;
-        display: inline-flex;
-        background: #f1f3f5;
-        border-radius: 8px;
-        padding: 4px;
-    }
-    .view-buttons.segmented button {
-        position: relative; z-index: 2;
-        border: none; background: transparent;
-        padding: 6px 14px; font-size: 13px; font-weight: 600;
-        color: #666; cursor: pointer; border-radius: 6px;
-    }
-    .view-buttons.segmented button.active { color: #fff; }
-    
-    .view-buttons.segmented .indicator {
-        position: absolute; top: 4px; left: 4px; bottom: 4px;
-        background: #4b6ef5; border-radius: 6px;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        z-index: 1;
-        width: 0; /* JS로 설정됨 */
-    }
+    /* 로고 */
+    .logo { display: flex; align-items: center; padding-bottom: 20px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
+    .logo-link { display: inline-flex; align-items: center; justify-content: center; padding: 6px 10px; border-radius: 10px; transition: background 0.2s ease; }
+    .logo-link:hover { background: #f3f4f6; }
+    .logo img { width: 150px; height: 53px; object-fit: contain; margin-left: 20px; }
 </style>
 </head>
-
 <body>
 
 <div class="layout">
     <div class="sidebar">
+        <div class="logo">
+            <a href="/schedule/calendar">
+               <img th:src="@{/img/logo.png}" alt="ERP Logo"> 
+            </a>
+        </div>
         <nav class="sidebar-nav">
-
-            <div class="nav-group">
+             <div class="nav-group">
                 <button type="button" class="nav-parent" data-target="menu-hr" aria-expanded="false">
-                    <span class="nav-icon">👤</span>
-                    <span class="nav-menu">인사관리</span>
-                    <span class="nav-arrow">▸</span>
+                    <span class="nav-icon">👤</span><span class="nav-menu">인사관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-hr">
                     <li><a class="nav-child" th:href="@{/hr/employee}">사원목록</a></li>
@@ -261,12 +69,9 @@
                     <li><a class="nav-child" th:href="@{/hr/org}">조직도</a></li>
                 </ul>
             </div>
-
             <div class="nav-group">
                 <button type="button" class="nav-parent" data-target="menu-att" aria-expanded="false">
-                    <span class="nav-icon">☑️</span>
-                    <span class="nav-menu">근태관리</span>
-                    <span class="nav-arrow">▸</span>
+                    <span class="nav-icon">☑️</span><span class="nav-menu">근태관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-att">
                     <li><a class="nav-child" th:href="@{/hr/attendance/status}">출퇴근 현황</a></li>
@@ -274,12 +79,10 @@
                     <li><a class="nav-child" th:href="@{/hr/vacation}">휴가 관리</a></li>
                 </ul>
             </div>
-
+            
             <div class="nav-group">
                 <button type="button" class="nav-parent" data-target="menu-appr" aria-expanded="false">
-                    <span class="nav-icon">📋</span>
-                    <span class="nav-menu">전자결재</span>
-                    <span class="nav-arrow">▸</span>
+                    <span class="nav-icon">📋</span><span class="nav-menu">전자결재</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-appr">
                     <li><a class="nav-child" th:href="@{/approval/hr}">인사결재 목록</a></li>
@@ -289,16 +92,13 @@
 
             <div class="nav-group">
                 <button type="button" class="nav-parent" data-target="menu-sales" aria-expanded="false">
-                    <span class="nav-icon">💼</span>
-                    <span class="nav-menu">영업관리</span>
-                    <span class="nav-arrow">▸</span>
+                    <span class="nav-icon">💼</span><span class="nav-menu">영업관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-sales">
                     <li><a class="nav-child" th:href="@{/sales/orders}">수주 관리</a></li>
                     <li><a class="nav-child" th:href="@{/sales/production}">발주 관리</a></li>
                 </ul>
             </div>
-
         </nav>
     </div>
 
@@ -311,184 +111,29 @@
             </div>
         </div>
 
-        <div class="content">
-            
-            <div class="dashboard">
-
-                <div class="calendar-wrapper">
-                    <div class="calendar-header">
-                        <div class="left">
-                            <button onclick="movePrev()">◀</button>
-                            <strong id="calendarTitle">2026년 1월</strong>
-                            <button onclick="moveNext()">▶</button>
-                        </div>
-
-                        <div class="view-buttons segmented">
-                            <div class="indicator"></div>
-                            <button class="active" onclick="setList(this)">목록</button>
-                            <button onclick="setMonth(this)">월</button>
-                            <button onclick="setWeek(this)">주</button>
-                            <button onclick="setDay(this)">일</button>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: right; margin-bottom: 10px; font-size: 12px;">
-                        <span class="badge company"></span> 회사
-                        <span class="badge dept"></span> 팀
-                        <span class="badge personal"></span> 개인
-                    </div>
-
-                    <div id="calendar"></div>
-                </div>
-
-                <div class="right-sidebar">
-
-                    <div class="card profile">
-                        <div class="dept">인사팀</div>
-                        <div class="name">홍길동 사원</div>
-                        <br>
-                        <div class="btn-group">
-                            <button class="btn-work">출근</button>
-                            <button class="btn-out">외근</button>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <span class="card-title">📢 사내 공지사항</span>
-                        <div class="empty-box"></div>
-                    </div>
-
-                    <div class="card">
-                        <span class="card-title">📄 결재 대기 (0건)</span>
-                        <div class="empty-box"></div>
-                    </div>
-
-                    <div class="card">
-                        <span class="card-title">☁️ API 사용량</span>
-                        <div class="empty-box"></div>
-                    </div>
-
-                </div> </div> </div> </div> </div>
+        <div class="content" layout:fragment="content"></div>
+    </div> 
+</div>
 
 <script>
-    /* ===== 사이드바 아코디언 동작 ===== */
+    /* 사이드바 동작 */
     document.querySelectorAll(".nav-parent").forEach(function(btn){
         btn.addEventListener("click", function(){
             const targetId = btn.getAttribute("data-target");
             const currentList = document.getElementById(targetId);
-            const arrow = btn.querySelector(".nav-arrow");
-
             const willOpen = !currentList.classList.contains("open");
-
-            // 1. 다른 열린 메뉴 닫기 (하나만 열리게 하려면 주석 해제)
-            /*
-            document.querySelectorAll(".nav-children.open").forEach(function(list){
-                if (list !== currentList) {
-                    list.classList.remove("open");
-                    // 연결된 버튼 상태 초기화 로직 필요
-                }
-            });
-            */
-
             if (willOpen) {
                 currentList.classList.add("open");
                 btn.setAttribute("aria-expanded", "true");
-                if (arrow) arrow.textContent = "▾";
             } else {
                 currentList.classList.remove("open");
                 btn.setAttribute("aria-expanded", "false");
-                if (arrow) arrow.textContent = "▸";
             }
         });
     });
-
-    /* ===== Toast UI Calendar 초기화 ===== */
-    const Calendar = tui.Calendar;
-    const calendar = new Calendar('#calendar', {
-        defaultView: 'month',
-        taskView: false,
-        scheduleView: ['time'],
-        useFormPopup: false,
-        useDetailPopup: false,
-        isReadOnly: true,
-        week: { startDayOfWeek: 0, dayNames: ['일','월','화','수','목','금','토'] },
-        month: { dayNames: ['일','월','화','수','목','금','토'] }
-    });
-
-    /* 샘플 일정 */
-    calendar.createEvents([
-        {
-            id: '1',
-            calendarId: 'personal',
-            title: '설날 연휴',
-            category: 'allday',
-            start: '2026-02-16',
-            end: '2026-02-18',
-            backgroundColor: '#ff5b7f',
-            borderColor: '#ff5b7f'
-        },
-        {
-            id: '2',
-            calendarId: 'work',
-            title: '프로젝트 회의',
-            category: 'time',
-            start: '2026-01-15T10:00:00',
-            end: '2026-01-15T12:00:00',
-            backgroundColor: '#3da5ff'
-        }
-    ]);
-
-    /* ===== 날짜 제어 및 타이틀 업데이트 ===== */
-    function updateCalendarTitle() {
-        const date = calendar.getDate();
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        document.getElementById('calendarTitle').innerText = `${year}년 ${month}월`;
-    }
-
-    function movePrev() { calendar.prev(); updateCalendarTitle(); }
-    function moveNext() { calendar.next(); updateCalendarTitle(); }
-    function moveToday() { calendar.today(); updateCalendarTitle(); }
-
-    /* ===== 뷰 전환 탭 동작 ===== */
-    const indicator = document.querySelector('.view-buttons.segmented .indicator');
-    const tabs = document.querySelectorAll('.view-buttons.segmented button');
-
-    function moveIndicator(btn) {
-        const parent = btn.parentElement;
-        // relative 부모 내에서의 위치 계산
-        indicator.style.left = btn.offsetLeft + 'px';
-        indicator.style.width = btn.offsetWidth + 'px';
-
-        tabs.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    function setMonth(btn) { calendar.changeView('month'); moveIndicator(btn); }
-    function setWeek(btn) { calendar.changeView('week'); moveIndicator(btn); }
-    function setDay(btn) { calendar.changeView('day'); moveIndicator(btn); }
-    function setList(btn) { 
-        alert("목록 뷰는 별도 구현이 필요합니다."); 
-        moveIndicator(btn); 
-    }
-
-    /* 초기 실행 */
-    window.addEventListener('load', () => {
-        updateCalendarTitle();
-        // 초기 활성 탭 인디케이터 위치 잡기
-        const activeBtn = document.querySelector('.view-buttons.segmented button.active');
-        if (activeBtn) moveIndicator(activeBtn);
-        
-        // 렌더링 타이밍 이슈 방지 (잠깐 깨지는 현상 막기 위해)
-        setTimeout(() => { calendar.render(); }, 100);
-    });
-
-    // 화면 리사이즈 시 캘린더 크기 재조정
-    window.addEventListener('resize', () => {
-        const activeBtn = document.querySelector('.view-buttons.segmented button.active');
-        if (activeBtn) moveIndicator(activeBtn);
-    });
-
 </script>
+
+<th:block layout:fragment="script"></th:block>
+
 </body>
 </html>

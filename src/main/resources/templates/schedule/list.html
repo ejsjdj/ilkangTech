@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>일정 관리</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <th:block layout:fragment="style">
+        <style>
+            /* 전체 컨테이너 스타일 */
+            .page-container {
+                background: #ffffff;
+                border-radius: 8px;
+                padding: 25px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                min-height: 800px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* 타이틀 영역 */
+            .page-header {
+                margin-bottom: 20px;
+            }
+            .page-title {
+                font-size: 24px;
+                font-weight: 700;
+                color: #333;
+                margin-bottom: 10px;
+            }
+            
+            /* 검색 및 버튼 영역 스타일 수정 */
+            .search-area form {
+                display: flex;
+                align-items: center;
+                gap: 8px; /* 요소 간 간격 */
+            }
+
+            /* 날짜 입력창 너비 고정 (중요) */
+            .input-date-fixed {
+                width: 150px;
+                /* height: 25px; */
+                padding: 6px 27px 6px 10px;
+                font-size: 12px;
+                /* border: 0; */
+                color: #333;
+                display: inline-block;
+            }
+
+            /* 조회 버튼 스타일 (요청하신 파란 테두리/흰 배경) */
+            .btn-search {
+                background-color: #fff;
+                border: 1px solid #5c6bc0; /* 테마 색상 */
+                color: #5c6bc0;
+                padding: 6px 15px;
+                border-radius: 4px;
+                transition: all 0.2s;
+                white-space: nowrap;
+            }
+            .btn-search:hover {
+                background-color: #5c6bc0;
+                color: white;
+            }
+
+            /* 테이블 스타일 */
+            .custom-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+                border: 1px solid #e0e0e0;
+            }
+            .custom-table thead th {
+                background-color: #f8f9fa;
+                color: #495057;
+                font-weight: 600;
+                text-align: center;
+                border-bottom: 1px solid #dee2e6;
+                padding: 12px;
+                vertical-align: middle;
+            }
+            .custom-table tbody td {
+                padding: 12px;
+                border-bottom: 1px solid #f0f0f0;
+                color: #333;
+                vertical-align: middle;
+                text-align: center;
+            }
+            .custom-table tbody tr:hover {
+                background-color: #f1f3f5;
+            }
+            
+            /* 정렬 아이콘 */
+            .sort-icon {
+                font-size: 10px;
+                color: #aaa;
+                margin-left: 4px;
+                cursor: pointer;
+            }
+
+            /* No Data 스타일 */
+            .no-data {
+                text-align: center;
+                padding: 50px 0;
+                color: #adb5bd;
+                font-size: 14px;
+            }
+
+            /* 일정등록 버튼 스타일 */
+            .btn-custom-blue {
+                background-color: #fff;
+                border: 1px solid #5c6bc0; /* 테마 색상 */
+                color: #5c6bc0;
+                padding: 6px 15px;
+                border-radius: 4px;
+                transition: all 0.2s;
+                white-space: nowrap;
+                text-decoration: none;
+                display: inline-block;
+            }
+            .btn-custom-blue:hover {
+                background-color: #4c5bb0;
+                color: white;
+            }
+
+            /* 페이지네이션 */
+            /* 1. 목록 스타일 초기화 및 가로 정렬 */
+			.pagination {
+			    display: flex !important;        /* 무조건 가로로 배치 */
+			    list-style: none !important;     /* 앞에 점(bullet) 제거 */
+			    padding: 0;
+			    margin: 0;
+			    gap: 4px;                        /* 버튼 사이 간격 */
+			    justify-content: center;         /* 가운데 정렬 */
+			}
+			/* 2. 하단 고정 및 중앙 정렬 */
+            .pagination-container {
+                margin-top: 30px;      /* 테이블과 적당히 30px만 띄우기 */
+			    margin-bottom: 30px;   /* 바닥과도 약간 띄우기 */
+			    display: flex;
+			    justify-content: center;
+            }
+            
+            /* 1. 기본 버튼 스타일 (흰 배경, 회색 테두리) */
+			.pagination .page-link {
+			    display: flex;                   /* 글자 정중앙 배치를 위해 Flex 사용 */
+			    justify-content: center;
+			    align-items: center;
+			    width: 34px;                     /* 너비 고정 (정사각형) */
+			    height: 34px;                    /* 높이 고정 */
+			    color: #333;                     /* 글자색 */
+			    background-color: #fff;          /* 배경색 */
+			    border: 1px solid #dee2e6;       /* 테두리 */
+			    border-radius: 4px;              /* 살짝 둥근 모서리 */
+			    font-size: 14px;
+			    text-decoration: none;           /* 밑줄 제거 */
+			    transition: all 0.2s;
+			}
+			
+			/* 2. 현재 페이지 (Active) 스타일 - 파란 배경 */
+			.pagination .page-item.active .page-link {
+			    background-color: #5c6bc0;   /* 테마 색상 (파란색) */
+			    border-color: #5c6bc0;
+			    color: #fff;                 /* 글자색: 흰색 */
+			    z-index: 1;
+			    font-weight: 600;
+			}
+			
+			/* 3. 마우스 올렸을 때 (Hover) 스타일 */
+			.pagination .page-link:hover {
+			    background-color: #e9ecef;
+			    color: #5c6bc0;
+			    border-color: #dee2e6;
+			}
+			
+			/* 4. 클릭했을 때 생기는 파란 테두리(Focus) 제거 */
+			.pagination .page-link:focus {
+			    box-shadow: none;
+			}
+			
+			/* 5. 비활성화 버튼 (Disabled) 스타일 */
+			.pagination .page-item.disabled .page-link {
+			    color: #ccc;
+			    pointer-events: none;            /* 클릭 방지 */
+			    background-color: #f8f9fa;
+			}
+            /* 검색창과 버튼을 양쪽 끝으로 밀어버리는 스타일 */
+			.header-control {
+			    width: 100% !important;       /* 가로 너비 강제 100% */
+			    display: flex !important;     /* Flexbox 강제 적용 */
+			    justify-content: space-between !important; /* 양쪽 끝 정렬 */
+			    align-items: center !important; /* 수직 중앙 정렬 */
+			    padding-bottom: 10px;
+			}
+			
+			
+        </style>
+    </th:block>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="page-container">
+        
+        <div class="page-header">
+            <h2 class="page-title">일정관리</h2>
+        </div>
+
+        <div class="header-control mb-3">
+            
+            <form action="/schedule/list" method="get" id="searchForm">
+                
+                <input type="hidden" name="page" id="page" value="1">
+                
+                <input type="date" name="startDate" id="startDate" class="form-control input-date-fixed" 
+                       th:value="${searchParams.startDate != null ? #temporals.format(searchParams.startDate, 'yyyy-MM-dd') : ''}">
+                
+                <span class="fw-bold text-secondary">~</span>
+                
+                <input type="date" name="endDate" id="endDate" class="form-control input-date-fixed"
+                       th:value="${searchParams.endDate != null ? #temporals.format(searchParams.endDate, 'yyyy-MM-dd') : ''}">
+                
+                <button type="submit" class="btn btn-search">조회</button>
+                
+                <a th:href="@{/schedule/list}" class="btn btn-outline-secondary">
+                	<i class="fa-solid fa-arrows-rotate"></i>
+                </a>
+            </form>
+
+			<a th:href="@{/schedule/register}" class="btn btn-custom-blue">➕일정</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table custom-table text-center">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No.</th>
+                        <th>일정제목 <span class="sort-icon">▼</span></th>
+                        <th style="width: 80px;">종류 <span class="sort-icon">▼</span></th>
+                        <th style="width: 160px;">일정시작 <span class="sort-icon">▼</span></th>
+                        <th style="width: 160px;">일정마감 <span class="sort-icon">▼</span></th>
+                        <th style="width: 100px;">작성자 <span class="sort-icon">▼</span></th>
+                        <th>내용 <span class="sort-icon">▼</span></th>
+                        <th style="width: 80px;">상세</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${schedules.totalElements == 0}">
+				        <td colspan="8" class="no-data">
+				            등록된 일정이 없습니다.
+				        </td>
+				    </tr>
+				
+				    <tr th:each="dto, state : ${schedules}">
+				        <td th:text="${(schedules.number * schedules.size) + state.count}">1</td>
+				        
+				        <td class="fw-bold text-dark">
+				            <span th:text="${dto.title}" class="text-decoration-none text-dark">
+				                제목
+				            </span>
+				        </td>
+				        
+				        <td>
+				            <span class="badge rounded-pill" 
+				                  th:classappend="${dto.type == 'COMPANY' ? 'bg-danger' : 'bg-primary'}"
+				                  th:text="${dto.type == 'COMPANY' ? '회사' : '개인'}">
+				            </span>
+				        </td>
+				        <td th:text="${#temporals.format(dto.startDate, 'yyyy-MM-dd HH:mm')}"></td>
+				        <td th:text="${#temporals.format(dto.endDate, 'yyyy-MM-dd HH:mm')}"></td>
+				        <td th:text="${dto.writerName}"></td>
+				        
+				        <td class="text-muted text-truncate" style="max-width: 200px; margin: 0 auto;" th:text="${dto.content}">내용</td>
+				        
+				        <td>
+				            <a th:href="@{/schedule/detail(id=${dto.id})}" class="btn btn-sm btn-outline-secondary" style="font-size: 12px;">상세</a>
+				        </td>
+				    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container" th:if="${schedules.totalElements > 0}">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(1)'">«</a>
+                    </li>
+                    
+                    <li class="page-item" th:classappend="${schedules.first} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${currentPage - 1} + ')'">‹</a>
+                    </li>
+
+                    <li class="page-item" th:each="page: ${#numbers.sequence(startPage, endPage)}"
+                        th:classappend="${page == currentPage} ? 'active'">
+                        <a class="page-link" href="javascript:void(0)" th:text="${page}" th:onclick="'goPage(' + ${page} + ')'">1</a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${schedules.last} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${currentPage + 1} + ')'">›</a>
+                    </li>
+                    
+                    <li class="page-item" th:classappend="${currentPage == schedules.totalPages} ? 'disabled'">
+                        <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${schedules.totalPages} + ')'">»</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+    </div> 
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        // 페이지 이동 함수
+        function goPage(page) {
+            document.getElementById('page').value = page;
+            document.getElementById('searchForm').submit();
+        }
+    </script>
+</th:block>
+
+</body>
+</html>

@@ -86,7 +86,21 @@ INSERT INTO members (
              TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9')  -- updated_at
          );
 
-
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (11, '직원11', '26-00010', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000011', NULL, 'user11@example.com', '010-2000-0011', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000011', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (12, '직원12', '26-00011', 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000012', NULL, 'user12@example.com', '010-2000-0012', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000012', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (13, '직원13', '26-00012', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000013', NULL, 'user13@example.com', '010-2000-0013', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000013', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (14, '직원14', '26-00013', 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000014', NULL, 'user14@example.com', '010-2000-0014', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000014', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (15, '직원15', '26-00014', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000015', NULL, 'user15@example.com', '010-2000-0015', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000015', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (16, '직원16', '26-00015', 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000016', NULL, 'user16@example.com', '010-2000-0016', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000016', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (17, '직원17', '26-00016', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000017', NULL, 'user17@example.com', '010-2000-0017', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000017', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (18, '직원18', '26-00017', 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000018', NULL, 'user18@example.com', '010-2000-0018', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000018', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (19, '직원19', '26-00018', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000019', NULL, 'user19@example.com', '010-2000-0019', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000019', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (20, '직원20', '26-00019', 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000020', NULL, 'user20@example.com', '010-2000-0020', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000020', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (21, '직원21', '26-00020', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000021', NULL, 'user21@example.com', '010-2000-0021', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000021', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (22, '직원22', '26-00021', 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000022', NULL, 'user22@example.com', '010-2000-0022', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000022', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (23, '직원23', '26-00022', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000023', NULL, 'user23@example.com', '010-2000-0023', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000023', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (24, '직원24', '26-00023', 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000024', NULL, 'user24@example.com', '010-2000-0024', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000024', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
+INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, profile_photo_link, email, phone_number, password, department, position, bank, account_number, account_picture_link, last_login, updated_at) VALUES (25, '직원25', '26-00024', 1, TO_DATE('2026-01-15', 'YYYY-MM-DD'), '900101-0000025', NULL, 'user25@example.com', '010-2000-0025', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 5, 6, 4, '001-000-000025', NULL, TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'), TO_TIMESTAMP('26/01/15 17:33:39.629460100', 'RR/MM/DD HH24:MI:SS.FF9'));
 
 COMMIT;
 INSERT INTO member_role(id, member_id, member_role_id)
@@ -210,4 +224,116 @@ INSERT INTO positions (id, position_name, position_type, is_active)
 VALUES (104, '기능장', '기술직', 1);
 INSERT INTO positions (id, position_name, position_type, is_active)
 VALUES (105, '수석기능장', '기술직', 1);
+COMMIT;
+
+-- [1] 1~50번 사원의 '회사(COMPANY)' 일정 일괄 등록
+INSERT INTO IK_SCHEDULE (
+    schedule_id,
+    member_id,
+    schedule_title,    -- 수정됨 (title -> schedule_title)
+    schedule_memo,     -- 수정됨 (content -> schedule_memo)
+    schedule_type,     -- 수정됨 (type -> schedule_type)
+    start_date,
+    end_date,
+    reg_date
+)
+SELECT
+    SEQ_SCHEDULE.NEXTVAL,
+    LEVEL,
+    '1월 전사 정기 회의',
+    '2026년 상반기 목표 공유 및 부서별 현황 발표',
+    'COMPANY',
+    TO_DATE('2026-01-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    TO_DATE('2026-01-20 11:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    SYSDATE
+FROM DUAL
+    CONNECT BY LEVEL <= 2;
+
+-- [2] 1~50번 사원의 '개인(PERSONAL)' 일정 일괄 등록
+INSERT INTO IK_SCHEDULE (
+    schedule_id,
+    member_id,
+    schedule_title,    -- 수정됨
+    schedule_memo,     -- 수정됨
+    schedule_type,     -- 수정됨
+    start_date,
+    end_date,
+    reg_date
+)
+SELECT
+    SEQ_SCHEDULE.NEXTVAL,
+    LEVEL,
+    '개인 연차/반차 (사원 ' || LEVEL || ')',
+    '개인 사정으로 인한 연차 사용',
+    'PERSONAL',
+    TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS') + MOD(LEVEL, 5),
+    TO_DATE('2026-01-21 18:00:00', 'YYYY-MM-DD HH24:MI:SS') + MOD(LEVEL, 5),
+    SYSDATE
+FROM DUAL
+    CONNECT BY LEVEL <= 2;
+
+-- DraftDocument 더미 데이터 10개 생성
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+VALUES (1, '휴가신청서', '연차 신청합니다.', '개인 사정으로 인한 연차 신청', 'download/illkang/vacation_request.pdf',TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),  '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file,draft_start_date, draft_end_date, draft_status)
+VALUES (1, '지출결의서', '비품 구매 건', '사무용품(A4용지 등) 구매', 'download/illkang/expense_report.docx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-17 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+VALUES (1, '기안서', '신규 프로젝트 제안', 'AI 기반 서비스 도입 제안서', 'download/illkang/proposal_v1.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-03-09 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '반려');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+VALUES (1, '휴가신청서', '오후 반차 신청', '병원 방문', 'download/illkang/sick.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-08-11 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),  '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+VALUES (2, '출장신청서', '서울 본사 출장', '업무 협의 및 미팅', 'download/illkang/business_trip.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-05-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+VALUES (2, '지출결의서', '회식비 청구', '개발팀 정기 회식', 'download/illkang/receipt_01.jpg', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-05-27 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '반려');
+
+INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+VALUES (2, '기안서', '노후 장비 교체', '개발용 모니터 교체 요청', 'download/illkang/hardware_list.xlsx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-08 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+-- INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+-- VALUES (3, '휴가신청서', '여름 휴가 신청', '가족 여행', 'download/illkang/summer_vacation.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-06-18 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+
+-- INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+-- VALUES (3, '지출결의서', '도서 구입비', '자바 최적화 가이드 등 3권', 'download/illkang/croma/crime/candy/book_receipt.pdf', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-04-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), '승인');
+--
+-- INSERT INTO draft_document (common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
+-- VALUES (4, '기안서', '워크샵 기안', '상반기 팀 워크샵 장소 선정', 'download/illkang/vincent/workshop_plan.pptx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-07-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),  '승인');
+
+-- Draft_Approval_line 더미 데이터
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('PTO', 10, 1);
+--
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('PTO', 11, 2);
+--
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('BUY', 20, 1);
+--
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('BUY', 21, 2);
+--
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('BUY', 22, 3);
+--
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('HDF', 30, 1);
+--
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('HDF', 31, 2);
+--
+-- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+-- VALUES ('HDF', 32, 3);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('APP', 1, 1);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('APP', 2, 2);
+
+
+-- 반영
 COMMIT;

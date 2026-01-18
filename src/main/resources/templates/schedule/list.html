@@ -6,202 +6,255 @@
     <title>일정 관리</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <th:block layout:fragment="style">
-        <style>
-            /* 전체 컨테이너 스타일 */
-            .page-container {
-                background: #ffffff;
-                border-radius: 8px;
-                padding: 25px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                min-height: 800px;
-                position: relative;
-                display: flex;
-                flex-direction: column;
-            }
-
-            /* 타이틀 영역 */
-            .page-header {
-                margin-bottom: 20px;
-            }
-            .page-title {
-                font-size: 24px;
-                font-weight: 700;
-                color: #333;
-                margin-bottom: 10px;
-            }
-            
-            /* 검색 및 버튼 영역 스타일 수정 */
-            .search-area form {
-                display: flex;
-                align-items: center;
-                gap: 8px; /* 요소 간 간격 */
-            }
-
-            /* 날짜 입력창 너비 고정 (중요) */
-            .input-date-fixed {
-                width: 150px;
-                /* height: 25px; */
-                padding: 6px 27px 6px 10px;
-                font-size: 12px;
-                /* border: 0; */
-                color: #333;
-                display: inline-block;
-            }
-
-            /* 조회 버튼 스타일 (요청하신 파란 테두리/흰 배경) */
-            .btn-search {
-                background-color: #fff;
-                border: 1px solid #5c6bc0; /* 테마 색상 */
-                color: #5c6bc0;
-                padding: 6px 15px;
-                border-radius: 4px;
-                transition: all 0.2s;
-                white-space: nowrap;
-            }
-            .btn-search:hover {
-                background-color: #5c6bc0;
-                color: white;
-            }
-
-            /* 테이블 스타일 */
-            .custom-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 14px;
-                border: 1px solid #e0e0e0;
-            }
-            .custom-table thead th {
-                background-color: #f8f9fa;
-                color: #495057;
-                font-weight: 600;
-                text-align: center;
-                border-bottom: 1px solid #dee2e6;
-                padding: 12px;
-                vertical-align: middle;
-            }
-            .custom-table tbody td {
-                padding: 12px;
-                border-bottom: 1px solid #f0f0f0;
-                color: #333;
-                vertical-align: middle;
-                text-align: center;
-            }
-            .custom-table tbody tr:hover {
-                background-color: #f1f3f5;
-            }
-            
-            /* 정렬 아이콘 */
-            .sort-icon {
-                font-size: 10px;
-                color: #aaa;
-                margin-left: 4px;
-                cursor: pointer;
-            }
-
-            /* No Data 스타일 */
-            .no-data {
-                text-align: center;
-                padding: 50px 0;
-                color: #adb5bd;
-                font-size: 14px;
-            }
-
-            /* 일정등록 버튼 스타일 */
-            .btn-custom-blue {
-                background-color: #fff;
-                border: 1px solid #5c6bc0; /* 테마 색상 */
-                color: #5c6bc0;
-                padding: 6px 15px;
-                border-radius: 4px;
-                transition: all 0.2s;
-                white-space: nowrap;
-                text-decoration: none;
-                display: inline-block;
-            }
-            .btn-custom-blue:hover {
-                background-color: #4c5bb0;
-                color: white;
-            }
-
-            /* 페이지네이션 */
-            /* 1. 목록 스타일 초기화 및 가로 정렬 */
-			.pagination {
-			    display: flex !important;        /* 무조건 가로로 배치 */
-			    list-style: none !important;     /* 앞에 점(bullet) 제거 */
-			    padding: 0;
-			    margin: 0;
-			    gap: 4px;                        /* 버튼 사이 간격 */
-			    justify-content: center;         /* 가운데 정렬 */
-			}
-			/* 2. 하단 고정 및 중앙 정렬 */
-            .pagination-container {
-                margin-top: 30px;      /* 테이블과 적당히 30px만 띄우기 */
-			    margin-bottom: 30px;   /* 바닥과도 약간 띄우기 */
-			    display: flex;
-			    justify-content: center;
-            }
-            
-            /* 1. 기본 버튼 스타일 (흰 배경, 회색 테두리) */
-			.pagination .page-link {
-			    display: flex;                   /* 글자 정중앙 배치를 위해 Flex 사용 */
-			    justify-content: center;
-			    align-items: center;
-			    width: 34px;                     /* 너비 고정 (정사각형) */
-			    height: 34px;                    /* 높이 고정 */
-			    color: #333;                     /* 글자색 */
-			    background-color: #fff;          /* 배경색 */
-			    border: 1px solid #dee2e6;       /* 테두리 */
-			    border-radius: 4px;              /* 살짝 둥근 모서리 */
-			    font-size: 14px;
-			    text-decoration: none;           /* 밑줄 제거 */
-			    transition: all 0.2s;
-			}
-			
-			/* 2. 현재 페이지 (Active) 스타일 - 파란 배경 */
-			.pagination .page-item.active .page-link {
-			    background-color: #5c6bc0;   /* 테마 색상 (파란색) */
-			    border-color: #5c6bc0;
-			    color: #fff;                 /* 글자색: 흰색 */
-			    z-index: 1;
-			    font-weight: 600;
-			}
-			
-			/* 3. 마우스 올렸을 때 (Hover) 스타일 */
-			.pagination .page-link:hover {
-			    background-color: #e9ecef;
-			    color: #5c6bc0;
-			    border-color: #dee2e6;
-			}
-			
-			/* 4. 클릭했을 때 생기는 파란 테두리(Focus) 제거 */
-			.pagination .page-link:focus {
-			    box-shadow: none;
-			}
-			
-			/* 5. 비활성화 버튼 (Disabled) 스타일 */
-			.pagination .page-item.disabled .page-link {
-			    color: #ccc;
-			    pointer-events: none;            /* 클릭 방지 */
-			    background-color: #f8f9fa;
-			}
-            /* 검색창과 버튼을 양쪽 끝으로 밀어버리는 스타일 */
-			.header-control {
-			    width: 100% !important;       /* 가로 너비 강제 100% */
-			    display: flex !important;     /* Flexbox 강제 적용 */
-			    justify-content: space-between !important; /* 양쪽 끝 정렬 */
-			    align-items: center !important; /* 수직 중앙 정렬 */
-			    padding-bottom: 10px;
-			}
-			/* 헤더 클릭 가능 표시 */
-			.clickable-th {
-			    cursor: pointer;
-			    user-select: none; /* 드래그 방지 */
-			}
-			.clickable-th:hover {
-			    background-color: #e9ecef !important; /* 호버 시 색상 변경 */
-			}
-			
-        </style>
+		<style>
+		    /* 전체 컨테이너 스타일 */
+		    .page-container {
+		        background: #ffffff;
+		        border-radius: 8px;
+		        padding: 25px;
+		        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+		        min-height: 800px;
+		        position: relative;
+		        display: flex;
+		        flex-direction: column;
+		    }
+		
+		    /* 타이틀 영역 */
+		    .page-header {
+		        margin-bottom: 20px;
+		    }
+		    .page-title {
+		        font-size: 24px;
+		        font-weight: 700;
+		        color: #333;
+		        margin-bottom: 10px;
+		    }
+		    
+		    /* [수정] 검색 폼이 한 줄 전체를 차지하고 양끝 정렬 */
+		    .header-control form {
+		        width: 100%;
+		        display: flex;
+		        justify-content: space-between; 
+		        align-items: center;
+		    }
+		
+		    /* 좌측 날짜 영역 그룹 */
+		    .search-left-group {
+		        display: flex;
+		        align-items: center;
+		        gap: 8px;
+		    }
+		
+		    /* 우측 검색어+버튼 영역 그룹 */
+		    .search-right-group {
+		        display: flex;
+		        align-items: center;
+		        gap: 5px; 
+		    }
+		
+		    /* --- [핵심 수정] 모든 입력창/버튼 높이 38px로 강제 통일 --- */
+		    
+		    /* 1. 공통 스타일 (높이, 박스모델, 폰트) */
+		    .input-date-fixed,
+		    .search-select,
+		    .search-input,
+		    .btn-search,
+		    .btn-reset,
+		    .btn-custom-blue {
+		        height: 38px !important;      /* 높이 강제 통일 */
+		        line-height: 1.5;             
+		        font-size: 13px;
+		        box-sizing: border-box;       /* 테두리 포함 크기 계산 */
+		        vertical-align: middle;
+		        border-radius: 4px;
+		    }
+		
+		    /* 2. 날짜 입력창 */
+		    .input-date-fixed {
+		        width: 150px;
+		        padding: 0 10px;
+		        color: #666;
+		        display: inline-block;
+		        border: 1px solid #ced4da;
+		    }
+		
+		    /* 3. 우측 검색 드롭다운 */
+		    .search-select {
+		        width: 100px;                 /* 너비 고정 */
+		        border: 1px solid #ced4da;
+		        padding: 0 10px;
+		        background-color: #fff;
+		        cursor: pointer;
+		        outline: none;
+		    }
+		    .search-select:focus {
+		        border-color: #5c6bc0;
+		    }
+		
+		    /* 4. 우측 검색어 입력창 */
+		    .search-input {
+		        width: 220px;                 /* 너비 조정 */
+		        border: 1px solid #ced4da;
+		        padding: 0 10px;
+		        outline: none;
+		    }
+		    .search-input:focus {
+		        border-color: #5c6bc0;
+		    }
+		
+		    /* 5. 조회 버튼 */
+		    .btn-search {
+		        background-color: #fff;
+		        border: 1px solid #5c6bc0;
+		        color: #5c6bc0;
+		        padding: 0 15px;              /* 좌우 패딩만 설정 (높이는 위에서 통일됨) */
+		        transition: all 0.2s;
+		        white-space: nowrap;
+		        cursor: pointer;
+		        display: inline-flex;         /* 텍스트 중앙 정렬용 */
+		        align-items: center;
+		        justify-content: center;
+		    }
+		    .btn-search:hover {
+		        background-color: #5c6bc0;
+		        color: white;
+		    }
+		
+		    /* 6. 일정등록 버튼 (+일정) */
+		    .btn-custom-blue {
+		        background-color: #fff;
+		        border: 1px solid #5c6bc0;
+		        color: #5c6bc0;
+		        padding: 0 15px;
+		        transition: all 0.2s;
+		        white-space: nowrap;
+		        text-decoration: none;
+		        display: inline-flex;         /* 아이콘+텍스트 중앙 정렬 */
+		        align-items: center;
+		        justify-content: center;
+		        font-weight: 600;
+		    }
+		    .btn-custom-blue:hover {
+		        background-color: #5c6bc0;
+		        color: white;
+		    }
+		    
+		    /* 7. 초기화 버튼 */
+		    .btn-reset {
+		        border: 1px solid #ced4da;
+		        background: #fff;
+		        color: #666;
+		        width: 38px;                  /* 정사각형 */
+		        padding: 0;
+		        display: inline-flex;
+		        align-items: center;
+		        justify-content: center;
+		        text-decoration: none;
+		    }
+		
+		    /* --- 테이블 스타일 (기존 유지) --- */
+		    .custom-table {
+		        width: 100%;
+		        border-collapse: collapse;
+		        font-size: 14px;
+		        border: 1px solid #e0e0e0;
+		    }
+		    .custom-table thead th {
+		        background-color: #f8f9fa;
+		        color: #495057;
+		        font-weight: 600;
+		        text-align: center;
+		        border-bottom: 1px solid #dee2e6;
+		        padding: 12px;
+		        vertical-align: middle;
+		    }
+		    .custom-table tbody td {
+		        padding: 12px;
+		        border-bottom: 1px solid #f0f0f0;
+		        color: #333;
+		        vertical-align: middle;
+		        text-align: center;
+		    }
+		    .custom-table tbody tr:hover {
+		        background-color: #f1f3f5;
+		    }
+		    
+		    /* 정렬 아이콘 */
+		    .sort-icon {
+		        font-size: 10px;
+		        color: #aaa;
+		        margin-left: 4px;
+		        cursor: pointer;
+		    }
+		
+		    /* No Data 스타일 */
+		    .no-data {
+		        text-align: center;
+		        padding: 50px 0;
+		        color: #adb5bd;
+		        font-size: 14px;
+		    }
+		
+		    /* 페이지네이션 */
+		    .pagination {
+		        display: flex !important;
+		        list-style: none !important;
+		        padding: 0;
+		        margin: 0;
+		        gap: 4px;
+		        justify-content: center;
+		    }
+		    .pagination-container {
+		        margin-top: 30px;
+		        margin-bottom: 30px;
+		        display: flex;
+		        justify-content: center;
+		    }
+		    .pagination .page-link {
+		        display: flex;
+		        justify-content: center;
+		        align-items: center;
+		        width: 34px;
+		        height: 34px;
+		        color: #333;
+		        background-color: #fff;
+		        border: 1px solid #dee2e6;
+		        border-radius: 4px;
+		        font-size: 14px;
+		        text-decoration: none;
+		        transition: all 0.2s;
+		    }
+		    .pagination .page-item.active .page-link {
+		        background-color: #5c6bc0;
+		        border-color: #5c6bc0;
+		        color: #fff;
+		        z-index: 1;
+		        font-weight: 600;
+		    }
+		    .pagination .page-link:hover {
+		        background-color: #e9ecef;
+		        color: #5c6bc0;
+		        border-color: #dee2e6;
+		    }
+		    .pagination .page-link:focus { box-shadow: none; }
+		    .pagination .page-item.disabled .page-link {
+		        color: #ccc;
+		        pointer-events: none;
+		        background-color: #f8f9fa;
+		    }
+		
+		    .header-control {
+		        width: 100% !important;
+		        padding-bottom: 10px;
+		    }
+		    .clickable-th {
+		        cursor: pointer;
+		        user-select: none;
+		    }
+		    .clickable-th:hover {
+		        background-color: #e9ecef !important;
+		    }
+		</style>
     </th:block>
 </head>
 <body>
@@ -216,27 +269,45 @@
         <div class="header-control mb-3">
             
             <form action="/schedule/list" method="get" id="searchForm">
-	            <input type="hidden" name="sortField" id="sortField" th:value="${sortField}">
-	    		<input type="hidden" name="sortDir" id="sortDir" th:value="${sortDir}">
                 
+                <input type="hidden" name="sortField" id="sortField" th:value="${sortField}">
+                <input type="hidden" name="sortDir" id="sortDir" th:value="${sortDir}">
                 <input type="hidden" name="page" id="page" value="1">
-                
-                <input type="date" name="startDate" id="startDate" class="form-control input-date-fixed" 
-                       th:value="${searchParams.startDate != null ? #temporals.format(searchParams.startDate, 'yyyy-MM-dd') : ''}">
-                
-                <span class="fw-bold text-secondary">~</span>
-                
-                <input type="date" name="endDate" id="endDate" class="form-control input-date-fixed"
-                       th:value="${searchParams.endDate != null ? #temporals.format(searchParams.endDate, 'yyyy-MM-dd') : ''}">
-                
-                <button type="submit" class="btn btn-search">조회</button>
-                
-                <a th:href="@{/schedule/list}" class="btn btn-outline-secondary">
-                	<i class="fa-solid fa-arrows-rotate"></i>
-                </a>
-            </form>
 
-			<a th:href="@{/schedule/register}" class="btn btn-custom-blue">➕일정</a>
+                <div class="search-left-group">
+                    <input type="date" name="startDate" id="startDate" class="input-date-fixed" 
+                           th:value="${searchParams.startDate != null ? #temporals.format(searchParams.startDate, 'yyyy-MM-dd') : ''}">
+                    
+                    <span class="fw-bold text-secondary">~</span>
+                    
+                    <input type="date" name="endDate" id="endDate" class="input-date-fixed"
+                           th:value="${searchParams.endDate != null ? #temporals.format(searchParams.endDate, 'yyyy-MM-dd') : ''}">
+                    
+                    <button type="submit" class="btn btn-search">조회</button>
+                    
+                    <a th:href="@{/schedule/list}" class="btn-reset" title="초기화">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </a>
+                </div>
+
+                <div class="search-right-group" style="display: flex; align-items: center; gap: 4px;"> 
+                	<select name="searchType" class="search-select">
+				        <option value="title" th:selected="${searchParams.searchType == 'title'}">제목</option>
+				        <option value="type" th:selected="${searchParams.searchType == 'type'}">종류</option>
+				        <option value="content" th:selected="${searchParams.searchType == 'content'}">내용</option>
+				        <option value="writer" th:selected="${searchParams.searchType == 'writer'}">작성자</option>
+				    </select>
+				
+				    <input type="text" name="keyword" class="search-input" 
+				           placeholder="검색어 입력" 
+				           th:value="${searchParams.keyword}">
+				    
+				    <a th:href="@{/schedule/register}" class="btn btn-custom-blue">
+				        <i class="fa-solid fa-plus" style="margin-right: 4px;"></i> 일정
+				    </a>
+				</div>
+
+            </form>
         </div>
 
         <div class="table-responsive">
@@ -351,24 +422,19 @@
             document.getElementById('page').value = page;
             document.getElementById('searchForm').submit();
         }
-     	// [추가] 정렬 함수
+     	// 정렬 함수
         function goSort(field) {
             const currentField = document.getElementById('sortField').value;
             const currentDir = document.getElementById('sortDir').value;
             
-            // 같은 컬럼을 클릭하면 순서 반전 (asc <-> desc)
             if (currentField === field) {
                 document.getElementById('sortDir').value = (currentDir === 'asc') ? 'desc' : 'asc';
             } else {
-                // 다른 컬럼을 클릭하면 해당 컬럼으로 변경하고 내림차순(desc) 초기화
                 document.getElementById('sortField').value = field;
                 document.getElementById('sortDir').value = 'desc';
             }
 
-            // 정렬 조건이 바뀌면 1페이지로 이동하는 것이 국룰
             document.getElementById('page').value = 1;
-            
-            // 폼 제출
             document.getElementById('searchForm').submit();
         }
     </script>

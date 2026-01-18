@@ -16,5 +16,7 @@ public class ScheduleSearchDTO {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate endDate;
 	
+	private String searchType;
+	
 	private String keyword;
 }

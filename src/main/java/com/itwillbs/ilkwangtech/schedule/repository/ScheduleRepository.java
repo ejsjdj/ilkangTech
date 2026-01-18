@@ -20,21 +20,34 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
      * 3. 검색어: 제목에 키워드 포함 (옵션)
      */
 	@Query(value = "SELECT s FROM Schedule s " +
-		            "JOIN FETCH s.writer w " +
-		            "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
-		            "AND (s.startDate BETWEEN :start AND :end) " +
-		            "AND (:keyword IS NULL OR s.title LIKE %:keyword%)",
-		    countQuery = "SELECT count(s) FROM Schedule s " +
-		                 "JOIN s.writer w " +
-		                 "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
-		                 "AND (s.startDate BETWEEN :start AND :end) " +
-		                 "AND (:keyword IS NULL OR s.title LIKE %:keyword%)")
-		Page<Schedule> findMyAndCompanySchedules(
-		     @Param("loginId") Long loginId,
-		     @Param("start") LocalDateTime start,
-		     @Param("end") LocalDateTime end,
-		     @Param("keyword") String keyword,
-		     Pageable pageable
-		);
+            "JOIN FETCH s.writer w " +
+            "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
+            "AND (s.startDate BETWEEN :start AND :end) " +
+            "AND (" +
+            "   (:keyword IS NULL OR :keyword = '') OR " +
+            "   (:searchType = 'title' AND s.title LIKE %:keyword%) OR " +
+            "   (:searchType = 'content' AND s.content LIKE %:keyword%) OR " +
+            "   (:searchType = 'writer' AND w.name LIKE %:keyword%) OR " +
+            "   (:searchType = 'type' AND s.type LIKE %:keyword%) " + // [여기 추가됨]
+            ")",
+    countQuery = "SELECT count(s) FROM Schedule s " +
+                 "JOIN s.writer w " +
+                 "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
+                 "AND (s.startDate BETWEEN :start AND :end) " +
+                 "AND (" +
+                 "   (:keyword IS NULL OR :keyword = '') OR " +
+                 "   (:searchType = 'title' AND s.title LIKE %:keyword%) OR " +
+                 "   (:searchType = 'content' AND s.content LIKE %:keyword%) OR " +
+                 "   (:searchType = 'writer' AND w.name LIKE %:keyword%) OR " +
+                 "   (:searchType = 'type' AND s.type LIKE %:keyword%) " + // [여기 추가됨]
+                 ")")
+    Page<Schedule> findMyAndCompanySchedules(
+         @Param("loginId") Long loginId,
+         @Param("start") LocalDateTime start,
+         @Param("end") LocalDateTime end,
+         @Param("keyword") String keyword,
+         @Param("searchType") String searchType,
+         Pageable pageable
+    );
 	
 }

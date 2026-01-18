@@ -46,6 +46,18 @@ public class ScheduleService {
 	        startDateTime = params.getStartDate().atStartOfDay(); 
 	        endDateTime = params.getEndDate().atTime(LocalTime.MAX);
 	    }
+	    
+	    // 검색 카테고리 종류(공유 범위) 부분 추가
+	    String dbKeyword = params.getKeyword();
+	    
+	    if ("type".equals(params.getSearchType()) && dbKeyword != null) {
+	        String k = dbKeyword.trim();
+	        if ("회사".equals(k)) {
+	            dbKeyword = "COMPANY"; // 임시 변수만 변경
+	        } else if ("개인".equals(k)) {
+	            dbKeyword = "PERSONAL"; // 임시 변수만 변경
+	        }
+	    }
 
 	    // Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("startDate").ascending());
 	    
@@ -54,7 +66,8 @@ public class ScheduleService {
 	            loginMemberId,
 	            startDateTime,
 	            endDateTime,
-	            params.getKeyword(),
+	            dbKeyword,
+	            params.getSearchType(), // [추가] DTO에서 꺼내서 전달
 	            pageable 
 	    );
 

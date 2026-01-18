@@ -25,10 +25,10 @@ public class DraftService {
         return drafts.stream()
                 .map(draft -> DraftDTO.builder()
                         .draft_id(draft.getDraft_id())
-                        .draft_title(draft.getDraft_title())
-                        .draft_startTime(draft.getDraft_startDate())
-                        .draft_endDate(draft.getDraft_endDate())
-                        .draft_status(draft.getDraft_status())
+                        .draft_title(draft.getDraftTitle())
+                        .draft_startTime(draft.getDraftStartDate())
+                        .draft_endDate(draft.getDraftEndDate())
+                        .draft_status(draft.getDraftStatus())
                         .build())
                 .collect(Collectors.toList());
     }

@@ -229,7 +229,9 @@
                 document.getElementById('approver3').value
             ];
 
-            console.log(draftData, draftApprover);
+            draftData.draftApprover = draftApprover;
+
+            console.log(draftData);
 
             // 전송
             try {

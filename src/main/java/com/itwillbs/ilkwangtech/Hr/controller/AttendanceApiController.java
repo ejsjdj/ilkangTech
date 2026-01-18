@@ -1,9 +1,11 @@
 package com.itwillbs.ilkwangtech.Hr.controller;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.itwillbs.ilkwangtech.Hr.dto.AttendanceDTO;
 import com.itwillbs.ilkwangtech.Hr.service.AttendanceService;
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -22,43 +24,73 @@ import lombok.RequiredArgsConstructor;
 public class AttendanceApiController {
 
     private final AttendanceService attendanceService;
+    
+    // 시간 포맷 
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("a hh:mm");
 
     // 1. 상태 조회
     @GetMapping("/status")
-    public ResponseEntity<AttendanceDTO> getStatus(HttpSession session) {
-        return ResponseEntity.ok(attendanceService.getTodayStatus(getMemberId(session)));
+    public ResponseEntity<AttendanceDTO> getStatus(@AuthenticationPrincipal AccountLogin loginMember) {
+        return ResponseEntity.ok(attendanceService.getTodayStatus(loginMember.getId()));
     }
 
     // 2. 출근
     @PostMapping("/in")
-    public ResponseEntity<AttendanceDTO> clockIn(HttpSession session) {
-        return ResponseEntity.ok(attendanceService.clockIn(getMemberId(session)));
+    public ResponseEntity<AttendanceDTO> clockIn(@AuthenticationPrincipal AccountLogin loginMember) {
+        // (1) 서비스 로직 실행 (DB 저장)
+        AttendanceDTO result = attendanceService.clockIn(loginMember.getId());
+        
+        // (2) 메시지 덮어쓰기 (숫자 55 대신 한글 직급 사용)
+        String time = LocalDateTime.now().format(timeFormatter);
+        String message = String.format("반갑습니다 %s %s님! %s 분 출근입니다.", 
+                loginMember.getName(), loginMember.getPosition(), time);
+        
+        result.setMessage(message); // DTO에 새 메시지 장착
+
+        return ResponseEntity.ok(result);
     }
 
     // 3. 퇴근
     @PostMapping("/out")
-    public ResponseEntity<AttendanceDTO> clockOut(HttpSession session) {
-        return ResponseEntity.ok(attendanceService.clockOut(getMemberId(session)));
+    public ResponseEntity<AttendanceDTO> clockOut(@AuthenticationPrincipal AccountLogin loginMember) {
+        AttendanceDTO result = attendanceService.clockOut(loginMember.getId());
+
+        String time = LocalDateTime.now().format(timeFormatter);
+        String message = String.format("수고하셨습니다 %s %s님! %s 분 퇴근 처리되었습니다.", 
+                loginMember.getName(), loginMember.getPosition(), time);
+        
+        result.setMessage(message);
+
+        return ResponseEntity.ok(result);
     }
 
     // 4. 외근 등록
     @PostMapping("/outside")
-    public ResponseEntity<AttendanceDTO> goOutside(@RequestBody AttendanceDTO params, HttpSession session) {
-        return ResponseEntity.ok(attendanceService.goOutside(getMemberId(session), params));
+    public ResponseEntity<AttendanceDTO> goOutside(@RequestBody AttendanceDTO params, 
+                                                   @AuthenticationPrincipal AccountLogin loginMember) {
+        AttendanceDTO result = attendanceService.goOutside(loginMember.getId(), params);
+
+        String time = LocalDateTime.now().format(timeFormatter);
+        String reason = params.getMemo(); // 사유
+        String message = String.format("%s %s님! 외근(%s) 사유로 %s분에 등록되었습니다.", 
+                loginMember.getName(), loginMember.getPosition(), reason, time);
+        
+        result.setMessage(message);
+
+        return ResponseEntity.ok(result);
     }
 
     // 5. 복귀
     @PostMapping("/return")
-    public ResponseEntity<AttendanceDTO> comeBack(HttpSession session) {
-        return ResponseEntity.ok(attendanceService.comeBack(getMemberId(session)));
-    }
+    public ResponseEntity<AttendanceDTO> comeBack(@AuthenticationPrincipal AccountLogin loginMember) {
+        AttendanceDTO result = attendanceService.comeBack(loginMember.getId());
 
-    // 세션에서 MemberDTO의 ID 추출
-    private Long getMemberId(HttpSession session) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    	AccountLogin loginMember = (AccountLogin) authentication.getPrincipal();
-        if (loginMember == null) throw new IllegalStateException("로그인이 필요합니다.");
-        return loginMember.getId();
-    }
+        String time = LocalDateTime.now().format(timeFormatter);
+        String message = String.format("%s %s님! %s 분 복귀입니다. 어서오세요!", 
+                loginMember.getName(), loginMember.getPosition(), time);
+        
+        result.setMessage(message);
 
+        return ResponseEntity.ok(result);
+    }
 }

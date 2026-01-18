@@ -8,7 +8,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.entity.Position;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
+import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
+import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 
 import lombok.extern.log4j.Log4j2;
@@ -22,15 +26,46 @@ public class CustomUserDetailsService implements UserDetailsService {
 	private final AccountRepository accountRepository;
 	private final ModelMapper modelMapper;
 	
+	// 부서, 직급 관련 주입
+	private final DepartmentRepository departmentRepository;
+    private final PositionRepository positionRepository;
+	
 	@Override
 	public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
 		log.info("========== loadUserByUsername 시작 ==========");
 		log.info("검색할 사원번호: {}", employeeNumber);
+		
+		// 회원 정보 조회
 		Member member = accountRepository.findByEmployeeNumberWithMemberRoles(employeeNumber)
 				.orElseThrow(() -> new UsernameNotFoundException(employeeNumber + " : + 사용자 조회 실패!"));
 
 		// 매핑 수행
 		AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
+		
+		// 부서 이름 변환
+        int deptId = member.getDepartment(); 
+        if (deptId > 0) { 
+            Department dept = departmentRepository.findById(deptId).orElse(null);
+            
+            if (dept != null) {
+                // 로그인 후 AccountLogin 에서 문자로 변환
+                accountLogin.setDepartment(dept.getDepartmentName()); 
+            }
+        }
+
+        // 직급 이름 변환
+        int posId = member.getPosition(); 
+        if (posId > 0) { 
+            Position pos = positionRepository.findById(posId).orElse(null);
+            
+            if (pos != null) {
+                // 로그인 후 AccountLogin 에서 문자로 변환
+                accountLogin.setPosition(pos.getPositionName());
+            }
+        }
+
+        log.info("최종 변환된 부서: {}", accountLogin.getDepartment());
+        log.info("최종 변환된 직급: {}", accountLogin.getPosition());
 
 		// ✅ [진단 로그] 이 부분이 false라면 ModelMapper 설정 문제입니다!
 		log.info("👉 매핑 직후 DTO 비밀번호 확인: {}", accountLogin.getPassword());

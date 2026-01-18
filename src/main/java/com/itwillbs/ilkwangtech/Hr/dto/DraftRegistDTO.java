@@ -42,5 +42,4 @@ public class DraftRegistDTO {
         this.draftFile = draftFile;
         this.draftStatus = draftStatus;
     }
-
 }

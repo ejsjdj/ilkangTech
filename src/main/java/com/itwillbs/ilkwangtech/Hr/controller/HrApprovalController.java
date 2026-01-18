@@ -7,7 +7,10 @@ import com.itwillbs.ilkwangtech.Hr.repository.DraftRepository;
 import com.itwillbs.ilkwangtech.Hr.service.DraftApprovalLineService;
 import com.itwillbs.ilkwangtech.Hr.service.DraftRegistService;
 import com.itwillbs.ilkwangtech.Hr.service.DraftService;
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.common.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -46,23 +49,10 @@ public class HrApprovalController {
     // 결재 문서 테이블에 정보 저장
     @PostMapping("/register")
     @ResponseBody
-    public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO){
-        // 결재 문서 타입 --> 결재 문서 테이블에 저장
-        // 결재 문서 제목 --> 결재 문서 테이블에 저장
-        // 결재 문서 내용 --> 결재 문서 테이블에 저장
-        // 결재 문서 시작일 --> 결재 문서 테이블에 저장
-        // 결재 문서 만료일 --> 결재 문서 테이블에 저장
-        // 결재 문서 첨부파일 --> 결재 문서 테이블에 저장
+    public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO, @AuthenticationPrincipal AccountLogin accountLogin){
+        Long userId = accountLogin.getId();
 
-        // 결재 문서 id --> 결재 상태 테이블에 저장
-        // 결재자 id --> 결재 상태 테이블에 저장
-        // 결재 순서 --> 결재 상태 테이블에 저장
-
-        // 결재 상태 --> 결재 문서 테이블, 결재 상태 테이블(1차 결재자 결재 상태 컬럼)에 저장
-
-        System.out.println(draftRegistDTO);
-
-        draftRegistService.putDraft(draftRegistDTO);
+        draftRegistService.putDraft(draftRegistDTO, userId);
     }
 
     // 결재 승인/반려

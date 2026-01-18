@@ -21,24 +21,24 @@ public class DraftEntity {
     private Member member;
 
     @Column(nullable = true)
-    private String draft_type;
+    private String draftType;
 
     @Column(nullable = true)
-    private String draft_title;
+    private String draftTitle;
 
     @Column(nullable = true)
-    private String draft_content;
+    private String draftContent;
 
     @Column(nullable = true)
-    private String draft_file;
+    private String draftFile;
 
     @Column(nullable = true)
-    private LocalDate draft_startDate;
+    private LocalDate draftStartDate;
 
     @Column(nullable = true)
-    private LocalDate draft_endDate;
+    private LocalDate draftEndDate;
 
     @Column(nullable = true)
-    private String draft_status;
+    private String draftStatus;
 
 }

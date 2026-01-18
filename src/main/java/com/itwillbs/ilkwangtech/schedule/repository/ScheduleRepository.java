@@ -19,17 +19,22 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
      * 2. 날짜: 시작일이 검색 기간(start ~ end) 사이에 존재
      * 3. 검색어: 제목에 키워드 포함 (옵션)
      */
-	@Query("SELECT s FROM Schedule s " +
-	           "JOIN FETCH s.writer w " +
-	           "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
-	           "AND (s.startDate BETWEEN :start AND :end) " +
-	           "AND (:keyword IS NULL OR s.title LIKE %:keyword%)") // ORDER BY 제거 (Pageable이 처리)
-	    Page<Schedule> findMyAndCompanySchedules(
-	            @Param("loginId") Long loginId,
-	            @Param("start") LocalDateTime start,
-	            @Param("end") LocalDateTime end,
-	            @Param("keyword") String keyword,
-	            Pageable pageable // 페이징 정보 추가
-	    );
+	@Query(value = "SELECT s FROM Schedule s " +
+		            "JOIN FETCH s.writer w " +
+		            "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
+		            "AND (s.startDate BETWEEN :start AND :end) " +
+		            "AND (:keyword IS NULL OR s.title LIKE %:keyword%)",
+		    countQuery = "SELECT count(s) FROM Schedule s " +
+		                 "JOIN s.writer w " +
+		                 "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
+		                 "AND (s.startDate BETWEEN :start AND :end) " +
+		                 "AND (:keyword IS NULL OR s.title LIKE %:keyword%)")
+		Page<Schedule> findMyAndCompanySchedules(
+		     @Param("loginId") Long loginId,
+		     @Param("start") LocalDateTime start,
+		     @Param("end") LocalDateTime end,
+		     @Param("keyword") String keyword,
+		     Pageable pageable
+		);
 	
 }

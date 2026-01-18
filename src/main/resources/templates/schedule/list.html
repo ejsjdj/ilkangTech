@@ -192,7 +192,14 @@
 			    align-items: center !important; /* 수직 중앙 정렬 */
 			    padding-bottom: 10px;
 			}
-			
+			/* 헤더 클릭 가능 표시 */
+			.clickable-th {
+			    cursor: pointer;
+			    user-select: none; /* 드래그 방지 */
+			}
+			.clickable-th:hover {
+			    background-color: #e9ecef !important; /* 호버 시 색상 변경 */
+			}
 			
         </style>
     </th:block>
@@ -209,6 +216,8 @@
         <div class="header-control mb-3">
             
             <form action="/schedule/list" method="get" id="searchForm">
+	            <input type="hidden" name="sortField" id="sortField" th:value="${sortField}">
+	    		<input type="hidden" name="sortDir" id="sortDir" th:value="${sortDir}">
                 
                 <input type="hidden" name="page" id="page" value="1">
                 
@@ -234,15 +243,40 @@
             <table class="table custom-table text-center">
                 <thead>
                     <tr>
-                        <th style="width: 60px;">No.</th>
-                        <th>일정제목 <span class="sort-icon">▼</span></th>
-                        <th style="width: 80px;">종류 <span class="sort-icon">▼</span></th>
-                        <th style="width: 160px;">일정시작 <span class="sort-icon">▼</span></th>
-                        <th style="width: 160px;">일정마감 <span class="sort-icon">▼</span></th>
-                        <th style="width: 100px;">작성자 <span class="sort-icon">▼</span></th>
-                        <th>내용 <span class="sort-icon">▼</span></th>
-                        <th style="width: 80px;">상세</th>
-                    </tr>
+				        <th style="width: 60px;">No.</th>
+				        
+				        <th class="clickable-th" onclick="goSort('title')">
+				            일정제목 
+				            <span class="sort-icon" th:if="${sortField == 'title'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+				            <span class="sort-icon text-muted" th:unless="${sortField == 'title'}">▽</span>
+				        </th>
+				        
+				        <th style="width: 80px;" class="clickable-th" onclick="goSort('type')">
+				            종류 
+				            <span class="sort-icon" th:if="${sortField == 'type'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+				            <span class="sort-icon text-muted" th:unless="${sortField == 'type'}">▽</span>
+				        </th>
+				        
+				        <th style="width: 160px;" class="clickable-th" onclick="goSort('startDate')">
+				            일정시작 
+				            <span class="sort-icon" th:if="${sortField == 'startDate'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+				            <span class="sort-icon text-muted" th:unless="${sortField == 'startDate'}">▽</span>
+				        </th>
+				        
+				        <th style="width: 160px;" class="clickable-th" onclick="goSort('endDate')">
+				            일정마감 
+				            <span class="sort-icon" th:if="${sortField == 'endDate'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+				            <span class="sort-icon text-muted" th:unless="${sortField == 'endDate'}">▽</span>
+				        </th>
+				        
+				        <th style="width: 100px;" class="clickable-th" onclick="goSort('writer.name')">
+				            작성자 
+				            <span class="sort-icon" th:if="${sortField == 'writer.name'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+				            <span class="sort-icon text-muted" th:unless="${sortField == 'writer.name'}">▽</span>
+				        </th>
+				        
+				        <th>내용</th> <th style="width: 80px;">상세</th>
+				    </tr>
                 </thead>
                 <tbody>
                     <tr th:if="${schedules.totalElements == 0}">
@@ -315,6 +349,26 @@
         // 페이지 이동 함수
         function goPage(page) {
             document.getElementById('page').value = page;
+            document.getElementById('searchForm').submit();
+        }
+     	// [추가] 정렬 함수
+        function goSort(field) {
+            const currentField = document.getElementById('sortField').value;
+            const currentDir = document.getElementById('sortDir').value;
+            
+            // 같은 컬럼을 클릭하면 순서 반전 (asc <-> desc)
+            if (currentField === field) {
+                document.getElementById('sortDir').value = (currentDir === 'asc') ? 'desc' : 'asc';
+            } else {
+                // 다른 컬럼을 클릭하면 해당 컬럼으로 변경하고 내림차순(desc) 초기화
+                document.getElementById('sortField').value = field;
+                document.getElementById('sortDir').value = 'desc';
+            }
+
+            // 정렬 조건이 바뀌면 1페이지로 이동하는 것이 국룰
+            document.getElementById('page').value = 1;
+            
+            // 폼 제출
             document.getElementById('searchForm').submit();
         }
     </script>

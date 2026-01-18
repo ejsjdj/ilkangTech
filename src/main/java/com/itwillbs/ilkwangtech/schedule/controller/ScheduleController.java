@@ -1,12 +1,19 @@
 package com.itwillbs.ilkwangtech.schedule.controller;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +33,12 @@ import lombok.extern.log4j.Log4j2;
 public class ScheduleController {
 
 	private final ScheduleService scheduleService;
+	
+	// [추가 1] 빈 문자열("")을 null로 변환하여 LocalDate 바인딩 에러 방지
+	@InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+    }
 
 	@GetMapping("/calendar")
 	public String calendarGET() {
@@ -37,17 +50,21 @@ public class ScheduleController {
 	@GetMapping("/list")
 	public String scheduleListGET(Model model, HttpSession session,
 								  @ModelAttribute("searchParams") ScheduleSearchDTO params,
-								  @RequestParam(name = "page", defaultValue = "1") int page) { // 페이지 번호 받기
+								  @RequestParam(name = "page", defaultValue = "1") int page,
+								  @RequestParam(name = "sortField", defaultValue = "startDate") String sortField,
+	                              @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) { // 페이지 번호 받기
 
 		// 1. 로그인 체크 (기존 코드 유지)
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
 		AccountLogin loginMember = (AccountLogin) authentication.getPrincipal();
-
 		if (loginMember == null) return "redirect:/account/login";
+		
+		// 정렬 생성
+		Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+	    Pageable pageable = PageRequest.of(page - 1, 10, sort);
 
 		// 2. 서비스 호출
-		Page<ScheduleDTO> result = scheduleService.getScheduleList(loginMember.getId(), params, page);
+		Page<ScheduleDTO> result = scheduleService.getScheduleList(loginMember.getId(), params, pageable);
 
 		// 3. 모델에 담기
 		model.addAttribute("schedules", result); // Page 객체 자체를 넘김
@@ -64,6 +81,9 @@ public class ScheduleController {
 		model.addAttribute("startPage", startPage);
 		model.addAttribute("endPage", endPage);
 		model.addAttribute("currentPage", page);
+		
+		model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
 
 		return "/schedule/list";
 	}

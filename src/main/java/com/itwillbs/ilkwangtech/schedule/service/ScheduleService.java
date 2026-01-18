@@ -31,39 +31,36 @@ public class ScheduleService {
 	private final ScheduleRepository scheduleRepository;
 	
 	// 일정 리스트 조회
+	// [변경] 파라미터가 int page -> Pageable pageable 로 바뀝니다.
 	@Transactional(readOnly = true)
-	public Page<ScheduleDTO> getScheduleList(Long loginMemberId, ScheduleSearchDTO params, int page) {
-		
-		LocalDateTime startDateTime;
+	public Page<ScheduleDTO> getScheduleList(Long loginMemberId, ScheduleSearchDTO params, Pageable pageable) {
+	    
+	    LocalDateTime startDateTime;
 	    LocalDateTime endDateTime;
-        
-        // 날짜 기본값 설정 (기존 코드 유지)
-        if (params.getStartDate() == null) {
-        	startDateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
-            endDateTime = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
-        } else {
-        	// 사용자가 '2026-01-16'을 선택했다면?
-            // 시작: 2026-01-16 00:00:00
-            startDateTime = params.getStartDate().atStartOfDay(); 
-            
-            // 끝: 2026-01-16 23:59:59.999999 (이래야 그날 일정 다 나옴)
-            endDateTime = params.getEndDate().atTime(LocalTime.MAX);
-        }
+	    
+	    // 1. 날짜 기본값 설정 
+	    if (params.getStartDate() == null) {
+	        startDateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+	        endDateTime = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+	    } else {
+	        startDateTime = params.getStartDate().atStartOfDay(); 
+	        endDateTime = params.getEndDate().atTime(LocalTime.MAX);
+	    }
 
-        // [추가] 페이징 객체 생성 (화면은 1부터 시작하므로 page-1 처리, 10개씩, 날짜순 정렬)
-        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("startDate").ascending());
+	    // Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("startDate").ascending());
+	    
+	    // 2. 리포지토리 호출
+	    Page<Schedule> pageResult = scheduleRepository.findMyAndCompanySchedules(
+	            loginMemberId,
+	            startDateTime,
+	            endDateTime,
+	            params.getKeyword(),
+	            pageable 
+	    );
 
-        // 리포지토리 호출
-        Page<Schedule> pageResult = scheduleRepository.findMyAndCompanySchedules(
-                loginMemberId,
-                startDateTime,
-                endDateTime,
-                params.getKeyword(),
-                pageable
-        );
+	    // 3. 변환 후 반환
+	    return pageResult.map(ScheduleDTO::fromEntity);
+	}
 
-        // Page<Entity> -> Page<DTO> 변환 (.map 사용)
-        return pageResult.map(ScheduleDTO::fromEntity);
-    }
 
 }

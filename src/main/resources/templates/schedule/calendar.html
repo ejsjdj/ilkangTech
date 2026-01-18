@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout/layout}">
 <head>
     <title>일정 관리(캘린더)</title>  
@@ -206,7 +207,7 @@
                 <button type="button" id="btnOutside" class="btn-out" onclick="handleOutside()" disabled>외근</button>
             </div>
 
-            <div class="card profile" th:if="${session.loginMember != null}">
+            <div class="card profile" sec:authorize="isAuthenticated()">
                 <div class="profile-content">
                     <div class="profile-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -214,18 +215,21 @@
                         </svg>
                     </div>
                     <div class="profile-info">
-                        <div class="dept" th:text="${session.loginMember.department}">부서명</div>
-                        <div class="name" th:text="|${session.loginMember.name} ${session.loginMember.position}|">홍길동 사원</div>
-                        <input type="hidden" id="loginName" th:value="${session.loginMember.name}">
-                        <input type="hidden" id="loginPos" th:value="${session.loginMember.position}">
+                        <div class="dept" th:text="${#authentication.principal.department}">부서명</div>
+					    <div class="name" th:text="|${#authentication.principal.name} ${#authentication.principal.position}|">홍길동 사원</div>
+					    
+					    <input type="hidden" id="loginName" th:value="${#authentication.principal.name}">
+					    <input type="hidden" id="loginPos" th:value="${#authentication.principal.position}">
                     </div>
                 </div>
                 <button class="btn-detail">내 정보</button>
             </div>
             
-            <div class="card profile" th:unless="${session.loginMember != null}">
-		        <div class="name" style="text-align: center;"><a href="/account/login">로그인이 필요합니다</a></div>
-		    </div>
+            <div class="card profile" sec:authorize="isAnonymous()">
+			    <div class="name" style="text-align: center;">
+			        <a href="/account/login">로그인이 필요합니다</a>
+			    </div>
+			</div>
 
             <div class="card">
                 <span class="card-title">📢 사내 공지사항</span>

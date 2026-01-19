@@ -57,158 +57,112 @@
             .view-buttons.segmented button { position: relative; z-index: 2; border: none; background: transparent; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; border-radius: 6px; }
             .view-buttons.segmented button.active { color: #fff; }
             .view-buttons.segmented .indicator { position: absolute; top: 4px; left: 4px; bottom: 4px; background: #4b6ef5; border-radius: 6px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; width: 0; }
-        	/* --- [커스텀 모달 스타일] --- */
-			.custom-modal-overlay {
-		        position: fixed;
-		        top: 0; left: 0; width: 100%; height: 100%;
-		        background-color: rgba(0, 0, 0, 0.4); /* 배경을 조금 더 연하게 */
-		        display: none;
-		        justify-content: center;
-		        align-items: center;
-		        z-index: 9999;
-		        backdrop-filter: blur(2px); /* 배경 살짝 흐리게 효과 */
-		    }
-		    
-		    .custom-modal-content {
-		        background-color: #fff;
-		        width: 580px; /* 너비를 조금 더 넓게 */
-		        max-width: 90%;
-		        border-radius: 20px; /* 둥근 모서리 강조 */
-		        box-shadow: 0 20px 50px rgba(0,0,0,0.15); /* 부드러운 그림자 */
-		        padding: 0;
-		        overflow: hidden;
-		        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* 부드러운 등장 애니메이션 */
-		    }
-		    
-		    /* 헤더: 선 없음, 여백 넉넉하게 */
-		    .custom-modal-header {
-		        padding: 30px 40px 10px 40px;
-		        border-bottom: none; 
-		        display: flex;
-		        justify-content: space-between;
-		        align-items: flex-start;
-		    }
-		    .custom-modal-header h5 {
-		        font-size: 1.2rem;
-		        color: #333;
-		        font-weight: 700;
-		        letter-spacing: -0.5px;
-		    }
-		    
-		    /* 바디: 입력창 디자인 */
-		    .custom-modal-body {
-		        padding: 10px 40px 20px 40px;
-		    }
-		    .form-label {
-		        font-size: 0.85rem;
-		        color: #6b7280; /* 회색 텍스트 */
-		        font-weight: 600;
-		        margin-bottom: 8px;
-		        display: block;
-		    }
-		    .custom-input {
-		        width: 100%;
-		        box-sizing: border-box; /* 패딩 포함 너비 계산 */
-		        padding: 12px 15px;
-		        font-size: 0.95rem;
-		        border: 1px solid #e5e7eb;
-		        border-radius: 12px;
-		        background-color: #f9fafb;
-		        transition: all 0.2s;
-		        outline: none;
-		        resize: none; /* 사용자 임의 크기 조절 방지 */
-		    }
-		    .custom-input:focus {
-		        background-color: #fff;
-		        border-color: #6366f1; /* 포커스시 보라색 테두리 */
-		        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); /* 포커스시 빛 번짐 효과 */
-		    }
-		    
-		    /* 푸터: 버튼 오른쪽 정렬, 선 없음 */
-		    .custom-modal-footer {
-		        padding: 10px 40px 30px 40px;
-		        border-top: none;
-		        display: flex;
-		        justify-content: flex-end;
-		        gap: 12px;
-		    }
-		    
-		    /* 버튼 스타일 */
-		    .btn-cancel {
-		        background: transparent;
-		        border: none;
-		        color: #6b7280;
-		        font-weight: 600;
-		        padding: 10px 20px;
-		        border-radius: 10px;
-		        transition: background 0.2s;
-		    }
-		    .btn-cancel:hover {
-		        background-color: #f3f4f6;
-		    }
-		    
-		    .btn-submit {
-		        background-color: #6366f1; /* 캡처와 비슷한 보라색 */
-		        color: white;
-		        border: none;
-		        padding: 12px 28px;
-		        border-radius: 10px;
-		        font-weight: 600;
-		        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-		        transition: all 0.2s;
-		    }
-		    .btn-submit:hover {
-		        background-color: #4f46e5;
-		        transform: translateY(-2px);
-		    }
-		    
-		    @keyframes slideUp {
-		        from { transform: translateY(30px); opacity: 0; }
-		        to { transform: translateY(0); opacity: 1; }
-		    }
-		    /* --- [수정] 프로필 정보 영역 복구 --- */
-			/* 이전에 flex: none 등으로 바꿨다면 다시 원래대로 돌립니다 */
-			.profile-info {
-			    flex: 1; 
-			    text-align: left;
-			}
-			
-			/* --- [삭제] 이전의 어색했던 버튼 스타일들 --- */
-			/* 아래 클래스들이 CSS에 있다면 모두 지워주세요 */
-			/* .logout-form, .btn-logout, .btn-logout:hover 등등... */
-			
-			
-			/* --- [신규] 하단 꽉 찬 로그아웃 버튼 스타일 --- */
-			.btn-logout-full {
-			    width: 100%;
-			    padding: 10px;
-			    border: 1px solid #eee; /* 테두리만 살짝 */
-			    background-color: #fff; /* 배경은 흰색 */
-			    color: #666; /* 글자는 진한 회색 */
-			    font-weight: 600;
-			    font-size: 14px;
-			    border-radius: 8px;
-			    cursor: pointer;
-			    transition: all 0.2s;
+            
+            /* --- [커스텀 모달 스타일] --- */
+            .custom-modal-overlay {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background-color: rgba(0, 0, 0, 0.4); display: none;
+                justify-content: center; align-items: center; z-index: 9999;
+                backdrop-filter: blur(2px);
+            }
+            .custom-modal-content {
+                background-color: #fff; width: 580px; max-width: 90%;
+                border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+                padding: 0; overflow: hidden; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .custom-modal-header { padding: 30px 40px 10px 40px; border-bottom: none; display: flex; justify-content: space-between; align-items: flex-start; }
+            .custom-modal-header h5 { font-size: 1.2rem; color: #333; font-weight: 700; letter-spacing: -0.5px; }
+            .custom-modal-body { padding: 10px 40px 20px 40px; }
+            .form-label { font-size: 0.85rem; color: #6b7280; font-weight: 600; margin-bottom: 8px; display: block; }
+            .custom-input { width: 100%; box-sizing: border-box; padding: 12px 15px; font-size: 0.95rem; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #f9fafb; transition: all 0.2s; outline: none; resize: none; }
+            .custom-input:focus { background-color: #fff; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+            .custom-modal-footer { padding: 10px 40px 30px 40px; border-top: none; display: flex; justify-content: flex-end; gap: 12px; }
+            .btn-cancel { background: transparent; border: none; color: #6b7280; font-weight: 600; padding: 10px 20px; border-radius: 10px; transition: background 0.2s; }
+            .btn-cancel:hover { background-color: #f3f4f6; }
+            .btn-submit { background-color: #6366f1; color: white; border: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: all 0.2s; }
+            .btn-submit:hover { background-color: #4f46e5; transform: translateY(-2px); }
+            @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+            /* --- [로그아웃 버튼 스타일] --- */
+            .btn-logout-full {
+                width: 100%; padding: 10px; border: 1px solid #eee; background-color: #fff;
+                color: #666; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+                display: flex; align-items: center; justify-content: center; gap: 8px;
+            }
+            .btn-logout-full:hover { background-color: #fff1f0; color: #e54f4b; border-color: #ffa39e; }
+            .btn-logout-full i { font-size: 13px; }
+
+			/* --- [디자인 수정] 배경 밝게 & 내부 간격 추가 --- */
+			.weather-widget {
+			    /* [수정] 더 밝고 화사한 스카이 블루 그라데이션 */
+			    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+			    border-radius: 20px; 
+			    padding: 30px; 
+			    color: #fff;
+			    box-shadow: 0 10px 25px rgba(0, 198, 255, 0.3); /* 그림자도 밝은 톤에 맞춤 */
+			    font-family: 'Segoe UI', sans-serif; 
 			    
-			    /* 아이콘과 글자 정렬 */
+			    flex: 1; 
+			    min-height: 240px; 
 			    display: flex;
+			    flex-direction: column;
+			}
+			
+			/* 헤더 스타일 (기존 유지) */
+			.widget-header { 
+			    margin-bottom: 25px; 
+			}
+			.location-info { 
+			    font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			}
+			.time-info { font-size: 16px; opacity: 0.9; font-weight: 500; }
+			
+			/* [수정] 메인 바디: 간격(gap) 추가 및 정렬 조정 */
+			.widget-body { 
+			    flex: 1; 
+			    display: flex; 
+			    /* 양끝 정렬하되, gap으로 최소 간격을 보장 */
+			    justify-content: space-between; 
 			    align-items: center;
-			    justify-content: center;
-			    gap: 8px; /* 아이콘과 글자 사이 간격 */
+			    /* [핵심] div들 사이에 15px 틈 추가 */
+			    gap: 15px; 
 			}
 			
-			/* 마우스 올렸을 때 (차분한 붉은색) */
-			.btn-logout-full:hover {
-			    background-color: #fff1f0; /* 아주 연한 붉은 배경 */
-			    color: #e54f4b; /* 글자와 아이콘 붉은색 */
-			    border-color: #ffa39e; /* 테두리도 살짝 붉게 */
+			/* [수정] 간격을 위해 너비 미세 조정 (합쳐서 100% 안 넘게) */
+			.col-icon {
+			    display: flex; flex-direction: column; align-items: center; justify-content: center;
+			    width: 28%; /* 30% -> 28% */
+			}
+			.col-temp {
+			    display: flex; flex-direction: column; align-items: center; justify-content: center;
+			    width: 38%; /* 35% -> 38% */
+			}
+			.col-details {
+			    width: 28%; /* 30% -> 28% */
+			    background: rgba(255, 255, 255, 0.15);
+			    border-radius: 18px;
+			    padding: 20px;
+			    display: flex; flex-direction: column; gap: 12px;
+			    backdrop-filter: blur(10px);
+			    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
 			}
 			
-			/* 아이콘 크기 미세 조정 */
-			.btn-logout-full i {
-			    font-size: 13px;
-			}
+			/* 내부 요소 스타일 (기존 유지) */
+			.main-icon img { width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)); }
+			.weather-text { font-size: 20px; font-weight: 700; margin-top: 10px; }
+			
+			.temp-big { font-size: 72px; font-weight: 400; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+			.temp-big .degree { font-size: 36px; vertical-align: top; margin-top: 12px; display: inline-block; }
+			
+			/* [수정] 배경이 밝아졌으므로 화살표 색상 미세 조정 */
+			.min-max-temp { margin-top: 12px; font-size: 16px; opacity: 1; font-weight: 600; }
+			.min-max-temp .down { color: #fff; opacity: 0.8; } /* 밝은 배경에선 흰색+투명도가 더 깔끔함 */
+			.min-max-temp .up { color: #ffeea6; }   /* 최고기온: 연한 노란색/붉은빛으로 포인트 */
+			.min-max-temp .divider { margin: 0 8px; opacity: 0.4; color: #fff; }
+			
+			.detail-item { display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
+			.detail-item i { font-size: 18px; width: 25px; text-align: center; opacity: 0.9; }
+			.detail-item span { font-weight: 700; font-size: 17px; }
         </style>
     </th:block>
 </head>
@@ -251,71 +205,117 @@
             </div>
 
             <div class="card profile" sec:authorize="isAuthenticated()">
-			    <div class="profile-content">
-			        <div class="profile-icon">
-			            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-			                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-			            </svg>
-			        </div>
-			        <div class="profile-info">
-			            <div class="dept" th:text="${#authentication.principal.department}">부서명</div>
-			            <div class="name" th:text="|${#authentication.principal.name} ${#authentication.principal.position}|">홍길동 사원</div>
-			            <input type="hidden" id="loginName" th:value="${#authentication.principal.name}">
-			            <input type="hidden" id="loginPos" th:value="${#authentication.principal.position}">
-			        </div>
-			    </div>
-			
-			    <button class="btn-detail">내 정보</button>
-			
-			    <form th:action="@{/logout}" method="post" style="margin-top: 8px;"> 
-				    <button type="submit" class="btn-logout-full" onclick="return confirm('로그아웃 하시겠습니까?');">
-				        <i class="fa-solid fa-power-off"></i>
-				        로그아웃
-				    </button>
-				</form>
-			</div>
+                <div class="profile-content">
+                    <div class="profile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <div class="profile-info">
+                        <div class="dept" th:text="${#authentication.principal.department}">부서명</div>
+                        <div class="name" th:text="|${#authentication.principal.name} ${#authentication.principal.position}|">홍길동 사원</div>
+                        <input type="hidden" id="loginName" th:value="${#authentication.principal.name}">
+                        <input type="hidden" id="loginPos" th:value="${#authentication.principal.position}">
+                    </div>
+                </div>
+            
+                <button class="btn-detail">내 정보</button>
+            
+                <form th:action="@{/logout}" method="post" style="margin-top: 8px;"> 
+                    <button type="submit" class="btn-logout-full" onclick="return confirm('로그아웃 하시겠습니까?');">
+                        <i class="fa-solid fa-power-off"></i>
+                        로그아웃
+                    </button>
+                </form>
+            </div>
             
             <div class="card profile" sec:authorize="isAnonymous()">
-			    <div class="name" style="text-align: center;">
-			        <a href="/account/login">로그인이 필요합니다</a>
-			    </div>
-			</div>
+                <div class="name" style="text-align: center;">
+                    <a href="/account/login">로그인이 필요합니다</a>
+                </div>
+            </div>
 
             <div class="card">
                 <span class="card-title">📢 사내 공지사항</span>
                 <div class="empty-box"></div>
             </div>
+
+            <div class="weather-widget">
+			    <div class="widget-header">
+			        <div class="location-info">
+			            <i class="fa-solid fa-location-dot"></i> 부산광역시
+			        </div>
+			        <div class="time-info" id="currentDateStr">2026.01.19</div>
+			    </div>
+			
+			    <div class="widget-body">
+			        
+			        <div class="col-icon">
+			            <div id="weatherIcon" class="main-icon">
+			                <i class="fa-solid fa-spinner fa-spin" style="font-size: 50px;"></i>
+			            </div>
+			            <div id="weatherDesc" class="weather-text">--</div>
+			        </div>
+			
+			        <div class="col-temp">
+			            <div class="temp-big">
+			                <span id="weatherTemp">--</span><span class="degree">°</span>
+			            </div>
+			            <div class="min-max-temp">
+			                <span class="down">▼ <span id="tempMin">-</span>°</span>
+			                <span class="divider">|</span>
+			                <span class="up">▲ <span id="tempMax">-</span>°</span>
+			            </div>
+			        </div>
+			
+			        <div class="col-details">
+			            <div class="detail-item">
+			                <i class="fa-solid fa-droplet" title="강수량"></i>
+			                <span id="weatherRain">0mm</span>
+			            </div>
+			            <div class="detail-item">
+			                <i class="fa-solid fa-water" title="습도"></i>
+			                <span id="weatherHumid">0%</span>
+			            </div>
+			            <div class="detail-item">
+			                <i class="fa-solid fa-wind" title="풍속"></i>
+			                <span id="weatherWind">0m/s</span>
+			            </div>
+			        </div>
+			    </div>
+			</div>
         </div> 
     </div> 
+
     <div id="customModal" class="custom-modal-overlay">
-	    <div class="custom-modal-content">
-	        <div class="custom-modal-header">
-	            <h5 class="m-0">외근 / 휴식 등록</h5>
-	            <button type="button" class="btn-close" onclick="closeModal()" style="opacity: 0.3;"></button>
-	        </div>
-	        
-	        <div class="custom-modal-body">
-	            <div class="mb-4">
-	                <label class="form-label">구분</label>
-	                <select id="outsideType" class="custom-input form-select">
-	                    <option value="OUT_WORK">외근</option>
-	                    <option value="LEAVE">장기 휴식</option>
-	                </select>
-	            </div>
-	            <div class="mb-2">
-	                <label class="form-label">사유 / 메모</label>
-	                <textarea id="outsideMemo" class="custom-input form-control" rows="5" 
-	                          style="resize: none;"
-	                          placeholder="예: 거래처 미팅, 병원 진료 등 상세 사유를 입력하세요."></textarea>
-	            </div>
-	        </div>
-	
-	        <div class="custom-modal-footer">
-	            <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
-	            <button type="button" class="btn-submit" onclick="submitOutside()">등록</button>
-	        </div>
-	    </div>
-	</div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="m-0">외근 / 휴식 등록</h5>
+                <button type="button" class="btn-close" onclick="closeModal()" style="opacity: 0.3;"></button>
+            </div>
+            
+            <div class="custom-modal-body">
+                <div class="mb-4">
+                    <label class="form-label">구분</label>
+                    <select id="outsideType" class="custom-input form-select">
+                        <option value="OUT_WORK">외근</option>
+                        <option value="LEAVE">장기 휴식</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">사유 / 메모</label>
+                    <textarea id="outsideMemo" class="custom-input form-control" rows="5" 
+                              style="resize: none;"
+                              placeholder="예: 거래처 미팅, 병원 진료 등 상세 사유를 입력하세요."></textarea>
+                </div>
+            </div>
+    
+            <div class="custom-modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+                <button type="button" class="btn-submit" onclick="submitOutside()">등록</button>
+            </div>
+        </div>
+    </div>
     
 </div>
 
@@ -324,11 +324,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
 <script>
-	// --- 1. 근태 관리 로직 ---
+    // --- 1. 근태 관리 로직 ---
     let currentStatus = 'OFF_DUTY'; // 초기 상태
 
     document.addEventListener('DOMContentLoaded', function() {
         checkCurrentStatus();
+        updateDate();  // [추가] 날짜 표시
+        loadWeather(); // [추가] 날씨 로딩 실행
     });
 
     // 1) 상태 조회
@@ -347,7 +349,6 @@
         const btnClock = document.getElementById('btnClock');
         const btnOutside = document.getElementById('btnOutside');
 
-        // 버튼 초기화
         btnClock.disabled = false;
         btnOutside.disabled = false;
         btnClock.classList.remove('btn-secondary', 'btn-success', 'off');
@@ -399,10 +400,9 @@
         }
      }
 
-     // 4) 외근 버튼 핸들러 (모달 열기)
-	 function handleOutside() {
+     // 4) 외근 버튼 핸들러
+     function handleOutside() {
           if (currentStatus === 'OUT_WORK' || currentStatus === 'LEAVE') {
-              // 이미 외근 중이면 복귀 처리
               const name = document.getElementById('loginName')?.value || '';
               const pos = document.getElementById('loginPos')?.value || '';
               
@@ -419,19 +419,14 @@
           }
       }
 
-      // [모달] 열기
       function openModal() {
           document.getElementById('outsideMemo').value = '';
           document.getElementById('outsideType').value = 'OUT_WORK';
           document.getElementById('customModal').style.display = 'flex';
       }
-
-      // [모달] 닫기
       function closeModal() {
           document.getElementById('customModal').style.display = 'none';
       }
-
-      // [모달] 등록 버튼
       function submitOutside() {
           const type = document.getElementById('outsideType').value;
           const memo = document.getElementById('outsideMemo').value;
@@ -467,21 +462,17 @@
           month: { dayNames: ['일','월','화','수','목','금','토'] }
       });
 
-      // 현재 연도 추적용 변수 (연도가 바뀔 때만 공휴일 다시 로딩하려고)
       let currentLoadedYear = null;
 
       window.addEventListener('load', () => {
           updateCalendarTitle();
-
-          // [수정] 여기가 주석 처리 되어있어서 복원했습니다.
           const monthBtn = document.querySelectorAll('.view-buttons.segmented button')[1];
           if (monthBtn) {
               setMonth(monthBtn);
           }
-          
           setTimeout(() => { 
               calendar.render(); 
-              loadHolidays(); // 최초 로딩 시 공휴일 불러오기
+              loadHolidays(); 
           }, 100);
       });
 
@@ -490,7 +481,6 @@
           document.getElementById('calendarTitle').innerText = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
       }
 
-      // [수정] 이전/다음 달 이동 시 연도가 바뀌면 공휴일 다시 불러오는 로직 추가
       function movePrev() { 
           calendar.prev(); 
           updateCalendarTitle();
@@ -505,7 +495,7 @@
       function checkYearAndLoad() {
           const newYear = calendar.getDate().getFullYear();
           if (currentLoadedYear !== newYear) {
-              loadHolidays(); // 연도가 달라졌을 때만 API 호출
+              loadHolidays(); 
           }
       }
       
@@ -523,42 +513,117 @@
       function setWeek(btn) { calendar.changeView('week'); moveIndicator(btn); }
       function setDay(btn) { calendar.changeView('day'); moveIndicator(btn); }
       
-   	// --- [공휴일 로직] ---
-	function loadHolidays() {
-	    const year = calendar.getDate().getFullYear();
-	    currentLoadedYear = year; // 현재 로딩된 연도 업데이트
-	    
-	    console.log(year + "년 공휴일 로딩 중...");
-	
-	    fetch(`/api/calendar/holidays?year=${year}`)
-	        .then(res => res.json())
-	        .then(data => {
-	            
-	            const holidayEvents = data.map(holiday => ({
-	                id: 'holiday-' + holiday.locdate,
-	                calendarId: 'holiday',
-	                title: holiday.dateName,
-	                category: 'allday',
-	                start: formatDate(holiday.locdate),
-	                end: formatDate(holiday.locdate),
-	                isReadOnly: true,
-	                
-	                // ★ [스타일 수정] 캡처 화면과 비슷하게 색상 조정
-	                color: '#e54f4b',           // 글자색 (진한 붉은색)
-	                backgroundColor: '#ffe8e8', // 배경색 (아주 연한 핑크)
-	                dragBackColor: '#ffe8e8',   // 드래그 시 배경색
-	                borderColor: '#e54f4b'      // ★ 좌측 띠 색상 (이게 있어야 왼쪽에 줄이 생김!)
-	            }));
-	            
-	            calendar.createEvents(holidayEvents);
-	        })
-	        .catch(err => console.error("공휴일 로딩 실패:", err));
-	}
+      // --- 공휴일 로직 ---
+      function loadHolidays() {
+        const year = calendar.getDate().getFullYear();
+        currentLoadedYear = year; 
+        
+        fetch(`/api/calendar/holidays?year=${year}`)
+            .then(res => res.json())
+            .then(data => {
+                const holidayEvents = data.map(holiday => ({
+                    id: 'holiday-' + holiday.locdate,
+                    calendarId: 'holiday',
+                    title: holiday.dateName,
+                    category: 'allday',
+                    start: formatDate(holiday.locdate),
+                    end: formatDate(holiday.locdate),
+                    isReadOnly: true,
+                    color: '#e54f4b',           
+                    backgroundColor: '#ffe8e8', 
+                    dragBackColor: '#ffe8e8',   
+                    borderColor: '#e54f4b'      
+                }));
+                calendar.createEvents(holidayEvents);
+            })
+            .catch(err => console.error("공휴일 로딩 실패:", err));
+      }
 
-    function formatDate(dateStr) {
-        const str = String(dateStr);
-        return `${str.substring(0,4)}-${str.substring(4,6)}-${str.substring(6,8)}`;
-    }
+      function formatDate(dateStr) {
+          const str = String(dateStr);
+          return `${str.substring(0,4)}-${str.substring(4,6)}-${str.substring(6,8)}`;
+      }
+
+     // --- [2] 날짜 업데이트 로직 (자동 갱신) ---
+     function updateDate() {
+         const now = new Date();
+         const options = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' };
+         // 결과 예시: "2026. 01. 20. (화)" -> 공백 제거 -> "2026.01.20.(화)"
+         const dateStr = now.toLocaleDateString('ko-KR', options).replace(/\s/g, ''); 
+         document.getElementById('currentDateStr').innerText = dateStr;
+     }
+
+     // --- [3] 날씨 로딩 로직 (이미지 버전) ---
+     function loadWeather() {
+         const iconDiv = document.getElementById('weatherIcon');
+         const tempSpan = document.getElementById('weatherTemp');
+         const descDiv = document.getElementById('weatherDesc');
+         const rainSpan = document.getElementById('weatherRain');
+         const humidSpan = document.getElementById('weatherHumid');
+         const windSpan = document.getElementById('weatherWind');
+         const tempMinSpan = document.getElementById('tempMin');
+         const tempMaxSpan = document.getElementById('tempMax');
+
+         // 로딩 중 표시
+         iconDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size: 48px;"></i>';
+
+         fetch('/api/weather/current')
+             .then(res => res.json())
+             .then(data => {
+                 if (!data.success) {
+                     descDiv.innerText = "정보 없음";
+                     return;
+                 }
+
+                 // 1. 텍스트 데이터 바인딩
+                 tempSpan.innerText = data.temp;
+                 rainSpan.innerText = (data.rain === "강수없음" || data.rain === "0") ? "0mm" : data.rain;
+                 humidSpan.innerText = data.humidity + "%";
+                 windSpan.innerText = data.wind + "m/s";
+                 tempMinSpan.innerText = data.tmn;
+                 tempMaxSpan.innerText = data.tmx;
+
+                 // 2. 날씨 상태에 따른 [이미지 파일명] 결정
+                 let skyState = "";
+                 let imgFileName = "sun.png"; // 기본값
+
+                 const pty = data.pty; 
+                 const sky = data.sky; 
+
+                 if (pty === "0") { // 강수 없음
+                     if (sky === "1") {
+                         skyState = "맑음";
+                         imgFileName = "sun.png";
+                     } else if (sky === "3") {
+                         skyState = "구름 많음";
+                         imgFileName = "cloud-sun.png";
+                     } else {
+                         skyState = "흐림";
+                         imgFileName = "cloud.png";
+                     }
+                 } else { // 비/눈 옴
+                     if (pty === "1" || pty === "5") {
+                         skyState = "비";
+                         imgFileName = "rain.png";
+                     } else if (pty === "3" || pty === "7") {
+                         skyState = "눈";
+                         imgFileName = "snow.png";
+                     } else {
+                         skyState = "비/눈";
+                         imgFileName = "rain-snow.png";
+                     }
+                 }
+
+                 // 3. 화면 업데이트 (이미지 태그 사용)
+                 descDiv.innerText = skyState;
+                 // [중요] 저장해둔 이미지를 불러옵니다
+                 iconDiv.innerHTML = `<img src="/img/weather/${imgFileName}" alt="${skyState}" style="width:80px; height:80px; object-fit:contain;">`;
+             })
+             .catch(err => {
+                 console.error(err);
+                 descDiv.innerText = "연결 실패";
+             });
+     }
 </script>
 </th:block>
 </body>

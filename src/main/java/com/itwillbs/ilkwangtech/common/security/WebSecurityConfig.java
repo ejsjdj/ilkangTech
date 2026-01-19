@@ -25,7 +25,7 @@ public class WebSecurityConfig {
 		return httpSecurity
 				// 접근 권한 설정
 				.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-						.requestMatchers("/account/login", "/account/register").permitAll()
+						.requestMatchers("/account/login", "/account/register", "/css/**", "/js/**", "/img/**", "/error").permitAll()
 						.anyRequest().authenticated()
 				)
 				// 로그인 설정

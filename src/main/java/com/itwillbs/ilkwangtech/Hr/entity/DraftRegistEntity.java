@@ -18,12 +18,12 @@ public class DraftRegistEntity {
     private long statusId;
 
     // 어떤 문서를 결재하는가?
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "draft_id")
     private DraftEntity draftEntity;
 
     // 누가 결재하는가?
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "common_id")
     private Member member;
 

@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.Hr.service;
 import com.itwillbs.ilkwangtech.Hr.dto.DraftRegistDTO;
 import com.itwillbs.ilkwangtech.Hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.Hr.entity.DraftRegistEntity;
+import com.itwillbs.ilkwangtech.Hr.repository.DraftRegistRepository;
 import com.itwillbs.ilkwangtech.Hr.repository.DraftRepository;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
@@ -25,13 +26,13 @@ public class DraftRegistService {
     @PersistenceContext
     private EntityManager entityManager;
     private final DraftRepository draftRepository;
-    private final AccountRepository accountRepository;
+    private final DraftRegistRepository draftRegistRepository;
     private final ModelMapper modelMapper;
     private final MemberRepository memberRepository;
 
-    public DraftRegistService(DraftRepository draftRepository, AccountRepository accountRepository, ModelMapper modelMapper, MemberRepository memberRepository) {
+    public DraftRegistService(DraftRepository draftRepository, DraftRegistRepository draftRegistRepository, ModelMapper modelMapper, MemberRepository memberRepository) {
         this.draftRepository = draftRepository;
-        this.accountRepository = accountRepository;
+        this.draftRegistRepository = draftRegistRepository;
         this.memberRepository = memberRepository;
         this.modelMapper = modelMapper;
     }
@@ -39,36 +40,37 @@ public class DraftRegistService {
     @Transactional
     public void putDraft(DraftRegistDTO draftRegistDTO, Long userId) {
 
-        System.out.println("로그인 아이디 : " + userId);
+        // Draft 엔티티에 새로문 결재문서 등록
+        DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class); // DTO와 Entity 매핑
+        Member memberRef = entityManager.getReference(Member.class, userId); // member 엔티티에서 작성자 ID 참조
+        draftEntity.setMember(memberRef); // 작성자 ID 등록
+        draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus()); // 최종 결재상태(기본값 WAT) 등록
+        DraftEntity savedDraft = draftRepository.save(draftEntity);
 
-        DraftRegistEntity draftRegistEntity = new DraftRegistEntity();
+        // 결재자 리스트
+        List<String> approvers = draftRegistDTO.getDraftApprover();
 
-        // 1. DTO → Entity 기본 필드 매핑
-        DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class);
+        // 리스트 가공
+        for(String approverString : approvers){
 
-        // 2. 로그인 사용자(Member)를 FK로 세팅 (SELECT 안 나감)
-        Member memberRef = entityManager.getReference(Member.class, userId);
-        draftEntity.setMember(memberRef);
+            // null 체크
+            if (approverString == null || approverString.trim().isEmpty()) {
+                break;
+            }
 
-        // 3. (선택) 상태값, 기본값 세팅
-        draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus());
+            DraftRegistEntity draftRegistEntity = new DraftRegistEntity();
 
-        // 4. 저장
-        draftRepository.save(draftEntity);
+            String[] parts = approverString.trim().split("\\s+");
+            Long memberId = Long.parseLong(parts[0]); // 사원 ID 추출
+            int sequence = Integer.parseInt(parts[parts.length - 1]); // 결재 순서 추출
+            Member approver = entityManager.getReference(Member.class, memberId); // member 엔티티에서 결재자 ID 참조
 
-//        // 요청 DTO에서 결재자 가져오기
-//        List<String> approvers = draftRegistDTO.getDraftApprover();
-//
-//        // 결재자 순번대로 결재상태 테이블에 저장
-//        for(int i = 0; i < approvers.size(); i++) {
-//
-//            Long approverId = parseLong(approvers.get(i));
-//
-//            Member member = memberRepository.getReferenceById(approverId);
-//
-//            draftRegistEntity.setMember(member);
-//
-//
-//        }
+            draftRegistEntity.setDraftEntity(savedDraft);// 결재문서 ID 등록
+            draftRegistEntity.setMember(approver); // 결재 지정자 등록
+            draftRegistEntity.setSequence(sequence); // 결재 순서 등록
+            draftRegistEntity.setStatus("WAT"); // 결재 상태 등록
+            draftRegistRepository.save(draftRegistEntity);
+        }
+
     }
 }

@@ -3,10 +3,10 @@ package com.itwillbs.ilkwangtech.Hr.service;
 import com.itwillbs.ilkwangtech.Hr.dto.DraftRegistDTO;
 import com.itwillbs.ilkwangtech.Hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.Hr.entity.DraftRegistEntity;
-import com.itwillbs.ilkwangtech.Hr.repository.DraftRegistRepository;
 import com.itwillbs.ilkwangtech.Hr.repository.DraftRepository;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -27,11 +27,12 @@ public class DraftRegistService {
     private final DraftRepository draftRepository;
     private final AccountRepository accountRepository;
     private final ModelMapper modelMapper;
+    private final MemberRepository memberRepository;
 
-    public DraftRegistService(DraftRepository draftRepository, AccountRepository accountRepository, ModelMapper modelMapper) {
+    public DraftRegistService(DraftRepository draftRepository, AccountRepository accountRepository, ModelMapper modelMapper, MemberRepository memberRepository) {
         this.draftRepository = draftRepository;
         this.accountRepository = accountRepository;
-
+        this.memberRepository = memberRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -39,6 +40,8 @@ public class DraftRegistService {
     public void putDraft(DraftRegistDTO draftRegistDTO, Long userId) {
 
         System.out.println("로그인 아이디 : " + userId);
+
+        DraftRegistEntity draftRegistEntity = new DraftRegistEntity();
 
         // 1. DTO → Entity 기본 필드 매핑
         DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class);
@@ -53,7 +56,6 @@ public class DraftRegistService {
         // 4. 저장
         draftRepository.save(draftEntity);
 
-
 //        // 요청 DTO에서 결재자 가져오기
 //        List<String> approvers = draftRegistDTO.getDraftApprover();
 //
@@ -61,6 +63,11 @@ public class DraftRegistService {
 //        for(int i = 0; i < approvers.size(); i++) {
 //
 //            Long approverId = parseLong(approvers.get(i));
+//
+//            Member member = memberRepository.getReferenceById(approverId);
+//
+//            draftRegistEntity.setMember(member);
+//
 //
 //        }
     }

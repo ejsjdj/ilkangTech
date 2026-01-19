@@ -39,12 +39,15 @@ public class WebSecurityConfig {
 						.permitAll() // 로그인 관련 요청 주소를 모두 허용 경로로 등록
 				)
 				.csrf(csrf -> csrf.disable())
-				// 로그아웃 처리 설정
-				.logout(logoutCustomizer -> logoutCustomizer
-						.logoutUrl("/accounts/logout")
-						.logoutSuccessUrl("/")
-						.permitAll()
-				)
+				
+				// 로그아웃 설정
+	            .logout(logout -> logout
+	                    .logoutUrl("/logout")              
+	                    .logoutSuccessUrl("/account/login") // 로그아웃 성공 시 로그인 페이지로 이동
+	                    .invalidateHttpSession(true)       
+	                    .deleteCookies("JSESSIONID")       
+	                    .permitAll()
+	            )
 				.build();
 	}
 }

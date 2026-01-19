@@ -166,6 +166,49 @@
 		        from { transform: translateY(30px); opacity: 0; }
 		        to { transform: translateY(0); opacity: 1; }
 		    }
+		    /* --- [수정] 프로필 정보 영역 복구 --- */
+			/* 이전에 flex: none 등으로 바꿨다면 다시 원래대로 돌립니다 */
+			.profile-info {
+			    flex: 1; 
+			    text-align: left;
+			}
+			
+			/* --- [삭제] 이전의 어색했던 버튼 스타일들 --- */
+			/* 아래 클래스들이 CSS에 있다면 모두 지워주세요 */
+			/* .logout-form, .btn-logout, .btn-logout:hover 등등... */
+			
+			
+			/* --- [신규] 하단 꽉 찬 로그아웃 버튼 스타일 --- */
+			.btn-logout-full {
+			    width: 100%;
+			    padding: 10px;
+			    border: 1px solid #eee; /* 테두리만 살짝 */
+			    background-color: #fff; /* 배경은 흰색 */
+			    color: #666; /* 글자는 진한 회색 */
+			    font-weight: 600;
+			    font-size: 14px;
+			    border-radius: 8px;
+			    cursor: pointer;
+			    transition: all 0.2s;
+			    
+			    /* 아이콘과 글자 정렬 */
+			    display: flex;
+			    align-items: center;
+			    justify-content: center;
+			    gap: 8px; /* 아이콘과 글자 사이 간격 */
+			}
+			
+			/* 마우스 올렸을 때 (차분한 붉은색) */
+			.btn-logout-full:hover {
+			    background-color: #fff1f0; /* 아주 연한 붉은 배경 */
+			    color: #e54f4b; /* 글자와 아이콘 붉은색 */
+			    border-color: #ffa39e; /* 테두리도 살짝 붉게 */
+			}
+			
+			/* 아이콘 크기 미세 조정 */
+			.btn-logout-full i {
+			    font-size: 13px;
+			}
         </style>
     </th:block>
 </head>
@@ -208,22 +251,29 @@
             </div>
 
             <div class="card profile" sec:authorize="isAuthenticated()">
-                <div class="profile-content">
-                    <div class="profile-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                    </div>
-                    <div class="profile-info">
-                        <div class="dept" th:text="${#authentication.principal.department}">부서명</div>
-					    <div class="name" th:text="|${#authentication.principal.name} ${#authentication.principal.position}|">홍길동 사원</div>
-					    
-					    <input type="hidden" id="loginName" th:value="${#authentication.principal.name}">
-					    <input type="hidden" id="loginPos" th:value="${#authentication.principal.position}">
-                    </div>
-                </div>
-                <button class="btn-detail">내 정보</button>
-            </div>
+			    <div class="profile-content">
+			        <div class="profile-icon">
+			            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+			                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+			            </svg>
+			        </div>
+			        <div class="profile-info">
+			            <div class="dept" th:text="${#authentication.principal.department}">부서명</div>
+			            <div class="name" th:text="|${#authentication.principal.name} ${#authentication.principal.position}|">홍길동 사원</div>
+			            <input type="hidden" id="loginName" th:value="${#authentication.principal.name}">
+			            <input type="hidden" id="loginPos" th:value="${#authentication.principal.position}">
+			        </div>
+			    </div>
+			
+			    <button class="btn-detail">내 정보</button>
+			
+			    <form th:action="@{/logout}" method="post" style="margin-top: 8px;"> 
+				    <button type="submit" class="btn-logout-full" onclick="return confirm('로그아웃 하시겠습니까?');">
+				        <i class="fa-solid fa-power-off"></i>
+				        로그아웃
+				    </button>
+				</form>
+			</div>
             
             <div class="card profile" sec:authorize="isAnonymous()">
 			    <div class="name" style="text-align: center;">
@@ -505,10 +555,10 @@
 	        .catch(err => console.error("공휴일 로딩 실패:", err));
 	}
 
-      function formatDate(dateStr) {
-          const str = String(dateStr);
-          return `${str.substring(0,4)}-${str.substring(4,6)}-${str.substring(6,8)}`;
-      }
+    function formatDate(dateStr) {
+        const str = String(dateStr);
+        return `${str.substring(0,4)}-${str.substring(4,6)}-${str.substring(6,8)}`;
+    }
 </script>
 </th:block>
 </body>

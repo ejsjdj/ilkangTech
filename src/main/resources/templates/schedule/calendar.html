@@ -7,6 +7,7 @@
     <title>일정 관리(캘린더)</title>  
     <th:block layout:fragment="style">
         <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
             /* --- [기존 스타일] 캘린더 및 레이아웃 --- */
             .dashboard { display: flex; gap: 20px; height: 100%; min-height: 700px; }
@@ -154,11 +155,32 @@
 			.temp-big { font-size: 72px; font-weight: 400; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 			.temp-big .degree { font-size: 36px; vertical-align: top; margin-top: 12px; display: inline-block; }
 			
-			/* [수정] 배경이 밝아졌으므로 화살표 색상 미세 조정 */
-			.min-max-temp { margin-top: 12px; font-size: 16px; opacity: 1; font-weight: 600; }
-			.min-max-temp .down { color: #fff; opacity: 0.8; } /* 밝은 배경에선 흰색+투명도가 더 깔끔함 */
-			.min-max-temp .up { color: #ffeea6; }   /* 최고기온: 연한 노란색/붉은빛으로 포인트 */
-			.min-max-temp .divider { margin: 0 8px; opacity: 0.4; color: #fff; }
+			/* [수정] 기온 색상 변경 (가독성 개선) */
+			.min-max-temp { 
+			    margin-top: 12px; 
+			    font-size: 16px; 
+			    opacity: 1; 
+			    font-weight: 700; /* 글자 굵기 조금 더 강화 */
+			}
+			
+			/* 최저 기온 (진한 파란색으로 변경하여 밝은 배경에서도 잘 보이게 함) */
+			.min-max-temp .down { 
+			    color: #004e92; /* 진하고 깊은 파란색 (Deep Blue) */
+			    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2); /* 흰색 그림자 살짝 주어 분리감 형성 */
+			} 
+			
+			/* 최고 기온 (기존 유지 - 붉은 계열) */
+			.min-max-temp .up { 
+			    color: #ff6b6b; /* 조금 더 선명한 붉은색 (Red/Coral) */
+			    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+			}
+			
+			/* 가운데 구분선 */
+			.min-max-temp .divider { 
+			    margin: 0 8px; 
+			    opacity: 0.5; 
+			    color: #fff; 
+			}
 			
 			.detail-item { display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
 			.detail-item i { font-size: 18px; width: 25px; text-align: center; opacity: 0.9; }

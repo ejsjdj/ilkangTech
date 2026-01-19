@@ -9,11 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@RequiredArgsConstructor
 @EnableWebSecurity
 public class WebSecurityConfig {
-
-	private final CustomAuthenticationFailureHandler authenticationFailureHandler;
 
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -21,30 +18,45 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-		return httpSecurity
-				// 접근 권한 설정
-				.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-						.requestMatchers("/account/login", "/account/register").permitAll()
-						.anyRequest().authenticated()
-				)
-				// 로그인 설정
-				.formLogin(formLogin -> formLogin
-						.loginPage("/account/login")
-						.loginProcessingUrl("/account/login")
-						.usernameParameter("username")
-						.passwordParameter("password") // 기본값이
-						.defaultSuccessUrl("/schedule/calendar", true)
-						.failureHandler(authenticationFailureHandler)
-						.permitAll() // 로그인 관련 요청 주소를 모두 허용 경로로 등록
-				)
-				.csrf(csrf -> csrf.disable())
-				// 로그아웃 처리 설정
-				.logout(logoutCustomizer -> logoutCustomizer
-						.logoutUrl("/accounts/logout")
-						.logoutSuccessUrl("/")
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+
+		http
+				.authorizeHttpRequests((auth) -> auth
+						.requestMatchers("/", "/login").permitAll()
+//						.requestMatchers("/admin").hasRole("ADMIN")
+//						.requestMatchers("/my/**").hasAnyRole("ADMIN","USER")
+						.anyRequest().permitAll()
+				);
+
+		http
+				.formLogin(login -> login
+						.loginPage("/login")
+						.loginProcessingUrl("/login")
+						.usernameParameter("employeeNumber")
+						.passwordParameter("password")
+						.defaultSuccessUrl("/schedule/calender")
+						.failureHandler(new CustomAuthenticationFailureHandler())
+						.successHandler(new CustomAuthenticationSuccessHandler())
 						.permitAll()
-				)
-				.build();
+				);
+
+		http
+				.logout(logout -> logout
+						.logoutUrl("/logout")
+						.logoutSuccessUrl("/login")
+						.permitAll()
+				);
+
+		http
+				.rememberMe(rem -> rem
+						.rememberMeParameter("remember-me")
+						.key("key")
+						.tokenValiditySeconds(60 * 60 * 24 * 7)
+				);
+
+		http
+				.csrf(csrf -> csrf.disable());
+
+		return http.build();
 	}
 }

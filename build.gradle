@@ -50,6 +50,8 @@ dependencies {
 
     // 서로 다른 클래스(객체) 간의 변환을 지원해주는 ModelMapper 라이브러리
     implementation 'org.modelmapper:modelmapper:3.2.6'
+    
+    implementation 'org.json:json:20231013'
 
 }
 

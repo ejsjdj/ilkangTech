@@ -14,7 +14,7 @@ import java.time.LocalDate;
 public class DraftEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long draft_id;
+    private long draftId;
 
     @ManyToOne
     @JoinColumn(name = "common_id")

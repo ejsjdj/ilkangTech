@@ -1,19 +1,29 @@
 package com.itwillbs.ilkwangtech.schedule.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleSearchDTO;
 import com.itwillbs.ilkwangtech.schedule.entity.Schedule;
@@ -29,12 +39,23 @@ import lombok.extern.log4j.Log4j2;
 public class ScheduleService {
 	
 	private final ScheduleRepository scheduleRepository;
+	private final DepartmentRepository departmentRepository;
+    private final MemberRepository memberRepository;
+    
+    @Value("${file.upload.path:C:/upload/}") 
+    private String uploadDir;
 	
 	// 일정 리스트 조회
 	// [변경] 파라미터가 int page -> Pageable pageable 로 바뀝니다.
 	@Transactional(readOnly = true)
 	public Page<ScheduleDTO> getScheduleList(Long loginMemberId, ScheduleSearchDTO params, Pageable pageable) {
+	    log.info("getScheduleList() 실행!");
 	    
+	    Member loginMember = memberRepository.findById(loginMemberId)
+                                             .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+	    
+        int myDeptId = loginMember.getDepartment();
+		
 	    LocalDateTime startDateTime;
 	    LocalDateTime endDateTime;
 	    
@@ -52,18 +73,19 @@ public class ScheduleService {
 	    
 	    if ("type".equals(params.getSearchType()) && dbKeyword != null) {
 	        String k = dbKeyword.trim();
-	        if ("회사".equals(k)) {
-	            dbKeyword = "COMPANY"; // 임시 변수만 변경
-	        } else if ("개인".equals(k)) {
-	            dbKeyword = "PERSONAL"; // 임시 변수만 변경
-	        }
+	        if ("회사".equals(k)) dbKeyword = "COMPANY";
+	        else if ("개인".equals(k)) dbKeyword = "PERSONAL";
+	        else if ("연차".equals(k)) dbKeyword = "LEAVE";
+            else if ("팀".equals(k)) dbKeyword = "TEAM";
+            else if ("특정".equals(k)) dbKeyword = "SPECIFIC";
 	    }
 
 	    // Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("startDate").ascending());
 	    
 	    // 2. 리포지토리 호출
-	    Page<Schedule> pageResult = scheduleRepository.findMyAndCompanySchedules(
+	    Page<Schedule> pageResult = scheduleRepository.findWithSharing(
 	            loginMemberId,
+	            myDeptId,
 	            startDateTime,
 	            endDateTime,
 	            dbKeyword,
@@ -72,7 +94,90 @@ public class ScheduleService {
 	    );
 
 	    // 3. 변환 후 반환
+	    log.info("getScheduleList() 종료!");
 	    return pageResult.map(ScheduleDTO::fromEntity);
+	}
+
+	// 일정 등록
+	@Transactional
+	public void registSchedule(ScheduleDTO scheduleDto, Long id) {
+		log.info("registSchedule() 실행!");
+		
+		// 1. 작성자(Member) 조회
+        Member writer = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        // 2. 파일 업로드 처리
+        String savedFileName = null;
+        if (scheduleDto.getAttachment() != null && !scheduleDto.getAttachment().isEmpty()) {
+            savedFileName = saveFile(scheduleDto.getAttachment());
+            scheduleDto.setAttachmentFile(savedFileName); // DTO에 저장된 파일명 세팅
+        }
+
+        // 3. DTO -> Entity 변환 (기본 정보 및 작성자 설정)
+        // ScheduleDTO.java의 toEntity 메서드를 활용
+        Schedule schedule = scheduleDto.toEntity(writer);
+
+        // 4. 공유 범위에 따른 연관관계 설정 (팀/사원)
+        // 주의: Schedule Entity에 @ManyToMany 필드(sharedDepartments, sharedMembers)가 있어야 함
+        
+        // [팀 공유]
+        if ("TEAM".equals(scheduleDto.getType()) && scheduleDto.getSharedDeptIds() != null && !scheduleDto.getSharedDeptIds().isEmpty()) {
+            List<Department> departments = departmentRepository.findAllById(scheduleDto.getSharedDeptIds());
+            // Schedule 엔티티에 세터나 편의 메서드가 필요함 (예: setSharedDepartments)
+            schedule.setSharedDepartments(new HashSet<>(departments));
+        }
+        
+        // [특정 사원 공유]
+        else if ("SPECIFIC".equals(scheduleDto.getType()) && scheduleDto.getSharedMemberIds() != null && !scheduleDto.getSharedMemberIds().isEmpty()) {
+            List<Member> members = memberRepository.findAllById(scheduleDto.getSharedMemberIds());
+            // Schedule 엔티티에 세터나 편의 메서드가 필요함 (예: setSharedMembers)
+            schedule.setSharedMembers(new HashSet<>(members));
+        }
+
+        // 5. 최종 저장
+        scheduleRepository.save(schedule);
+        log.info("일정 등록 완료: ID={}, Title={}", schedule.getId(), schedule.getTitle());
+        log.info("registSchedule() 종료!");
+	}
+	
+	// 파일 저장 로직 (내부 헬퍼 메서드)
+    private String saveFile(MultipartFile file) {
+        if (file.isEmpty()) return null;
+
+        String originalFileName = file.getOriginalFilename();
+        String uuid = UUID.randomUUID().toString();
+        // 저장될 파일명: "UUID_원본이름"
+        String savedFileName = uuid + "_" + originalFileName;
+
+        File dest = new File(uploadDir + savedFileName);
+        
+        // 디렉토리가 없으면 생성
+        if (!dest.getParentFile().exists()) {
+            dest.getParentFile().mkdirs();
+        }
+
+        try {
+            file.transferTo(dest); // 실제 파일 저장
+            return savedFileName;
+        } catch (IOException e) {
+            log.error("파일 업로드 실패: ", e);
+            throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 부서(팀) 검색 기능 구현
+	public List<Department> searchTeams(String keyword) {
+		log.info("searchTeams() 실행!");
+		log.info("searchTeams() 종료!");
+		return departmentRepository.findByDepartmentNameContaining(keyword);
+	}
+
+	// 사원 검색 기능 구현
+	public List<Member> searchMembers(String keyword) {
+		log.info("searchMembers() 실행!");
+		log.info("searchMembers() 종료!");
+		return memberRepository.findByNameContaining(keyword);
 	}
 
 

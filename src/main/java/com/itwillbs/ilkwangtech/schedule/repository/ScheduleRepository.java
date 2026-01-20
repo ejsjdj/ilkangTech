@@ -13,41 +13,35 @@ import com.itwillbs.ilkwangtech.schedule.entity.Schedule;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-	/*
-     * [검색 조건]
-     * 1. 권한: (일정 타입이 'COMPANY' 이거나) OR (작성자가 '나' 이거나)
-     * 2. 날짜: 시작일이 검색 기간(start ~ end) 사이에 존재
-     * 3. 검색어: 제목에 키워드 포함 (옵션)
-     */
-	@Query(value = "SELECT s FROM Schedule s " +
-            "JOIN FETCH s.writer w " +
-            "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
-            "AND (s.startDate BETWEEN :start AND :end) " +
-            "AND (" +
-            "   (:keyword IS NULL OR :keyword = '') OR " +
-            "   (:searchType = 'title' AND s.title LIKE %:keyword%) OR " +
-            "   (:searchType = 'content' AND s.content LIKE %:keyword%) OR " +
-            "   (:searchType = 'writer' AND w.name LIKE %:keyword%) OR " +
-            "   (:searchType = 'type' AND s.type LIKE %:keyword%) " + // [여기 추가됨]
-            ")",
-    countQuery = "SELECT count(s) FROM Schedule s " +
-                 "JOIN s.writer w " +
-                 "WHERE (s.type = 'COMPANY' OR w.id = :loginId) " +
-                 "AND (s.startDate BETWEEN :start AND :end) " +
-                 "AND (" +
-                 "   (:keyword IS NULL OR :keyword = '') OR " +
-                 "   (:searchType = 'title' AND s.title LIKE %:keyword%) OR " +
-                 "   (:searchType = 'content' AND s.content LIKE %:keyword%) OR " +
-                 "   (:searchType = 'writer' AND w.name LIKE %:keyword%) OR " +
-                 "   (:searchType = 'type' AND s.type LIKE %:keyword%) " + // [여기 추가됨]
-                 ")")
-    Page<Schedule> findMyAndCompanySchedules(
-         @Param("loginId") Long loginId,
-         @Param("start") LocalDateTime start,
-         @Param("end") LocalDateTime end,
-         @Param("keyword") String keyword,
-         @Param("searchType") String searchType,
-         Pageable pageable
-    );
+	
+	@Query("SELECT s FROM Schedule s " +
+	           "LEFT JOIN s.writer w " + // 작성자 이름 검색을 위해 writer는 조인 유지
+	           "WHERE " +
+	           " ( " +
+	           "   s.writer.id = :memberId " +                             // 1. 내가 쓴 글
+	           "   OR s.type = 'COMPANY' " +                               // 2. 회사 전체
+	           // [핵심 변경] JOIN 대신 EXISTS 사용 (중복 제거 효과)
+	           "   OR (s.type = 'TEAM' AND EXISTS (SELECT 1 FROM s.sharedDepartments sd WHERE sd.id = :deptId)) " + 
+	           "   OR (s.type = 'SPECIFIC' AND EXISTS (SELECT 1 FROM s.sharedMembers sm WHERE sm.id = :memberId)) " +
+	           " ) " +
+	           " AND (s.startDate BETWEEN :start AND :end OR s.endDate BETWEEN :start AND :end) " + // 날짜 범위
+	           " AND ( " + // 검색 조건
+	           "   (:keyword IS NULL OR :keyword = '') " +
+	           "   OR (:searchType = 'title' AND s.title LIKE %:keyword%) " +
+	           "   OR (:searchType = 'content' AND s.content LIKE %:keyword%) " +
+	           "   OR (:searchType = 'writer' AND w.name LIKE %:keyword%) " +
+	           "   OR (:searchType = 'type' AND s.type LIKE %:keyword%) " +
+	           " )")
+	    Page<Schedule> findWithSharing(
+	            @Param("memberId") Long memberId,
+	            @Param("deptId") int deptId,
+	            @Param("start") LocalDateTime start,
+	            @Param("end") LocalDateTime end,
+	            @Param("keyword") String keyword,
+	            @Param("searchType") String searchType,
+	            Pageable pageable
+	    );
+	
+	
 	
 }

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- 문서 상세보기 모달 -->
+<div th:fragment="draftDetailModal">
+  <div id="draftDetailModal" class="modal">
+    <div class="modalBody">
+
+      <h3>결재 문서 상세보기</h3>
+
+      <!-- 결재 문서 양식 -->
+      <div class="form-group">
+        <label>결재양식</label>
+        <select id="detailDraftType" disabled>
+          <option value="PTO">휴가</option>
+          <option value="HDF">반차</option>
+          <option value="BUY">구매</option>
+          <option value="APP">발령</option>
+        </select>
+      </div>
+
+      <!-- 제목 -->
+      <div class="form-group">
+        <label>제목</label>
+        <input type="text" id="detailDraftTitle" readonly>
+      </div>
+
+      <!-- 내용 -->
+      <div class="form-group">
+        <label>내용</label>
+        <textarea id="detailDraftContent" rows="5" readonly></textarea>
+      </div>
+
+      <!-- 파일 -->
+      <div class="form-group">
+        <label>첨부 파일</label>
+        <input type="text" id="detailDraftFile" readonly>
+      </div>
+
+      <!-- 날짜 -->
+      <div class="form-group">
+        <label>결재 기간</label>
+        <div class="date-group">
+          <input type="date" id="detailStartDate" readonly>
+          <span>~</span>
+          <input type="date" id="detailEndDate" readonly>
+        </div>
+      </div>
+
+      <!-- 결재자 라인 -->
+      <div class="form-group">
+        <label>결재 라인</label>
+        <div class="approval-line-box">
+          <input type="text" id="detailApprover1" readonly>
+          <input type="text" id="detailApprover2" readonly>
+          <input type="text" id="detailApprover3" readonly>
+        </div>
+      </div>
+
+      <!-- 버튼 -->
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeModal()">닫기</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -4,257 +4,139 @@
       layout:decorate="~{layout/layout}">
 <head>
     <title>일정 관리</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     <th:block layout:fragment="style">
-		<style>
-		    /* 전체 컨테이너 스타일 */
-		    .page-container {
-		        background: #ffffff;
-		        border-radius: 8px;
-		        padding: 25px;
-		        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-		        min-height: 800px;
-		        position: relative;
-		        display: flex;
-		        flex-direction: column;
-		    }
-		
-		    /* 타이틀 영역 */
-		    .page-header {
-		        margin-bottom: 20px;
-		    }
-		    .page-title {
-		        font-size: 24px;
-		        font-weight: 700;
-		        color: #333;
-		        margin-bottom: 10px;
-		    }
-		    
-		    /* [수정] 검색 폼이 한 줄 전체를 차지하고 양끝 정렬 */
-		    .header-control form {
-		        width: 100%;
-		        display: flex;
-		        justify-content: space-between; 
-		        align-items: center;
-		    }
-		
-		    /* 좌측 날짜 영역 그룹 */
-		    .search-left-group {
-		        display: flex;
-		        align-items: center;
-		        gap: 8px;
-		    }
-		
-		    /* 우측 검색어+버튼 영역 그룹 */
-		    .search-right-group {
-		        display: flex;
-		        align-items: center;
-		        gap: 5px; 
-		    }
-		
-		    /* --- [핵심 수정] 모든 입력창/버튼 높이 38px로 강제 통일 --- */
-		    
-		    /* 1. 공통 스타일 (높이, 박스모델, 폰트) */
-		    .input-date-fixed,
-		    .search-select,
-		    .search-input,
-		    .btn-search,
-		    .btn-reset,
-		    .btn-custom-blue {
-		        height: 38px !important;      /* 높이 강제 통일 */
-		        line-height: 1.5;             
-		        font-size: 13px;
-		        box-sizing: border-box;       /* 테두리 포함 크기 계산 */
-		        vertical-align: middle;
-		        border-radius: 4px;
-		    }
-		
-		    /* 2. 날짜 입력창 */
-		    .input-date-fixed {
-		        width: 150px;
-		        padding: 0 10px;
-		        color: #666;
-		        display: inline-block;
-		        border: 1px solid #ced4da;
-		    }
-		
-		    /* 3. 우측 검색 드롭다운 */
-		    .search-select {
-		        width: 100px;                 /* 너비 고정 */
-		        border: 1px solid #ced4da;
-		        padding: 0 10px;
-		        background-color: #fff;
-		        cursor: pointer;
-		        outline: none;
-		    }
-		    .search-select:focus {
-		        border-color: #5c6bc0;
-		    }
-		
-		    /* 4. 우측 검색어 입력창 */
-		    .search-input {
-		        width: 220px;                 /* 너비 조정 */
-		        border: 1px solid #ced4da;
-		        padding: 0 10px;
-		        outline: none;
-		    }
-		    .search-input:focus {
-		        border-color: #5c6bc0;
-		    }
-		
-		    /* 5. 조회 버튼 */
-		    .btn-search {
-		        background-color: #fff;
-		        border: 1px solid #5c6bc0;
-		        color: #5c6bc0;
-		        padding: 0 15px;              /* 좌우 패딩만 설정 (높이는 위에서 통일됨) */
-		        transition: all 0.2s;
-		        white-space: nowrap;
-		        cursor: pointer;
-		        display: inline-flex;         /* 텍스트 중앙 정렬용 */
-		        align-items: center;
-		        justify-content: center;
-		    }
-		    .btn-search:hover {
-		        background-color: #5c6bc0;
-		        color: white;
-		    }
-		
-		    /* 6. 일정등록 버튼 (+일정) */
-		    .btn-custom-blue {
-		        background-color: #fff;
-		        border: 1px solid #5c6bc0;
-		        color: #5c6bc0;
-		        padding: 0 15px;
-		        transition: all 0.2s;
-		        white-space: nowrap;
-		        text-decoration: none;
-		        display: inline-flex;         /* 아이콘+텍스트 중앙 정렬 */
-		        align-items: center;
-		        justify-content: center;
-		        font-weight: 600;
-		    }
-		    .btn-custom-blue:hover {
-		        background-color: #5c6bc0;
-		        color: white;
-		    }
-		    
-		    /* 7. 초기화 버튼 */
-		    .btn-reset {
-		        border: 1px solid #ced4da;
-		        background: #fff;
-		        color: #666;
-		        width: 38px;                  /* 정사각형 */
-		        padding: 0;
-		        display: inline-flex;
-		        align-items: center;
-		        justify-content: center;
-		        text-decoration: none;
-		    }
-		
-		    /* --- 테이블 스타일 (기존 유지) --- */
-		    .custom-table {
-		        width: 100%;
-		        border-collapse: collapse;
-		        font-size: 14px;
-		        border: 1px solid #e0e0e0;
-		    }
-		    .custom-table thead th {
-		        background-color: #f8f9fa;
-		        color: #495057;
-		        font-weight: 600;
-		        text-align: center;
-		        border-bottom: 1px solid #dee2e6;
-		        padding: 12px;
-		        vertical-align: middle;
-		    }
-		    .custom-table tbody td {
-		        padding: 12px;
-		        border-bottom: 1px solid #f0f0f0;
-		        color: #333;
-		        vertical-align: middle;
-		        text-align: center;
-		    }
-		    .custom-table tbody tr:hover {
-		        background-color: #f1f3f5;
-		    }
-		    
-		    /* 정렬 아이콘 */
-		    .sort-icon {
-		        font-size: 10px;
-		        color: #aaa;
-		        margin-left: 4px;
-		        cursor: pointer;
-		    }
-		
-		    /* No Data 스타일 */
-		    .no-data {
-		        text-align: center;
-		        padding: 50px 0;
-		        color: #adb5bd;
-		        font-size: 14px;
-		    }
-		
-		    /* 페이지네이션 */
-		    .pagination {
-		        display: flex !important;
-		        list-style: none !important;
-		        padding: 0;
-		        margin: 0;
-		        gap: 4px;
-		        justify-content: center;
-		    }
-		    .pagination-container {
-		        margin-top: 30px;
-		        margin-bottom: 30px;
-		        display: flex;
-		        justify-content: center;
-		    }
-		    .pagination .page-link {
-		        display: flex;
-		        justify-content: center;
-		        align-items: center;
-		        width: 34px;
-		        height: 34px;
-		        color: #333;
-		        background-color: #fff;
-		        border: 1px solid #dee2e6;
-		        border-radius: 4px;
-		        font-size: 14px;
-		        text-decoration: none;
-		        transition: all 0.2s;
-		    }
-		    .pagination .page-item.active .page-link {
-		        background-color: #5c6bc0;
-		        border-color: #5c6bc0;
-		        color: #fff;
-		        z-index: 1;
-		        font-weight: 600;
-		    }
-		    .pagination .page-link:hover {
-		        background-color: #e9ecef;
-		        color: #5c6bc0;
-		        border-color: #dee2e6;
-		    }
-		    .pagination .page-link:focus { box-shadow: none; }
-		    .pagination .page-item.disabled .page-link {
-		        color: #ccc;
-		        pointer-events: none;
-		        background-color: #f8f9fa;
-		    }
-		
-		    .header-control {
-		        width: 100% !important;
-		        padding-bottom: 10px;
-		    }
-		    .clickable-th {
-		        cursor: pointer;
-		        user-select: none;
-		    }
-		    .clickable-th:hover {
-		        background-color: #e9ecef !important;
-		    }
-		</style>
+        <style>
+            /* --- 기존 스타일 유지 --- */
+            .page-container {
+                background: #ffffff;
+                border-radius: 8px;
+                padding: 25px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                min-height: 800px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+            }
+            .page-header { margin-bottom: 20px; }
+            .page-title { font-size: 24px; font-weight: 700; color: #333; margin-bottom: 10px; }
+            
+            .header-control form {
+                width: 100%;
+                display: flex;
+                justify-content: space-between; 
+                align-items: center;
+            }
+            .header-control { margin-bottom: 15px !important; }
+            .search-left-group { display: flex; align-items: center; gap: 8px; }
+            .search-right-group { display: flex; align-items: center; gap: 5px; }
+
+            /* 입력창/버튼 높이 통일 (38px) */
+            .input-date-fixed, .search-select, .search-input, 
+            .btn-search, .btn-reset, .btn-custom-blue {
+                height: 38px !important;
+                line-height: 1.5;
+                font-size: 13px;
+                box-sizing: border-box;
+                vertical-align: middle;
+                border-radius: 4px;
+            }
+            .input-date-fixed { width: 150px; padding: 0 10px; border: 1px solid #ced4da; color: #666; }
+            .search-select { width: 100px; border: 1px solid #ced4da; padding: 0 10px; cursor: pointer; }
+            .search-input { width: 220px; border: 1px solid #ced4da; padding: 0 10px; }
+            
+            .btn-search {
+                background-color: #fff; border: 1px solid #5c6bc0; color: #5c6bc0;
+                padding: 0 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            }
+            .btn-search:hover { background-color: #5c6bc0; color: white; }
+
+            .btn-custom-blue {
+                background-color: #fff; border: 1px solid #5c6bc0; color: #5c6bc0;
+                padding: 0 15px; display: inline-flex; align-items: center; justify-content: center;
+                font-weight: 600; text-decoration: none; cursor: pointer;
+            }
+            .btn-custom-blue:hover { background-color: #5c6bc0; color: white; }
+            
+            .btn-reset {
+                border: 1px solid #ced4da; background: #fff; color: #666; width: 38px;
+                padding: 0; display: inline-flex; align-items: center; justify-content: center;
+                text-decoration: none !important; 
+            }
+
+            /* 테이블 스타일 */
+            .custom-table { width: 100%; border-collapse: collapse; font-size: 14px; border: 1px solid #e0e0e0; }
+            .custom-table thead th { background-color: #f8f9fa; color: #495057; font-weight: 600; text-align: center; border-bottom: 1px solid #dee2e6; padding: 12px; }
+            .custom-table tbody td { padding: 12px; border-bottom: 1px solid #f0f0f0; color: #333; text-align: center; vertical-align: middle; }
+            .custom-table tbody tr:hover { background-color: #f1f3f5; }
+            .sort-icon { font-size: 10px; color: #aaa; margin-left: 4px; cursor: pointer; }
+            .no-data { text-align: center; padding: 50px 0; color: #adb5bd; }
+
+            /* 페이지네이션 */
+            .pagination-container { margin-top: 30px; margin-bottom: 30px; display: flex; justify-content: center; width: 100%;}
+            .pagination .page-link { display: flex; justify-content: center; align-items: center; width: 34px; height: 34px; color: #333; background-color: #fff; border: 1px solid #dee2e6; border-radius: 4px; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+            .pagination .page-item.active .page-link { background-color: #5c6bc0; border-color: #5c6bc0; color: #fff; z-index: 1; font-weight: 600; }
+            .pagination .page-link:hover { background-color: #e9ecef; color: #5c6bc0; border-color: #dee2e6; }
+            .pagination .page-item.disabled .page-link { color: #ccc; pointer-events: none; background-color: #f8f9fa; border-color: #dee2e6; }
+            
+            ul.pagination { display: flex !important; flex-direction: row !important; list-style: none !important; padding: 0 !important; margin: 0 !important; gap: 5px; align-items: center !important; }
+            li.page-item { list-style: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; }
+            
+            .clickable-th { cursor: pointer; user-select: none; }
+            
+            /* --- [모달 관련 스타일 추가] --- */
+            .modal-header { background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+            .modal-title { font-weight: 700; color: #333; font-size: 18px; }
+            .form-label { font-weight: 600; color: #495057; font-size: 14px; margin-bottom: 6px; }
+            .required-star { color: #dc3545; margin-left: 2px; }
+            
+            /* 파일 미리보기 영역 */
+            #filePreviewArea {
+                margin-top: 10px; padding: 10px; border: 1px dashed #ced4da; border-radius: 4px; background: #fafafa;
+                min-height: 50px; display: flex; align-items: center; justify-content: center; color: #888;
+            }
+            #filePreviewArea img { max-width: 100%; max-height: 200px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+            /* 검색 결과 리스트 (스크롤) */
+            .search-result-box {
+                max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; margin-top: 10px;
+            }
+            .search-result-item {
+                padding: 10px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; cursor: pointer;
+            }
+            .search-result-item:hover { background-color: #f8f9fa; }
+            .search-result-item:last-child { border-bottom: none; }
+            .search-result-item input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); cursor: pointer; }
+            /* --- [커스텀 배지 색상 적용] --- */
+            .badge-company {
+                background-color: #ff5b7f !important; /* 회사: 핑크레드 */
+                color: #fff !important;
+            }
+            .badge-team {
+                background-color: #3da5ff !important; /* 팀: 하늘색 */
+                color: #fff !important;
+            }
+            .badge-personal {
+                background-color: #f1c40f !important; /* 개인: 노랑 */
+                color: #fff !important; /* 흰색 글씨 (잘 안 보이면 #333으로 변경) */
+            }
+            .badge-leave {
+                background-color: #b7f3c4 !important; /* 연차: 연두 */
+                color: #333 !important; /* 밝은 배경이라 검은 글씨 */
+            }
+            .badge-specific {
+                background-color: #9C27B0 !important; /* 특정: 보라 */
+                color: #fff !important;
+            }
+        </style>
     </th:block>
 </head>
 <body>
@@ -267,9 +149,7 @@
         </div>
 
         <div class="header-control mb-3">
-            
             <form action="/schedule/list" method="get" id="searchForm">
-                
                 <input type="hidden" name="sortField" id="sortField" th:value="${sortField}">
                 <input type="hidden" name="sortDir" id="sortDir" th:value="${sortDir}">
                 <input type="hidden" name="page" id="page" value="1">
@@ -277,36 +157,26 @@
                 <div class="search-left-group">
                     <input type="date" name="startDate" id="startDate" class="input-date-fixed" 
                            th:value="${searchParams.startDate != null ? #temporals.format(searchParams.startDate, 'yyyy-MM-dd') : ''}">
-                    
                     <span class="fw-bold text-secondary">~</span>
-                    
                     <input type="date" name="endDate" id="endDate" class="input-date-fixed"
                            th:value="${searchParams.endDate != null ? #temporals.format(searchParams.endDate, 'yyyy-MM-dd') : ''}">
-                    
                     <button type="submit" class="btn btn-search">조회</button>
-                    
-                    <a th:href="@{/schedule/list}" class="btn-reset" title="초기화">
-                        <i class="fa-solid fa-arrows-rotate"></i>
-                    </a>
+                    <a th:href="@{/schedule/list}" class="btn-reset" title="초기화"><i class="fa-solid fa-arrows-rotate"></i></a>
                 </div>
 
-                <div class="search-right-group" style="display: flex; align-items: center; gap: 4px;"> 
-                	<select name="searchType" class="search-select">
-				        <option value="title" th:selected="${searchParams.searchType == 'title'}">제목</option>
-				        <option value="type" th:selected="${searchParams.searchType == 'type'}">종류</option>
-				        <option value="content" th:selected="${searchParams.searchType == 'content'}">내용</option>
-				        <option value="writer" th:selected="${searchParams.searchType == 'writer'}">작성자</option>
-				    </select>
-				
-				    <input type="text" name="keyword" class="search-input" 
-				           placeholder="검색어 입력" 
-				           th:value="${searchParams.keyword}">
-				    
-				    <a th:href="@{/schedule/register}" class="btn btn-custom-blue">
-				        <i class="fa-solid fa-plus" style="margin-right: 4px;"></i> 일정
-				    </a>
-				</div>
-
+                <div class="search-right-group"> 
+                    <select name="searchType" class="search-select">
+                        <option value="title" th:selected="${searchParams.searchType == 'title'}">제목</option>
+                        <option value="type" th:selected="${searchParams.searchType == 'type'}">종류</option>
+                        <option value="content" th:selected="${searchParams.searchType == 'content'}">내용</option>
+                        <option value="writer" th:selected="${searchParams.searchType == 'writer'}">작성자</option>
+                    </select>
+                    <input type="text" name="keyword" class="search-input" placeholder="검색어 입력" th:value="${searchParams.keyword}">
+                    
+                    <button type="button" class="btn btn-custom-blue" id="btnOpenScheduleModal">
+                        <i class="fa-solid fa-plus" style="margin-right: 4px;"></i> 일정 등록
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -314,73 +184,42 @@
             <table class="table custom-table text-center">
                 <thead>
                     <tr>
-				        <th style="width: 60px;">No.</th>
-				        
-				        <th class="clickable-th" onclick="goSort('title')">
-				            일정제목 
-				            <span class="sort-icon" th:if="${sortField == 'title'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
-				            <span class="sort-icon text-muted" th:unless="${sortField == 'title'}">▽</span>
-				        </th>
-				        
-				        <th style="width: 80px;" class="clickable-th" onclick="goSort('type')">
-				            종류 
-				            <span class="sort-icon" th:if="${sortField == 'type'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
-				            <span class="sort-icon text-muted" th:unless="${sortField == 'type'}">▽</span>
-				        </th>
-				        
-				        <th style="width: 160px;" class="clickable-th" onclick="goSort('startDate')">
-				            일정시작 
-				            <span class="sort-icon" th:if="${sortField == 'startDate'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
-				            <span class="sort-icon text-muted" th:unless="${sortField == 'startDate'}">▽</span>
-				        </th>
-				        
-				        <th style="width: 160px;" class="clickable-th" onclick="goSort('endDate')">
-				            일정마감 
-				            <span class="sort-icon" th:if="${sortField == 'endDate'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
-				            <span class="sort-icon text-muted" th:unless="${sortField == 'endDate'}">▽</span>
-				        </th>
-				        
-				        <th style="width: 100px;" class="clickable-th" onclick="goSort('writer.name')">
-				            작성자 
-				            <span class="sort-icon" th:if="${sortField == 'writer.name'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
-				            <span class="sort-icon text-muted" th:unless="${sortField == 'writer.name'}">▽</span>
-				        </th>
-				        
-				        <th>내용</th> <th style="width: 80px;">상세</th>
-				    </tr>
+                        <th style="width: 60px;">No.</th>
+                        <th class="clickable-th" onclick="goSort('title')">일정제목 <span class="sort-icon" th:text="${sortField == 'title' ? (sortDir == 'asc' ? '▲' : '▼') : '▽'}"></span></th>
+                        <th style="width: 80px;" class="clickable-th" onclick="goSort('type')">종류 <span class="sort-icon" th:text="${sortField == 'type' ? (sortDir == 'asc' ? '▲' : '▼') : '▽'}"></span></th>
+                        <th style="width: 160px;" class="clickable-th" onclick="goSort('startDate')">일정시작 <span class="sort-icon" th:text="${sortField == 'startDate' ? (sortDir == 'asc' ? '▲' : '▼') : '▽'}"></span></th>
+                        <th style="width: 160px;" class="clickable-th" onclick="goSort('endDate')">일정마감 <span class="sort-icon" th:text="${sortField == 'endDate' ? (sortDir == 'asc' ? '▲' : '▼') : '▽'}"></span></th>
+                        <th style="width: 100px;" class="clickable-th" onclick="goSort('writer.name')">작성자 <span class="sort-icon" th:text="${sortField == 'writer.name' ? (sortDir == 'asc' ? '▲' : '▼') : '▽'}"></span></th>
+                        <th>내용</th>
+                        <th style="width: 80px;">상세</th>
+                    </tr>
                 </thead>
                 <tbody>
-                    <tr th:if="${schedules.totalElements == 0}">
-				        <td colspan="8" class="no-data">
-				            등록된 일정이 없습니다.
-				        </td>
-				    </tr>
-				
-				    <tr th:each="dto, state : ${schedules}">
-				        <td th:text="${(schedules.number * schedules.size) + state.count}">1</td>
-				        
-				        <td class="fw-bold text-dark">
-				            <span th:text="${dto.title}" class="text-decoration-none text-dark">
-				                제목
-				            </span>
-				        </td>
-				        
-				        <td>
-				            <span class="badge rounded-pill" 
-				                  th:classappend="${dto.type == 'COMPANY' ? 'bg-danger' : 'bg-primary'}"
-				                  th:text="${dto.type == 'COMPANY' ? '회사' : '개인'}">
-				            </span>
-				        </td>
-				        <td th:text="${#temporals.format(dto.startDate, 'yyyy-MM-dd HH:mm')}"></td>
-				        <td th:text="${#temporals.format(dto.endDate, 'yyyy-MM-dd HH:mm')}"></td>
-				        <td th:text="${dto.writerName}"></td>
-				        
-				        <td class="text-muted text-truncate" style="max-width: 200px; margin: 0 auto;" th:text="${dto.content}">내용</td>
-				        
-				        <td>
-				            <a th:href="@{/schedule/detail(id=${dto.id})}" class="btn btn-sm btn-outline-secondary" style="font-size: 12px;">상세</a>
-				        </td>
-				    </tr>
+                    <tr th:if="${schedules.totalElements == 0}"><td colspan="8" class="no-data">등록된 일정이 없습니다.</td></tr>
+                    <tr th:each="dto, state : ${schedules}">
+                        <td th:text="${(schedules.number * schedules.size) + state.count}">1</td>
+                        <td class="fw-bold text-dark"><span th:text="${dto.title}">제목</span></td>
+                        <td>
+                            <span class="badge rounded-pill" 
+						          th:classappend="${
+						          	  dto.type == 'COMPANY' ? 'badge-company' : 
+                                      (dto.type == 'TEAM' ? 'badge-team' : 
+                                      (dto.type == 'PERSONAL' ? 'badge-personal' : 
+                                      (dto.type == 'LEAVE' ? 'badge-leave' : 
+                                      'badge-specific'))) }"
+						          th:text="${
+						          	  dto.type == 'COMPANY' ? '회사' : 
+                                      (dto.type == 'TEAM' ? '팀' : 
+                                      (dto.type == 'PERSONAL' ? '개인' : 
+                                      (dto.type == 'LEAVE' ? '연차' : '특정'))) }">
+						    </span>
+                        </td>
+                        <td th:text="${#temporals.format(dto.startDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${#temporals.format(dto.endDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${dto.writerName}"></td>
+                        <td class="text-muted text-truncate" style="max-width: 200px; margin: 0 auto;" th:text="${dto.content}">내용</td>
+                        <td><a th:href="@{/schedule/detail(id=${dto.id})}" class="btn btn-sm btn-outline-secondary" style="font-size: 12px;">상세</a></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -391,20 +230,15 @@
                     <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
                         <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(1)'">«</a>
                     </li>
-                    
                     <li class="page-item" th:classappend="${schedules.first} ? 'disabled'">
                         <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${currentPage - 1} + ')'">‹</a>
                     </li>
-
-                    <li class="page-item" th:each="page: ${#numbers.sequence(startPage, endPage)}"
-                        th:classappend="${page == currentPage} ? 'active'">
+                    <li class="page-item" th:each="page: ${#numbers.sequence(startPage, endPage)}" th:classappend="${page == currentPage} ? 'active'">
                         <a class="page-link" href="javascript:void(0)" th:text="${page}" th:onclick="'goPage(' + ${page} + ')'">1</a>
                     </li>
-
                     <li class="page-item" th:classappend="${schedules.last} ? 'disabled'">
                         <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${currentPage + 1} + ')'">›</a>
                     </li>
-                    
                     <li class="page-item" th:classappend="${currentPage == schedules.totalPages} ? 'disabled'">
                         <a class="page-link" href="javascript:void(0)" th:onclick="'goPage(' + ${schedules.totalPages} + ')'">»</a>
                     </li>
@@ -412,28 +246,328 @@
             </nav>
         </div>
 
-    </div> 
-</div>
+    </div> <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-regular fa-calendar-check me-2"></i>일정 등록</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleForm" enctype="multipart/form-data">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">제목 <span class="required-star">*</span></label>
+                            <input type="text" class="form-control" id="schedTitle" name="title" placeholder="일정 제목을 입력하세요">
+                        </div>
 
-<th:block layout:fragment="script">
+                        <div class="mb-3">
+                            <label class="form-label">공유 범위 <span class="required-star">*</span></label>
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <select class="form-select" id="schedType" name="type">
+                                        <option value="PERSONAL" selected>개인</option>
+                                        <option value="LEAVE">연차</option>
+                                        <option value="COMPANY">회사</option>
+                                        <option value="TEAM">팀</option>
+                                        <option value="SPECIFIC">특정</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-9" id="shareTargetArea" style="display:none;">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="selectedTargetNames" readonly placeholder="공유할 대상을 선택하세요" style="background-color: #f8f9fa;">
+                                        <button class="btn btn-outline-primary" type="button" id="btnOpenTargetModal">
+                                            + 조직도 선택
+                                        </button>
+                                    </div>
+                                    <div id="hiddenIdArea"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">시작 시간 <span class="required-star">*</span></label>
+                                <input type="datetime-local" class="form-control" id="schedStart" name="startDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">종료 시간 <span class="required-star">*</span></label>
+                                <input type="datetime-local" class="form-control" id="schedEnd" name="endDate">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">파일 첨부</label>
+                            <input type="file" class="form-control" id="schedFile" name="attachment">
+                            <div id="filePreviewArea">
+                                <span>첨부된 파일이 없습니다.</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">일정 메모 <span class="required-star">*</span></label>
+                            <textarea class="form-control" id="schedContent" name="content" rows="5" placeholder="일정 내용을 입력하세요"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="btnRegister">등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="searchTargetModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title" id="searchModalTitle">조직도에서 공유자 선택</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" id="targetSearchKeyword" placeholder="이름 검색">
+                        <button class="btn btn-outline-secondary" type="button" id="btnTargetSearch">검색</button>
+                    </div>
+                    
+                    <div class="search-result-box" id="targetResultList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmTarget">적용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div> <th:block layout:fragment="script">
     <script th:inline="javascript">
-        // 페이지 이동 함수
+        $(document).ready(function() {
+            
+            // --- 1. 모달 열기 ---
+            $('#btnOpenScheduleModal').click(function() {
+                // 폼 초기화
+                $('#scheduleForm')[0].reset();
+                $('#filePreviewArea').html('<span>첨부된 파일이 없습니다.</span>');
+                $('#shareTargetArea').hide();
+                $('#hiddenIdArea').empty();
+                
+                // 모달 띄우기 (Bootstrap 기능)
+                var myModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+                myModal.show();
+            });
+
+            // --- 2. 공유 범위 변경 시 UI 제어 ---
+            $('#schedType').change(function() {
+                const type = $(this).val();
+                const $targetArea = $('#shareTargetArea');
+                const $btnLabel = $('#btnOpenTargetModal');
+                
+                // 초기화
+                $('#selectedTargetNames').val('');
+                $('#hiddenIdArea').empty();
+
+                if (type === 'PERSONAL' || type === 'COMPANY' || type === 'LEAVE') {
+                    $targetArea.hide();
+                } else {
+                    $targetArea.show(); 
+                    $targetArea.css('display', 'flex'); 
+                    
+                    if (type === 'TEAM') {
+                        $btnLabel.html('<i class="fa-solid fa-users me-1"></i> +공유팀 지정');
+                    } else if (type === 'SPECIFIC') {
+                        $btnLabel.html('<i class="fa-solid fa-user-plus me-1"></i> +공유자 지정');
+                    }
+                }
+            });
+
+            // --- 3. [+대상 지정] 클릭 -> 서브 모달 오픈 ---
+            $('#btnOpenTargetModal').click(function() {
+                const type = $('#schedType').val();
+                $('#targetResultList').empty(); // 리스트 초기화
+                $('#targetSearchKeyword').val(''); // 검색어 초기화
+                
+                if(type === 'TEAM') {
+                    $('#searchModalTitle').text('조직도에서 공유팀 선택');
+                    loadTeamList(''); // 전체 팀 로드
+                } else {
+                    $('#searchModalTitle').text('조직도에서 공유자 선택');
+                    loadMemberList(''); // 전체 사원 로드
+                }
+                
+                var searchModal = new bootstrap.Modal(document.getElementById('searchTargetModal'));
+                searchModal.show();
+            });
+
+            // --- 4. 서브 모달 검색 버튼 ---
+            $('#btnTargetSearch').click(function() {
+                const keyword = $('#targetSearchKeyword').val();
+                const type = $('#schedType').val();
+                if(type === 'TEAM') loadTeamList(keyword);
+                else loadMemberList(keyword);
+            });
+            
+            // 엔터키 검색 지원
+            $('#targetSearchKeyword').on('keyup', function(key) {
+                if(key.keyCode == 13) {
+                    $('#btnTargetSearch').click();
+                }
+            });
+
+            // --- 5. [적용] 버튼 -> 메인 모달에 데이터 반영 ---
+            $('#btnConfirmTarget').click(function() {
+                const selectedIds = [];
+                const selectedNames = [];
+                
+                // 체크된 항목 수집
+                $('.target-checkbox:checked').each(function() {
+                    selectedIds.push($(this).val());
+                    selectedNames.push($(this).data('name'));
+                });
+
+                if(selectedIds.length === 0) {
+                    alert('대상을 선택해주세요.');
+                    return;
+                }
+
+                // UI 표시 (콤마로 구분)
+                $('#selectedTargetNames').val(selectedNames.join(', '));
+                
+                // Hidden Input 생성 (Form 전송용)
+                const type = $('#schedType').val();
+                const inputName = (type === 'TEAM') ? 'sharedDeptIds' : 'sharedMemberIds';
+                
+                let html = '';
+                selectedIds.forEach(id => {
+                    html += `<input type="hidden" name="${inputName}" value="${id}">`;
+                });
+                $('#hiddenIdArea').html(html);
+
+                // 현재 열린 서브 모달만 닫기
+                const modalEl = document.getElementById('searchTargetModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+            });
+
+            // --- 6. 파일 미리보기 ---
+            $('#schedFile').change(function() {
+                const file = this.files[0];
+                const $preview = $('#filePreviewArea');
+                $preview.empty();
+                
+                if (file) {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            $preview.html(`<img src="${e.target.result}" title="${file.name}">`);
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        $preview.html(`<div class="fw-bold"><i class="fa-solid fa-file-lines me-2"></i>${file.name}</div>`);
+                    }
+                } else {
+                    $preview.html('<span>첨부된 파일이 없습니다.</span>');
+                }
+            });
+
+            // --- 7. [등록] 버튼 클릭 (유효성 검사 및 AJAX) ---
+            $('#btnRegister').click(function() {
+                // 필수값 검사
+                const title = $('#schedTitle').val().trim();
+                const type = $('#schedType').val();
+                const startDate = $('#schedStart').val();
+                const endDate = $('#schedEnd').val();
+                const content = $('#schedContent').val().trim();
+
+                if (!title || !startDate || !endDate || !content) {
+                    alert("제목, 공유범위, 메모는 필수 입력입니다."); 
+                    return;
+                }
+                
+                if (startDate > endDate) {
+                    alert("종료 시간은 시작 시간보다 빠를 수 없습니다.");
+                    return;
+                }
+                
+                if ((type === 'TEAM' || type === 'SPECIFIC') && $('#hiddenIdArea').children().length === 0) {
+                    alert("공유할 대상을 지정해주세요.");
+                    return;
+                }
+
+                const formData = new FormData($('#scheduleForm')[0]);
+                
+                $.ajax({
+                    url: '/schedule/regist',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false, 
+                    processData: false, 
+                    success: function(response) {
+                        alert('일정이 성공적으로 등록되었습니다.');
+                        location.reload(); 
+                    },
+                    error: function(err) {
+                        alert('일정 등록에 실패했습니다.\n관리자에게 문의하세요.');
+                        console.error(err);
+                    }
+                });
+            });
+
+            // --- Helper Functions (AJAX) ---
+            function loadTeamList(keyword) {
+                $.get('/api/search/team', { keyword: keyword }, function(data) {
+                    renderList(data, 'team');
+                });
+            }
+
+            function loadMemberList(keyword) {
+                $.get('/api/search/member', { keyword: keyword }, function(data) {
+                    renderList(data, 'member');
+                });
+            }
+
+            function renderList(list, type) {
+                const $container = $('#targetResultList');
+                $container.empty();
+                
+                if(!list || list.length === 0) {
+                    $container.append('<div class="p-3 text-center text-muted">검색 결과가 없습니다.</div>');
+                    return;
+                }
+
+                list.forEach(item => {
+                    const id = item.id; 
+                    const name = (type === 'team') ? item.departmentName : `${item.name} (${item.employeeNumber})`;
+                    const icon = (type === 'team') ? '<i class="fa-solid fa-people-group text-info me-2"></i>' : '<i class="fa-solid fa-user text-secondary me-2"></i>';
+                    
+                    const html = `
+                        <label class="search-result-item">
+                            <input class="form-check-input target-checkbox" type="checkbox" value="${id}" data-name="${name}">
+                            ${icon}
+                            <span>${name}</span>
+                        </label>
+                    `;
+                    $container.append(html);
+                });
+            }
+        });
+
+        // 기존 페이지 이동 및 정렬 함수
         function goPage(page) {
             document.getElementById('page').value = page;
             document.getElementById('searchForm').submit();
         }
-     	// 정렬 함수
         function goSort(field) {
             const currentField = document.getElementById('sortField').value;
             const currentDir = document.getElementById('sortDir').value;
-            
             if (currentField === field) {
                 document.getElementById('sortDir').value = (currentDir === 'asc') ? 'desc' : 'asc';
             } else {
                 document.getElementById('sortField').value = field;
                 document.getElementById('sortDir').value = 'desc';
             }
-
             document.getElementById('page').value = 1;
             document.getElementById('searchForm').submit();
         }

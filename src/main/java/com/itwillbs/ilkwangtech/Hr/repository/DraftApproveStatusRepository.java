@@ -17,4 +17,17 @@ public interface DraftApproveStatusRepository extends JpaRepository<DraftApprove
             "JOIN FETCH r.draftEntity " +
             "WHERE r.member.id = :userId")
     List<DraftApproveStatusEntity> findByMemberIdWithDraft(@Param("userId") Long userId);
+
+
+    // TODO :: 승인 반려 구현
+    /*@Query("""
+    update DraftApprovalStatus s
+    set s.status = :status
+    where s.member.id = :memberId
+    and s.draft.id = :draftId
+    """)int updateStatus(
+            Long memberId,
+            Long draftId,
+            String status
+    );*/
 }

@@ -22,6 +22,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
+
 	// DB 를 참조하기 위한 accountRepository 선언
 	private final AccountRepository accountRepository;
 	private final ModelMapper modelMapper;
@@ -32,14 +33,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 	
 	@Override
 	public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
-		log.info("========== loadUserByUsername 시작 ==========");
-		log.info("검색할 사원번호: {}", employeeNumber);
-		
-		// 회원 정보 조회
+
 		Member member = accountRepository.findByEmployeeNumberWithMemberRoles(employeeNumber)
 				.orElseThrow(() -> new UsernameNotFoundException(employeeNumber + " : + 사용자 조회 실패!"));
 
-		// 매핑 수행
 		AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
 		
 		// 부서 이름 변환
@@ -67,11 +64,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("최종 변환된 부서: {}", accountLogin.getDepartment());
         log.info("최종 변환된 직급: {}", accountLogin.getPosition());
 
-		// ✅ [진단 로그] 이 부분이 false라면 ModelMapper 설정 문제입니다!
-		log.info("👉 매핑 직후 DTO 비밀번호 확인: {}", accountLogin.getPassword());
-		log.info("👉 매핑 성공 여부: {}", (accountLogin.getPassword() != null));
-
-		log.info("========== loadUserByUsername 종료 ==========");
 		return accountLogin;
 	}
 }

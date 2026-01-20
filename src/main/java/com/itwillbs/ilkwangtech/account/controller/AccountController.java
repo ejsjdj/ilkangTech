@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 
 
 @Controller
-@RequestMapping("/account")
 @RequiredArgsConstructor
 public class AccountController {
 

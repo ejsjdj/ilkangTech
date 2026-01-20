@@ -25,7 +25,7 @@ import java.util.List;
 @SequenceGenerator(
         name = "MEMBERS_SEQ_GENERATOR", // JPA 에서 사용할 시퀀스 이름(DB 의 시퀀스 이름이 아님!)
         sequenceName = "MEMBERS_SEQ",   // 오라클에서 사용할 시퀀스 이름
-        initialValue = 10,				// 초기값(오라클 시퀀스의 start with 값과 동일)
+        initialValue = 100,				// 초기값(오라클 시퀀스의 start with 값과 동일)
         allocationSize = 1				// 증가값(오라클 시퀀스의 increment by 값과 동일)
 )
 public class Member {
@@ -52,7 +52,7 @@ public class Member {
     private Long id;
 
     // 이름
-    @Column(length = 50, nullable = false)
+    @Column(length = 50)
     private String name;
 
     // 사원번호

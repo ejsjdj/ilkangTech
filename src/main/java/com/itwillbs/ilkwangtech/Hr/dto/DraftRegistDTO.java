@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class DraftRegistDTO {
-    //======================사용자 입력===============================//
+    //======================사용자 입력=========================//
     private String draftType;
     private String draftTitle;
     private String draftContent;

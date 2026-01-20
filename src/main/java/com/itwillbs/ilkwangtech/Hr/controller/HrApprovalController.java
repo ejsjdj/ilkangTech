@@ -5,10 +5,7 @@ import com.itwillbs.ilkwangtech.Hr.dto.DraftDTO;
 import com.itwillbs.ilkwangtech.Hr.dto.DraftDetailDTO;
 import com.itwillbs.ilkwangtech.Hr.dto.DraftRegistDTO;
 import com.itwillbs.ilkwangtech.Hr.repository.DraftRepository;
-import com.itwillbs.ilkwangtech.Hr.service.DraftApprovalLineService;
-import com.itwillbs.ilkwangtech.Hr.service.DraftDetailService;
-import com.itwillbs.ilkwangtech.Hr.service.DraftRegistService;
-import com.itwillbs.ilkwangtech.Hr.service.DraftService;
+import com.itwillbs.ilkwangtech.Hr.service.*;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,6 +25,7 @@ public class HrApprovalController {
     private final DraftService draftService;
     private final DraftApprovalLineService draftApprovalLineService;
     private final DraftDetailService draftDetailService;
+    private final DraftDecideService draftDecideService;
 
     // 결재문서 양식 선택 -> 결재문서 작성 모달 요청
     @GetMapping("/list")
@@ -42,7 +40,7 @@ public class HrApprovalController {
     // 결재문서 상세보기
     @GetMapping("/detail")
     @ResponseBody
-    public DraftDetailDTO getApprovalDetail(@RequestParam("draftId") long draftId, @AuthenticationPrincipal AccountLogin accountLogin, Model model){
+    public DraftDetailDTO getApprovalDetail(@RequestParam("draftId") long draftId, @AuthenticationPrincipal AccountLogin accountLogin){
         System.out.println("상세보기 문서 Id : " + draftId);
         Long userId = accountLogin.getId();
         return draftDetailService.getDraftDetail(userId, draftId);
@@ -51,7 +49,7 @@ public class HrApprovalController {
     // 결재문서 작성 중 양식 선택
     @GetMapping("/type")
     @ResponseBody
-    public List<DraftApprovalLineDTO> getDraftStatus(
+    public List<DraftApprovalLineDTO> getApprovalStatus(
             @RequestParam(value = "type", required = false) String draftType
     ){
         return draftApprovalLineService.getLineByType(draftType);
@@ -68,6 +66,12 @@ public class HrApprovalController {
     }
 
     // 결재 승인/반려
+    @PutMapping("/decide")
+    public void approvalDecide(@RequestParam("draftId") long draftId,
+                               @RequestParam("status") String status,
+                               @AuthenticationPrincipal AccountLogin accountLogin){
+        Long userId = accountLogin.getId();
+        draftDecideService.putApprovalDecide(userId, draftId, status);
 
-
+    }
 }

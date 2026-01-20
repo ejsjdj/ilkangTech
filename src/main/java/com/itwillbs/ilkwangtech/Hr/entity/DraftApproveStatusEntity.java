@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "draft_apprval_status")
-public class DraftRegistEntity {
+public class DraftApproveStatusEntity {
 
     // 결재 상태 ID
     @Id

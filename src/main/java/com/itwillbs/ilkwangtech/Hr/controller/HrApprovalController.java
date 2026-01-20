@@ -2,13 +2,14 @@ package com.itwillbs.ilkwangtech.Hr.controller;
 
 import com.itwillbs.ilkwangtech.Hr.dto.DraftApprovalLineDTO;
 import com.itwillbs.ilkwangtech.Hr.dto.DraftDTO;
+import com.itwillbs.ilkwangtech.Hr.dto.DraftDetailDTO;
 import com.itwillbs.ilkwangtech.Hr.dto.DraftRegistDTO;
 import com.itwillbs.ilkwangtech.Hr.repository.DraftRepository;
 import com.itwillbs.ilkwangtech.Hr.service.DraftApprovalLineService;
+import com.itwillbs.ilkwangtech.Hr.service.DraftDetailService;
 import com.itwillbs.ilkwangtech.Hr.service.DraftRegistService;
 import com.itwillbs.ilkwangtech.Hr.service.DraftService;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
-import com.itwillbs.ilkwangtech.common.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -26,14 +27,27 @@ public class HrApprovalController {
     private final DraftRegistService draftRegistService;
     private final DraftService draftService;
     private final DraftApprovalLineService draftApprovalLineService;
+    private final DraftDetailService draftDetailService;
 
     // 기안서 양식 선택 -> 작성 모달 요청
-    // 전체결재(기본값), 결재대기, 결재완료
-    @GetMapping("/list/{id}")
-    public String getApprovalList(@PathVariable long id, Model model){
-        List<DraftDTO> draftList = draftService.getDraftById(id);
+    @GetMapping("/list")
+    public String getApprovalList(@AuthenticationPrincipal AccountLogin accountLogin,Model model){
+        Long userId = accountLogin.getId();
+        List<DraftDTO> draftList = draftService.getDraftById(userId);
+
         model.addAttribute("draftList", draftList);
         return "/hr/draft";
+    }
+
+    // 결재 상세보기
+    @GetMapping("/detail/{draftId}")
+    @ResponseBody
+    public DraftDetailDTO getApprovalDetail(@PathVariable long draftId, @AuthenticationPrincipal AccountLogin accountLogin, Model model){
+        Long userId = accountLogin.getId();
+//        DraftDetailDTO draftDetailDTO = draftDetailService.getDraftDetail(userId, draftId);
+//        model.addAttribute("draftDetail", draftDetailDTO);
+        return draftDetailService.getDraftDetail(userId, draftId);
+
     }
 
     // 기안서 작성 중 양식 선택
@@ -55,5 +69,9 @@ public class HrApprovalController {
         draftRegistService.putDraft(draftRegistDTO, userId);
     }
 
+
+
     // 결재 승인/반려
+
+
 }

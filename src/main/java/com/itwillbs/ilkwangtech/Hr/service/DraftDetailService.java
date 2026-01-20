@@ -23,11 +23,11 @@ public class DraftDetailService {
                 orElseThrow(() -> new IllegalArgumentException("문서가 삭제되었거나 존재하지 않습니다"));;
 
         return DraftDetailDTO.builder()
-                .title(draftDetail.getDraftTitle())
-                .content(draftDetail.getDraftContent())
-                .file(draftDetail.getDraftFile())
-                .startDate(draftDetail.getDraftStartDate())
-                .endDate(draftDetail.getDraftEndDate())
+                .detailTitle(draftDetail.getDraftTitle())
+                .detailContent(draftDetail.getDraftContent())
+                .detailFile(draftDetail.getDraftFile())
+                .detailStartDate(draftDetail.getDraftStartDate())
+                .detailEndDate(draftDetail.getDraftEndDate())
                 .build();
     }
 }

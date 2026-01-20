@@ -13,18 +13,37 @@ function closeModal() {
 }
 
 /*상세보기 모달 열기*/
-function draftDetail(draftId){
+function draftDetail(draftId) {
     const modal = document.getElementById("draftDetailModal");
     modal.style.display = 'block'
 
     console.log("문서 ID " + draftId);
 
     fetch(`/draft/detail?draftId=${draftId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("받아온 데이터: ", data);
+
+            // _view가 붙은 새로운 ID로 접근합니다.
+            const titleView = document.getElementById('detailTitle_view');
+            const contentView = document.getElementById('detailContent_view');
+            const startView = document.getElementById('detailStartDate_view');
+            const endView = document.getElementById('detailEndDate_view');
+
+            if (titleView) titleView.value = data.detailTitle || "";
+            if (contentView) contentView.value = data.detailContent || "";
+
+            if (startView && data.detailStartDate) {
+                startView.value = data.detailStartDate.substring(0, 10);
+            }
+            if (endView && data.detailEndDate) {
+                endView.value = data.detailEndDate.substring(0, 10);
+            }
+        });
 }
 
-
 /*모달 닫기*/
-function closeModal() {
+function closeDetailModal() {
     const modal = document.getElementById('draftDetailModal');
     modal.style.display = 'none'
 }

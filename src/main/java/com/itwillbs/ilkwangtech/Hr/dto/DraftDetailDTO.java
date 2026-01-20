@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.Hr.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,19 +12,21 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 public class DraftDetailDTO {
-    private String title;
-    private String content;
-    private String file;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private String detailTitle;
+    private String detailContent;
+    private String detailFile;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate detailStartDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate detailEndDate;
 
     @Builder
-    public DraftDetailDTO(String title, String content, String file, LocalDate startDate, LocalDate endDate){
-        this.title = title;
-        this.content = content;
-        this.file = file;
-        this.startDate = startDate;
-        this.endDate = endDate;
+    public DraftDetailDTO(String detailTitle, String detailContent, String detailFile, LocalDate detailStartDate, LocalDate detailEndDate){
+        this.detailTitle = detailTitle;
+        this.detailContent = detailContent;
+        this.detailFile = detailFile;
+        this.detailStartDate = detailStartDate;
+        this.detailEndDate = detailEndDate;
     }
 
 }

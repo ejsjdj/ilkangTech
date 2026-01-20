@@ -15,7 +15,7 @@
       <!-- 결재 문서 양식 -->
       <div class="form-group">
         <label>결재양식</label>
-        <select id="detailDraftType" disabled>
+        <select id="detailDraftType">
           <option value="PTO">휴가</option>
           <option value="HDF">반차</option>
           <option value="BUY">구매</option>
@@ -26,49 +26,52 @@
       <!-- 제목 -->
       <div class="form-group">
         <label>제목</label>
-        <input type="text" id="detailDraftTitle" readonly>
+        <input type="text" id="detailTitle_view" readonly>
       </div>
 
       <!-- 내용 -->
       <div class="form-group">
         <label>내용</label>
-        <textarea id="detailDraftContent" rows="5" readonly></textarea>
+        <textarea id="detailContent_view" rows="5" readonly></textarea>
       </div>
 
       <!-- 파일 -->
-      <div class="form-group">
+      <!--<div class="form-group">
         <label>첨부 파일</label>
-        <input type="text" id="detailDraftFile" readonly>
-      </div>
+        <input type="text" id="detailFile" readonly>
+      </div>-->
 
       <!-- 날짜 -->
       <div class="form-group">
         <label>결재 기간</label>
         <div class="date-group">
-          <input type="date" id="detailStartDate" readonly>
+          <input type="date" id="detailStartDate_view" readonly>
           <span>~</span>
-          <input type="date" id="detailEndDate" readonly>
+          <input type="date" id="detailEndDate_view" readonly>
         </div>
       </div>
 
       <!-- 결재자 라인 -->
-      <div class="form-group">
+      <!--<div class="form-group">
         <label>결재 라인</label>
         <div class="approval-line-box">
           <input type="text" id="detailApprover1" readonly>
           <input type="text" id="detailApprover2" readonly>
           <input type="text" id="detailApprover3" readonly>
         </div>
-      </div>
+      </div>-->
 
       <!-- 버튼 -->
       <div class="modal-footer">
-        <button type="button" class="btn-cancel" onclick="closeModal()">닫기</button>
+        <button type="button" class="btn-cancel" onclick="closeDetailModal()">닫기</button>
+        <button type="button" class="btn-cancel" onclick="closeDetailModal()">승인</button>
+        <button type="button" class="btn-cancel" onclick="closeDetailModal()">반려</button>
       </div>
 
     </div>
   </div>
 </div>
-
 </body>
 </html>
+
+

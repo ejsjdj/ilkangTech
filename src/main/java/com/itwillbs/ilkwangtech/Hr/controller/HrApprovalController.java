@@ -29,7 +29,7 @@ public class HrApprovalController {
     private final DraftApprovalLineService draftApprovalLineService;
     private final DraftDetailService draftDetailService;
 
-    // 기안서 양식 선택 -> 작성 모달 요청
+    // 결재문서 양식 선택 -> 결재문서 작성 모달 요청
     @GetMapping("/list")
     public String getApprovalList(@AuthenticationPrincipal AccountLogin accountLogin,Model model){
         Long userId = accountLogin.getId();
@@ -39,18 +39,16 @@ public class HrApprovalController {
         return "/hr/draft";
     }
 
-    // 결재 상세보기
-    @GetMapping("/detail/{draftId}")
+    // 결재문서 상세보기
+    @GetMapping("/detail")
     @ResponseBody
-    public DraftDetailDTO getApprovalDetail(@PathVariable long draftId, @AuthenticationPrincipal AccountLogin accountLogin, Model model){
+    public DraftDetailDTO getApprovalDetail(@RequestParam("draftId") long draftId, @AuthenticationPrincipal AccountLogin accountLogin, Model model){
+        System.out.println("상세보기 문서 Id : " + draftId);
         Long userId = accountLogin.getId();
-//        DraftDetailDTO draftDetailDTO = draftDetailService.getDraftDetail(userId, draftId);
-//        model.addAttribute("draftDetail", draftDetailDTO);
         return draftDetailService.getDraftDetail(userId, draftId);
-
     }
 
-    // 기안서 작성 중 양식 선택
+    // 결재문서 작성 중 양식 선택
     @GetMapping("/type")
     @ResponseBody
     public List<DraftApprovalLineDTO> getDraftStatus(
@@ -68,8 +66,6 @@ public class HrApprovalController {
 
         draftRegistService.putDraft(draftRegistDTO, userId);
     }
-
-
 
     // 결재 승인/반려
 

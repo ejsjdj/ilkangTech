@@ -20,17 +20,17 @@
     .layout { display: flex; height: 100vh; background: #f5f6f8; overflow: hidden; }
     
     /* 사이드바 */
-    .sidebar { width: 200px; background: #ffffff; border-right: 1px solid #e5e7eb; padding: 16px 12px; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
-    .sidebar-nav { display: flex; flex-direction: column; gap: 10px; }
+    .sidebar { width: 250px; background: #ffffff; border-right: 1px solid #e5e7eb; padding: 16px 12px; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 10px; margin-top: 10px;}
     .nav-group { margin-bottom: 5px; }
     .nav-parent { width: 100%; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 12px; font-weight: 700; color: #1f2937; text-align: left; }
     .nav-parent:hover { background: #f3f4f6; }
     .nav-icon { width: 24px; display: inline-flex; justify-content: center; font-size: 18px; }
-    .nav-menu { font-size: 13px; }
+    .nav-menu { font-size: 17px; }
     .nav-arrow { margin-left: auto; font-size: 12px; color: #6b7280; }
     .nav-children { list-style: none; margin: 0; padding: 0 0 0 10px; overflow: hidden; max-height: 0; opacity: 0; transform: translateY(-6px); transition: all 0.3s ease; }
     .nav-children.open { max-height: 500px; opacity: 1; transform: translateY(0); margin-top: 5px; }
-    .nav-child { display: block; padding: 8px 10px 8px 34px; margin: 2px 0; border-radius: 8px; color: #4b5563; text-decoration: none; font-weight: 500; font-size: 13px; }
+    .nav-child { display: block; padding: 8px 10px 8px 34px; margin: 2px 0; border-radius: 8px; color: #4b5563; text-decoration: none; font-weight: 500; font-size: 16px; }
     .nav-child:hover { background: #f3f4f6; color: #111827; }
 
     /* 메인 영역 */
@@ -46,7 +46,7 @@
     .logo { display: flex; align-items: center; padding-bottom: 20px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
     .logo-link { display: inline-flex; align-items: center; justify-content: center; padding: 6px 10px; border-radius: 10px; transition: background 0.2s ease; }
     .logo-link:hover { background: #f3f4f6; }
-    .logo img { width: 150px; height: 53px; object-fit: contain; margin-left: 20px; }
+    .logo img { width: 150px; height: 53px; object-fit: contain; margin-left: 45px; }
 </style>
 </head>
 <body>
@@ -105,7 +105,7 @@
     <div class="main">
         <div class="header">
             <div class="header-box">
-                <a href="/messenger/memberList" class="messenger-btn">
+                <a href="/messenger/memberList" class="messenger-btn" onclick="openMessenger(event)">
                    <img th:src="@{/img/chat.png}" alt="Talk"> 
                 </a>
             </div>
@@ -131,6 +131,17 @@
             }
         });
     });
+    
+    /* 메신저 버튼 동작 */
+    function openMessenger(event) {
+    event.preventDefault(); // 기본 이동 막기
+
+    window.open(
+        "/messenger/memberList",
+        "messengerWindow",
+        "width=500,height=700,resizable=yes,scrollbars=yes"
+    );
+}
 </script>
 
 <th:block layout:fragment="script"></th:block>

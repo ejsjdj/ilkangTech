@@ -1,56 +1,118 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-   <meta charset="UTF-8">
-   <title>Insert title here</title>
-</head>
-<style>
-   html, body {
-       height: 100%;
-       margin: 0;
-   }
-   .wrapper {
+  <meta charset="UTF-8">
+  <title>사원 목록</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    .wrapper { display: flex; height: 100vh; }
+    .sidebar { flex: 1; background-color: #1f3bff; } /* 임시 */
+    .main { flex: 7; display: flex; flex-direction: column; }
+
+    .status { border-bottom: 1px solid #e5e5e5; height: 25px; display:flex; align-items:center; padding: 0 12px; font-size: 12px; color:#666; }
+    .searchBarArea { border-bottom: 1px solid #e5e5e5; height: 50px; display:flex; align-items:center; padding: 0 12px; }
+    .searchBar { width: 100%; height: 36px; padding: 0 12px; border: 1px solid #ddd; border-radius: 8px; }
+
+    /* 리스트 영역 */
+    .memberList { flex: 1; overflow-y: auto; background: #fff; }
+
+    /* 한 줄(row) */
+    .memberRow {
       display: flex;
-      height: 100vh;
-   }
-   .sidebar {
-      flex: 1;
-      background-color: blue;
-   }
-   .main {
-      flex: 7;
-   }
-   .status {
-      border: 1px solid grey;
-      height: 25px;
-   }
-   .searchBarArea {
-      border: 1px solid grey;
-      height: 50px;
       align-items: center;
-   }
-   .searchBar {
-      width: 100%;
-      height: 40px;
-   }
-   .accountList {
-      border: 1px solid grey;
-   }
-</style>
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .memberRow:hover { background: #fafafa; }
+
+    /* 프로필 */
+    .avatarWrap { position: relative; width: 42px; height: 42px; flex: 0 0 42px; }
+    .avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: #e9edf5;
+      display:flex; align-items:center; justify-content:center;
+      font-weight: 700; color: #4b5563;
+      user-select: none;
+    }
+    .dot {
+      position: absolute;
+      right: -1px; bottom: -1px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #22c55e; /* 온라인 초록 */
+      border: 2px solid #fff;
+    }
+
+    /* 가운데 텍스트 */
+    .memberInfo { flex: 1; min-width: 0; }
+    .memberName { font-size: 15px; font-weight: 700; color: #111827; line-height: 1.2; }
+    .memberMeta { font-size: 12px; color: #6b7280; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* 오른쪽 상태/즐겨찾기 */
+    .memberRight { display: flex; align-items: center; gap: 12px; }
+    .workStatus { font-size: 12px; color: #6b7280; min-width: 70px; text-align: right; }
+    .starBtn {
+      width: 28px; height: 28px;
+      border: none; background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .starOn { color: #f59e0b; }  /* 노랑 */
+    .starOff { color: #9ca3af; } /* 회색 */
+
+    .empty { padding: 16px; color: #6b7280; }
+  </style>
+</head>
+
 <body>
-   
-   <div class="wrapper">
-      <div class="sidebar">사이드바</div>
-      <div class="main">
-         <div class="status">상태</div>
-         <div class="searchBarArea">
-            <input type="text" class="searchBar" placeholder="사원 또는 목록으로 검색">
-         </div>
-         <div class="accountList">사원리스트</div>
+<div class="wrapper">
+  <div class="sidebar">사이드바</div>
+
+  <div class="main">
+    <div class="status">상태</div>
+
+    <div class="searchBarArea">
+      <input type="text" class="searchBar" placeholder="사원 또는 목록으로 검색">
+    </div>
+
+    <div class="memberList">
+      <!-- 반복 출력 -->
+      <div class="memberRow"
+           th:each="member : ${memberList}"
+           th:object="${member}"
+           th:onclick="'location.href=' + '\'' + '/messenger/chat?name=' + *{memberName} + '\''">
+
+        <div class="avatarWrap">
+          <!-- 프로필 이미지가 없으면 이름 첫 글자 -->
+          <div class="avatar" th:text="${#strings.substring(*{memberName},0,1)}">홍</div>
+          <!-- 온라인 점(지금은 임시로 항상 표시) -->
+          <span class="dot"></span>
+        </div>
+
+        <div class="memberInfo">
+          <div class="memberName" th:text="*{memberName}">홍길동</div>
+          <div class="memberMeta">
+            <span th:text="*{departmentName}">인사부</span>
+            <span> / </span>
+            <span>사원</span> <!-- 직급은 나중에 DTO에 추가 -->
+          </div>
+        </div>
+
+        <div class="memberRight">
+          <div class="workStatus">근무 중</div> <!-- 상태도 나중에 DTO에 추가 -->
+          <button type="button" class="starBtn starOff" title="즐겨찾기">☆</button>
+          <!-- 즐겨찾기 ON이면 class=starOn, text=★ 로 바꾸면 됨 -->
+        </div>
       </div>
-   </div>
-   
-   // 임시
-   
+
+      <!-- 비어있을 때 -->
+      <div class="empty" th:if="${#lists.isEmpty(memberList)}">사원이 없습니다.</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

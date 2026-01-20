@@ -7,7 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -43,7 +46,7 @@ public class ScheduleController {
 	@GetMapping("/calendar")
 	public String calendarGET() {
 		log.info("calendarGET() 실행!");
-		log.info("calendarGET() 실행!");
+		log.info("calendarGET() 종료!");
 		return "/schedule/calendar";
 	}
 
@@ -53,7 +56,7 @@ public class ScheduleController {
 								  @RequestParam(name = "page", defaultValue = "1") int page,
 								  @RequestParam(name = "sortField", defaultValue = "startDate") String sortField,
 	                              @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) { // 페이지 번호 받기
-
+		log.info("scheduleListGET() 실행!");
 		// 1. 로그인 체크 (기존 코드 유지)
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		AccountLogin loginMember = (AccountLogin) authentication.getPrincipal();
@@ -85,8 +88,23 @@ public class ScheduleController {
 		model.addAttribute("sortField", sortField);
         model.addAttribute("sortDir", sortDir);
 
+        log.info("scheduleListGET() 종료!");
 		return "/schedule/list";
 	}
 
+	@PostMapping("/regist")
+    public ResponseEntity<String> registerSchedule(@ModelAttribute ScheduleDTO scheduleDto,
+                                                   @AuthenticationPrincipal AccountLogin accountLogin) { // 로그인 정보 가정
+		log.info("registerSchedule() 실행!");
+        
+        // 유효성 검사 (Backend 측)
+        if(scheduleDto.getTitle() == null || scheduleDto.getContent() == null) {
+            return ResponseEntity.badRequest().body("필수 값이 누락되었습니다.");
+        }
+
+        scheduleService.registSchedule(scheduleDto, accountLogin.getId());
+        log.info("registerSchedule() 종료!");
+        return ResponseEntity.ok("Success");
+    }
 
 }

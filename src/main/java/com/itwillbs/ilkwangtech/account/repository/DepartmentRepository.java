@@ -16,4 +16,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Integer>
     // 부서명으로 해당 부서의 정보를 가져오는 메서드
     Optional<Department> findByDepartmentName(String departmentName);
 
+    // 키워드로 해당 부서를 조회하는 메서드
+	List<Department> findByDepartmentNameContaining(String keyword);
+
 }

@@ -18,10 +18,11 @@
             .calendar-header button { border: none; background: none; font-size: 18px; cursor: pointer; color: #555; }
             
             .badge { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
-            .badge.company { background: #ff5b7f; }
-            .badge.dept { background: #3da5ff; }
             .badge.personal { background: #f1c40f; }
-            .badge.pto { background: #b7f3c4; }
+            .badge.leave { background: #b7f3c4; }
+            .badge.company { background: #ff5b7f; }
+            .badge.team { background: #3da5ff; }
+            .badge.specific { background: #9C27B0; }
             #calendar { flex: 1; min-height: 0; }
         
             .right-sidebar { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 250px; }
@@ -211,12 +212,13 @@
             </div>
             
             <div style="text-align: right; margin-bottom: 10px; font-size: 12px;">
-                <span class="badge company"></span> 회사
-                <span class="badge dept"></span> 팀
                 <span class="badge personal"></span> 개인
-                <span class="badge pto"></span> 연차
+                <span class="badge leave"></span> 연차
+                <span class="badge company"></span> 회사
+                <span class="badge team"></span> 팀
+                <span class="badge specific"></span> 특정
             </div>
-    
+            
             <div id="calendar"></div>
         </div>
 

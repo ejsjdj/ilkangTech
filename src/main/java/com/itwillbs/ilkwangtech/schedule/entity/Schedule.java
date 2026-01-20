@@ -1,9 +1,12 @@
 package com.itwillbs.ilkwangtech.schedule.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.itwillbs.ilkwangtech.account.entity.Department;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 
 import jakarta.persistence.Column;
@@ -13,7 +16,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -84,6 +89,34 @@ public class Schedule {
         }
     }
     
+    // 공유된 부서 목록 (팀 공유 시)
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(
+        name = "schedule_shared_depts",
+        joinColumns = @JoinColumn(name = "schedule_id"),
+        inverseJoinColumns = @JoinColumn(name = "department_id")
+    )
+    private Set<Department> sharedDepartments = new HashSet<>();
+
+    // 공유된 사원 목록 (특정 공유 시)
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(
+        name = "schedule_shared_members",
+        joinColumns = @JoinColumn(name = "schedule_id"),
+        inverseJoinColumns = @JoinColumn(name = "member_id")
+    )
+    private Set<Member> sharedMembers = new HashSet<>();
+    
+    // 연관관계 편의 메서드 추가
+    public void addSharedDepartment(Department department) {
+        this.sharedDepartments.add(department);
+    }
+    
+    public void addSharedMember(Member member) {
+        this.sharedMembers.add(member);
+    }
     
 
 }

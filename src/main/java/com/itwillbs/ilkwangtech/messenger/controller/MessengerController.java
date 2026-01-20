@@ -27,6 +27,7 @@ public class MessengerController {
 		
 		model.addAttribute("memberList", memberList);
 		
+		// 수정
 		return "/messenger/memberList";
 	}
 	

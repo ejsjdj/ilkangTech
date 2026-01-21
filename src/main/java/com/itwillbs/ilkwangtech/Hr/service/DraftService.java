@@ -23,10 +23,6 @@ public class DraftService {
     // 내가 작성한 문서 + 내가 결재자인 문서 조회
     @Transactional
     public List<DraftDTO> getDraftById(Long id) {
-        List<DraftDTO> written = draftRepository.findByMember_Id(id);
-        List<DraftDTO> approve = draftRepository.findApproveDrafts(id);
-        return Stream.concat(written.stream(), approve.stream()).
-                distinct().
-                toList();
+        return draftRepository.findAllMyDrafts(id);
     }
 }

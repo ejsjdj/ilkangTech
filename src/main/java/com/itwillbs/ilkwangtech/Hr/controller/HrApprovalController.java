@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/draft")
@@ -67,11 +68,16 @@ public class HrApprovalController {
 
     // 결재 승인/반려
     @PutMapping("/decide")
-    public void approvalDecide(@RequestParam("draftId") long draftId,
-                               @RequestParam("status") String status,
+    public String approvalDecide(@RequestBody Map<String, Object> payload,
                                @AuthenticationPrincipal AccountLogin accountLogin){
         Long userId = accountLogin.getId();
-        draftDecideService.putApprovalDecide(userId, draftId, status);
 
+        long draftId = Long.parseLong(payload.get("draftId").toString());
+        String decision = (String) payload.get("decision");
+
+        System.out.println("draftId : " + draftId + " decision : " +  decision + "userId : " + userId);
+        draftDecideService.putApprovalDecide(userId, draftId, decision);
+
+        return "redirect:/draft/list";
     }
 }

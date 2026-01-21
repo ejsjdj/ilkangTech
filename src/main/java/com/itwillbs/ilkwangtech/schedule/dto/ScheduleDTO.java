@@ -27,27 +27,23 @@ public class ScheduleDTO {
 	private String content; // schedule_memo
 	private String type;    // COMPANY, PERSONAL
 	
-	// HTML <input type="datetime-local"> 대응
 	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private LocalDateTime startDate;
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime endDate;
 	
-	// "팀" 공유 시 선택된 부서 ID 목록
+	// "팀" "특정" 공유 시 선택된 부서,사원 ID 목록
     private List<Integer> sharedDeptIds;   
+    private List<Long> sharedMemberIds;   
     
-    // "특정" 공유 시 선택된 사원 ID 목록
-    private List<Long> sharedMemberIds;    
+    // 조회 시 이름을 표시하기 위한 필드
+    private List<String> sharedDeptNames;
+    private List<String> sharedMemberNames;
 
-    // HTML Form의 <input type="file">에서 받는 실제 파일 데이터
-    private MultipartFile attachment;      
-    
-    // DB에 저장된/저장할 파일 경로 (조회 시 사용)
-    private String attachmentFile;
-
-    // 검색용 키워드
-    private String keyword;
+    private MultipartFile attachment; // 파일 받는 데이터     
+    private String attachmentFile;    // DB에 저장된/저장할 파일 경로 (조회 시 사용)
+    private String keyword;           // 검색용 키워드
 
     // 작성자 정보 (조회 시 표시용)
     private Long writerId;
@@ -71,17 +67,17 @@ public class ScheduleDTO {
 	            .writerPosition(String.valueOf(entity.getWriter().getPosition()));
 	
 	    // 공유된 부서 정보가 있다면 ID 추출 (Schedule Entity 업데이트 가정)
-	    if (entity.getSharedDepartments() != null && !entity.getSharedDepartments().isEmpty()) {
-	        builder.sharedDeptIds(entity.getSharedDepartments().stream()
-	                .map(Department::getId)
-	                .toList());
+		if (entity.getSharedDepartments() != null && !entity.getSharedDepartments().isEmpty()) {
+	        builder.sharedDeptIds(entity.getSharedDepartments().stream().map(Department::getId).toList());
+            // 이름 리스트 추출
+	        builder.sharedDeptNames(entity.getSharedDepartments().stream().map(Department::getDepartmentName).toList());
 	    }
 	
 	    // 공유된 사원 정보가 있다면 ID 추출 (Schedule Entity 업데이트 가정)
-	    if (entity.getSharedMembers() != null && !entity.getSharedMembers().isEmpty()) {
-	        builder.sharedMemberIds(entity.getSharedMembers().stream()
-	                .map(Member::getId)
-	                .toList());
+		if (entity.getSharedMembers() != null && !entity.getSharedMembers().isEmpty()) {
+	        builder.sharedMemberIds(entity.getSharedMembers().stream().map(Member::getId).toList());
+            // 이름 리스트 추출
+	        builder.sharedMemberNames(entity.getSharedMembers().stream().map(Member::getName).toList());
 	    }
 	
 	    return builder.build();

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
 import com.itwillbs.ilkwangtech.messenger.service.MessengerService;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @Controller
 @RequestMapping("/messenger")
@@ -30,5 +32,11 @@ public class MessengerController {
 		// 수정
 		return "/messenger/memberList";
 	}
+	
+	@GetMapping("/chatList")
+	public String chatList(Model model) {
+		return "/messenger/chatList";
+	}
+	
 	
 }

@@ -85,7 +85,7 @@
                     <span class="nav-icon">📋</span><span class="nav-menu">전자결재</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-appr">
-                    <li><a class="nav-child" th:href="@{/approval/hr}">인사결재 목록</a></li>
+                    <li><a class="nav-child" th:href="@{/draft/list}">전자결재 목록</a></li>
                     <li><a class="nav-child" th:href="@{/approval/sales}">영업결재 목록</a></li>
                 </ul>
             </div>
@@ -106,7 +106,7 @@
         <div class="header">
             <div class="header-box">
                 <a href="/messenger/memberList" class="messenger-btn" onclick="openMessenger(event)">
-                   <img th:src="@{/img/chat.png}" alt="Talk"> 
+                   <img th:src="@{/img/messenger/chat.png}" alt="Talk"> 
                 </a>
             </div>
         </div>

@@ -8,8 +8,10 @@
     <th:block layout:fragment="style">
         <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        
         <style>
-            /* --- [기존 스타일] 캘린더 및 레이아웃 --- */
+            /* --- [기존 스타일 유지] --- */
             .dashboard { display: flex; gap: 20px; height: 100%; min-height: 700px; }
             .calendar-wrapper { flex: 3; background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
             .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -30,7 +32,7 @@
             
             .profile { position: relative; }
             
-            /* --- [기존 스타일] 버튼 및 배지 --- */
+            /* 버튼 및 배지 */
             .status-badges { display: flex; gap: 10px; margin-bottom: 15px; }
             .status-badges button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
             .status-badges button:disabled { opacity: 0.5; cursor: not-allowed; background-color: #e0e0e0; color: #888; }
@@ -54,13 +56,13 @@
             .card-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: block; color: #444; }
             .empty-box { height: 60px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
         
-            /* --- [기존 스타일] 뷰 전환 버튼 --- */
+            /* 뷰 전환 버튼 */
             .view-buttons.segmented { position: relative; display: inline-flex; background: #f1f3f5; border-radius: 8px; padding: 4px; }
             .view-buttons.segmented button { position: relative; z-index: 2; border: none; background: transparent; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; border-radius: 6px; }
             .view-buttons.segmented button.active { color: #fff; }
             .view-buttons.segmented .indicator { position: absolute; top: 4px; left: 4px; bottom: 4px; background: #4b6ef5; border-radius: 6px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; width: 0; }
             
-            /* --- [커스텀 모달 스타일] --- */
+            /* 모달 스타일 */
             .custom-modal-overlay {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background-color: rgba(0, 0, 0, 0.4); display: none;
@@ -85,7 +87,6 @@
             .btn-submit:hover { background-color: #4f46e5; transform: translateY(-2px); }
             @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-            /* --- [로그아웃 버튼 스타일] --- */
             .btn-logout-full {
                 width: 100%; padding: 10px; border: 1px solid #eee; background-color: #fff;
                 color: #666; font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
@@ -94,95 +95,27 @@
             .btn-logout-full:hover { background-color: #fff1f0; color: #e54f4b; border-color: #ffa39e; }
             .btn-logout-full i { font-size: 13px; }
 
-			/* --- [디자인 수정] 배경 밝게 & 내부 간격 추가 --- */
-			.weather-widget {
-			    /* [수정] 더 밝고 화사한 스카이 블루 그라데이션 */
-			    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-			    border-radius: 20px; 
-			    padding: 30px; 
-			    color: #fff;
-			    box-shadow: 0 10px 25px rgba(0, 198, 255, 0.3); /* 그림자도 밝은 톤에 맞춤 */
-			    font-family: 'Segoe UI', sans-serif; 
-			    
-			    flex: 1; 
-			    min-height: 240px; 
-			    display: flex;
-			    flex-direction: column;
+			/* 날씨 위젯 스타일 */
+			.weather-widget { 
+				background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px; padding: 30px; 
+			    color: #fff; box-shadow: 0 10px 25px rgba(0, 198, 255, 0.3); font-family: 'Segoe UI', sans-serif; 
+			    flex: 1; min-height: 240px; display: flex; flex-direction: column;
 			}
-			
-			/* 헤더 스타일 (기존 유지) */
-			.widget-header { 
-			    margin-bottom: 25px; 
-			}
-			.location-info { 
-			    font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-			}
+			.widget-header { margin-bottom: 25px; }
+			.location-info { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 			.time-info { font-size: 16px; opacity: 0.9; font-weight: 500; }
-			
-			/* [수정] 메인 바디: 간격(gap) 추가 및 정렬 조정 */
-			.widget-body { 
-			    flex: 1; 
-			    display: flex; 
-			    /* 양끝 정렬하되, gap으로 최소 간격을 보장 */
-			    justify-content: space-between; 
-			    align-items: center;
-			    /* [핵심] div들 사이에 15px 틈 추가 */
-			    gap: 15px; 
-			}
-			
-			/* [수정] 간격을 위해 너비 미세 조정 (합쳐서 100% 안 넘게) */
-			.col-icon {
-			    display: flex; flex-direction: column; align-items: center; justify-content: center;
-			    width: 28%; /* 30% -> 28% */
-			}
-			.col-temp {
-			    display: flex; flex-direction: column; align-items: center; justify-content: center;
-			    width: 38%; /* 35% -> 38% */
-			}
-			.col-details {
-			    width: 28%; /* 30% -> 28% */
-			    background: rgba(255, 255, 255, 0.15);
-			    border-radius: 18px;
-			    padding: 20px;
-			    display: flex; flex-direction: column; gap: 12px;
-			    backdrop-filter: blur(10px);
-			    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
-			}
-			
-			/* 내부 요소 스타일 (기존 유지) */
+			.widget-body { flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+			.col-icon { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 28%; }
+			.col-temp { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 38%; }
+			.col-details { width: 28%; background: rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 			.main-icon img { width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)); }
 			.weather-text { font-size: 20px; font-weight: 700; margin-top: 10px; }
-			
 			.temp-big { font-size: 72px; font-weight: 400; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 			.temp-big .degree { font-size: 36px; vertical-align: top; margin-top: 12px; display: inline-block; }
-			
-			/* [수정] 기온 색상 변경 (가독성 개선) */
-			.min-max-temp { 
-			    margin-top: 12px; 
-			    font-size: 16px; 
-			    opacity: 1; 
-			    font-weight: 700; /* 글자 굵기 조금 더 강화 */
-			}
-			
-			/* 최저 기온 (진한 파란색으로 변경하여 밝은 배경에서도 잘 보이게 함) */
-			.min-max-temp .down { 
-			    color: #004e92; /* 진하고 깊은 파란색 (Deep Blue) */
-			    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2); /* 흰색 그림자 살짝 주어 분리감 형성 */
-			} 
-			
-			/* 최고 기온 (기존 유지 - 붉은 계열) */
-			.min-max-temp .up { 
-			    color: #ff6b6b; /* 조금 더 선명한 붉은색 (Red/Coral) */
-			    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-			}
-			
-			/* 가운데 구분선 */
-			.min-max-temp .divider { 
-			    margin: 0 8px; 
-			    opacity: 0.5; 
-			    color: #fff; 
-			}
-			
+			.min-max-temp { margin-top: 12px; font-size: 14px; opacity: 1; font-weight: 700; white-space: nowrap; display: flex; justify-content: center; gap: 5px; }
+			.min-max-temp .down { color: #004e92; text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2); } 
+			.min-max-temp .up { color: #ff6b6b; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+			.min-max-temp .divider { margin: 0; opacity: 0.5; color: #fff; }
 			.detail-item { display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
 			.detail-item i { font-size: 18px; width: 25px; text-align: center; opacity: 0.9; }
 			.detail-item span { font-weight: 700; font-size: 17px; }
@@ -348,306 +281,278 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
 <script>
-    // --- 1. 근태 관리 로직 ---
+    // --- [jQuery 적용 버전] 스크립트 ---
     let currentStatus = 'OFF_DUTY'; // 초기 상태
+    let currentLoadedYear = null;
+    let calendar; // 캘린더 인스턴스
 
-    document.addEventListener('DOMContentLoaded', function() {
+    $(document).ready(function() {
+        // 1. 초기 로딩
+        initCalendar();
         checkCurrentStatus();
-        updateDate();  // [추가] 날짜 표시
-        loadWeather(); // [추가] 날씨 로딩 실행
+        updateDate();
+        loadWeather();
+
+        // 2. 캘린더 초기 뷰 버튼 설정 (월)
+        const $monthBtn = $('.view-buttons.segmented button').eq(1);
+        if ($monthBtn.length) {
+            setMonth($monthBtn[0]); // jQuery 객체를 DOM 요소로 전달
+        }
     });
 
-    // 1) 상태 조회
+    // --- 1. 근태 관리 로직 ---
     function checkCurrentStatus() {
-        fetch('/api/attendance/status')
-            .then(res => res.json())
-            .then(data => {
-                updateButtonUI(data.status, data.memo);
-            })
-            .catch(err => console.error("상태 조회 실패", err));
+        $.get('/api/attendance/status', function(data) {
+            updateButtonUI(data.status, data.memo);
+        }).fail(function(err) {
+            console.error("상태 조회 실패", err);
+        });
     }
 
-    // 2) UI 업데이트
     function updateButtonUI(status, memo) {
         currentStatus = status;
-        const btnClock = document.getElementById('btnClock');
-        const btnOutside = document.getElementById('btnOutside');
+        const $btnClock = $('#btnClock');
+        const $btnOutside = $('#btnOutside');
 
-        btnClock.disabled = false;
-        btnOutside.disabled = false;
-        btnClock.classList.remove('btn-secondary', 'btn-success', 'off');
-        btnOutside.classList.remove('active');
+        $btnClock.prop('disabled', false);
+        $btnOutside.prop('disabled', false);
+        $btnClock.removeClass('btn-secondary btn-success off');
+        $btnOutside.removeClass('active');
 
         if (status === 'ON_DUTY') {
-            btnClock.textContent = '근무 중...';
-            btnClock.classList.add('btn-work'); 
-            btnOutside.textContent = '외근';
-            btnOutside.disabled = false;
+            $btnClock.text('근무 중...').addClass('btn-work');
+            $btnOutside.text('외근').prop('disabled', false);
         } else if (status === 'OFF_DUTY') {
-            btnClock.textContent = '출근';
-            btnClock.classList.add('btn-work', 'off'); 
-            btnOutside.textContent = '외근';
-            btnOutside.disabled = true; 
+            $btnClock.text('출근').addClass('btn-work off');
+            $btnOutside.text('외근').prop('disabled', true);
         } else if (status === 'OUT_WORK' || status === 'LEAVE') {
-            btnClock.textContent = '부재 중';
-            btnClock.disabled = true; 
-            btnClock.classList.add('btn-secondary'); 
-
+            $btnClock.text('부재 중').prop('disabled', true).addClass('btn-secondary');
             const label = (status === 'LEAVE') ? '휴식 중...' : '외근 중...';
-            btnOutside.textContent = label;
-            btnOutside.classList.add('active'); 
+            $btnOutside.text(label).addClass('active');
         }
     }
 
-    // 3) 출퇴근 버튼 핸들러
-    function handleClock() {
-        const name = document.getElementById('loginName')?.value || '';
-        const pos = document.getElementById('loginPos')?.value || '';
+    // 전역 함수로 유지 (HTML onclick 속성 대응)
+    window.handleClock = function() {
+        const name = $('#loginName').val() || '';
+        const pos = $('#loginPos').val() || '';
         const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
         if (currentStatus === 'OFF_DUTY') {
-            fetch('/api/attendance/in', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
+            $.post('/api/attendance/in', function(data) {
+                alert(data.message); // 이미 출근 처리.. 메시지
+                if(data.status) updateButtonUI(data.status);
+            });
+        } else if (currentStatus === 'ON_DUTY') {
+            if(confirm(`${name} ${pos}님! 현재 ${now} 입니다. 정말 퇴근하시겠습니까?`)) {
+                $.post('/api/attendance/out', function(data) {
                     alert(data.message);
                     updateButtonUI(data.status);
                 });
-        } else if (currentStatus === 'ON_DUTY') {
-            if(confirm(`${name} ${pos}님! 현재 ${now} 입니다. 정말 퇴근하시겠습니까?`)) {
-                 fetch('/api/attendance/out', { method: 'POST' })
-                    .then(res => res.json())
-                    .then(data => {
-                        alert(data.message);
-                        updateButtonUI(data.status);
-                    });
             }
         }
-     }
+    };
 
-     // 4) 외근 버튼 핸들러
-     function handleOutside() {
-          if (currentStatus === 'OUT_WORK' || currentStatus === 'LEAVE') {
-              const name = document.getElementById('loginName')?.value || '';
-              const pos = document.getElementById('loginPos')?.value || '';
-              
-              if(confirm(`${name} ${pos}님! 정말 복귀하시겠습니까?`)) {
-                  fetch('/api/attendance/return', { method: 'POST' })
-                      .then(res => res.json())
-                      .then(data => {
-                          alert(data.message);
-                          updateButtonUI(data.status);
-                      });
-              }
-          } else {
-              openModal();
-          }
-      }
+    window.handleOutside = function() {
+        if (currentStatus === 'OUT_WORK' || currentStatus === 'LEAVE') {
+            const name = $('#loginName').val() || '';
+            const pos = $('#loginPos').val() || '';
+            
+            if(confirm(`${name} ${pos}님! 정말 복귀하시겠습니까?`)) {
+                $.post('/api/attendance/return', function(data) {
+                    alert(data.message);
+                    updateButtonUI(data.status);
+                });
+            }
+        } else {
+            openModal();
+        }
+    };
 
-      function openModal() {
-          document.getElementById('outsideMemo').value = '';
-          document.getElementById('outsideType').value = 'OUT_WORK';
-          document.getElementById('customModal').style.display = 'flex';
-      }
-      function closeModal() {
-          document.getElementById('customModal').style.display = 'none';
-      }
-      function submitOutside() {
-          const type = document.getElementById('outsideType').value;
-          const memo = document.getElementById('outsideMemo').value;
+    window.openModal = function() {
+        $('#outsideMemo').val('');
+        $('#outsideType').val('OUT_WORK');
+        $('#customModal').css('display', 'flex'); // .show()는 block이므로 css로 flex 지정
+    };
 
-          if(!memo.trim()) {
-              alert("사유를 입력해주세요.");
-              return;
-          }
+    window.closeModal = function() {
+        $('#customModal').hide();
+    };
 
-          fetch('/api/attendance/outside', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: type, memo: memo })
-          })
-          .then(res => res.json())
-          .then(data => {
-              alert(data.message);
-              closeModal();
-              updateButtonUI(data.status);
-          });
-      }
-      
-      // --- 2. 캘린더 로직 ---
-      const Calendar = tui.Calendar;
-      const calendar = new Calendar('#calendar', {
-          defaultView: 'month',
-          taskView: false,
-          scheduleView: ['time'],
-          useFormPopup: false,
-          useDetailPopup: false,
-          isReadOnly: true,
-          week: { startDayOfWeek: 0, dayNames: ['일','월','화','수','목','금','토'] },
-          month: { dayNames: ['일','월','화','수','목','금','토'] }
-      });
+    window.submitOutside = function() {
+        const type = $('#outsideType').val();
+        const memo = $('#outsideMemo').val();
 
-      let currentLoadedYear = null;
+        if(!memo.trim()) {
+            alert("사유를 입력해주세요.");
+            return;
+        }
 
-      window.addEventListener('load', () => {
-          updateCalendarTitle();
-          const monthBtn = document.querySelectorAll('.view-buttons.segmented button')[1];
-          if (monthBtn) {
-              setMonth(monthBtn);
-          }
-          setTimeout(() => { 
-              calendar.render(); 
-              loadHolidays(); 
-          }, 100);
-      });
+        $.ajax({
+            url: '/api/attendance/outside',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ status: type, memo: memo }),
+            success: function(data) {
+                alert(data.message);
+                closeModal();
+                updateButtonUI(data.status);
+            },
+            error: function(err) {
+                console.error(err);
+            }
+        });
+    };
 
-      function updateCalendarTitle() {
-          const date = calendar.getDate();
-          document.getElementById('calendarTitle').innerText = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
-      }
+    // --- 2. 캘린더 로직 ---
+    function initCalendar() {
+        const Calendar = tui.Calendar;
+        calendar = new Calendar('#calendar', {
+            defaultView: 'month',
+            taskView: false,
+            scheduleView: ['time'],
+            useFormPopup: false,
+            useDetailPopup: false,
+            isReadOnly: true,
+            week: { startDayOfWeek: 0, dayNames: ['일','월','화','수','목','금','토'] },
+            month: { dayNames: ['일','월','화','수','목','금','토'] }
+        });
 
-      function movePrev() { 
-          calendar.prev(); 
-          updateCalendarTitle();
-          checkYearAndLoad(); 
-      }
-      function moveNext() { 
-          calendar.next(); 
-          updateCalendarTitle();
-          checkYearAndLoad(); 
-      }
+        // setTimeout 대신 바로 렌더링 호출 (필요시 지연)
+        setTimeout(() => { 
+            calendar.render(); 
+            updateCalendarTitle();
+            loadHolidays(); 
+        }, 100);
+    }
 
-      function checkYearAndLoad() {
-          const newYear = calendar.getDate().getFullYear();
-          if (currentLoadedYear !== newYear) {
-              loadHolidays(); 
-          }
-      }
-      
-      const indicator = document.querySelector('.view-buttons.segmented .indicator');
-      const tabs = document.querySelectorAll('.view-buttons.segmented button');
+    function updateCalendarTitle() {
+        const date = calendar.getDate();
+        $('#calendarTitle').text(`${date.getFullYear()}년 ${date.getMonth() + 1}월`);
+    }
 
-      function moveIndicator(btn) {
-          indicator.style.left = btn.offsetLeft + 'px';
-          indicator.style.width = btn.offsetWidth + 'px';
-          tabs.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-      }
+    window.movePrev = function() { 
+        calendar.prev(); 
+        updateCalendarTitle();
+        checkYearAndLoad(); 
+    };
+    window.moveNext = function() { 
+        calendar.next(); 
+        updateCalendarTitle();
+        checkYearAndLoad(); 
+    };
 
-      function setMonth(btn) { calendar.changeView('month'); moveIndicator(btn); }
-      function setWeek(btn) { calendar.changeView('week'); moveIndicator(btn); }
-      function setDay(btn) { calendar.changeView('day'); moveIndicator(btn); }
-      
-      // --- 공휴일 로직 ---
-      function loadHolidays() {
+    function checkYearAndLoad() {
+        const newYear = calendar.getDate().getFullYear();
+        if (currentLoadedYear !== newYear) {
+            loadHolidays(); 
+        }
+    }
+
+    // 탭 인디케이터 애니메이션
+    function moveIndicator(btnElement) {
+        const $btn = $(btnElement);
+        const $indicator = $('.view-buttons.segmented .indicator');
+        const $tabs = $('.view-buttons.segmented button');
+
+        $indicator.css({
+            left: $btn.position().left + 'px',
+            width: $btn.outerWidth() + 'px'
+        });
+
+        $tabs.removeClass('active');
+        $btn.addClass('active');
+    }
+
+    window.setMonth = function(btn) { calendar.changeView('month'); moveIndicator(btn); };
+    window.setWeek = function(btn) { calendar.changeView('week'); moveIndicator(btn); };
+    window.setDay = function(btn) { calendar.changeView('day'); moveIndicator(btn); };
+
+    // --- 공휴일 로직 ---
+    function loadHolidays() {
         const year = calendar.getDate().getFullYear();
         currentLoadedYear = year; 
         
-        fetch(`/api/calendar/holidays?year=${year}`)
-            .then(res => res.json())
-            .then(data => {
-                const holidayEvents = data.map(holiday => ({
-                    id: 'holiday-' + holiday.locdate,
-                    calendarId: 'holiday',
-                    title: holiday.dateName,
-                    category: 'allday',
-                    start: formatDate(holiday.locdate),
-                    end: formatDate(holiday.locdate),
-                    isReadOnly: true,
-                    color: '#e54f4b',           
-                    backgroundColor: '#ffe8e8', 
-                    dragBackColor: '#ffe8e8',   
-                    borderColor: '#e54f4b'      
-                }));
-                calendar.createEvents(holidayEvents);
-            })
-            .catch(err => console.error("공휴일 로딩 실패:", err));
-      }
+        $.get(`/api/calendar/holidays?year=${year}`, function(data) {
+            const holidayEvents = data.map(holiday => ({
+                id: 'holiday-' + holiday.locdate,
+                calendarId: 'holiday',
+                title: holiday.dateName,
+                category: 'allday',
+                start: formatDate(holiday.locdate),
+                end: formatDate(holiday.locdate),
+                isReadOnly: true,
+                color: '#e54f4b',           
+                backgroundColor: '#ffe8e8', 
+                dragBackColor: '#ffe8e8',   
+                borderColor: '#e54f4b'      
+            }));
+            calendar.createEvents(holidayEvents);
+        }).fail(function(err) {
+            console.error("공휴일 로딩 실패:", err);
+        });
+    }
 
-      function formatDate(dateStr) {
-          const str = String(dateStr);
-          return `${str.substring(0,4)}-${str.substring(4,6)}-${str.substring(6,8)}`;
-      }
+    function formatDate(dateStr) {
+        const str = String(dateStr);
+        return `${str.substring(0,4)}-${str.substring(4,6)}-${str.substring(6,8)}`;
+    }
 
-     // --- [2] 날짜 업데이트 로직 (자동 갱신) ---
-     function updateDate() {
-         const now = new Date();
-         const options = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' };
-         // 결과 예시: "2026. 01. 20. (화)" -> 공백 제거 -> "2026.01.20.(화)"
-         const dateStr = now.toLocaleDateString('ko-KR', options).replace(/\s/g, ''); 
-         document.getElementById('currentDateStr').innerText = dateStr;
-     }
+    // --- 날짜 업데이트 ---
+    function updateDate() {
+        const now = new Date();
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' };
+        const dateStr = now.toLocaleDateString('ko-KR', options).replace(/\s/g, ''); 
+        $('#currentDateStr').text(dateStr);
+    }
 
-     // --- [3] 날씨 로딩 로직 (이미지 버전) ---
-     function loadWeather() {
-         const iconDiv = document.getElementById('weatherIcon');
-         const tempSpan = document.getElementById('weatherTemp');
-         const descDiv = document.getElementById('weatherDesc');
-         const rainSpan = document.getElementById('weatherRain');
-         const humidSpan = document.getElementById('weatherHumid');
-         const windSpan = document.getElementById('weatherWind');
-         const tempMinSpan = document.getElementById('tempMin');
-         const tempMaxSpan = document.getElementById('tempMax');
+    // --- 날씨 로딩 ---
+    function loadWeather() {
+        const $iconDiv = $('#weatherIcon');
+        const $descDiv = $('#weatherDesc');
+        
+        // 로딩 중 표시
+        $iconDiv.html('<i class="fa-solid fa-spinner fa-spin" style="font-size: 48px;"></i>');
 
-         // 로딩 중 표시
-         iconDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size: 48px;"></i>';
+        $.get('/api/weather/current', function(data) {
+            if (!data.success) {
+                $descDiv.text("정보 없음");
+                return;
+            }
 
-         fetch('/api/weather/current')
-             .then(res => res.json())
-             .then(data => {
-                 if (!data.success) {
-                     descDiv.innerText = "정보 없음";
-                     return;
-                 }
+            // 1. 텍스트 바인딩
+            $('#weatherTemp').text(data.temp);
+            $('#weatherRain').text((data.rain === "강수없음" || data.rain === "0") ? "0mm" : data.rain);
+            $('#weatherHumid').text(data.humidity + "%");
+            $('#weatherWind').text(data.wind + "m/s");
+            $('#tempMin').text(data.tmn);
+            $('#tempMax').text(data.tmx);
 
-                 // 1. 텍스트 데이터 바인딩
-                 tempSpan.innerText = data.temp;
-                 rainSpan.innerText = (data.rain === "강수없음" || data.rain === "0") ? "0mm" : data.rain;
-                 humidSpan.innerText = data.humidity + "%";
-                 windSpan.innerText = data.wind + "m/s";
-                 tempMinSpan.innerText = data.tmn;
-                 tempMaxSpan.innerText = data.tmx;
+            // 2. 날씨 상태 판별
+            let skyState = "";
+            let imgFileName = "sun.png";
 
-                 // 2. 날씨 상태에 따른 [이미지 파일명] 결정
-                 let skyState = "";
-                 let imgFileName = "sun.png"; // 기본값
+            const pty = data.pty; 
+            const sky = data.sky; 
 
-                 const pty = data.pty; 
-                 const sky = data.sky; 
+            if (pty === "0") {
+                if (sky === "1") { skyState = "맑음"; imgFileName = "sun.png"; }
+                else if (sky === "3") { skyState = "구름 많음"; imgFileName = "cloud-sun.png"; }
+                else { skyState = "흐림"; imgFileName = "cloud.png"; }
+            } else {
+                if (pty === "1" || pty === "5") { skyState = "비"; imgFileName = "rain.png"; }
+                else if (pty === "3" || pty === "7") { skyState = "눈"; imgFileName = "snow.png"; }
+                else { skyState = "비/눈"; imgFileName = "rain-snow.png"; }
+            }
 
-                 if (pty === "0") { // 강수 없음
-                     if (sky === "1") {
-                         skyState = "맑음";
-                         imgFileName = "sun.png";
-                     } else if (sky === "3") {
-                         skyState = "구름 많음";
-                         imgFileName = "cloud-sun.png";
-                     } else {
-                         skyState = "흐림";
-                         imgFileName = "cloud.png";
-                     }
-                 } else { // 비/눈 옴
-                     if (pty === "1" || pty === "5") {
-                         skyState = "비";
-                         imgFileName = "rain.png";
-                     } else if (pty === "3" || pty === "7") {
-                         skyState = "눈";
-                         imgFileName = "snow.png";
-                     } else {
-                         skyState = "비/눈";
-                         imgFileName = "rain-snow.png";
-                     }
-                 }
-
-                 // 3. 화면 업데이트 (이미지 태그 사용)
-                 descDiv.innerText = skyState;
-                 // [중요] 저장해둔 이미지를 불러옵니다
-                 iconDiv.innerHTML = `<img src="/img/weather/${imgFileName}" alt="${skyState}" style="width:80px; height:80px; object-fit:contain;">`;
-             })
-             .catch(err => {
-                 console.error(err);
-                 descDiv.innerText = "연결 실패";
-             });
-     }
+            // 3. 화면 업데이트
+            $descDiv.text(skyState);
+            $iconDiv.html(`<img src="/img/weather/${imgFileName}" alt="${skyState}" style="width:80px; height:80px; object-fit:contain;">`);
+        }).fail(function(err) {
+            console.error(err);
+            $descDiv.text("연결 실패");
+        });
+    }
 </script>
 </th:block>
 </body>

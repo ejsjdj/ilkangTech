@@ -180,5 +180,93 @@ public class ScheduleService {
 		return memberRepository.findByNameContaining(keyword);
 	}
 
+	// 일정 상세 조회
+	@Transactional(readOnly = true)
+    public ScheduleDTO getScheduleDetails(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 일정을 찾을 수 없습니다."));
+        
+        return ScheduleDTO.fromEntity(schedule); // Entity -> DTO 변환 메서드 활용
+    }
+
+	// 일정 수정 처리
+	@Transactional
+    public void updateSchedule(ScheduleDTO dto, Long memberId) {
+        Schedule schedule = scheduleRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 일정을 찾을 수 없습니다."));
+
+        // 작성자 본인 확인 (Backend 검증)
+        if (!schedule.getWriter().getId().equals(memberId)) {
+            throw new SecurityException("수정 권한이 없습니다.");
+        }
+
+        // 파일 수정 로직 (새 파일이 올라왔을 경우)
+        String updatedFileName = schedule.getAttachmentFile(); // 기존 파일 유지 기본값
+        if (dto.getAttachment() != null && !dto.getAttachment().isEmpty()) {
+            // (선택사항) 기존 파일 삭제 로직 추가 가능
+            updatedFileName = saveFile(dto.getAttachment()); // 새 파일 저장
+        }
+
+        // 기본 정보 업데이트 (Dirty Checking 활용)
+        // Entity에 작성해둔 updateSchedule 편의 메서드 활용
+        schedule.updateSchedule(
+            dto.getTitle(),
+            dto.getContent(),
+            dto.getType(),
+            dto.getStartDate(),
+            dto.getEndDate(),
+            updatedFileName
+        );
+        
+        // 공유 범위 업데이트 로직 (기존 관계 초기화 후 재설정)
+        // 1. 기존 공유 삭제
+        schedule.getSharedDepartments().clear();
+        schedule.getSharedMembers().clear();
+
+        // 2. 새 공유 설정 (등록 로직 재사용)
+        if ("TEAM".equals(dto.getType()) && dto.getSharedDeptIds() != null) {
+            List<Department> departments = departmentRepository.findAllById(dto.getSharedDeptIds());
+            schedule.setSharedDepartments(new HashSet<>(departments));
+        } else if ("SPECIFIC".equals(dto.getType()) && dto.getSharedMemberIds() != null) {
+            List<Member> members = memberRepository.findAllById(dto.getSharedMemberIds());
+            schedule.setSharedMembers(new HashSet<>(members));
+        }
+    }
+
+	// 일정 삭제 처리
+	@Transactional
+    public void deleteSchedule(Long scheduleId, Long memberId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 일정을 찾을 수 없습니다."));
+
+        // 1. 권한 체크
+        if (!schedule.getWriter().getId().equals(memberId)) {
+            throw new SecurityException("삭제 권한이 없습니다.");
+        }
+        
+        // 2. 연관 관계 끊기 (외래 키 제약 조건 방지)
+        schedule.getSharedDepartments().clear();
+        schedule.getSharedMembers().clear();
+        
+        // 2-1. 해당 schedule_id 데이터를 삭제하도록 플러시
+        scheduleRepository.flush();
+        
+        // 3. 실제 파일 삭제 (파일이 존재할 경우)
+        if (schedule.getAttachmentFile() != null) {
+            File file = new File(uploadDir + schedule.getAttachmentFile());
+            if (file.exists()) {
+                if (file.delete()) {
+                    log.info("첨부 파일 삭제 성공: " + schedule.getAttachmentFile());
+                } else {
+                    log.warn("첨부 파일 삭제 실패(파일 시스템 권한 등 문제 가능성): " + schedule.getAttachmentFile());
+                    // 파일 삭제 실패가 DB 롤백을 유발하지 않게 하려면 예외를 던지지 않고 로그만 남깁니다.
+                }
+            }
+        }
+        
+        // (선택사항) 로컬 파일 삭제 로직 추가 가능
+        scheduleRepository.delete(schedule);
+    }
+
 
 }

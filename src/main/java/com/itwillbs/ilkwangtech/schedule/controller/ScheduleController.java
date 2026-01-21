@@ -2,6 +2,9 @@ package com.itwillbs.ilkwangtech.schedule.controller;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -150,6 +153,32 @@ public class ScheduleController {
         	log.error("일정 삭제 중 오류 발생", e);
             return ResponseEntity.badRequest().body("삭제 실패");
         }
+    }
+    
+ // [추가] 캘린더용 일정 데이터 조회 (JSON 반환)
+    @GetMapping("/api/events")
+    @ResponseBody
+    public ResponseEntity<List<ScheduleDTO>> getCalendarEvents(
+            @RequestParam(name = "start") String startStr,
+            @RequestParam(name = "end") String endStr,
+            @AuthenticationPrincipal AccountLogin accountLogin) {
+        
+        log.info("getCalendarEvents() 실행: {} ~ {}", startStr, endStr);
+
+        // 검색 DTO 생성 및 날짜 설정
+        ScheduleSearchDTO searchDTO = new ScheduleSearchDTO();
+        // Toast UI는 ISO String 등을 보내므로 LocalDate로 파싱 필요
+        // 편의상 String -> LocalDate 파싱 로직은 Service나 여기서 처리
+        searchDTO.setStartDate(LocalDate.parse(startStr.substring(0, 10))); 
+        searchDTO.setEndDate(LocalDate.parse(endStr.substring(0, 10)));
+        
+        // 페이지네이션 없이 전체 조회 (캘린더 범위 내)
+        // 기존 Service 메서드 활용 (Pageable.unpaged() 사용 가능 시 사용, 아니면 size를 크게 잡음)
+        Pageable pageable = PageRequest.of(0, 1000); 
+        
+        Page<ScheduleDTO> result = scheduleService.getScheduleList(accountLogin.getId(), searchDTO, pageable);
+        
+        return ResponseEntity.ok(result.getContent());
     }
 
 }

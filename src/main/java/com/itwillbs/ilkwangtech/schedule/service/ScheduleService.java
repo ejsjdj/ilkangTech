@@ -61,8 +61,10 @@ public class ScheduleService {
 	    
 	    // 1. 날짜 기본값 설정 
 	    if (params.getStartDate() == null) {
-	        startDateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
-	        endDateTime = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+	        // 시작: 올해 1월 1일
+	        startDateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfYear()).atStartOfDay();	        
+	        // 종료: 내년 12월 31일 (미래 일정까지 보이도록 넉넉하게)
+	        endDateTime = LocalDate.now().plusYears(1).with(TemporalAdjusters.lastDayOfYear()).atTime(LocalTime.MAX);
 	    } else {
 	        startDateTime = params.getStartDate().atStartOfDay(); 
 	        endDateTime = params.getEndDate().atTime(LocalTime.MAX);

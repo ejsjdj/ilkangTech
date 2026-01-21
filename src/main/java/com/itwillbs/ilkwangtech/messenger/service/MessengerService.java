@@ -17,8 +17,14 @@ public class MessengerService {
 	}
 	
 	public List<MemberDeptRowDTO> getMemberDeptRows() {
-	    return messengerRepository.findMemberDeptRows().stream()
-	        .map(r -> new MemberDeptRowDTO((String) r[0], (String) r[1]))
+	    List<Object[]> rows = messengerRepository.findMemberDeptRows();
+
+	    return rows.stream()
+	        .map(r -> new MemberDeptRowDTO(
+	            ((Number) r[0]).longValue(), // memberId
+	            (String) r[1],              // memberName
+	            (String) r[2]               // departmentName
+	        ))
 	        .toList();
 	}
 }

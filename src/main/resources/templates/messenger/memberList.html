@@ -6,7 +6,9 @@
   <style>
     html, body { height: 100%; margin: 0; }
     .wrapper { display: flex; height: 100vh; }
-    .sidebar { flex: 1; background-color: #1f3bff; } /* 임시 */
+    .blank {height: 60px;}
+    .sidebar-area { flex: 1; }
+    .sidebar { height: 100vh; flex: 1; background-color: #1f3bff; } 
     .main { flex: 7; display: flex; flex-direction: column; }
 
     .status { border-bottom: 1px solid #e5e5e5; height: 25px; display:flex; align-items:center; padding: 0 12px; font-size: 12px; color:#666; }
@@ -49,7 +51,7 @@
     /* 가운데 텍스트 */
     .memberInfo { flex: 1; min-width: 0; }
     .memberName { font-size: 15px; font-weight: 700; color: #111827; line-height: 1.2; }
-    .memberMeta { font-size: 12px; color: #6b7280; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .memberDept { font-size: 12px; color: #6b7280; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* 오른쪽 상태/즐겨찾기 */
     .memberRight { display: flex; align-items: center; gap: 12px; }
@@ -65,54 +67,108 @@
     .starOff { color: #9ca3af; } /* 회색 */
 
     .empty { padding: 16px; color: #6b7280; }
+    
+    .memberListBtn img, .chatListBtn img {width: 60px; height: 60px;}
+    
+    .searchBarArea { gap: 8px; }
+	
+	.searchBtn{
+	  height: 36px;
+	  padding: 0 14px;
+	  border: 1px solid #ddd;
+	  border-radius: 8px;
+	  background: #fff;
+	  cursor: pointer;
+	  white-space: nowrap;
+	}
+	.searchBtn:hover { background: #f6f6f6; }
   </style>
 </head>
 
 <body>
 <div class="wrapper">
-  <div class="sidebar">사이드바</div>
+    <div class="sidebar-area"
+	    th:insert="~{messenger/messengerLayout :: messengerSidebar('members')}">
+	</div>
+
 
   <div class="main">
     <div class="status">상태</div>
 
     <div class="searchBarArea">
-      <input type="text" class="searchBar" placeholder="사원 또는 목록으로 검색">
-    </div>
+		<input id="memberSearch" type="text" class="searchBar" placeholder="사원 또는 부서로 검색">
+		<button type="button" class="searchBtn" onclick="applySearch()">검색</button>
+	</div>
+	
+<div class="memberList">
+	<div class="memberRow"
+	     th:each="member : ${memberList}"
+	     th:object="${member}"
+	     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
+	     onclick="goChat(this)">
+	
+		<button type="button"
+		        class="starBtn starOff"
+		        title="즐겨찾기"
+		        onclick="event.stopPropagation()">☆</button>
+		
+		<div class="memberName" th:text="*{memberName}"></div>
+	
+		<div class="memberDept">
+			<span th:text="*{departmentName} + ' 팀'"></span>
+		</div>
+	</div>
+</div>
 
-    <div class="memberList">
-      <!-- 반복 출력 -->
-      <div class="memberRow"
-           th:each="member : ${memberList}"
-           th:object="${member}"
-           th:onclick="'location.href=' + '\'' + '/messenger/chat?name=' + *{memberName} + '\''">
-
-        <div class="avatarWrap">
-          <!-- 프로필 이미지가 없으면 이름 첫 글자 -->
-          <div class="avatar" th:text="${#strings.substring(*{memberName},0,1)}">홍</div>
-          <!-- 온라인 점(지금은 임시로 항상 표시) -->
-          <span class="dot"></span>
-        </div>
-
-        <div class="memberInfo">
-          <div class="memberName" th:text="*{memberName}">홍길동</div>
-          <div class="memberMeta">
-            <span th:text="*{departmentName}">인사부</span>
-            <span> / </span>
-            <span>사원</span> <!-- 직급은 나중에 DTO에 추가 -->
-          </div>
-        </div>
-
-        <div class="memberRight">
-          <div class="workStatus">근무 중</div> <!-- 상태도 나중에 DTO에 추가 -->
-          <button type="button" class="starBtn starOff" title="즐겨찾기">☆</button>
-          <!-- 즐겨찾기 ON이면 class=starOn, text=★ 로 바꾸면 됨 -->
-        </div>
-      </div>
-
-      <!-- 비어있을 때 -->
-      <div class="empty" th:if="${#lists.isEmpty(memberList)}">사원이 없습니다.</div>
-    </div>
   </div>
 </div>
+
+<script>
+function goChat(el) {
+  var memberId = el.dataset.id;
+  location.href = "/messenger/chat?memberId=" + memberId;
+}
+
+function norm(s) {
+  return (s || "").toString().trim().toLowerCase();
+}
+
+function applySearch() {
+  var input = document.getElementById("memberSearch");
+  var list = document.querySelector(".memberList");
+  if (!list) return;
+
+  var q = norm(input.value);
+
+  var rows = list.querySelectorAll(".memberRow");
+  rows.forEach(function (row) {
+    var name = norm(row.dataset.name);
+    var dept = norm(row.dataset.dept);
+
+    // "팀"까지 입력해도 검색되게(예: 인사팀)
+    var deptWithTeam = dept + " 팀";
+    var ok = (q === "") || name.includes(q) || dept.includes(q) || deptWithTeam.includes(q);
+
+    row.style.display = ok ? "" : "none";
+  });
+}
+
+(function () {
+  var input = document.getElementById("memberSearch");
+
+  // 타이핑할 때 즉시 필터
+  input.addEventListener("input", applySearch);
+
+  // 엔터 눌렀을 때도 필터(폼 제출 방지)
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applySearch();
+    }
+  });
+})();
+</script>
+
+
 </body>
 </html>

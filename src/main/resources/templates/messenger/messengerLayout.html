@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div th:fragment="messengerSidebar(active)">
+		<div class="sidebar">
+			<div class="blank"></div>
+			
+			<a th:href="@{/messenger/memberList}"
+			   class="memberListBtn"
+			   th:classappend="${active == 'members'} ? ' active' : ''">
+				<img th:src="@{/img/messenger/people.png}" alt="사원 목록">
+			</a>
+			
+			<a th:href="@{/messenger/chatList}"
+			   class="chatListBtn"
+			   th:classappend="${active == 'chats'} ? ' active' : ''">
+			<img th:src="@{/img/messenger/chatList.png}" alt="채팅 목록">
+			</a>
+		</div>
+	</div>
+</body>
+</html>

@@ -35,12 +35,6 @@
         <textarea id="detailContent_view" rows="5" readonly></textarea>
       </div>
 
-      <!-- 파일 -->
-      <!--<div class="form-group">
-        <label>첨부 파일</label>
-        <input type="text" id="detailFile" readonly>
-      </div>-->
-
       <!-- 날짜 -->
       <div class="form-group">
         <label>결재 기간</label>
@@ -51,21 +45,11 @@
         </div>
       </div>
 
-      <!-- 결재자 라인 -->
-      <!--<div class="form-group">
-        <label>결재 라인</label>
-        <div class="approval-line-box">
-          <input type="text" id="detailApprover1" readonly>
-          <input type="text" id="detailApprover2" readonly>
-          <input type="text" id="detailApprover3" readonly>
-        </div>
-      </div>-->
-
       <!-- 버튼 -->
       <div class="modal-footer">
         <button type="button" class="btn-cancel" onclick="closeDetailModal()">닫기</button>
-        <button type="button" class="btn-cancel" onclick="closeDetailModal()">승인</button>
-        <button type="button" class="btn-cancel" onclick="closeDetailModal()">반려</button>
+        <button type="button" class="btn-cancel" th:onclick="|decideApprove('승인')|">승인</button>
+        <button type="button" class="btn-cancel" th:onclick="|decideApprove('반려')|">반려</button>
       </div>
 
     </div>
@@ -74,4 +58,24 @@
 </body>
 </htm>
 
+
+
+
+
+
+<!-- 파일 -->
+<!--<div class="form-group">
+  <label>첨부 파일</label>
+  <input type="text" id="detailFile" readonly>
+</div>-->
+
+<!-- 결재자 라인 -->
+<!--<div class="form-group">
+  <label>결재 라인</label>
+  <div class="approval-line-box">
+    <input type="text" id="detailApprover1" readonly>
+    <input type="text" id="detailApprover2" readonly>
+    <input type="text" id="detailApprover3" readonly>
+  </div>
+</div>-->
 

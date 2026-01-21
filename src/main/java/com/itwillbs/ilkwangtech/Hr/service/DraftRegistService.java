@@ -65,7 +65,7 @@ public class DraftRegistService {
             draftApproveStatusEntity.setDraftEntity(savedDraft);// 결재문서 ID 등록
             draftApproveStatusEntity.setMember(approver); // 결재 지정자 등록
             draftApproveStatusEntity.setSequence(sequence); // 결재 순서 등록
-            draftApproveStatusEntity.setStatus("WAT"); // 결재 상태 등록
+            draftApproveStatusEntity.setStatus("대기"); // 결재 상태 등록
             draftApproveStatusRepository.save(draftApproveStatusEntity);
         }
 

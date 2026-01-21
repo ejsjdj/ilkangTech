@@ -10,4 +10,6 @@ public interface ListService {
 
     Page<AccountDetail> getAccountList(Pageable pageable);
 
+    Page<AccountDetail> searchAccountList(String keyword, Pageable pageable);
+
 }

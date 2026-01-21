@@ -24,19 +24,24 @@ public class ListController {
     }
 
     @GetMapping("/account/list")
-    public String accountList() {
+    public String accountList(Model model) {
         return "/account/list";
     }
 
     @GetMapping("/account/getList")
     @ResponseBody
-    public Page<AccountDetail> getAccounts(
+    public Page<AccountDetail> getEmployeeList(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String searchField,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(direction, sortBy));
+
+        if (searchField != null && !searchField.isEmpty()) {
+            return listService.searchAccountList(searchField, pageable);
+        }
+
         return listService.getAccountList(pageable);
     }
 

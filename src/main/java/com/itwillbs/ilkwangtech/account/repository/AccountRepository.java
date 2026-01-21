@@ -2,6 +2,9 @@ package com.itwillbs.ilkwangtech.account.repository;
 
 import java.util.Optional;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountDetail;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,4 +51,6 @@ public interface AccountRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByEmail(String email);
 
 	Optional<Member> findByEmployeeNumber(String employeeNumber);
+
+
 }

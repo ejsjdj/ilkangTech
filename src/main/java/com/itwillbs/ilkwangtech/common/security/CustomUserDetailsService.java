@@ -43,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 		AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
 		
 		// 부서 이름 변환
-        int deptId = member.getDepartment(); 
+        int deptId = member.getDepartment();
         if (deptId > 0) { 
             Department dept = departmentRepository.findById(deptId).orElse(null);
             
@@ -54,7 +54,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // 직급 이름 변환
-        int posId = member.getPosition(); 
+        int posId = member.getPosition();
         if (posId > 0) { 
             Position pos = positionRepository.findById(posId).orElse(null);
             

@@ -16,7 +16,7 @@ public class Department {
     // 부서를 추가하고 삭제하는 기능 구현에 필요
     // 부서의 상태를 설정하는 기능구현에 필요
     @Id
-    int id;
+    Integer id;
     String departmentName;
     String category;
     String parentDepartment;

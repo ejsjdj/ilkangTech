@@ -58,7 +58,7 @@ public class AccountController {
 
     // 로그인 페이지 요청
     @GetMapping("/login")
-    public String login() {return "/account/login";}
+    public String login() { return "/account/login"; }
 
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
@@ -66,18 +66,5 @@ public class AccountController {
         redirectAttributes.addFlashAttribute("message", "로그아웃되었습니다");
         System.out.println("로그아웃 완료");
         return "redirect:/";  // ← 데이터와 함께 전달
-    }
-
-    @GetMapping("/list")
-    public String listPage(
-            @PageableDefault(size = 20, direction = Sort.Direction.DESC)
-            Pageable pageable,
-            Model model) {
-
-//        Page<AccountDTO> page = accountService.getListPage(pageable);
-//        model.addAttribute("list", page.getContent());
-//        model.addAttribute("page", page);
-
-        return "/account/list";
     }
 }

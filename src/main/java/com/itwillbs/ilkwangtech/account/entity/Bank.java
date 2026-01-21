@@ -19,10 +19,10 @@ public class Bank {
     //     (90 카카오뱅크 92 토스뱅크)
     //     (48 신용협동조합 45 새마을금고 2 산업은행)
     @Id
-    private int id;
+    private Integer id;
 
     @Column(unique = true)
-    private String bankCode;
+    private Integer bankCode;
 
     @Column(unique = true)
     private String bankName;

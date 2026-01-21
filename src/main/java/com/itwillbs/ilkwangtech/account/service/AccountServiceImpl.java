@@ -40,10 +40,8 @@ public class AccountServiceImpl implements AccountService {
 		}
 
 		req.setEmployeeNumber(++idx);
-		// 3. DTO -> Entity 변환
 		Member member = modelMapper.map(req, Member.class);
-		// 4. ✅ 비밀번호 암호화 (Entity에 설정)
-		// DTO를 건드리지 않고 Member 객체의 비밀번호를 암호화해서 덮어씀
+
 		String rawPassword = req.getPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 		member.setPassword(encodedPassword);

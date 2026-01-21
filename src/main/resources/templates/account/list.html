@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>계정 목록</title>
+    <title>사원 목록</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         * {
             margin: 0;
@@ -12,246 +14,470 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #333;
+        }
+
+        .container-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            margin-bottom: 30px;
-            color: #333;
-            font-size: 28px;
-        }
-
-        /* 테이블 스타일 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-
-        thead {
-            background: #2c3e50;
-            color: white;
-        }
-
-        th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        tbody tr:hover {
-            background: #f9f9f9;
-        }
-
-        /* 페이징 스타일 */
-        .pagination {
+        /* 헤더 영역 */
+        .page-header {
             display: flex;
-            justify-content: center;
-            gap: 5px;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        /* 검색 및 필터 영역 */
+        .search-filter-area {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 12px;
+            align-items: center;
             flex-wrap: wrap;
         }
 
-        .pagination a,
-        .pagination span,
-        .pagination button {
-            display: inline-flex;
+        .search-filter-area .dropdown,
+        .search-filter-area .search-box {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            min-width: 40px;
-            height: 40px;
-            padding: 0 10px;
+            gap: 8px;
+        }
+
+        .dropdown-toggle {
+            padding: 8px 16px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            text-decoration: none;
-            color: #333;
-            font-size: 14px;
             background: white;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dropdown-toggle:hover {
+            border-color: #999;
+            background: #fafafa;
+        }
+
+        .search-box input {
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 280px;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.1);
+        }
+
+        .search-box input::placeholder {
+            color: #999;
+        }
+
+        .btn-search {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-search:hover {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+
+        /* 테이블 영역 */
+        .table-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .table {
+            margin: 0;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table thead th {
+            padding: 16px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #495057;
+            border: none;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .table thead th:hover {
+            background-color: #f0f1f3;
+        }
+
+        .table thead th::after {
+            content: '\2195';
+            margin-left: 6px;
+            opacity: 0.3;
+            font-size: 12px;
+        }
+
+        .table tbody td {
+            padding: 16px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #333;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 입사일자 컬럼 (고정 너비) */
+        .col-hiredate {
+            width: 110px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* 사원번호 컬럼 */
+        .col-empno {
+            width: 100px;
+            font-weight: 500;
+            color: #2561dd;
+        }
+
+        /* 상태 배지 */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-leave {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* 액션 버튼 */
+        .action-btn {
+            display: inline-block;
+            padding: 8px 14px;
+            margin: 0 2px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .action-btn:hover {
+            background-color: #138496;
+            text-decoration: none;
+            color: white;
+        }
+
+        .action-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25);
+        }
+
+        /* 추가 버튼 */
+        .btn-add {
+            display: inline-block;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* 페이지네이션 */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            gap: 4px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 4px;
+            margin: 0;
+            list-style: none;
+        }
+
+        .pagination li {
+            list-style: none;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
         .pagination a:hover {
-            background: #2c3e50;
-            color: white;
-            border-color: #2c3e50;
+            border-color: #667eea;
+            color: #667eea;
+            background-color: #f8f9fa;
         }
 
-        .pagination .current {
-            background: #2c3e50;
+        .pagination .active span {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-color: #2c3e50;
-            font-weight: bold;
+            border-color: #667eea;
         }
 
-        .pagination .disabled {
-            opacity: 0.5;
+        .pagination .disabled span {
+            color: #ccc;
             cursor: not-allowed;
-            background: #f5f5f5;
+            background-color: #f8f9fa;
         }
 
-        .pagination .disabled:hover {
-            background: #f5f5f5;
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
             color: #999;
-            border-color: #ddd;
         }
 
-        /* 로그아웃 버튼 */
-        .button-group {
-            text-align: center;
+        .empty-state i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 16px;
         }
 
-        .logout-btn {
-            padding: 10px 30px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.3s;
+        .empty-state p {
+            font-size: 16px;
+            margin: 0;
         }
 
-        .logout-btn:hover {
-            background: #c0392b;
-        }
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .search-filter-area {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-        /* 페이지 크기 선택 */
-        .page-size-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
+            .search-filter-area .dropdown-toggle {
+                width: 100%;
+            }
 
-        .page-size-selector select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-        }
+            .search-box input {
+                width: 100%;
+            }
 
-        .info {
-            text-align: center;
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 14px;
+            .table thead th,
+            .table tbody td {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+
+            .col-empno,
+            .col-hiredate {
+                width: auto;
+            }
+
+            .action-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>👥 직원 목록</h1>
-
-    <!-- 페이지 정보 -->
-    <div class="info" th:if="${page != null}">
-        총 <strong th:text="${page.totalElements}"></strong>명
-        | 현재 페이지: <strong th:text="${page.number + 1}"></strong> / <strong th:text="${page.totalPages}"></strong>
+<div id="container-wrapper" class="table-wrapper">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1>사원 목록</h1>
+        <a href="/employees/create" class="btn-add">
+            <i class="bi bi-plus-circle"></i> 사원 등록
+        </a>
     </div>
 
-    <!-- 페이지 크기 선택 -->
-    <div class="page-size-selector">
-        <label for="pageSize">페이지당 인원:</label>
-        <select id="pageSize" onchange="changePageSize()">
-            <option value="10" th:selected="${page.size == 10}">10명</option>
-            <option value="20" th:selected="${page.size == 20}">20명</option>
-            <option value="50" th:selected="${page.size == 50}">50명</option>
-            <option value="100" th:selected="${page.size == 100}">100명</option>
-        </select>
+    <!-- 검색 및 필터 영역 -->
+    <div class="search-filter-area">
+        <div class="dropdown">
+            <button class="dropdown-toggle" type="button">부서 전체</button>
+        </div>
+
+        <div class="search-box">
+            <input type="text" placeholder="사원 / 성명 / 부서 / 직급 / 이메일 검색">
+        </div>
+
+        <button class="btn-search">
+            <i class="bi bi-search"></i> 검색
+        </button>
     </div>
 
     <!-- 테이블 -->
-    <table>
-        <thead>
-        <tr>
-            <th>사원번호</th>
-            <th>이름</th>
-            <th>부서</th>
-            <th>직급</th>
-            <th>입사일</th>
-            <th>마지막 로그인</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="account : ${list}" th:if="${list != null and list.size() > 0}">
-            <td th:text="${account.employeeNumber()}"></td>
-            <td th:text="${account.name()}"></td>
-            <td th:text="${account.department()}"></td>
-            <td th:text="${account.position()}"></td>
-            <td th:text="${#temporals.format(account.joinDate(), 'yyyy-MM-dd')}"></td>
-            <td th:text="${account.lastLogin() != null ? #temporals.format(account.lastLogin(), 'yyyy-MM-dd HH:mm') : '-'}"></td>
-        </tr>
-        <tr th:if="${list == null or list.size() == 0}">
-            <td colspan="6" style="text-align: center; padding: 30px; color: #999;">
-                등록된 직원이 없습니다.
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <!-- 페이징 -->
-    <div class="pagination" th:if="${page != null and page.totalPages > 1}">
-        <!-- 처음 페이지 -->
-        <a th:if="${page.first}" class="disabled" href="#">◀◀</a>
-        <a th:if="${!page.first}" href="?page=0&size=${page.size}">◀◀</a>
-
-        <!-- 이전 페이지 -->
-        <a th:if="${page.hasPrevious()}" href="?page=${page.number - 1}&size=${page.size}">◀</a>
-        <span th:if="${!page.hasPrevious()}" class="disabled">◀</span>
-
-        <!-- 페이지 번호 -->
-        <th:block th:each="pageNum : ${#numbers.sequence(0, page.totalPages - 1)}">
-            <!-- 현재 페이지 앞뒤 3개씩만 표시 (총 7개) -->
-            <th:block th:if="${pageNum >= page.number - 3 and pageNum <= page.number + 3}">
-                <a th:if="${pageNum != page.number}"
-                   class="page-btn"
-                   th:href="'?page=' + ${pageNum} + '&size=' + ${page.size}"
-                   th:text="${pageNum + 1}"></a>
-                <span th:if="${pageNum == page.number}"
-                      class="current"
-                      th:text="${pageNum + 1}"></span>
-            </th:block>
-        </th:block>
-
-        <!-- 다음 페이지 -->
-        <a th:if="${page.hasNext()}" href="?page=${page.number + 1}&size=${page.size}">▶</a>
-        <span th:if="${!page.hasNext()}" class="disabled">▶</span>
-
-        <!-- 마지막 페이지 -->
-        <a th:if="${!page.isLast()}" href="?page=${page.totalPages - 1}&size=${page.size}">▶▶</a>
-        <a th:if="${page.isLast()}" class="disabled" href="#">▶▶</a>
-    </div>
-
-    <!-- 로그아웃 -->
-    <div class="button-group">
-        <form method="get" action="/account/logout" style="display: inline;">
-            <button type="submit" class="logout-btn">🚪 로그아웃</button>
-        </form>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>사원번호</th>
+                <th>성명</th>
+                <th>부서</th>
+                <th>직급</th>
+                <th>상태</th>
+                <th>전화번호</th>
+                <th>Email</th>
+                <th>작업</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="emp : ${employees}">
+                <td th:text="${emp.employeeNumber}"></td>
+                <td th:text="${emp.name}"></td>
+                <td th:text="${emp.department}"></td>
+                <td th:text="${emp.position}"></td>
+                <td>
+                    <span th:if="${emp.status == 1}">재직</span>
+                    <span th:if="${emp.status == 2}">휴직</span>
+                    <span th:if="${emp.status == 3}">퇴직</span>
+                </td>
+                <td th:text="${emp.phoneNumber}"></td>
+                <td th:text="${emp.email}"></td>
+                <td>상세</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<script>
-    function changePageSize() {
-        const pageSize = document.getElementById('pageSize').value;
-        window.location.href = '?page=0&size=' + pageSize;
-    }
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function getEmployeeList(pageNum = 0, searchField = '', sortBy = 'position', sortOrder = 'asc') {
+        $.ajax({
+            url: '/account/getList',
+            type: 'GET',
+            data: {
+                page : pageNum,
+                searchField : searchField,
+                sortBy : sortBy,
+                sortOrder : sortOrder
+            },
+            success:function(html) {
+                document.getElementById('tableContainer').innerHTML = html;
+            }
+        });
+    }
+
+    // 페이지를 변경했을때 사원리스트 변경
+    function goToPageByPageNum(pageNum) {
+        let sortBy = document.getElementById('sortBy').value;
+        let sortOrder = document.getElementById('sortOrder').value;
+        let searchField = document.getElementById('searchField').value;
+
+        getEmployeeList(pageNum, searchField, sortBy, sortOrder);
+    }
+
+    // 정렬규칙을 변경했을때 사원리스트 변경
+    function goToPageBySortOrder(sortOrder) {
+        let pageNum = document.getElementById('pageNum').value;
+        let sortBy = document.getElementById('sortOrder').value;
+        let searchField = document.getElementById('searchField').value();
+
+        getEmployeeList(pageNum, searchField, sortBy, sortOrder);
+    }
+
+    // 정렬키워드를 변경했을때 사원 리스트 변경
+    function goToPageBySortBy(sortBy) {
+        let pageNum = document.getElementById('pageNum').value;
+        let sortOrder = document.getElementById('sortOrder').value;
+        let searchField = document.getElementById('searchField').value;
+
+        getEmployeeList(pageNum, searchField, sortBy, sortOrder);
+    }
+
+    // 검색했을때 사원 리스트 변경
+    function goToPageBySearchField(searchField) {
+        let pageNum = document.getElementById('pageNum').value;
+        let sortBy = document.getElementBy('sortOrder').value;
+        let sortOrder = document.getElementById('sortOrder').value;
+
+        getEmployeeList(pageNum, searchField, sortBy, sortOrder);
+    }
+
+</script>

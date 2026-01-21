@@ -26,14 +26,14 @@ public class AccountLogin implements UserDetails {
 	private String name;            	// 이름
 	private String employeeNumber;  	// 사원번호
 	private String password;			// 비밀번호
-	private int gender;          	// 성별
+	private int gender;          		// 성별
 	private LocalDateTime hireDate;     // 입사일
 	private String residentNumber;  	// 주민등록번호
 	private String email;           	// 이메일
 	private String phoneNumber;     	// 전화번호
 	private String department;      	// 부서
 	private String position;        	// 직급
-	private int bank;            	// 은행
+	private int bank;            		// 은행
 	private String accountNumber;   	// 계좌번호
 	private LocalDateTime lastLogin;	// 마지막 로그인시간
 

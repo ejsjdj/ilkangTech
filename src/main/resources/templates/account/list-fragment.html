@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div th:fragment="table-fragment">
+    <div class="table-wrapper">
+        <table class="table" th:if="${!employees.isEmpty()}">
+            <thead>
+            <tr>
+                <th>사원번호</th>
+                <th>성명</th>
+                <th>부서</th>
+                <th>직급</th>
+                <th>상태</th>
+                <th>전화번호</th>
+                <th>Email</th>
+                <th style="width: 100px; text-align: center;">작업</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="emp : ${employees}">
+                <!-- 사원번호 -->
+                <td class="col-empno" th:text="${emp.employeeNumber}">
+                    2601004
+                </td>
+
+                <!-- 성명 -->
+                <td th:text="${emp.name}">
+                    문서희
+                </td>
+
+                <!-- 부서 -->
+                <td th:text="${emp.department}">
+                    개발부
+                </td>
+
+                <!-- 직급 -->
+                <td th:text="${emp.position}">
+                    사원
+                </td>
+
+                <!-- 상태 -->
+                <td>
+                            <span th:if="${emp.status == null}"
+                                  class="status-badge status-active">
+                                재직
+                            </span>
+                    <span th:if="${emp.status == null}"
+                          class="status-badge status-inactive">
+                                휴직
+                            </span>
+                    <span th:if="${emp.status == null}"
+                          class="status-badge status-leave">
+                                퇴직
+                            </span>
+                </td>
+
+                <!-- 전화번호 -->
+                <td th:text="${emp.phoneNumber}">
+                    010-1234-1234
+                </td>
+
+                <!-- Email -->
+                <td>
+                    <a th:href="'mailto:' + ${emp.email}" th:text="${emp.email}"
+                       style="color: #666; text-decoration: none;">
+                        asdf@naver.com
+                    </a>
+                </td>
+
+                <!-- 작업 버튼 -->
+                <td style="text-align: center;">
+                    <a th:href="'/employees/' + ${emp.id}" class="action-btn">
+                        상세
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+</div>
+</body>
+</html>

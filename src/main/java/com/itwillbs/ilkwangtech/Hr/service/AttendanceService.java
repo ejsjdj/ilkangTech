@@ -15,10 +15,12 @@ import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Log4j2
 public class AttendanceService {
 	
 	private final AttendanceRepository attendanceRepository;
@@ -29,6 +31,8 @@ public class AttendanceService {
     // 1. 현재 상태 조회
     @Transactional(readOnly = true)
     public AttendanceDTO getTodayStatus(Long memberId) {
+    	log.info("getTodayStatus() 실행!");
+    	log.info("getTodayStatus() 종료!");
         return attendanceRepository.findByMemberIdAndWorkDate(memberId, LocalDate.now())
                 .map(AttendanceDTO::fromEntity)
                 .orElse(AttendanceDTO.builder().status(AttendanceStatus.OFF_DUTY).build());
@@ -36,6 +40,7 @@ public class AttendanceService {
 
     // 2. 출근 처리
     public AttendanceDTO clockIn(Long memberId) {
+    	log.info("clockIn() 실행!");
         // 이미 출근 기록이 있는지 체크
         if(attendanceRepository.findByMemberIdAndWorkDate(memberId, LocalDate.now()).isPresent()){
             throw new IllegalStateException("이미 출근 처리되었습니다.");
@@ -58,11 +63,14 @@ public class AttendanceService {
 
         AttendanceDTO dto = AttendanceDTO.fromEntity(attendance);
         dto.setMessage(message);
+        log.info("clockIn() 종료!");
         return dto;
     }
 
     // 3. 퇴근 처리
     public AttendanceDTO clockOut(Long memberId) {
+    	log.info("clockOut() 실행!");
+
         Attendance attendance = getTodayAttendance(memberId);
         LocalDateTime now = LocalDateTime.now();
         Member member = attendance.getMember();
@@ -74,19 +82,19 @@ public class AttendanceService {
 
         AttendanceDTO dto = AttendanceDTO.fromEntity(attendance);
         dto.setMessage(message);
+        log.info("clockOut() 종료!");
         return dto;
     }
 
-    // 4. 외근/휴식 등록 (DTO에서 status, memo 받음)
+    // 4. 외근/휴식 등록 
     public AttendanceDTO goOutside(Long memberId, AttendanceDTO params) {
+    	log.info("goOutside() 실행!");
         Attendance attendance = getTodayAttendance(memberId);
         LocalDateTime now = LocalDateTime.now();
         Member member = attendance.getMember();
 
-        // params.getStatus()는 화면에서 선택한 OUT_WORK 또는 LEAVE
         attendance.updateOutsideInfo(params.getStatus(), params.getMemo());
         
-        // 사유 텍스트 (알림용)
         String reason = params.getStatus() == AttendanceStatus.OUT_WORK ? "외근" : "휴식";
 
         String message = String.format("%s %s님! %s(%s) 사유로 %s분에 등록되었습니다.",
@@ -94,11 +102,13 @@ public class AttendanceService {
 
         AttendanceDTO dto = AttendanceDTO.fromEntity(attendance);
         dto.setMessage(message);
+        log.info("goOutside() 종료!");
         return dto;
     }
 
     // 5. 복귀 처리
     public AttendanceDTO comeBack(Long memberId) {
+    	log.info("comeBack() 실행!");
         Attendance attendance = getTodayAttendance(memberId);
         LocalDateTime now = LocalDateTime.now();
         Member member = attendance.getMember();
@@ -110,10 +120,13 @@ public class AttendanceService {
 
         AttendanceDTO dto = AttendanceDTO.fromEntity(attendance);
         dto.setMessage(message);
+        log.info("comeBack() 종료!");
         return dto;
     }
 
     private Attendance getTodayAttendance(Long memberId) {
+    	log.info("getTodayAttendance() 실행!");
+    	log.info("getTodayAttendance() 종료!");
         return attendanceRepository.findByMemberIdAndWorkDate(memberId, LocalDate.now())
                 .orElseThrow(() -> new IllegalArgumentException("출근 기록이 없습니다."));
     }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.itwillbs.ilkwangtech.Hr.constant.AttendanceStatus;
 import com.itwillbs.ilkwangtech.Hr.dto.AttendanceDTO;
 import com.itwillbs.ilkwangtech.Hr.service.AttendanceService;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
@@ -37,17 +38,22 @@ public class AttendanceApiController {
     // 2. 출근
     @PostMapping("/in")
     public ResponseEntity<AttendanceDTO> clockIn(@AuthenticationPrincipal AccountLogin loginMember) {
-        // (1) 서비스 로직 실행 (DB 저장)
-        AttendanceDTO result = attendanceService.clockIn(loginMember.getId());
-        
-        // (2) 메시지 덮어쓰기 (숫자 55 대신 한글 직급 사용)
-        String time = LocalDateTime.now().format(timeFormatter);
-        String message = String.format("반갑습니다 %s %s님! %s 분 출근입니다.", 
-                loginMember.getName(), loginMember.getPosition(), time);
-        
-        result.setMessage(message); // DTO에 새 메시지 장착
+    	try {
+            AttendanceDTO result = attendanceService.clockIn(loginMember.getId());
+            
+            String time = LocalDateTime.now().format(timeFormatter);
+            String message = String.format("반갑습니다 %s %s님! %s 출근입니다.", 
+                    loginMember.getName(), loginMember.getPosition(), time);
+            
+            result.setMessage(message); // 성공 메시지 설정
+            return ResponseEntity.ok(result);
 
-        return ResponseEntity.ok(result);
+        } catch (IllegalStateException e) {
+            AttendanceDTO errorResult = new AttendanceDTO();
+            errorResult.setMessage(e.getMessage()); 
+            
+            return ResponseEntity.ok(errorResult);
+        }
     }
 
     // 3. 퇴근

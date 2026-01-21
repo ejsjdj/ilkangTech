@@ -26,8 +26,8 @@ public class WebSecurityConfig {
 				// 접근 권한 설정
 				.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
 						.requestMatchers("/account/login", "/account/register", "/css/**", "/js/**", "/img/**", "/error").permitAll()
-//						.anyRequest().authenticated()
-						.anyRequest().permitAll()
+						.anyRequest().authenticated()
+//						.anyRequest().permitAll()
 				)
 				// 로그인 설정
 				.formLogin(formLogin -> formLogin

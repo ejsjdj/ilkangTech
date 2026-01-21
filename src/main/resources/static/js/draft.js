@@ -1,4 +1,5 @@
-console.log("전자결재 리스트 페이지 로드됨");
+// 문서 ID 전역변수
+let currentDraftId = null;
 
 /*모달 열기*/
 function openModal() {
@@ -14,6 +15,9 @@ function closeModal() {
 
 /*상세보기 모달 열기*/
 function draftDetail(draftId) {
+    // 모달 열때 문서 번호 전역변수에 저장
+    currentDraftId = draftId;
+
     const modal = document.getElementById("draftDetailModal");
     modal.style.display = 'block'
 
@@ -24,7 +28,6 @@ function draftDetail(draftId) {
         .then(data => {
             console.log("받아온 데이터: ", data);
 
-            // _view가 붙은 새로운 ID로 접근합니다.
             const titleView = document.getElementById('detailTitle_view');
             const contentView = document.getElementById('detailContent_view');
             const startView = document.getElementById('detailStartDate_view');
@@ -77,7 +80,18 @@ function loadApprovalLine(draftType) {
         .catch(error => console.error('결재 라인 로드 실패:', error));
 }
 
-
+/*결재 승인하기*/
+function decideApprove(decision){
+    console.log(decision);
+    fetch('/draft/decide', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            draftId: currentDraftId,
+            decision: decision
+        })
+    })
+}
 
 /*결재 등록하기*/
 async function postDraft(){
@@ -89,7 +103,7 @@ async function postDraft(){
         draftFile: document.getElementById('draftFile').value,
         draftStartDate: document.getElementById('startDate').value,
         draftEndDate: document.getElementById('endDate').value,
-        draftStatus: "WAT",
+        draftStatus: "대기",
     }
 
     const draftApprover = [
@@ -125,5 +139,4 @@ async function postDraft(){
         console.error('Fetch error:', error);
         alert('서버와 통신 중 오류가 발생했습니다.');
     }
-
 }

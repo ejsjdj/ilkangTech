@@ -17,9 +17,11 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleSearchDTO;
@@ -105,6 +107,49 @@ public class ScheduleController {
         scheduleService.registSchedule(scheduleDto, accountLogin.getId());
         log.info("registerSchedule() 종료!");
         return ResponseEntity.ok("Success");
+    }
+	
+	// 일정 상세 조회
+    @GetMapping("/get/{id}")
+    @ResponseBody
+    public ResponseEntity<ScheduleDTO> getScheduleDetail(@PathVariable("id") Long id) {
+        log.info("getScheduleDetail() 실행: " + id);
+        ScheduleDTO dto = scheduleService.getScheduleDetails(id);
+        log.info("getScheduleDetail() 종료: " + id);
+        return ResponseEntity.ok(dto);
+    }
+
+    // 일정 수정 처리
+    @PostMapping("/update")
+    public ResponseEntity<String> updateSchedule(@ModelAttribute ScheduleDTO scheduleDto,
+                                                 @AuthenticationPrincipal AccountLogin accountLogin) {
+        log.info("updateSchedule() 실행: " + scheduleDto.getId());
+        
+        try {
+            scheduleService.updateSchedule(scheduleDto, accountLogin.getId());
+            return ResponseEntity.ok("수정되었습니다.");
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("수정 실패", e);
+            return ResponseEntity.badRequest().body("수정 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 일정 삭제 처리
+    @PostMapping("/delete") 
+    public ResponseEntity<String> deleteSchedule(@RequestParam("id") Long id,
+                                                 @AuthenticationPrincipal AccountLogin accountLogin) {
+        log.info("deleteSchedule() 실행: " + id);
+        try {
+            scheduleService.deleteSchedule(id, accountLogin.getId());
+            return ResponseEntity.ok("삭제되었습니다.");
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (Exception e) {
+        	log.error("일정 삭제 중 오류 발생", e);
+            return ResponseEntity.badRequest().body("삭제 실패");
+        }
     }
 
 }

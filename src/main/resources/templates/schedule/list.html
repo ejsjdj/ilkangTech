@@ -6,48 +6,32 @@
     <title>일정 관리</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <th:block layout:fragment="style">
         <style>
             /* --- 기존 스타일 유지 --- */
-            .page-container {
-                background: #ffffff;
-                border-radius: 8px;
-                padding: 25px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                min-height: 800px;
-                position: relative;
-                display: flex;
-                flex-direction: column;
+            .page-container { 
+            	background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 800px;
+                position: relative; display: flex; flex-direction: column; 
             }
             .page-header { margin-bottom: 20px; }
             .page-title { font-size: 24px; font-weight: 700; color: #333; margin-bottom: 10px; }
             
-            .header-control form {
-                width: 100%;
-                display: flex;
-                justify-content: space-between; 
-                align-items: center;
-            }
+            .header-control form { width: 100%; display: flex; justify-content: space-between; align-items: center; }
             .header-control { margin-bottom: 15px !important; }
+            
             .search-left-group { display: flex; align-items: center; gap: 8px; }
             .search-right-group { display: flex; align-items: center; gap: 5px; }
 
             /* 입력창/버튼 높이 통일 (38px) */
             .input-date-fixed, .search-select, .search-input, 
-            .btn-search, .btn-reset, .btn-custom-blue {
-                height: 38px !important;
-                line-height: 1.5;
-                font-size: 13px;
-                box-sizing: border-box;
-                vertical-align: middle;
-                border-radius: 4px;
+            .btn-search, .btn-reset, .btn-custom-blue { 
+            	height: 38px !important; line-height: 1.5; font-size: 13px; box-sizing: border-box;
+                vertical-align: middle; border-radius: 4px; 
             }
             .input-date-fixed { width: 150px; padding: 0 10px; border: 1px solid #ced4da; color: #666; }
             .search-select { width: 100px; border: 1px solid #ced4da; padding: 0 10px; cursor: pointer; }
@@ -60,16 +44,14 @@
             .btn-search:hover { background-color: #5c6bc0; color: white; }
 
             .btn-custom-blue {
-                background-color: #fff; border: 1px solid #5c6bc0; color: #5c6bc0;
-                padding: 0 15px; display: inline-flex; align-items: center; justify-content: center;
-                font-weight: 600; text-decoration: none; cursor: pointer;
+                background-color: #fff; border: 1px solid #5c6bc0; color: #5c6bc0; padding: 0 15px; display: inline-flex; align-items: center; 
+                justify-content: center; font-weight: 600; text-decoration: none; cursor: pointer;
             }
             .btn-custom-blue:hover { background-color: #5c6bc0; color: white; }
             
             .btn-reset {
-                border: 1px solid #ced4da; background: #fff; color: #666; width: 38px;
-                padding: 0; display: inline-flex; align-items: center; justify-content: center;
-                text-decoration: none !important; 
+                border: 1px solid #ced4da; background: #fff; color: #666; width: 38px; padding: 0; display: inline-flex; align-items: center; 
+                justify-content: center; text-decoration: none !important; 
             }
 
             /* 테이블 스타일 */
@@ -82,12 +64,18 @@
 
             /* 페이지네이션 */
             .pagination-container { margin-top: 30px; margin-bottom: 30px; display: flex; justify-content: center; width: 100%;}
-            .pagination .page-link { display: flex; justify-content: center; align-items: center; width: 34px; height: 34px; color: #333; background-color: #fff; border: 1px solid #dee2e6; border-radius: 4px; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+            .pagination .page-link { 
+	            display: flex; justify-content: center; align-items: center; width: 34px; height: 34px; color: #333; background-color: #fff; 
+	            border: 1px solid #dee2e6; border-radius: 4px; text-decoration: none; transition: all 0.2s; cursor: pointer; 
+	        }
             .pagination .page-item.active .page-link { background-color: #5c6bc0; border-color: #5c6bc0; color: #fff; z-index: 1; font-weight: 600; }
             .pagination .page-link:hover { background-color: #e9ecef; color: #5c6bc0; border-color: #dee2e6; }
             .pagination .page-item.disabled .page-link { color: #ccc; pointer-events: none; background-color: #f8f9fa; border-color: #dee2e6; }
             
-            ul.pagination { display: flex !important; flex-direction: row !important; list-style: none !important; padding: 0 !important; margin: 0 !important; gap: 5px; align-items: center !important; }
+            ul.pagination { 
+	            display: flex !important; flex-direction: row !important; list-style: none !important; padding: 0 !important; 
+	            margin: 0 !important; gap: 5px; align-items: center !important; 
+	        }
             li.page-item { list-style: none !important; margin: 0 !important; padding: 0 !important; display: flex !important; }
             
             .clickable-th { cursor: pointer; user-select: none; }
@@ -106,36 +94,17 @@
             #filePreviewArea img { max-width: 100%; max-height: 200px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
             /* 검색 결과 리스트 (스크롤) */
-            .search-result-box {
-                max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; margin-top: 10px;
-            }
-            .search-result-item {
-                padding: 10px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; cursor: pointer;
-            }
+            .search-result-box { max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; margin-top: 10px; }
+            .search-result-item { padding: 10px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; cursor: pointer; }
             .search-result-item:hover { background-color: #f8f9fa; }
             .search-result-item:last-child { border-bottom: none; }
             .search-result-item input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); cursor: pointer; }
             /* --- [커스텀 배지 색상 적용] --- */
-            .badge-company {
-                background-color: #ff5b7f !important; /* 회사: 핑크레드 */
-                color: #fff !important;
-            }
-            .badge-team {
-                background-color: #3da5ff !important; /* 팀: 하늘색 */
-                color: #fff !important;
-            }
-            .badge-personal {
-                background-color: #f1c40f !important; /* 개인: 노랑 */
-                color: #fff !important; /* 흰색 글씨 (잘 안 보이면 #333으로 변경) */
-            }
-            .badge-leave {
-                background-color: #b7f3c4 !important; /* 연차: 연두 */
-                color: #333 !important; /* 밝은 배경이라 검은 글씨 */
-            }
-            .badge-specific {
-                background-color: #9C27B0 !important; /* 특정: 보라 */
-                color: #fff !important;
-            }
+            .badge-company { background-color: #ff5b7f !important; color: #fff !important; }
+            .badge-team { background-color: #3da5ff !important; color: #fff !important; }
+            .badge-personal { background-color: #f1c40f !important; color: #fff !important; }
+            .badge-leave { background-color: #b7f3c4 !important; color: #333 !important; }
+            .badge-specific { background-color: #9C27B0 !important; color: #fff !important; }
         </style>
     </th:block>
 </head>
@@ -218,7 +187,12 @@
                         <td th:text="${#temporals.format(dto.endDate, 'yyyy-MM-dd HH:mm')}"></td>
                         <td th:text="${dto.writerName}"></td>
                         <td class="text-muted text-truncate" style="max-width: 200px; margin: 0 auto;" th:text="${dto.content}">내용</td>
-                        <td><a th:href="@{/schedule/detail(id=${dto.id})}" class="btn btn-sm btn-outline-secondary" style="font-size: 12px;">상세</a></td>
+                        <td>
+                        	<button type="button" class="btn btn-sm btn-outline-primary btn-detail" 
+						            th:data-id="${dto.id}">
+						        상세
+						    </button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -246,7 +220,8 @@
             </nav>
         </div>
 
-    </div> <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    </div> 
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -341,236 +316,383 @@
             </div>
         </div>
     </div>
-
-</div> <th:block layout:fragment="script">
+	<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title">일정 상세 / 수정</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                <form id="detailForm" enctype="multipart/form-data">
+	                    <input type="hidden" id="detailId" name="id"> <div class="mb-3">
+	                        <label for="detailTitle" class="form-label">제목</label>
+	                        <input type="text" class="form-control" id="detailTitle" name="title">
+	                    </div>
+	
+	                    <div class="mb-3">
+	                        <label class="form-label">공유 범위</label>
+	                        <div class="row g-2">
+	                        	<div class="col-md-3">
+	                        		<select class="form-select" id="detailType" name="type">
+						                <option value="PERSONAL">개인</option>
+						                <option value="COMPANY">회사 전체</option>
+						                <option value="TEAM">팀 공유</option>
+						                <option value="SPECIFIC">특정 사원 공유</option>
+						                <option value="LEAVE">연차</option>
+						            </select>
+	                        	</div>
+	                        	<div class="col-md-9" id="detailShareTargetArea" style="display:none;">
+						            <div class="input-group">
+						                <input type="text" class="form-control" id="detailTargetNames" readonly placeholder="공유 대상" style="background-color: #f8f9fa;">
+						                <button class="btn btn-outline-primary" type="button" id="btnOpenDetailTargetModal">
+						                    + 변경
+						                </button>
+						            </div>
+						            <div id="detailHiddenIdArea"></div>
+						        </div>
+	                        </div>
+	                    </div>
+	
+	                    <div class="row mb-3">
+	                        <div class="col">
+	                            <label class="form-label">시작일</label>
+	                            <input type="datetime-local" class="form-control" id="detailStartDate" name="startDate">
+	                        </div>
+	                        <div class="col">
+	                            <label class="form-label">종료일</label>
+	                            <input type="datetime-local" class="form-control" id="detailEndDate" name="endDate">
+	                        </div>
+	                    </div>
+	
+	                    <div class="mb-3">
+	                        <label class="form-label">작성자</label>
+	                        <input type="text" class="form-control" id="detailWriterName" readonly disabled>
+	                    </div>
+	
+	                    <div class="mb-3">
+	                        <label class="form-label">첨부 파일</label>
+	                        <div id="currentFileArea">
+	                            </div>
+	                        <input type="file" class="form-control mt-1" id="detailAttachment" name="attachment">
+	                    </div>
+	
+	                    <div class="mb-3">
+	                        <label class="form-label">내용</label>
+	                        <textarea class="form-control" id="detailContent" name="content" rows="5"></textarea>
+	                    </div>
+	                </form>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-danger" id="btnDelete">삭제</button>
+	                <button type="button" class="btn btn-primary" id="btnUpdate">수정하기</button>
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</div> 
+<th:block layout:fragment="script">
     <script th:inline="javascript">
-        $(document).ready(function() {
-            
-            // --- 1. 모달 열기 ---
-            $('#btnOpenScheduleModal').click(function() {
-                // 폼 초기화
-                $('#scheduleForm')[0].reset();
-                $('#filePreviewArea').html('<span>첨부된 파일이 없습니다.</span>');
-                $('#shareTargetArea').hide();
-                $('#hiddenIdArea').empty();
-                
-                // 모달 띄우기 (Bootstrap 기능)
-                var myModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
-                myModal.show();
-            });
-
-            // --- 2. 공유 범위 변경 시 UI 제어 ---
-            $('#schedType').change(function() {
-                const type = $(this).val();
-                const $targetArea = $('#shareTargetArea');
-                const $btnLabel = $('#btnOpenTargetModal');
-                
-                // 초기화
-                $('#selectedTargetNames').val('');
-                $('#hiddenIdArea').empty();
-
-                if (type === 'PERSONAL' || type === 'COMPANY' || type === 'LEAVE') {
-                    $targetArea.hide();
-                } else {
-                    $targetArea.show(); 
-                    $targetArea.css('display', 'flex'); 
-                    
-                    if (type === 'TEAM') {
-                        $btnLabel.html('<i class="fa-solid fa-users me-1"></i> +공유팀 지정');
-                    } else if (type === 'SPECIFIC') {
-                        $btnLabel.html('<i class="fa-solid fa-user-plus me-1"></i> +공유자 지정');
-                    }
-                }
-            });
-
-            // --- 3. [+대상 지정] 클릭 -> 서브 모달 오픈 ---
-            $('#btnOpenTargetModal').click(function() {
-                const type = $('#schedType').val();
-                $('#targetResultList').empty(); // 리스트 초기화
-                $('#targetSearchKeyword').val(''); // 검색어 초기화
-                
-                if(type === 'TEAM') {
-                    $('#searchModalTitle').text('조직도에서 공유팀 선택');
-                    loadTeamList(''); // 전체 팀 로드
-                } else {
-                    $('#searchModalTitle').text('조직도에서 공유자 선택');
-                    loadMemberList(''); // 전체 사원 로드
-                }
-                
-                var searchModal = new bootstrap.Modal(document.getElementById('searchTargetModal'));
-                searchModal.show();
-            });
-
-            // --- 4. 서브 모달 검색 버튼 ---
-            $('#btnTargetSearch').click(function() {
-                const keyword = $('#targetSearchKeyword').val();
-                const type = $('#schedType').val();
-                if(type === 'TEAM') loadTeamList(keyword);
-                else loadMemberList(keyword);
-            });
-            
-            // 엔터키 검색 지원
-            $('#targetSearchKeyword').on('keyup', function(key) {
-                if(key.keyCode == 13) {
-                    $('#btnTargetSearch').click();
-                }
-            });
-
-            // --- 5. [적용] 버튼 -> 메인 모달에 데이터 반영 ---
-            $('#btnConfirmTarget').click(function() {
-                const selectedIds = [];
-                const selectedNames = [];
-                
-                // 체크된 항목 수집
-                $('.target-checkbox:checked').each(function() {
-                    selectedIds.push($(this).val());
-                    selectedNames.push($(this).data('name'));
-                });
-
-                if(selectedIds.length === 0) {
-                    alert('대상을 선택해주세요.');
-                    return;
-                }
-
-                // UI 표시 (콤마로 구분)
-                $('#selectedTargetNames').val(selectedNames.join(', '));
-                
-                // Hidden Input 생성 (Form 전송용)
-                const type = $('#schedType').val();
-                const inputName = (type === 'TEAM') ? 'sharedDeptIds' : 'sharedMemberIds';
-                
-                let html = '';
-                selectedIds.forEach(id => {
-                    html += `<input type="hidden" name="${inputName}" value="${id}">`;
-                });
-                $('#hiddenIdArea').html(html);
-
-                // 현재 열린 서브 모달만 닫기
-                const modalEl = document.getElementById('searchTargetModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
-            });
-
-            // --- 6. 파일 미리보기 ---
-            $('#schedFile').change(function() {
-                const file = this.files[0];
-                const $preview = $('#filePreviewArea');
-                $preview.empty();
-                
-                if (file) {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            $preview.html(`<img src="${e.target.result}" title="${file.name}">`);
-                        }
-                        reader.readAsDataURL(file);
-                    } else {
-                        $preview.html(`<div class="fw-bold"><i class="fa-solid fa-file-lines me-2"></i>${file.name}</div>`);
-                    }
-                } else {
-                    $preview.html('<span>첨부된 파일이 없습니다.</span>');
-                }
-            });
-
-            // --- 7. [등록] 버튼 클릭 (유효성 검사 및 AJAX) ---
-            $('#btnRegister').click(function() {
-                // 필수값 검사
-                const title = $('#schedTitle').val().trim();
-                const type = $('#schedType').val();
-                const startDate = $('#schedStart').val();
-                const endDate = $('#schedEnd').val();
-                const content = $('#schedContent').val().trim();
-
-                if (!title || !startDate || !endDate || !content) {
-                    alert("제목, 공유범위, 메모는 필수 입력입니다."); 
-                    return;
-                }
-                
-                if (startDate > endDate) {
-                    alert("종료 시간은 시작 시간보다 빠를 수 없습니다.");
-                    return;
-                }
-                
-                if ((type === 'TEAM' || type === 'SPECIFIC') && $('#hiddenIdArea').children().length === 0) {
-                    alert("공유할 대상을 지정해주세요.");
-                    return;
-                }
-
-                const formData = new FormData($('#scheduleForm')[0]);
-                
-                $.ajax({
-                    url: '/schedule/regist',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false, 
-                    processData: false, 
-                    success: function(response) {
-                        alert('일정이 성공적으로 등록되었습니다.');
-                        location.reload(); 
-                    },
-                    error: function(err) {
-                        alert('일정 등록에 실패했습니다.\n관리자에게 문의하세요.');
-                        console.error(err);
-                    }
-                });
-            });
-
-            // --- Helper Functions (AJAX) ---
-            function loadTeamList(keyword) {
-                $.get('/api/search/team', { keyword: keyword }, function(data) {
-                    renderList(data, 'team');
-                });
-            }
-
-            function loadMemberList(keyword) {
-                $.get('/api/search/member', { keyword: keyword }, function(data) {
-                    renderList(data, 'member');
-                });
-            }
-
-            function renderList(list, type) {
-                const $container = $('#targetResultList');
-                $container.empty();
-                
-                if(!list || list.length === 0) {
-                    $container.append('<div class="p-3 text-center text-muted">검색 결과가 없습니다.</div>');
-                    return;
-                }
-
-                list.forEach(item => {
-                    const id = item.id; 
-                    const name = (type === 'team') ? item.departmentName : `${item.name} (${item.employeeNumber})`;
-                    const icon = (type === 'team') ? '<i class="fa-solid fa-people-group text-info me-2"></i>' : '<i class="fa-solid fa-user text-secondary me-2"></i>';
-                    
-                    const html = `
-                        <label class="search-result-item">
-                            <input class="form-check-input target-checkbox" type="checkbox" value="${id}" data-name="${name}">
-                            ${icon}
-                            <span>${name}</span>
-                        </label>
-                    `;
-                    $container.append(html);
-                });
-            }
-        });
-
-        // 기존 페이지 이동 및 정렬 함수
-        function goPage(page) {
-            document.getElementById('page').value = page;
-            document.getElementById('searchForm').submit();
-        }
-        function goSort(field) {
-            const currentField = document.getElementById('sortField').value;
-            const currentDir = document.getElementById('sortDir').value;
-            if (currentField === field) {
-                document.getElementById('sortDir').value = (currentDir === 'asc') ? 'desc' : 'asc';
-            } else {
-                document.getElementById('sortField').value = field;
-                document.getElementById('sortDir').value = 'desc';
-            }
-            document.getElementById('page').value = 1;
-            document.getElementById('searchForm').submit();
-        }
+		$(document).ready(function() {
+		        
+		        // 모달 구분 변수 ('regist' or 'detail')
+		        let activeModalSource = 'regist'; 
+		
+		        // 1. [공통] UI 제어 및 조직도 검색 관련 함수
+		        // (1) 공유 범위(Type)에 따라 입력창 숨기기/보이기 처리
+		        function updateShareUI(source, type) {
+		            // source에 따라 제어할 ID 결정
+		            const $targetArea = (source === 'regist') ? $('#shareTargetArea') : $('#detailShareTargetArea');
+		            const $btnLabel   = (source === 'regist') ? $('#btnOpenTargetModal') : $('#btnOpenDetailTargetModal');
+		            
+		            // "변경" 이벤트로 호출된 경우 기존 값 초기화 (상세 조회 로드 시에는 초기화 안 함)
+		            // 이 함수를 호출할 때 reset=true 파라미터를 받거나, 호출부에서 처리
+		            
+		            if (type === 'PERSONAL' || type === 'COMPANY' || type === 'LEAVE') {
+		                $targetArea.hide();
+		            } else {
+		                $targetArea.show().css('display', 'flex');
+		                
+		                let btnText = (type === 'TEAM') ? '<i class="fa-solid fa-users me-1"></i> +공유팀 지정' : '<i class="fa-solid fa-user-plus me-1"></i> +공유자 지정';
+		                $btnLabel.html(btnText);
+		            }
+		        }
+		
+		        // (2) 조직도 모달 열기 및 리스트 로드
+		        function openSearchModal(source) {
+		            activeModalSource = source; // 현재 소스 저장 (regist or detail)
+		
+		            // 현재 선택된 타입 가져오기
+		            const typeId = (source === 'regist') ? '#schedType' : '#detailType';
+		            const type = $(typeId).val();
+		
+		            $('#targetResultList').empty();
+		            $('#targetSearchKeyword').val('');
+		
+		            if(type === 'TEAM') {
+		                $('#searchModalTitle').text('조직도에서 공유팀 선택');
+		                loadTeamList('');
+		            } else {
+		                $('#searchModalTitle').text('조직도에서 공유자 선택');
+		                loadMemberList('');
+		            }
+		            
+		            var searchModal = new bootstrap.Modal(document.getElementById('searchTargetModal'));
+		            searchModal.show();
+		        }
+		
+		        // (3) AJAX Helper Functions
+		        function loadTeamList(keyword) {
+		            $.get('/api/search/team', { keyword: keyword }, function(data) { renderList(data, 'team'); });
+		        }
+		        function loadMemberList(keyword) {
+		            $.get('/api/search/member', { keyword: keyword }, function(data) { renderList(data, 'member'); });
+		        }
+		        function renderList(list, type) {
+		            const $container = $('#targetResultList');
+		            $container.empty();
+		            
+		            if(!list || list.length === 0) {
+		                $container.append('<div class="p-3 text-center text-muted">검색 결과가 없습니다.</div>');
+		                return;
+		            }
+		            list.forEach(item => {
+		                const id = item.id; 
+		                const name = (type === 'team') ? item.departmentName : `${item.name} (${item.employeeNumber})`;
+		                const icon = (type === 'team') ? '<i class="fa-solid fa-people-group text-info me-2"></i>' : '<i class="fa-solid fa-user text-secondary me-2"></i>';
+		                const html = `
+		                    <label class="search-result-item">
+		                        <input class="form-check-input target-checkbox" type="checkbox" value="${id}" data-name="${name}">
+		                        ${icon} <span>${name}</span>
+		                    </label>`;
+		                $container.append(html);
+		            });
+		        }
+		
+		        // 2. [등록 모달] 이벤트 리스너	        
+		        // 등록 모달 열기
+		        $('#btnOpenScheduleModal').click(function() {
+		            activeModalSource = 'regist';
+		            $('#scheduleForm')[0].reset();
+		            $('#filePreviewArea').html('<span>첨부된 파일이 없습니다.</span>');
+		            $('#shareTargetArea').hide();
+		            $('#hiddenIdArea').empty();
+		            
+		            new bootstrap.Modal(document.getElementById('scheduleModal')).show();
+		        });
+		
+		        // 등록창 - 공유 범위 변경
+		        $('#schedType').change(function() {
+		            // 타입 변경 시 기존 선택 값 초기화
+		            $('#selectedTargetNames').val('');
+		            $('#hiddenIdArea').empty();
+		            
+		            updateShareUI('regist', $(this).val());
+		        });
+		
+		        // 등록창 - [+공유 대상] 버튼 클릭
+		        $('#btnOpenTargetModal').click(function() {
+		            openSearchModal('regist');
+		        });
+		
+		        // 파일 미리보기
+		        $('#schedFile').change(function() {
+		            const file = this.files[0];
+		            const $preview = $('#filePreviewArea');
+		            $preview.empty();
+		            if (file) {
+		                if (file.type.startsWith('image/')) {
+		                    const reader = new FileReader();
+		                    reader.onload = function(e) { $preview.html(`<img src="${e.target.result}" title="${file.name}">`); }
+		                    reader.readAsDataURL(file);
+		                } else { $preview.html(`<div class="fw-bold"><i class="fa-solid fa-file-lines me-2"></i>${file.name}</div>`); }
+		            } else { $preview.html('<span>첨부된 파일이 없습니다.</span>'); }
+		        });
+		
+		        // 등록 버튼 클릭
+		        $('#btnRegister').click(function() {
+		            const title = $('#schedTitle').val().trim();
+		            const type = $('#schedType').val();
+		            const startDate = $('#schedStart').val();
+		            const endDate = $('#schedEnd').val();
+		            const content = $('#schedContent').val().trim();
+		
+		            if (!title || !startDate || !endDate || !content) { alert("제목, 공유범위, 메모는 필수 입력입니다."); return; }
+		            if (startDate > endDate) { alert("종료 시간은 시작 시간보다 빠를 수 없습니다."); return; }
+		            if ((type === 'TEAM' || type === 'SPECIFIC') && $('#hiddenIdArea').children().length === 0) { alert("공유할 대상을 지정해주세요."); return; }
+		
+		            const formData = new FormData($('#scheduleForm')[0]);
+		            $.ajax({
+		                url: '/schedule/regist', type: 'POST', data: formData, contentType: false, processData: false, 
+		                success: function(res) { alert('등록되었습니다.'); location.reload(); },
+		                error: function(err) { alert('등록 실패'); console.error(err); }
+		            });
+		        });
+		
+		        // 3. [상세/수정 모달] 이벤트 리스너
+		        // 상세 버튼 클릭 (데이터 로드)
+		        $(document).on('click', '.btn-detail', function() {
+		            activeModalSource = 'detail';
+		            let scheduleId = $(this).data('id');
+		            
+		            $.ajax({
+		                url: '/schedule/get/' + scheduleId,
+		                type: 'GET',
+		                success: function(data) {
+		                    // 기본 데이터 바인딩
+		                    $('#detailId').val(data.id);
+		                    $('#detailTitle').val(data.title);
+		                    $('#detailType').val(data.type);
+		                    $('#detailContent').val(data.content);
+		                    $('#detailWriterName').val(data.writerName);
+		                    if(data.startDate) $('#detailStartDate').val(data.startDate);
+		                    if(data.endDate) $('#detailEndDate').val(data.endDate);
+		
+		                    // 파일 표시
+		                    let fileHtml = data.attachmentFile ? 
+		                        `<span class="badge bg-info">현재 파일: ${data.attachmentFile.substring(data.attachmentFile.indexOf('_') + 1)}</span>` : 
+		                        `<span class="text-muted">첨부된 파일 없음</span>`;
+		                    $('#currentFileArea').html(fileHtml);
+		
+		                    // 공유 범위 UI 세팅 (값 초기화 없이 UI만 갱신)
+		                    updateShareUI('detail', data.type);
+		
+		                    // 기존 공유 데이터(이름/ID) 복원
+		                    const $hiddenArea = $('#detailHiddenIdArea');
+		                    const $nameInput = $('#detailTargetNames');
+		                    $hiddenArea.empty();
+		                    $nameInput.val('');
+		
+		                    // DTO에서 받아온 리스트로 Hidden Input 생성
+		                    if (data.type === 'TEAM' && data.sharedDeptIds) {
+		                        $nameInput.val(data.sharedDeptNames ? data.sharedDeptNames.join(', ') : '');
+		                        data.sharedDeptIds.forEach(id => {
+		                            $hiddenArea.append(`<input type="hidden" name="sharedDeptIds" value="${id}">`);
+		                        });
+		                    } else if (data.type === 'SPECIFIC' && data.sharedMemberIds) {
+		                        $nameInput.val(data.sharedMemberNames ? data.sharedMemberNames.join(', ') : '');
+		                        data.sharedMemberIds.forEach(id => {
+		                            $hiddenArea.append(`<input type="hidden" name="sharedMemberIds" value="${id}">`);
+		                        });
+		                    }
+		
+		                    $('#detailModal').modal('show');
+		                },
+		                error: function() { alert('정보를 불러오는데 실패했습니다.'); }
+		            });
+		        });
+		
+		        // 수정창 - 공유 범위 변경
+		        $('#detailType').change(function() {
+		            // 변경 시 값 초기화
+		            $('#detailTargetNames').val('');
+		            $('#detailHiddenIdArea').empty();
+		            
+		            updateShareUI('detail', $(this).val());
+		        });
+		
+		        // 수정창 - [+공유 대상] 버튼 클릭
+		        $('#btnOpenDetailTargetModal').click(function() {
+		            openSearchModal('detail');
+		        });
+		
+		        // 수정하기 버튼
+		        $('#btnUpdate').on('click', function() {
+		            if(!confirm('일정을 수정하시겠습니까?')) return;
+		            let formData = new FormData($('#detailForm')[0]);
+		            
+		            // 공유 대상 필수 체크 로직 추가
+		            const type = $('#detailType').val();
+		            if ((type === 'TEAM' || type === 'SPECIFIC') && $('#detailHiddenIdArea').children().length === 0) {
+		                 alert("공유할 대상을 지정해주세요.");
+		                 return;
+		            }
+		
+		            $.ajax({
+		                url: '/schedule/update', type: 'POST', data: formData, contentType: false, processData: false,
+		                success: function(res) { alert(res); location.reload(); },
+		                error: function(xhr) { alert(xhr.responseText || '수정 실패'); }
+		            });
+		        });
+		
+		        // 삭제 버튼
+		        $('#btnDelete').on('click', function() {
+		            if(!confirm('정말 삭제하시겠습니까?')) return;
+		            $.post('/schedule/delete', { id: $('#detailId').val() })
+		             .done(function(res) { alert(res); location.reload(); })
+		             .fail(function(xhr) { alert(xhr.responseText || '삭제 실패'); });
+		        });
+		
+		        // 4. [조직도 서브 모달] 공통 기능
+		        // 검색 버튼
+		        $('#btnTargetSearch').click(function() {
+		            const keyword = $('#targetSearchKeyword').val();
+		            const typeId = (activeModalSource === 'regist') ? '#schedType' : '#detailType';
+		            const type = $(typeId).val();
+		            
+		            if(type === 'TEAM') loadTeamList(keyword);
+		            else loadMemberList(keyword);
+		        });
+		
+		        // 엔터키
+		        $('#targetSearchKeyword').on('keyup', function(key) {
+		            if(key.keyCode == 13) $('#btnTargetSearch').click();
+		        });
+		
+		        // [중요] 적용 버튼 (Regist와 Detail 분기 처리)
+		        $('#btnConfirmTarget').click(function() {
+		            const selectedIds = [];
+		            const selectedNames = [];
+		            
+		            $('.target-checkbox:checked').each(function() {
+		                selectedIds.push($(this).val());
+		                selectedNames.push($(this).data('name'));
+		            });
+		
+		            if(selectedIds.length === 0) { alert('대상을 선택해주세요.'); return; }
+		
+		            // 현재 활성화된 모달(activeModalSource)에 따라 타겟 지정
+		            const $nameInput  = (activeModalSource === 'regist') ? $('#selectedTargetNames') : $('#detailTargetNames');
+		            const $hiddenArea = (activeModalSource === 'regist') ? $('#hiddenIdArea') : $('#detailHiddenIdArea');
+		            const typeId      = (activeModalSource === 'regist') ? '#schedType' : '#detailType';
+		            
+		            // UI 표시
+		            $nameInput.val(selectedNames.join(', '));
+		            
+		            // Hidden Input 생성
+		            const type = $(typeId).val();
+		            const inputName = (type === 'TEAM') ? 'sharedDeptIds' : 'sharedMemberIds';
+		            
+		            let html = '';
+		            selectedIds.forEach(id => {
+		                html += `<input type="hidden" name="${inputName}" value="${id}">`;
+		            });
+		            $hiddenArea.html(html);
+		
+		            // 서브 모달 닫기
+		            bootstrap.Modal.getInstance(document.getElementById('searchTargetModal')).hide();
+		        });
+		
+		    }); // ready End
+		
+		    // 페이지 이동 함수 (HTML onclick에서 호출됨)
+		    function goPage(page) {
+		        document.getElementById('page').value = page;
+		        document.getElementById('searchForm').submit();
+		    }
+		    function goSort(field) {
+		        const currentField = document.getElementById('sortField').value;
+		        const currentDir = document.getElementById('sortDir').value;
+		        if (currentField === field) {
+		            document.getElementById('sortDir').value = (currentDir === 'asc') ? 'desc' : 'asc';
+		        } else {
+		            document.getElementById('sortField').value = field;
+		            document.getElementById('sortDir').value = 'desc';
+		        }
+		        document.getElementById('page').value = 1;
+		        document.getElementById('searchForm').submit();
+		    }
     </script>
 </th:block>
 

@@ -160,6 +160,7 @@
                         <th style="width: 160px;" class="clickable-th" onclick="goSort('endDate')">일정마감 <span class="sort-icon" th:text="${sortField == 'endDate' ? (sortDir == 'asc' ? '▲' : '▼') : '▽'}"></span></th>
                         <th style="width: 100px;" class="clickable-th" onclick="goSort('writer.name')">작성자 <span class="sort-icon" th:text="${sortField == 'writer.name' ? (sortDir == 'asc' ? '▲' : '▼') : '▽'}"></span></th>
                         <th>내용</th>
+                        <th style="width: 80px;">첨부파일</th>
                         <th style="width: 80px;">상세</th>
                     </tr>
                 </thead>
@@ -187,6 +188,16 @@
                         <td th:text="${#temporals.format(dto.endDate, 'yyyy-MM-dd HH:mm')}"></td>
                         <td th:text="${dto.writerName}"></td>
                         <td class="text-muted text-truncate" style="max-width: 200px; margin: 0 auto;" th:text="${dto.content}">내용</td>
+                        <td>
+				            <span th:if="${dto.thumbnailPath != null or (dto.fileList != null and !dto.fileList.empty)}">
+							    <i class="fa-solid fa-paperclip text-secondary" title="첨부파일 있음"></i> (첨부)
+							</span>
+							
+							<span th:unless="${dto.thumbnailPath != null or (dto.fileList != null and !dto.fileList.empty)}" 
+							      class="text-muted" style="font-size: 13px;">
+							    미첨부
+							</span>
+				        </td>
                         <td>
                         	<button type="button" class="btn btn-sm btn-outline-primary btn-detail" 
 						            th:data-id="${dto.id}">
@@ -273,12 +284,24 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">파일 첨부</label>
-                            <input type="file" class="form-control" id="schedFile" name="attachment">
-                            <div id="filePreviewArea">
-                                <span>첨부된 파일이 없습니다.</span>
-                            </div>
-                        </div>
+						    <label class="form-label">썸네일 파일 (이미지)</label>
+						    <div class="input-group">
+						        <input type="file" class="form-control" id="schedThumbnail" name="thumbnail" accept="image/*">
+						    </div>
+						    <div class="form-text text-muted">※ 게시글의 대표 이미지를 등록해주세요.</div>
+						    <div id="thumbnailPreview" class="mt-2 p-2 border rounded bg-light text-center" style="display:none;">
+						        <img src="" style="max-height: 150px; border-radius: 5px;">
+						    </div>
+						</div>
+						
+						<div class="mb-3">
+						    <label class="form-label">자료 파일 (다중 업로드 가능)</label>
+						    <div class="input-group">
+						        <input type="file" class="form-control" id="schedDataFiles" name="dataFiles" multiple>
+						    </div>
+						    <div id="fileListPreview" class="mt-2">
+						        </div>
+						</div>
 
                         <div class="mb-3">
                             <label class="form-label">일정 메모 <span class="required-star">*</span></label>
@@ -371,11 +394,32 @@
 	                    </div>
 	
 	                    <div class="mb-3">
-	                        <label class="form-label">첨부 파일</label>
-	                        <div id="currentFileArea">
-	                            </div>
-	                        <input type="file" class="form-control mt-1" id="detailAttachment" name="attachment">
-	                    </div>
+						    <label class="form-label">썸네일 이미지</label>
+						    
+						    <div id="detailThumbnailArea" class="mb-2 text-center" style="display:none; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+						        <img src="" id="detailThumbnailImg" style="max-width: 100%; max-height: 200px; border-radius: 5px; margin-bottom: 10px;">
+						        <br>
+						        <a id="btnDownloadThumbnail" href="#" class="btn btn-sm btn-dark">
+						            <i class="fa-solid fa-download me-1"></i> 썸네일 저장
+						        </a>
+						    </div>
+						
+						    <div class="input-group">
+						        <input type="file" class="form-control" id="detailThumbnailFile" name="thumbnail" accept="image/*">
+						    </div>
+						    <div class="form-text text-muted">※ 새로운 이미지를 선택하면 기존 썸네일이 교체됩니다.</div>
+						</div>
+						
+						<div class="mb-3">
+						    <label class="form-label">첨부 파일</label>
+						    <div id="detailFileListArea" class="border rounded p-2 bg-light mb-2">
+						        <span class="text-muted small">첨부된 파일이 없습니다.</span>
+						    </div>
+						
+						    <input type="file" class="form-control" id="detailDataFiles" name="dataFiles" multiple>
+						    
+						    <div id="detailNewFilePreview" class="mt-2"></div>
+						</div>
 	
 	                    <div class="mb-3">
 	                        <label class="form-label">내용</label>
@@ -398,6 +442,48 @@
 		        
 		        // 모달 구분 변수 ('regist' or 'detail')
 		        let activeModalSource = 'regist'; 
+		        // [추가] 파일 누적 저장을 위한 전역 배열
+		        let totalSelectedFiles = [];
+		        
+		        // [추가] 파일 목록 UI 렌더링 함수
+		        function updateFilePreview() {
+		        	const $area = (activeModalSource === 'regist') 
+				                  ? $('#fileListPreview') 
+				                  : $('#detailNewFilePreview');
+		            $area.empty();
+
+		            if (totalSelectedFiles.length > 0) {
+		                let html = '<ul class="list-group list-group-flush">';
+		                totalSelectedFiles.forEach((file, index) => {
+		                    // 파일 크기 계산 (KB)
+		                    let size = (file.size / 1024).toFixed(1) + ' KB';
+		                    html += `
+		                        <li class="list-group-item d-flex justify-content-between align-items-center py-1">
+		                            <span>
+		                                <i class="fa-solid fa-file me-2 text-secondary"></i>
+		                                ${file.name} <span class="text-muted" style="font-size:12px;">(${size})</span>
+		                            </span>
+		                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file" data-index="${index}" style="font-size: 12px; padding: 2px 6px;">
+		                                <i class="fa-solid fa-xmark"></i> 삭제
+		                            </button>
+		                        </li>`;
+		                });
+		                html += '</ul>';
+		                $area.html(html);
+		            } else {
+		                // 파일이 없을 때 메시지 (선택 사항)
+		                // $area.html('<span class="text-muted small p-2">선택된 파일이 없습니다.</span>');
+		            }
+		        }
+
+		        // [추가] 파일 개별 삭제 버튼 이벤트 (동적 바인딩)
+		        $(document).on('click', '.btn-remove-file', function() {
+		            const index = $(this).data('index');
+		            // 배열에서 해당 인덱스의 파일 제거
+		            totalSelectedFiles.splice(index, 1);
+		            // UI 갱신
+		            updateFilePreview();
+		        });
 		
 		        // 1. [공통] UI 제어 및 조직도 검색 관련 함수
 		        // (1) 공유 범위(Type)에 따라 입력창 숨기기/보이기 처리
@@ -475,6 +561,11 @@
 		        $('#btnOpenScheduleModal').click(function() {
 		            activeModalSource = 'regist';
 		            $('#scheduleForm')[0].reset();
+		            
+		         	// [추가] 파일 배열 및 미리보기 영역 초기화
+		            totalSelectedFiles = []; 
+		            $('#fileListPreview').empty();
+		            
 		            $('#filePreviewArea').html('<span>첨부된 파일이 없습니다.</span>');
 		            $('#shareTargetArea').hide();
 		            $('#hiddenIdArea').empty();
@@ -496,18 +587,46 @@
 		            openSearchModal('regist');
 		        });
 		
-		        // 파일 미리보기
-		        $('#schedFile').change(function() {
+		     	// 1. 썸네일 이미지 미리보기
+		        $('#schedThumbnail').change(function() {
 		            const file = this.files[0];
-		            const $preview = $('#filePreviewArea');
-		            $preview.empty();
-		            if (file) {
-		                if (file.type.startsWith('image/')) {
-		                    const reader = new FileReader();
-		                    reader.onload = function(e) { $preview.html(`<img src="${e.target.result}" title="${file.name}">`); }
-		                    reader.readAsDataURL(file);
-		                } else { $preview.html(`<div class="fw-bold"><i class="fa-solid fa-file-lines me-2"></i>${file.name}</div>`); }
-		            } else { $preview.html('<span>첨부된 파일이 없습니다.</span>'); }
+		            const $previewBox = $('#thumbnailPreview');
+		            const $img = $previewBox.find('img');
+
+		            if (file && file.type.startsWith('image/')) {
+		                const reader = new FileReader();
+		                reader.onload = function(e) {
+		                    $img.attr('src', e.target.result);
+		                    $previewBox.show();
+		                }
+		                reader.readAsDataURL(file);
+		            } else {
+		                $img.attr('src', '');
+		                $previewBox.hide();
+		            }
+		        });
+
+		     	// [수정] 자료 파일 (다중 업로드) - 누적 선택 방식
+		        $('#schedDataFiles').change(function() {
+		            // 1. 새로 선택된 파일들을 가져옴
+		            const newFiles = Array.from(this.files);
+		            
+		            // 2. 전역 배열에 추가 (누적)
+		            totalSelectedFiles = totalSelectedFiles.concat(newFiles);
+		            
+		            // 3. UI 갱신
+		            updateFilePreview();
+		            
+		            // 4. input 값 초기화 (동일한 파일을 다시 선택해도 change 이벤트가 발생하도록, 그리고 덮어쓰기 방지 시각적 효과)
+		            $(this).val('');
+		        });
+		     	
+		     	// [추가] 상세 모달 - 파일 추가 (누적 선택)
+		        $('#detailDataFiles').change(function() {
+		            const newFiles = Array.from(this.files);
+		            totalSelectedFiles = totalSelectedFiles.concat(newFiles); // 누적
+		            updateFilePreview(); // UI 갱신
+		            $(this).val(''); // input 초기화
 		        });
 		
 		        // 등록 버튼 클릭
@@ -522,18 +641,62 @@
 		            if (startDate > endDate) { alert("종료 시간은 시작 시간보다 빠를 수 없습니다."); return; }
 		            if ((type === 'TEAM' || type === 'SPECIFIC') && $('#hiddenIdArea').children().length === 0) { alert("공유할 대상을 지정해주세요."); return; }
 		
+		         	// 1. 기본 Form 데이터 가져오기 (텍스트 데이터 등)
 		            const formData = new FormData($('#scheduleForm')[0]);
+		            
+		         	// 2. 기존 input에 들어있을 수 있는 'dataFiles' 키를 제거 (중복 전송 방지)
+		            formData.delete('dataFiles');
+		         	
+		         	// 3. 누적된 파일 배열(totalSelectedFiles)에 있는 파일들을 수동으로 추가
+		            if (totalSelectedFiles.length > 0) {
+		                totalSelectedFiles.forEach(file => {
+		                    formData.append('dataFiles', file);
+		                });
+		            }
+		         	
 		            $.ajax({
-		                url: '/schedule/regist', type: 'POST', data: formData, contentType: false, processData: false, 
-		                success: function(res) { alert('등록되었습니다.'); location.reload(); },
-		                error: function(err) { alert('등록 실패'); console.error(err); }
+		                url: '/schedule/regist', 
+		                type: 'POST', 
+		                data: formData, 
+		                contentType: false, 
+		                processData: false, 
+		                success: function(res) { 
+		                	alert('등록되었습니다.'); 
+		                	location.reload(); 
+		                },
+		                error: function(err) { 
+		                	alert('등록 실패'); 
+		                	console.error(err); 
+		                }
 		            });
 		        });
 		
-		        // 3. [상세/수정 모달] 이벤트 리스너
+		     	// [추가] 상세 모달 - 썸네일 변경 시 미리보기 즉시 반영
+		        $('#detailThumbnailFile').change(function() {
+		            const file = this.files[0];
+		            const $previewArea = $('#detailThumbnailArea');
+		            const $img = $('#detailThumbnailImg');
+		            
+		            if (file && file.type.startsWith('image/')) {
+		                const reader = new FileReader();
+		                reader.onload = function(e) {
+		                    $img.attr('src', e.target.result);
+		                    $previewArea.show(); // 이미지가 없던 경우에도 영역 표시
+		                    
+		                    // (선택사항) 새로 올린 파일은 아직 서버에 없으므로 다운로드 버튼은 숨기는 게 자연스러움
+		                    $('#btnDownloadThumbnail').hide(); 
+		                }
+		                reader.readAsDataURL(file);
+		            }
+		        });
+		     	
 		        // 상세 버튼 클릭 (데이터 로드)
 		        $(document).on('click', '.btn-detail', function() {
 		            activeModalSource = 'detail';
+		            
+		            totalSelectedFiles = []; 
+		            $('#detailNewFilePreview').empty();
+		            
 		            let scheduleId = $(this).data('id');
 		            
 		            $.ajax({
@@ -550,10 +713,42 @@
 		                    if(data.endDate) $('#detailEndDate').val(data.endDate);
 		
 		                    // 파일 표시
-		                    let fileHtml = data.attachmentFile ? 
-		                        `<span class="badge bg-info">현재 파일: ${data.attachmentFile.substring(data.attachmentFile.indexOf('_') + 1)}</span>` : 
-		                        `<span class="text-muted">첨부된 파일 없음</span>`;
-		                    $('#currentFileArea').html(fileHtml);
+		                    // 1. 썸네일 처리
+		                    $('#detailThumbnailFile').val('');
+							if (data.thumbnailPath) {
+								// 이미지 경로 설정 (미리보기용)
+							    $('#detailThumbnailImg').attr('src', '/upload/' + data.thumbnailPath); 
+								
+							 	// 다운로드 버튼 링크 설정
+							    $('#btnDownloadThumbnail').attr('href', '/schedule/download/thumbnail/' + data.id);
+							    $('#detailThumbnailArea').show();
+							} else {
+							    $('#detailThumbnailArea').hide();
+							}
+		                    
+							// [수정] 2. 첨부파일 리스트 처리
+							const $fileArea = $('#detailFileListArea');
+							$fileArea.empty();
+
+							if (data.fileList && data.fileList.length > 0) {
+							    let html = '<ul class="list-group list-group-flush">';
+							    data.fileList.forEach(f => {
+							        // 다운로드 링크 + 삭제 버튼 생성
+							        html += `
+							            <li class="list-group-item d-flex justify-content-between align-items-center py-1" id="file-item-${f.id}">
+							                <a href="/schedule/download/${f.id}" class="text-decoration-none text-dark">
+							                    <i class="fa-solid fa-download text-primary me-2"></i> ${f.originalFileName}
+							                </a>
+							                <button type="button" class="btn btn-sm btn-outline-danger btn-delete-db-file" data-id="${f.id}" style="font-size: 11px; padding: 1px 6px;">
+							                    삭제
+							                </button>
+							            </li>`;
+							    });
+							    html += '</ul>';
+							    $fileArea.html(html);
+							} else {
+							    $fileArea.html('<span class="text-muted small">첨부된 파일이 없습니다.</span>');
+							}
 		
 		                    // 공유 범위 UI 세팅 (값 초기화 없이 UI만 갱신)
 		                    updateShareUI('detail', data.type);
@@ -600,7 +795,17 @@
 		        // 수정하기 버튼
 		        $('#btnUpdate').on('click', function() {
 		            if(!confirm('일정을 수정하시겠습니까?')) return;
+		            
 		            let formData = new FormData($('#detailForm')[0]);
+		            
+		         	// [추가] 기존 input의 파일 목록 제거 후 배열에 있는 파일들로 교체
+		            formData.delete('dataFiles'); 
+		            
+		            if (totalSelectedFiles.length > 0) {
+		                totalSelectedFiles.forEach(file => {
+		                    formData.append('dataFiles', file);
+		                });
+		            }
 		            
 		            // 공유 대상 필수 체크 로직 추가
 		            const type = $('#detailType').val();
@@ -693,6 +898,33 @@
 		        document.getElementById('page').value = 1;
 		        document.getElementById('searchForm').submit();
 		    }
+		    
+		 	// [추가] 기존 첨부파일 삭제 버튼 클릭 (DB 삭제)
+		    $(document).on('click', '.btn-delete-db-file', function() {
+		        if(!confirm('이 파일을 영구적으로 삭제하시겠습니까?')) return;
+
+		        const fileId = $(this).data('id');
+		        const $liItem = $('#file-item-' + fileId);
+
+		        $.ajax({
+		            url: '/schedule/file/delete',
+		            type: 'POST',
+		            data: { fileId: fileId },
+		            success: function(res) {
+		                alert(res); // "삭제되었습니다."
+		                $liItem.remove(); // 화면에서 즉시 제거
+		                
+		                // 다 지워졌으면 '파일 없음' 표시
+		                if ($('#detailFileListArea li').length === 0) {
+		                    $('#detailFileListArea').html('<span class="text-muted small">첨부된 파일이 없습니다.</span>');
+		                }
+		            },
+		            error: function(xhr) {
+		                // 서버에서 보낸 에러 메시지(예: "파일 삭제 권한이 없습니다.")가 있으면 보여줌
+		                alert(xhr.responseText || '파일 삭제에 실패했습니다.');
+		            }
+		        });
+		    });
     </script>
 </th:block>
 

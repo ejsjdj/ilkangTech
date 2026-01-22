@@ -2,14 +2,22 @@ package com.itwillbs.ilkwangtech.schedule.controller;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,9 +33,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.UriUtils;
 
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleSearchDTO;
+import com.itwillbs.ilkwangtech.schedule.entity.ScheduleFile;
 import com.itwillbs.ilkwangtech.schedule.service.ScheduleService;
 
 import jakarta.servlet.http.HttpSession;
@@ -179,6 +189,91 @@ public class ScheduleController {
         Page<ScheduleDTO> result = scheduleService.getScheduleList(accountLogin.getId(), searchDTO, pageable);
         
         return ResponseEntity.ok(result.getContent());
+    }
+    
+    @Value("${file.upload.path:C:/upload/}") // application.properties의 경로와 일치해야 함
+    private String uploadDir;
+    
+    // 썸네일 다운로드 기능 추가
+    @GetMapping("/download/thumbnail/{scheduleId}")
+    public ResponseEntity<Resource> downloadThumbnail(@PathVariable(name = "scheduleId") Long scheduleId) throws MalformedURLException {
+        
+        // 1. 일정 정보 조회 (Service 재사용 또는 Repository 사용)
+        ScheduleDTO schedule = scheduleService.getScheduleDetails(scheduleId);
+        String thumbnailPath = schedule.getThumbnailPath();
+        
+        if (thumbnailPath == null) {
+            throw new RuntimeException("썸네일이 존재하지 않습니다.");
+        }
+
+        // 2. 파일 경로 설정
+        Path filePath = Paths.get(uploadDir + thumbnailPath);
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new RuntimeException("파일을 찾을 수 없습니다.");
+        }
+
+        // 3. 다운로드 헤더 설정 (파일명: thumbnail_일정ID.jpg 형식으로 지정)
+        // 원본 파일명을 따로 저장하지 않았다면 UUID 부분을 제외하거나 임의의 이름을 부여
+        String originalName = "thumbnail_" + scheduleId + ".jpg"; 
+        
+        // 만약 저장된 파일명에서 UUID를 떼고 싶다면 아래 로직 사용
+        if (thumbnailPath.contains("_")) {
+             originalName = thumbnailPath.substring(thumbnailPath.indexOf("_") + 1);
+        }
+
+        String encodedFileName = UriUtils.encode(originalName, StandardCharsets.UTF_8);
+        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .body(resource);
+    }
+
+    // [메서드 추가] 첨부파일 다운로드
+    @GetMapping("/download/{fileId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable(name = "fileId") Long fileId) throws MalformedURLException {
+        
+        // 1. DB에서 파일 정보 조회
+        ScheduleFile fileEntity = scheduleService.getScheduleFile(fileId);
+        
+        // 2. 실제 파일 경로 찾기
+        // 저장된 파일명(UUID_원본명)을 사용
+        Path filePath = Paths.get(uploadDir + fileEntity.getSavedFileName());
+        Resource resource = new UrlResource(filePath.toUri());
+        
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new RuntimeException("파일을 찾을 수 없거나 읽을 수 없습니다.");
+        }
+
+        // 3. 다운로드 시 원본 파일명으로 다운로드되도록 헤더 설정 (한글 깨짐 방지)
+        String encodedFileName = UriUtils.encode(fileEntity.getOriginalFileName(), StandardCharsets.UTF_8);
+        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .body(resource);
+    }
+    
+    // [추가] 개별 파일 삭제 요청 처리
+    @PostMapping("/file/delete")
+    @ResponseBody
+    public ResponseEntity<String> deleteFile(@RequestParam("fileId") Long fileId,
+                                             @AuthenticationPrincipal AccountLogin accountLogin) {
+        try {
+            // 로그인한 사용자의 ID를 같이 전달
+            scheduleService.deleteAttachedFile(fileId, accountLogin.getId());
+            return ResponseEntity.ok("삭제되었습니다.");
+            
+        } catch (SecurityException e) {
+            // 권한 없을 때 403 Forbidden 반환
+            return ResponseEntity.status(403).body(e.getMessage());
+            
+        } catch (Exception e) {
+            log.error("파일 삭제 중 오류 발생", e);
+            return ResponseEntity.badRequest().body("삭제 실패");
+        }
     }
 
 }

@@ -43,14 +43,23 @@ public class MessengerController {
 	
 	@GetMapping("/direct")
 	public String openDirect(@RequestParam("memberId") Long targetMemberId,
-	                         @AuthenticationPrincipal AccountLogin login) {
+	                         @AuthenticationPrincipal AccountLogin login,
+	                         Model model) {
 
 	    Long myMemberId = login.getId();
-	    Long roomId = messengerService.getOrCreateDirectRoom(myMemberId, targetMemberId);
+	    try {
+	        // 서비스 호출
+	        Long roomId = messengerService.getOrCreateDirectRoom(myMemberId, targetMemberId);
+	        System.out.println("openDirect roomId = " + roomId);
+	        return "redirect:/messenger/chatroom/" + roomId;
 
-	    System.out.println("openDirect roomId = " + roomId);
-
-	    return "redirect:/messenger/chatroom/" + roomId;
+	    } catch (IllegalArgumentException e) {
+	        // 자기 자신과의 채팅 시도 등 예외 발생 시 처리
+	        // 자바스크립트로 알림을 띄우고 뒤로가기(또는 목록 이동) 처리
+	        model.addAttribute("msg", e.getMessage()); // "자기 자신과의 1:1 채팅은..."
+	        model.addAttribute("url", "/messenger/memberList"); // 이동할 경로
+	        return "common/messageRedirect"; // 공통 알림 페이지(없다면 새로 만들어야 함)
+	    }
 	}
 
 

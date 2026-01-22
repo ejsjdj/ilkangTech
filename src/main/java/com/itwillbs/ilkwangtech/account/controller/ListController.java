@@ -31,10 +31,10 @@ public class ListController {
     @GetMapping("/account/getList")
     @ResponseBody
     public Page<AccountDetail> getEmployeeList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "") String searchField,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
+    		@RequestParam(name = "page", defaultValue = "0") int page, 
+            @RequestParam(name = "searchField", defaultValue = "") String searchField,
+            @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "DESC") Sort.Direction direction) {
 
         Pageable pageable = PageRequest.of(page, 10, Sort.by(direction, sortBy));
 

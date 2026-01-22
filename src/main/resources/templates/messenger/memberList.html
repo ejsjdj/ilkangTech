@@ -105,7 +105,7 @@
 	     th:each="member : ${memberList}"
 	     th:object="${member}"
 	     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
-	     onclick="goChat(this)">
+	     ondblclick="goChat(this)">
 	
 		<button type="button"
 		        class="starBtn starOff"
@@ -126,8 +126,23 @@
 <script>
 function goChat(el) {
   var memberId = el.dataset.id;
-  location.href = "/messenger/chat?memberId=" + memberId;
+
+  // 팝업(새 창) 옵션: 필요하면 사이즈 조절
+  var w = 420;
+  var h = 720;
+  var left = Math.max(0, (screen.width - w) / 2);
+  var top = Math.max(0, (screen.height - h) / 2);
+
+  var url = "/messenger/direct?memberId=" + memberId;
+
+  window.open(
+    url,
+    "chat_" + memberId,
+    "width=" + w + ",height=" + h + ",left=" + left + ",top=" + top + ",resizable=yes,scrollbars=yes"
+  );
 }
+</script>
+
 
 function norm(s) {
   return (s || "").toString().trim().toLowerCase();

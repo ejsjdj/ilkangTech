@@ -1,7 +1,9 @@
 package com.itwillbs.ilkwangtech.schedule.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.itwillbs.ilkwangtech.account.entity.Department;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,6 +23,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -75,15 +79,24 @@ public class Schedule {
     @CreationTimestamp
     @Column(name = "reg_date", nullable = false, updatable = false)
     private LocalDateTime regDate;
+    
+    // 썸네일(이미지) 경로
+    @Column
+    private String thumbnailPath; 
+    
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ScheduleFile> files = new ArrayList<>();
 
     // 내용 수정 편의 메서드
     public void updateSchedule(String title, String content, String type, 
-                               LocalDateTime startDate, LocalDateTime endDate, String attachmentFile) {
+                               LocalDateTime startDate, LocalDateTime endDate, String attachmentFile, String thumbnailPath) {
         this.title = title;
         this.content = content;
         this.type = type;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.thumbnailPath = thumbnailPath;
         if(attachmentFile != null) {
             this.attachmentFile = attachmentFile;
         }
@@ -116,6 +129,11 @@ public class Schedule {
     
     public void addSharedMember(Member member) {
         this.sharedMembers.add(member);
+    }
+    
+    public void addFile(ScheduleFile file) {
+        this.files.add(file);
+        file.setSchedule(this);
     }
     
 

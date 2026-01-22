@@ -28,7 +28,7 @@ public class HrApprovalController {
     private final DraftDetailService draftDetailService;
     private final DraftDecideService draftDecideService;
 
-    // 결재문서 양식 선택 -> 결재문서 작성 모달 요청
+    // 결재문서 리스트
     @GetMapping("/list")
     public String getApprovalList(@AuthenticationPrincipal AccountLogin accountLogin,Model model){
         Long userId = accountLogin.getId();
@@ -47,7 +47,7 @@ public class HrApprovalController {
         return draftDetailService.getDraftDetail(userId, draftId);
     }
 
-    // 결재문서 작성 중 양식 선택
+    // 결재문서 양식 선택
     @GetMapping("/type")
     @ResponseBody
     public List<DraftApprovalLineDTO> getApprovalStatus(

@@ -27,7 +27,7 @@ public class AccountServiceImpl implements AccountService {
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
 
-	static int idx = 10;
+	static int idx = 100;
 
 	public AccountRegisterResponse register(AccountRegisterRequest req) {
 
@@ -62,25 +62,21 @@ public class AccountServiceImpl implements AccountService {
 		AccountRegisterResponse res = new AccountRegisterResponse();
 		res.setSuccess(false);
 
-		// 이메일 중복 검사
 		if (accountRepository.existsByEmail(req.getEmail())) {
 			res.setMessage("이메일을 다시 확인해 주세요!");
 			return res;
 		}
 
-		// 전화번호 중복 검사
 		if (accountRepository.existsByPhoneNumber(req.getPhoneNumber())) {
 			res.setMessage("전화번호를 다시 확인해 주세요!");
 			return res;
 		}
 
-		// 주민등록번호 중복 검사
 		if (accountRepository.existsByResidentNumber(req.getResidentNumber())) {
 			res.setMessage("이미 가입했되어 있습니다.");
 			return res;
 		}
 
-		// 계좌번호 중복 검사
 		if (accountRepository.existsByAccountNumber(req.getAccountNumber())) {
 			res.setMessage("계좌번호를 변경해주세요");
 			return res;

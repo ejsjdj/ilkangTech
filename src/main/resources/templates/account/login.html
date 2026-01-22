@@ -39,6 +39,29 @@
            value="${_csrf.token }" >
 
     <button type="submit">로그인</button>
+
+    <div>
+        <button type="button" class="" onclick="autoLoginAs('', '')">시스템 관리자 로그인</button>
+    </div>
+    <div>
+        <button type="button" class="" onclick="autoLoginAs('', '')">인사부 관리자 로그인</button>
+    </div>
+    <div>
+        <button type="button" class="" onclick="autoLoginAs('', '')">생산부 관리자 로그인</button>
+    </div>
+    <div>
+        <button type="button" class="" onclick="autoLoginAs('', '')">일반 사원 로그인</button>
+    </div>
+
 </form>
+
+<script>
+
+    function autoLoginAs(empNo, password) {
+        document.getElementById("employeeNumber").value = empNo;
+        document.getElementById("password").value = password;
+        document.querySelector('form').submit();
+    }
+</script>
 </body>
 </html>

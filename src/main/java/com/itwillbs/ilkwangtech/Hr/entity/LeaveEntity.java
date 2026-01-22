@@ -1,4 +1,3 @@
-/*
 package com.itwillbs.ilkwangtech.Hr.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
@@ -10,7 +9,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "")
+@Table(name = "leave_status")
 public class LeaveEntity {
 
     @Id
@@ -22,12 +21,19 @@ public class LeaveEntity {
     @JoinColumn(name = "common_id")
     private Member member;
 
-    // 잔여휴가
+    // 총 휴가
     @Column(nullable = true)
-    private long remainLeave;
+    private long totalLeave;
 
     // 올해 사용 휴가(1월 1일 초기화)
     @Column(nullable = true)
     private long usedLeave;;
+
+    // 잔여휴가
+    @Column(nullable = true)
+    private long remainLeave;
+
+    public void calculateRemainLeave(){
+        this.remainLeave = this.totalLeave - this.usedLeave;
+    }
 }
-*/

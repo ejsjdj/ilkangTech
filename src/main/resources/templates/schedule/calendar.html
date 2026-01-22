@@ -430,117 +430,126 @@
 <script th:inline="javascript">
     // --- 전역 변수 ---
     let calendar;
-    /* let currentLoadedYear = null; */
     let currentStatus = 'OFF_DUTY'; 
-    let activeModalSource = 'regist'; // 'regist' or 'detail' (조직도 모달 호출처 구분)
+    let activeModalSource = 'regist';
+    
+    // [성능 최적화] 공휴일 데이터를 년도별로 저장할 캐시 객체
+    const holidayCache = {}; 
 
     $(document).ready(function() {
         initCalendar();
-        checkCurrentStatus(); // 근태 (기존 기능)
-        updateDate();         // 날짜 (기존 기능)
-        loadWeather();        // 날씨 (기존 기능)
+        checkCurrentStatus(); 
+        updateDate();         
+        loadWeather();        
 
-        // 캘린더 초기 뷰 버튼 Active 설정
         const $monthBtn = $('.view-buttons.segmented button').eq(1);
         if ($monthBtn.length) setMonth($monthBtn[0]);
 
-        // list.html 동일 모달 적용 코드
-        // 1. 등록 모달 열기 (헤더의 + 버튼)
-        $('#btnOpenScheduleModal').click(function() {
-            activeModalSource = 'regist';
-            openRegistModal(); // 날짜 없이 열기
-        });
-
-        // 2. 공유 범위 변경 (등록/수정 공통)
+        // [이벤트 핸들러]
+        $('#btnOpenScheduleModal').click(() => { activeModalSource = 'regist'; openRegistModal(); });
         $('#schedType, #detailType').change(function() {
             const isRegist = ($(this).attr('id') === 'schedType');
             updateShareUI(isRegist ? 'regist' : 'detail', $(this).val());
-            // 값 초기화
             if(isRegist) { $('#selectedTargetNames').val(''); $('#hiddenIdArea').empty(); }
             else { $('#detailTargetNames').val(''); $('#detailHiddenIdArea').empty(); }
         });
-
-        // 3. 조직도 열기
         $('#btnOpenTargetModal').click(() => openSearchModal('regist'));
         $('#btnOpenDetailTargetModal').click(() => openSearchModal('detail'));
-
-        // 4. 조직도 검색
         $('#btnTargetSearch').click(searchTarget);
         $('#targetSearchKeyword').on('keyup', (e) => { if(e.keyCode==13) searchTarget(); });
-
-        // 5. 조직도 적용
         $('#btnConfirmTarget').click(confirmTarget);
-
-        // 6. 파일 미리보기
         $('#schedFile').change(function() { previewFile(this); });
-
-        // 7. [등록] 버튼
         $('#btnRegister').click(registerSchedule);
-
-        // 8. [수정] 버튼
         $('#btnUpdate').click(updateSchedule);
-
-        // 9. [삭제] 버튼
         $('#btnDelete').click(deleteSchedule);
     });
 
-    // 캘린더 초기화 및 이벤트 핸들링
+    // 1. 캘린더 초기화
     function initCalendar() {
         const Calendar = tui.Calendar;
         calendar = new Calendar('#calendar', {
             defaultView: 'month',
-            useFormPopup: false,   // 기본 팝업 끄기
-            useDetailPopup: false, // 기본 상세 팝업 끄기
-            isReadOnly: false,     // 드래그/클릭 허용
+            useFormPopup: false,
+            useDetailPopup: false,
+            isReadOnly: false,
             week: { startDayOfWeek: 0, dayNames: ['일','월','화','수','목','금','토'] },
-            month: { dayNames: ['일','월','화','수','목','금','토'] }
+            month: { dayNames: ['일','월','화','수','목','금','토'] },
+            
+            // [정렬 로직] 공휴일(holiday)을 최우선(-1)으로 정렬 (병렬 로딩해도 순서 유지됨)
+            eventSorter: function(a, b) {
+                const aIsHoliday = String(a.id).startsWith('holiday');
+                const bIsHoliday = String(b.id).startsWith('holiday');
+                
+                if (aIsHoliday && !bIsHoliday) return -1; // a가 공휴일이면 위로
+                if (!aIsHoliday && bIsHoliday) return 1;  // b가 공휴일이면 위로
+                return a.start - b.start; // 나머지는 시간순
+            }
         });
 
-        // A. 드래그로 날짜 선택 시 -> 등록 모달 오픈
         calendar.on('selectDateTime', function(event) {
             activeModalSource = 'regist';
             const start = toLocalISOString(event.start);
             const end = toLocalISOString(event.end);
             openRegistModal(start, end);
-            calendar.clearGridSelections(); // 선택 해제
+            calendar.clearGridSelections();
         });
 
-        // B. 일정 클릭 시 -> 상세 모달 오픈
         calendar.on('clickEvent', function(event) {
             const scheduleId = event.event.id;
-            if(String(scheduleId).startsWith('holiday')) return; // 공휴일 클릭 제외
+            if(String(scheduleId).startsWith('holiday')) return; 
             loadDetail(scheduleId);
         });
 
-        // 렌더링 후 일정 로드
         setTimeout(() => { 
             calendar.render(); 
             updateCalendarTitle();
-            /* loadHolidays(); */
-            loadSchedules(); // DB 일정 불러오기
+            loadSchedules(); // 데이터 로드 시작
         }, 100);
     }
 
-    // 일정 데이터 로드 (AJAX)
+    // 2. [최적화됨] 데이터 로드 함수 (병렬 처리 + 캐싱)
     function loadSchedules() {
-        // 현재 캘린더가 보여주는 날짜 범위 구하기
         const rangeStart = calendar.getDateRangeStart();
         const rangeEnd = calendar.getDateRangeEnd();
         
-        // 날짜 객체를 YYYY-MM-DD 문자열로 변환
-        const startStr = rangeStart.getFullYear() + '-' + String(rangeStart.getMonth()+1).padStart(2,'0') + '-' + String(rangeStart.getDate()).padStart(2,'0');
-        const endStr = rangeEnd.getFullYear() + '-' + String(rangeEnd.getMonth()+1).padStart(2,'0') + '-' + String(rangeEnd.getDate()).padStart(2,'0');
+        const startStr = formatDateForApi(rangeStart);
+        const endStr = formatDateForApi(rangeEnd);
+        const year = calendar.getDate().getFullYear();
 
-        $.get('/schedule/api/events', { start: startStr, end: endStr }, function(data) {
-            
-            calendar.clear(); // 기존 일정 지우기
-            loadHolidays();   // 공휴일 다시 그리기
+        // 1. 캘린더 비우기
+        calendar.clear(); 
 
-            const events = data.map(dto => {
+        // 2. [최적화] 공휴일 로드 (캐시 확인 -> 없으면 AJAX)
+        if (holidayCache[year]) {
+            // 캐시에 있으면 즉시 그리기 (0초 딜레이)
+            calendar.createEvents(holidayCache[year]);
+        } else {
+            // 캐시에 없으면 서버 요청
+            $.get(`/api/calendar/holidays?year=${year}`, function(holidayData) {
+                const holidayEvents = holidayData.map(holiday => ({
+                    id: 'holiday-' + holiday.locdate,
+                    calendarId: 'holiday',
+                    title: holiday.dateName,
+                    category: 'allday',
+                    start: formatLocdate(holiday.locdate),
+                    end: formatLocdate(holiday.locdate),
+                    isReadOnly: true,
+                    color: '#e54f4b', backgroundColor: '#ffe8e8', 
+                    dragBackColor: '#ffe8e8', borderColor: '#e54f4b'
+                }));
+                
+                // 캐시에 저장
+                holidayCache[year] = holidayEvents;
+                calendar.createEvents(holidayEvents);
+            });
+        }
+
+        // 3. [최적화] DB 일정 로드 (공휴일과 동시에 요청 = 병렬 처리)
+        // eventSorter가 있어서 나중에 도착해도 순서는 섞이지 않음
+        $.get('/schedule/api/events', { start: startStr, end: endStr }, function(dbData) {
+            const events = dbData.map(dto => {
                 let color = '#333';
                 let bgColor = '#ccc';
-                
-                // 형광펜 스타일 색상 지정
                 switch(dto.type) {
                     case 'COMPANY': bgColor = '#ff5b7f'; break;
                     case 'TEAM':    bgColor = '#3da5ff'; break;
@@ -548,45 +557,35 @@
                     case 'LEAVE':   bgColor = '#b7f3c4'; color = '#333'; break;
                     case 'SPECIFIC':bgColor = '#9C27B0'; break;
                 }
-                
                 return {
-                    id: dto.id,
-                    calendarId: 'cal1',
-                    title: dto.title,
-                    category: 'allday', // 바 형태로 표시
-                    start: dto.startDate, 
-                    end: dto.endDate,
-                    color: color,
-                    backgroundColor: bgColor,
-                    borderColor: bgColor,
-                    dragBackColor: bgColor,
+                    id: dto.id, calendarId: 'cal1', title: dto.title, category: 'allday',
+                    start: dto.startDate, end: dto.endDate,
+                    color: color, backgroundColor: bgColor, borderColor: bgColor, dragBackColor: bgColor
                 };
             });
             calendar.createEvents(events);
         });
     }
 
-    // Helper Functions (UI, 모달 제어)
-    // 등록 모달 열기 함수 (날짜 있을 시 세팅)
+    // --- Helper Functions ---
+    // 날짜 포맷 유틸 (yyyy-MM-dd)
+    function formatDateForApi(date) {
+        return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+    }
+    // 공휴일 날짜 포맷 (yyyyMMdd -> yyyy-MM-dd)
+    function formatLocdate(locdate) {
+        const s = String(locdate);
+        return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`;
+    }
+
     function openRegistModal(startVal, endVal) {
         $('#scheduleForm')[0].reset();
-        $('#filePreviewArea').html('');
-        $('#shareTargetArea').hide();
-        $('#hiddenIdArea').empty();
-
-        if(startVal && endVal) {
-            $('#schedStart').val(startVal);
-            $('#schedEnd').val(endVal);
-        } else {
-            // 날짜 없으면 현재시간
-            const now = toLocalISOString(new Date());
-            $('#schedStart').val(now);
-            $('#schedEnd').val(now);
-        }
+        $('#filePreviewArea').html(''); $('#shareTargetArea').hide(); $('#hiddenIdArea').empty();
+        if(startVal && endVal) { $('#schedStart').val(startVal); $('#schedEnd').val(endVal); } 
+        else { const now = toLocalISOString(new Date()); $('#schedStart').val(now); $('#schedEnd').val(now); }
         new bootstrap.Modal(document.getElementById('scheduleModal')).show();
     }
 
-    // 상세 조회 로드
     function loadDetail(id) {
         activeModalSource = 'detail';
         $.get('/schedule/get/' + id, function(data) {
@@ -597,20 +596,11 @@
             $('#detailWriterName').val(data.writerName);
             if(data.startDate) $('#detailStartDate').val(data.startDate);
             if(data.endDate) $('#detailEndDate').val(data.endDate);
-
-            // 파일 처리
-            let fileHtml = data.attachmentFile ? 
-                `<span class="badge bg-info">${data.attachmentFile.split('_')[1]}</span>` : 
-                `<span class="text-muted">없음</span>`;
+            let fileHtml = data.attachmentFile ? `<span class="badge bg-info">${data.attachmentFile.split('_')[1]}</span>` : `<span class="text-muted">없음</span>`;
             $('#currentFileArea').html(fileHtml);
-
-            // 공유 범위 UI 및 데이터 복원
             updateShareUI('detail', data.type);
-            
             const $hidden = $('#detailHiddenIdArea').empty();
             const $names = $('#detailTargetNames').val('');
-            
-            // 기존 공유 대상이 있으면 채워넣기
             if(data.type === 'TEAM' && data.sharedDeptIds) {
                 $names.val(data.sharedDeptNames.join(', '));
                 data.sharedDeptIds.forEach(id => $hidden.append(`<input type="hidden" name="sharedDeptIds" value="${id}">`));
@@ -618,45 +608,33 @@
                 $names.val(data.sharedMemberNames.join(', '));
                 data.sharedMemberIds.forEach(id => $hidden.append(`<input type="hidden" name="sharedMemberIds" value="${id}">`));
             }
-
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         });
     }
 
-    // 공유 UI 업데이트
     function updateShareUI(source, type) {
         const $area = (source === 'regist') ? $('#shareTargetArea') : $('#detailShareTargetArea');
         const $btn = (source === 'regist') ? $('#btnOpenTargetModal') : $('#btnOpenDetailTargetModal');
-        
-        if (['PERSONAL','COMPANY','LEAVE'].includes(type)) {
-            $area.hide();
-        } else {
-            $area.show().css('display','flex');
-            $btn.html(type === 'TEAM' ? '<i class="fa-solid fa-users me-1"></i> +공유팀' : '<i class="fa-solid fa-user-plus me-1"></i> +공유자');
-        }
+        if (['PERSONAL','COMPANY','LEAVE'].includes(type)) { $area.hide(); } 
+        else { $area.show().css('display','flex'); $btn.html(type === 'TEAM' ? '<i class="fa-solid fa-users me-1"></i> +공유팀' : '<i class="fa-solid fa-user-plus me-1"></i> +공유자'); }
     }
 
-    // 조직도 검색 및 적용 로직
+    // 조직도 및 검색
     function openSearchModal(source) {
         activeModalSource = source;
         const type = $(source === 'regist' ? '#schedType' : '#detailType').val();
-        $('#targetResultList').empty();
-        $('#targetSearchKeyword').val('');
+        $('#targetResultList').empty(); $('#targetSearchKeyword').val('');
         $('#searchModalTitle').text(type === 'TEAM' ? '공유팀 선택' : '공유자 선택');
-        
         if(type === 'TEAM') loadTeamList(''); else loadMemberList('');
         new bootstrap.Modal(document.getElementById('searchTargetModal')).show();
     }
-    
     function searchTarget() {
         const kw = $('#targetSearchKeyword').val();
         const type = $(activeModalSource === 'regist' ? '#schedType' : '#detailType').val();
         if(type === 'TEAM') loadTeamList(kw); else loadMemberList(kw);
     }
-    
     function loadTeamList(k) { $.get('/api/search/team', {keyword:k}, (d)=> renderList(d,'team')); }
     function loadMemberList(k) { $.get('/api/search/member', {keyword:k}, (d)=> renderList(d,'member')); }
-    
     function renderList(list, type) {
         const $box = $('#targetResultList').empty();
         if(!list || !list.length) { $box.html('<div class="p-3 text-center text-muted">결과 없음</div>'); return; }
@@ -666,78 +644,55 @@
             $box.append(`<label class="search-result-item"><input class="form-check-input target-checkbox me-2" type="checkbox" value="${id}" data-name="${name}"> ${name}</label>`);
         });
     }
-
     function confirmTarget() {
         const ids = [], names = [];
         $('.target-checkbox:checked').each(function() { ids.push($(this).val()); names.push($(this).data('name')); });
         if(!ids.length) { alert('선택해주세요.'); return; }
-
         const isRegist = (activeModalSource === 'regist');
         const $nameIn = $(isRegist ? '#selectedTargetNames' : '#detailTargetNames').val(names.join(', '));
         const $hidden = $(isRegist ? '#hiddenIdArea' : '#detailHiddenIdArea').empty();
         const type = $(isRegist ? '#schedType' : '#detailType').val();
         const inputName = (type === 'TEAM') ? 'sharedDeptIds' : 'sharedMemberIds';
-        
         ids.forEach(id => $hidden.append(`<input type="hidden" name="${inputName}" value="${id}">`));
         bootstrap.Modal.getInstance(document.getElementById('searchTargetModal')).hide();
     }
 
-    // CRUD AJAX Functions
-   function registerSchedule() {
+    // CRUD
+    function registerSchedule() {
         const formData = new FormData($('#scheduleForm')[0]);
-        $.ajax({
-            url: '/schedule/regist', type: 'POST', data: formData, contentType: false, processData: false,
+        $.ajax({ url: '/schedule/regist', type: 'POST', data: formData, contentType: false, processData: false, 
             success: () => { 
                 alert('등록되었습니다.'); 
-                // location.reload();  <-- [삭제] 새로고침 제거
-                
-                // [추가] 모달 닫기 및 입력창 초기화
-                const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleModal'));
-                modal.hide(); 
-                
-                // [추가] 현재 보고 있는 달의 일정만 다시 불러오기
+                bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
                 loadSchedules(); 
-            },
-            error: () => alert('등록 실패')
+            }, error: () => alert('등록 실패') 
         });
     }
-    
-   function updateSchedule() {
-       if(!confirm('수정하시겠습니까?')) return;
-       $.ajax({
-           url: '/schedule/update', type: 'POST', data: new FormData($('#detailForm')[0]), contentType: false, processData: false,
-           success: () => { 
-               alert('수정되었습니다.'); 
-               // location.reload(); <-- [삭제]
-               
-               bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
-               loadSchedules(); // [추가] 일정 재로드
-           },
-           error: () => alert('수정 실패')
-       });
-   }
-    
-   function deleteSchedule() {
-       if(!confirm('삭제하시겠습니까?')) return;
-       $.post('/schedule/delete', {id: $('#detailId').val()})
-           .done(() => { 
-               alert('삭제되었습니다.'); 
-               // location.reload(); <-- [삭제]
-               
-               bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
-               loadSchedules(); // [추가] 일정 재로드
-           })
-           .fail(() => alert('삭제 실패'));
-   }
+    function updateSchedule() {
+        if(!confirm('수정하시겠습니까?')) return;
+        $.ajax({ url: '/schedule/update', type: 'POST', data: new FormData($('#detailForm')[0]), contentType: false, processData: false, 
+            success: () => { 
+                alert('수정되었습니다.'); 
+                bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+                loadSchedules(); 
+            }, error: () => alert('수정 실패') 
+        });
+    }
+    function deleteSchedule() {
+        if(!confirm('삭제하시겠습니까?')) return;
+        $.post('/schedule/delete', {id: $('#detailId').val()}).done(() => { 
+            alert('삭제되었습니다.'); 
+            bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+            loadSchedules(); 
+        }).fail(() => alert('삭제 실패'));
+    }
 
-    // 유틸: Date -> yyyy-MM-ddTHH:mm
+    // 유틸 및 기타
     function toLocalISOString(date) {
         const offset = date.getTimezoneOffset() * 60000;
         const localIso = new Date(date - offset).toISOString();
         return localIso.slice(0, 16);
     }
-
-    // 파일 미리보기
     function previewFile(input) {
         const file = input.files[0];
         const $prev = $('#filePreviewArea').empty();
@@ -745,21 +700,30 @@
             const reader = new FileReader();
             reader.onload = (e) => $prev.html(`<img src="${e.target.result}">`);
             reader.readAsDataURL(file);
-        } else if(file) {
-            $prev.html(`<div class="fw-bold">${file.name}</div>`);
-        }
+        } else if(file) { $prev.html(`<div class="fw-bold">${file.name}</div>`); }
     }
     
-    // --- [기존 기능 유지] 근태, 날짜, 날씨 ---
-    function checkCurrentStatus() {
-        $.get('/api/attendance/status', function(data) { updateButtonUI(data.status, data.memo); });
+    // 네비게이션
+    window.movePrev = function() { calendar.prev(); updateCalendarTitle(); loadSchedules(); };
+    window.moveNext = function() { calendar.next(); updateCalendarTitle(); loadSchedules(); };
+    function updateCalendarTitle() { const d = calendar.getDate(); $('#calendarTitle').text(`${d.getFullYear()}년 ${d.getMonth() + 1}월`); }
+    
+    function moveIndicator(btnElement) {
+        const $btn = $(btnElement), $indicator = $('.view-buttons.segmented .indicator');
+        $indicator.css({ left: $btn.position().left + 'px', width: $btn.outerWidth() + 'px' });
+        $('.view-buttons.segmented button').removeClass('active'); $btn.addClass('active');
     }
+    window.setMonth = function(btn) { calendar.changeView('month'); moveIndicator(btn); };
+    window.setWeek = function(btn) { calendar.changeView('week'); moveIndicator(btn); };
+    window.setDay = function(btn) { calendar.changeView('day'); moveIndicator(btn); };
+
+    // 근태/날씨/날짜 (기존 유지)
+    function checkCurrentStatus() { $.get('/api/attendance/status', function(data) { updateButtonUI(data.status, data.memo); }); }
     function updateButtonUI(status, memo) {
         currentStatus = status;
         const $btnClock = $('#btnClock'), $btnOutside = $('#btnOutside');
         $btnClock.prop('disabled', false); $btnOutside.prop('disabled', false);
         $btnClock.removeClass('btn-secondary btn-success off'); $btnOutside.removeClass('active');
-
         if (status === 'ON_DUTY') { $btnClock.text('근무 중...').addClass('btn-work'); $btnOutside.text('외근').prop('disabled', false); } 
         else if (status === 'OFF_DUTY') { $btnClock.text('출근').addClass('btn-work off'); $btnOutside.text('외근').prop('disabled', true); } 
         else if (status === 'OUT_WORK' || status === 'LEAVE') { $btnClock.text('부재 중').prop('disabled', true).addClass('btn-secondary'); $btnOutside.text((status === 'LEAVE') ? '휴식 중...' : '외근 중...').addClass('active'); }
@@ -778,39 +742,7 @@
         if(!memo.trim()) { alert("사유를 입력해주세요."); return; }
         $.ajax({ url: '/api/attendance/outside', type: 'POST', contentType: 'application/json', data: JSON.stringify({ status: $('#outsideType').val(), memo: memo }), success: (data) => { alert(data.message); closeModal(); updateButtonUI(data.status); } });
     };
-
-    // 탭 애니메이션 및 뷰 전환
-    function moveIndicator(btnElement) {
-        const $btn = $(btnElement), $indicator = $('.view-buttons.segmented .indicator');
-        $indicator.css({ left: $btn.position().left + 'px', width: $btn.outerWidth() + 'px' });
-        $('.view-buttons.segmented button').removeClass('active'); $btn.addClass('active');
-    }
-    window.setMonth = function(btn) { calendar.changeView('month'); moveIndicator(btn); };
-    window.setWeek = function(btn) { calendar.changeView('week'); moveIndicator(btn); };
-    window.setDay = function(btn) { calendar.changeView('day'); moveIndicator(btn); };
-    
-    // 캘린더 이동
-    window.movePrev = function() { calendar.prev(); updateCalendarTitle(); loadSchedules(); };
-    window.moveNext = function() { calendar.next(); updateCalendarTitle(); loadSchedules(); };
-    function updateCalendarTitle() { const d = calendar.getDate(); $('#calendarTitle').text(`${d.getFullYear()}년 ${d.getMonth() + 1}월`); }
-    /* function checkYearAndLoad() { const newYear = calendar.getDate().getFullYear(); if (currentLoadedYear !== newYear) loadHolidays(); } */
-
-    function loadHolidays() {
-        const year = calendar.getDate().getFullYear();
-        currentLoadedYear = year; 
-        $.get(`/api/calendar/holidays?year=${year}`, function(data) {
-            const holidayEvents = data.map(holiday => ({
-                id: 'holiday-' + holiday.locdate, calendarId: 'holiday', title: holiday.dateName, category: 'allday',
-                start: formatDate(holiday.locdate), end: formatDate(holiday.locdate),
-                isReadOnly: true, color: '#e54f4b', backgroundColor: '#ffe8e8', dragBackColor: '#ffe8e8', borderColor: '#e54f4b'
-            }));
-            calendar.createEvents(holidayEvents);
-        });
-    }
-    function formatDate(dateStr) { const s = String(dateStr); return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`; }
-    
     function updateDate() { const now = new Date(); $('#currentDateStr').text(now.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).replace(/\s/g, '')); }
-    
     function loadWeather() {
         $.get('/api/weather/current', function(data) {
             if (!data.success) { $('#weatherDesc').text("정보 없음"); return; }

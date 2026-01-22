@@ -304,29 +304,29 @@ VALUES (2, '기안서', '노후 장비 교체', '개발용 모니터 교체 요�
 -- VALUES (4, '기안서', '워크샵 기안', '상반기 팀 워크샵 장소 선정', 'download/illkang/vincent/workshop_plan.pptx', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-07-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),  '승인');
 
 -- Draft_Approval_line 더미 데이터
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('PTO', 10, 1);
---
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('PTO', 11, 2);
---
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('BUY', 20, 1);
---
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('BUY', 21, 2);
---
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('BUY', 22, 3);
---
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('HDF', 30, 1);
---
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('HDF', 31, 2);
---
--- INSERT INTO draft_approval_line (draft_type, common_id, sequence)
--- VALUES ('HDF', 32, 3);
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('PTO', 11, 1);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('PTO', 12, 2);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('BUY', 20, 1);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('BUY', 21, 2);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('BUY', 22, 3);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('HDF', 15, 1);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('HDF', 16, 2);
+
+INSERT INTO draft_approval_line (draft_type, common_id, sequence)
+VALUES ('HDF', 17, 3);
 
 INSERT INTO draft_approval_line (draft_type, common_id, sequence)
 VALUES ('APP', 1, 1);
@@ -334,6 +334,58 @@ VALUES ('APP', 1, 1);
 INSERT INTO draft_approval_line (draft_type, common_id, sequence)
 VALUES ('APP', 2, 2);
 
+-- LEAVE_STATUS 더미 데이터
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (1, 15, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (2, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (11, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (12, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (13, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (14, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (15, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (16, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (17, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (18, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (19, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (20, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (21, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (22, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (23, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (24, 16, 2, 14);
+
+INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
+VALUES (25, 16, 2, 14);
 
 -- 반영
 COMMIT;

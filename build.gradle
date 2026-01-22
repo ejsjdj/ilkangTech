@@ -52,6 +52,9 @@ dependencies {
     implementation 'org.modelmapper:modelmapper:3.2.6'
     
     implementation 'org.json:json:20231013'
+    
+    // 웹소켓
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 }
 

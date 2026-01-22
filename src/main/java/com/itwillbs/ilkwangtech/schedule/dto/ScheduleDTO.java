@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.schedule.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,6 +52,14 @@ public class ScheduleDTO {
     private String writerDepartment;
     private String writerPosition;
     
+    // [추가] 화면에서 넘어오는 파일들
+    private MultipartFile thumbnail;       
+    private List<MultipartFile> dataFiles; 
+    
+    // [추가] DB에서 꺼낼 때 사용할 데이터
+    private String thumbnailPath;          
+    private List<ScheduleFileDTO> fileList;
+    
     // [편의 메서드] Entity -> DTO 변환
     public static ScheduleDTO fromEntity(Schedule entity) {
 		ScheduleDTOBuilder builder = ScheduleDTO.builder()
@@ -60,7 +69,11 @@ public class ScheduleDTO {
 	            .type(entity.getType())
 	            .startDate(entity.getStartDate())
 	            .endDate(entity.getEndDate())
-	            .attachmentFile(entity.getAttachmentFile()) // 파일 경로 매핑
+	            .thumbnailPath(entity.getThumbnailPath()) // 파일 경로 매핑
+	            .fileList(entity.getFiles() != null ? 
+	                    entity.getFiles().stream()
+	                        .map(ScheduleFileDTO::fromEntity)
+	                        .collect(Collectors.toList()) : null)
 	            .writerId(entity.getWriter().getId())
 	            .writerName(entity.getWriter().getName())
 	            .writerDepartment(String.valueOf(entity.getWriter().getDepartment()))

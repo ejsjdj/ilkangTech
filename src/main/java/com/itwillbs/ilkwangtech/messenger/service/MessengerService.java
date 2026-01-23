@@ -1,11 +1,17 @@
 package com.itwillbs.ilkwangtech.messenger.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
@@ -114,5 +120,45 @@ public class MessengerService {
             return room.getRoomName() != null ? room.getRoomName() : "그룹 채팅방";
         }
     }
+    
+    @Transactional(readOnly = true)
+    public List<ChatRoomListResponseDTO> getChatRoomList(Long myId) {
+    	
+    	List<ChatRoom> allRooms = chatRoomRepository.findByDirectEmp1OrDirectEmp2(myId, myId);
 
+        return allRooms.stream().map(room -> {
+            ChatRoomListResponseDTO dto = new ChatRoomListResponseDTO();
+            dto.setRoomId(room.getId());
+
+            // [방 이름 결정]
+            if ("DIRECT".equals(room.getRoomType())) {
+                Long partnerId = room.getDirectEmp1().equals(myId) ? room.getDirectEmp2() : room.getDirectEmp1();
+                
+                // ★ 람다식 (m -> m.getName())을 사용하여 타입 추론 에러 해결 ★
+                String partnerName = messengerRepository.findById(partnerId)
+                        .map(m -> m.getName()) 
+                        .orElse("알 수 없는 사용자");
+                
+                dto.setRoomTitle(partnerName);
+            } else {
+                dto.setRoomTitle(room.getRoomName() != null ? room.getRoomName() : "그룹 채팅방");
+            }
+
+            chatMessageRepository.findFirstByRoomIdOrderByCreatedAtDesc(room.getId())
+            .ifPresent(last -> {
+                dto.setLastMessage(last.getContent());
+                dto.setLastTime(last.getCreatedAt().format(DateTimeFormatter.ofPattern("a h:mm")));
+                dto.setLastMessageAt(last.getCreatedAt()); // ★ 원본 시간 저장
+            });
+
+        // 만약 메시지가 하나도 없는 방이라면? (정렬을 위해 방 생성 시간 등을 기본값으로 활용 가능)
+        if (dto.getLastMessageAt() == null) {
+            // 메시지가 없으면 아주 오래된 시간을 넣어 맨 아래로 보냄
+            dto.setLastMessageAt(LocalDateTime.MIN); 
+        }
+
+        return dto;
+        }).sorted(Comparator.comparing(ChatRoomListResponseDTO::getLastMessageAt).reversed())
+          .collect(Collectors.toList()); 
+    }
 }

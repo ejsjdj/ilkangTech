@@ -7,13 +7,14 @@ import java.util.Locale;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatSendRequestDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
+import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomRepository;
 import com.itwillbs.ilkwangtech.messenger.service.ChatMessageService;
 
 @Controller
@@ -21,11 +22,13 @@ public class ChatSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
+    private final ChatRoomRepository chatRoomRepository;
 
     public ChatSocketController(SimpMessagingTemplate messagingTemplate,
-                                ChatMessageService chatMessageService) {
+                                ChatMessageService chatMessageService, ChatRoomRepository chatRoomRepository) {
         this.messagingTemplate = messagingTemplate;
         this.chatMessageService = chatMessageService;
+		this.chatRoomRepository = chatRoomRepository;
     }
 
     @MessageMapping("/chat.send")
@@ -50,17 +53,21 @@ public class ChatSocketController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("a h:mm", Locale.KOREAN);
         String timeStr = saved.getCreatedAt().format(formatter);
 
-        // 4. 브로커로 전송 (브로드캐스팅)
         ChatBroadcastMessageDTO out = new ChatBroadcastMessageDTO();
         out.setRoomId(saved.getRoomId());
         out.setMemberId(saved.getMemberId());
         out.setContent(saved.getContent());
         out.setFormattedTime(timeStr);
 
-        messagingTemplate.convertAndSend(
-                "/topic/chatroom/" + saved.getRoomId(),
-                out
-        );
+        messagingTemplate.convertAndSend("/topic/chatroom/" + saved.getRoomId(), out);
+        
+        // 2. 실시간 목록 갱신을 위해 참여자들에게 전송
+        // 현재 방 정보를 가져와 참여자 ID를 확인합니다.
+        ChatRoom room = chatRoomRepository.findById(saved.getRoomId()).orElse(null);
+        if (room != null && "DIRECT".equals(room.getRoomType())) {
+            messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp1() + "/list", out);
+            messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp2() + "/list", out);
+        }
     }
 }
 

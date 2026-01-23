@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>사원 목록</title>
-  <style>
+	<meta charset="UTF-8">
+	<title>사원 목록</title>
+	<style>
     html, body { height: 100%; margin: 0; }
     .wrapper { display: flex; height: 100vh; }
     .blank {height: 60px;}
@@ -92,35 +92,35 @@
 	</div>
 
 
-  <div class="main">
-    <div class="status">상태</div>
-
-    <div class="searchBarArea">
-		<input id="memberSearch" type="text" class="searchBar" placeholder="사원 또는 부서로 검색">
-		<button type="button" class="searchBtn" onclick="applySearch()">검색</button>
-	</div>
-	
-<div class="memberList">
-	<div class="memberRow"
-	     th:each="member : ${memberList}"
-	     th:object="${member}"
-	     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
-	     ondblclick="goChat(this)">
-	
-		<button type="button"
-		        class="starBtn starOff"
-		        title="즐겨찾기"
-		        onclick="event.stopPropagation()">☆</button>
+	<div class="main">
+		<div class="status">상태</div>
 		
-		<div class="memberName" th:text="*{memberName}"></div>
-	
-		<div class="memberDept">
-			<span th:text="*{departmentName} + ' 팀'"></span>
+		<div class="searchBarArea">
+			<input id="memberSearch" type="text" class="searchBar" placeholder="사원 또는 부서로 검색">
+			<button type="button" class="searchBtn" onclick="applySearch()">검색</button>
 		</div>
+		
+		<div class="memberList">
+			<div class="memberRow"
+			     th:each="member : ${memberList}"
+			     th:object="${member}"
+			     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
+			     ondblclick="goChat(this)">
+			
+				<button type="button"
+				        class="starBtn starOff"
+				        title="즐겨찾기"
+				        onclick="event.stopPropagation()">☆</button>
+				
+				<div class="memberName" th:text="*{memberName}"></div>
+			
+				<div class="memberDept">
+					<span th:text="*{departmentName} + ' 팀'"></span>
+				</div>
+			</div>
+		</div>
+	
 	</div>
-</div>
-
-  </div>
 </div>
 
 <script>

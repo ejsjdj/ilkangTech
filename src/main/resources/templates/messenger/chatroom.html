@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>채팅</title>
-  <style>
+	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+	<meta charset="UTF-8">
+	<title>채팅</title>
+	<style>
     html, body { height: 100%; margin: 0; }
     .wrap { height: 100vh; display: flex; flex-direction: column; }
     .header { height: 52px; border-bottom: 1px solid #e5e5e5; display:flex; align-items:center; padding:0 12px; }
@@ -58,6 +60,7 @@ function connect() {
 
     stompClient.subscribe("/topic/chatroom/" + roomId, function (message) {
       var payload = JSON.parse(message.body);
+      console.log("데이터 도착함:", message.body);
       appendMessage(payload);
     });
   });
@@ -107,6 +110,20 @@ function appendMessage(msg) {
 	box.appendChild(wrap);
 	box.scrollTop = box.scrollHeight;
 }
+
+// 엔터키 클릭이벤트(엔터키 클릭 시 채팅이 바로 전송되도록)
+document.addEventListener("DOMContentLoaded", function() {
+    var textInput = document.getElementById("text");
+
+    // 입력창에서 키를 눌렀을 때 실행
+    textInput.addEventListener("keyup", function(event) {
+        // 눌린 키가 'Enter'인지 확인 (event.keyCode === 13 도 가능)
+        if (event.key === "Enter") {
+            event.preventDefault(); // 기본 동작 방지
+            sendMsg(); // 메시지 전송 함수 호출
+        }
+    });
+});
 
 connect();
 </script>

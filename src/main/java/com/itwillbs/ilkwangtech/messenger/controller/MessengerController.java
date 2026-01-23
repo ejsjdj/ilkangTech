@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
@@ -39,9 +40,17 @@ public class MessengerController {
 		return "/messenger/memberList";
 	}
 	
-	@GetMapping("/chatList")
-	public String chatList(Model model) {
-		return "/messenger/chatList";
+	@GetMapping("/chatList") // 또는 설정하신 URL 경로
+	public String chatList(@AuthenticationPrincipal AccountLogin login, Model model) {
+	    
+	    // 1. 현재 로그인한 사용자의 ID로 방 목록 조회
+	    List<ChatRoomListResponseDTO> rooms = messengerService.getChatRoomList(login.getId());
+	    
+	    // 2. 중요: HTML의 ${rooms}와 이름이 반드시 일치해야 합니다.
+	    model.addAttribute("rooms", rooms); 
+	    
+	    // 3. 리턴하는 HTML 파일 경로가 정확한지 확인 (예: src/main/resources/templates/messenger/chatList.html)
+	    return "messenger/chatList"; 
 	}
 	
 	@GetMapping("/direct")

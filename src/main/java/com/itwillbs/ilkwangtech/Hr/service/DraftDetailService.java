@@ -20,7 +20,7 @@ public class DraftDetailService {
 
         // 문서 상세내용 조회
         DraftEntity draftDetail = draftRepository.findById(draftId).
-                orElseThrow(() -> new IllegalArgumentException("문서가 삭제되었거나 존재하지 않습니다"));;
+                orElseThrow(() -> new IllegalArgumentException("문서가 삭제되었거나 존재하지 않습니다"));
 
         return DraftDetailDTO.builder()
                 .detailTitle(draftDetail.getDraftTitle())

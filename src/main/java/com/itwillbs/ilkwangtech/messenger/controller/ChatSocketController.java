@@ -1,7 +1,12 @@
 package com.itwillbs.ilkwangtech.messenger.controller;
 
+import java.security.Principal;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
@@ -24,23 +29,33 @@ public class ChatSocketController {
     }
 
     @MessageMapping("/chat.send")
-    public void send(ChatSendRequestDTO req,
-                     @AuthenticationPrincipal AccountLogin login) {
+    public void send(ChatSendRequestDTO req, Principal principal) {
 
-        Long memberId = login.getId();
+    	if (principal == null) {
+            System.out.println("Principal이 null입니다. 인증 확인 필요!");
+            return;
+        }
+        
+    	// 로그인한 사용자의 id값 가져오기
+        UsernamePasswordAuthenticationToken auth = (UsernamePasswordAuthenticationToken) principal;
+        AccountLogin login = (AccountLogin) auth.getPrincipal();
 
-        // 1) DB 저장
-        ChatMessage saved = chatMessageService.saveTextMessage(
-                req.getRoomId(),
-                memberId,
-                req.getContent()
-        );
+        Long myId = login.getId();
 
-        // 2) 브로커로 전송
+        req.setMemberId(myId);
+        req.setMsgType("TEXT");
+
+        ChatMessage saved = chatMessageService.saveTextMessage(req);
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("a h:mm", Locale.KOREAN);
+        String timeStr = saved.getCreatedAt().format(formatter);
+
+        // 4. 브로커로 전송 (브로드캐스팅)
         ChatBroadcastMessageDTO out = new ChatBroadcastMessageDTO();
         out.setRoomId(saved.getRoomId());
         out.setMemberId(saved.getMemberId());
         out.setContent(saved.getContent());
+        out.setFormattedTime(timeStr);
 
         messagingTemplate.convertAndSend(
                 "/topic/chatroom/" + saved.getRoomId(),

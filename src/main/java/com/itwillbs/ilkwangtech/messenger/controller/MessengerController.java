@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
+import com.itwillbs.ilkwangtech.messenger.service.ChatMessageService;
 import com.itwillbs.ilkwangtech.messenger.service.MessengerService;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -63,19 +66,31 @@ public class MessengerController {
 	}
 
 
-	
 	@GetMapping("/chatroom/{roomId}")
-	public String chatroom(@PathVariable("roomId") Long roomId, Model model,
-	                       @AuthenticationPrincipal AccountLogin login) {
+	public String chatroom(@PathVariable("roomId") Long roomId, 
+	                       @AuthenticationPrincipal AccountLogin login, 
+	                       Model model) {
+	    Long myId = login.getId();
 
+	    // 상단 타이틀용 이름과 과거 내역 조회
+	    model.addAttribute("displayTitle", messengerService.getRoomDisplayTitle(roomId, myId));
+	    model.addAttribute("chatHistory", messengerService.getChatHistory(roomId));
+	    
 	    model.addAttribute("roomId", roomId);
-	    model.addAttribute("myMemberId", login.getId());
+	    model.addAttribute("myMemberId", myId);
 
 	    return "messenger/chatroom";
 	}
 
 
-
-
-	
 }
+
+
+
+
+
+
+
+
+
+

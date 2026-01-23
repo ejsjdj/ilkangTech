@@ -13,6 +13,10 @@
     .inputBar { border-top: 1px solid #e5e5e5; padding: 10px; display:flex; gap:8px; }
     .input { flex: 1; height: 38px; border: 1px solid #ddd; border-radius: 8px; padding: 0 10px; }
     .btn { width: 72px; height: 38px; border: none; border-radius: 8px; cursor: pointer; }
+	.msgWrap { display: flex; align-items: flex-end; margin-bottom: 12px; gap: 6px; }
+	.msgWrap.mine { flex-direction: row-reverse; } /* 내가 보낸 건 시간-메시지 순서 */
+	.msg { margin-bottom: 0 !important; } /* 기존 여백 제거 */
+	.time { font-size: 11px; color: #888; white-space: nowrap; margin-bottom: 2px; }
   </style>
 
   <!-- SockJS / Stomp -->
@@ -21,11 +25,16 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="header">
-    채팅방 <span th:text="${roomId}"></span>
-  </div>
+	<div class="header">
+		<strong th:text="${displayTitle}"></strong>
+	</div>
 
-  <div id="messages" class="messages"></div>
+	<div id="messages" class="messages">
+		<div th:each="msg : ${chatHistory}" class="msgWrap" th:classappend="${msg.memberId == myMemberId} ? 'mine' : ''">
+			<div class="msg" th:text="${msg.content}"></div>
+			<span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
+		</div>
+	</div>
 
   <div class="inputBar">
     <input id="text" class="input" type="text" placeholder="메시지 입력" />
@@ -39,6 +48,7 @@
 <script>
 var stompClient = null;
 
+// 서버와의 연결 관리 함수
 function connect() {
   var socket = new SockJS("/ws");
   stompClient = Stomp.over(socket);
@@ -53,33 +63,49 @@ function connect() {
   });
 }
 
+// 사용자가 입력한 채팅을 서버로 전송하는 함수
 function sendMsg() {
-  if (!stompClient) return;
+	  if (!stompClient) return;
 
-  var roomId = document.getElementById("roomId").value;
-  var textEl = document.getElementById("text");
-  var content = textEl.value.trim();
-  if (content === "") return;
+	  var roomId = document.getElementById("roomId").value;
+	  var myMemberId = document.getElementById("myMemberId").value; // 내 아이디 가져오기 추가
+	  var textEl = document.getElementById("text");
+	  var content = textEl.value.trim();
+	  
+	  if (content === "") return;
 
-  var body = {
-    roomId: Number(roomId),
-    content: content
-  };
+	  var body = {
+	    roomId: Number(roomId),
+	    memberId: Number(myMemberId), 
+	    content: content,
+	    msgType: 'TEXT' // DB 제약조건에 msgType도 NOT NULL이므로 명시해주는 것이 안전합니다.
+	  };
 
-  stompClient.send("/app/chat.send", {}, JSON.stringify(body));
-  textEl.value = "";
-}
+	  stompClient.send("/app/chat.send", {}, JSON.stringify(body));
+	  textEl.value = "";
+	}
 
+// 받은 메시지를 채팅창 화면에 나타내는 함수
 function appendMessage(msg) {
-  var box = document.getElementById("messages");
-  var myMemberId = Number(document.getElementById("myMemberId").value);
-
-  var div = document.createElement("div");
-  div.className = "msg" + (msg.memberId === myMemberId ? " mine" : "");
-  div.textContent = msg.content;
-
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
+	var box = document.getElementById("messages");
+	var myMemberId = Number(document.getElementById("myMemberId").value);
+	
+	var wrap = document.createElement("div");
+	wrap.className = "msgWrap" + (msg.memberId === myMemberId ? " mine" : "");
+	
+	var contentDiv = document.createElement("div");
+	contentDiv.className = "msg";
+	contentDiv.textContent = msg.content;
+	
+	var timeSpan = document.createElement("span");
+	timeSpan.className = "time";
+	timeSpan.textContent = msg.formattedTime; // 서버에서 받은 문자열 사용
+	
+	wrap.appendChild(contentDiv);
+	wrap.appendChild(timeSpan);
+	
+	box.appendChild(wrap);
+	box.scrollTop = box.scrollHeight;
 }
 
 connect();

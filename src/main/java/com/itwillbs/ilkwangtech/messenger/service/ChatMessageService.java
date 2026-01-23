@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.messenger.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.itwillbs.ilkwangtech.messenger.dto.ChatSendRequestDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatMessageRepository;
 
@@ -16,14 +17,14 @@ public class ChatMessageService {
     }
 
     @Transactional
-    public ChatMessage saveTextMessage(Long roomId, Long memberId, String content) {
-
-        ChatMessage msg = new ChatMessage();
-        msg.setRoomId(roomId);
-        msg.setMemberId(memberId);
-        msg.setMsgType("TEXT");
-        msg.setContent(content);
-
-        return chatMessageRepository.save(msg);
+    public ChatMessage saveTextMessage(ChatSendRequestDTO dto) { // 1. void를 ChatMessage로 변경
+    	System.out.println("서비스 수신 memberId : " + dto.getMemberId());
+        ChatMessage message = new ChatMessage();
+        message.setRoomId(dto.getRoomId());
+        message.setMemberId(dto.getMemberId());
+        message.setContent(dto.getContent());
+        message.setMsgType(dto.getMsgType());
+        
+        return chatMessageRepository.save(message); 
     }
 }

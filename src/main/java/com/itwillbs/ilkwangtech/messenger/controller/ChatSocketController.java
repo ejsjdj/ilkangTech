@@ -59,12 +59,20 @@ public class ChatSocketController {
         out.setContent(saved.getContent());
         out.setFormattedTime(timeStr);
 
+        // 채팅방 토픽으로 메시지 전송 (모든 구독자에게)
         messagingTemplate.convertAndSend("/topic/chatroom/" + saved.getRoomId(), out);
+        
+        // 디버깅을 위한 로그 추가
+        System.out.println("메시지 전송 - 방 ID: " + saved.getRoomId() + 
+                          ", 보낸 사람: " + saved.getMemberId() + 
+                          ", 내용: " + saved.getContent());
         
         // 2. 실시간 목록 갱신을 위해 참여자들에게 전송
         // 현재 방 정보를 가져와 참여자 ID를 확인합니다.
         ChatRoom room = chatRoomRepository.findById(saved.getRoomId()).orElse(null);
         if (room != null && "DIRECT".equals(room.getRoomType())) {
+            System.out.println("목록 갱신 전송 - 사용자1: " + room.getDirectEmp1() + 
+                              ", 사용자2: " + room.getDirectEmp2());
             messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp1() + "/list", out);
             messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp2() + "/list", out);
         }

@@ -57,18 +57,31 @@ function connect() {
 
   stompClient.connect({}, function () {
     var roomId = document.getElementById("roomId").value;
+    console.log("WebSocket 연결 성공 - 방 ID: " + roomId);
 
     stompClient.subscribe("/topic/chatroom/" + roomId, function (message) {
       var payload = JSON.parse(message.body);
       console.log("데이터 도착함:", message.body);
       appendMessage(payload);
     });
+    
+    // 연결 상태 모니터링
+    stompClient.debug = function(str) {
+      console.log("STOMP Debug: " + str);
+    };
+  }, function (error) {
+    console.error("WebSocket 연결 실패:", error);
+    // 3초 후 재연결 시도
+    setTimeout(connect, 3000);
   });
 }
 
 // 사용자가 입력한 채팅을 서버로 전송하는 함수
 function sendMsg() {
-	  if (!stompClient) return;
+	  if (!stompClient || !stompClient.connected) {
+	      console.error("WebSocket이 연결되지 않았습니다.");
+	      return;
+	  }
 
 	  var roomId = document.getElementById("roomId").value;
 	  var myMemberId = document.getElementById("myMemberId").value; // 내 아이디 가져오기 추가
@@ -84,6 +97,7 @@ function sendMsg() {
 	    msgType: 'TEXT' // DB 제약조건에 msgType도 NOT NULL이므로 명시해주는 것이 안전합니다.
 	  };
 
+	  console.log("메시지 전송:", body);
 	  stompClient.send("/app/chat.send", {}, JSON.stringify(body));
 	  textEl.value = "";
 	}
@@ -92,6 +106,8 @@ function sendMsg() {
 function appendMessage(msg) {
 	var box = document.getElementById("messages");
 	var myMemberId = Number(document.getElementById("myMemberId").value);
+	
+	console.log("메시지 수신:", msg);
 	
 	var wrap = document.createElement("div");
 	wrap.className = "msgWrap" + (msg.memberId === myMemberId ? " mine" : "");

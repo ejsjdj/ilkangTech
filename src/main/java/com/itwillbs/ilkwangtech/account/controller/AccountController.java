@@ -47,7 +47,6 @@ public class AccountController {
     @PostMapping("/register")
     public String register(Model model, AccountRegisterRequest req) {
         AccountRegisterResponse res = accountService.register(req);
-        System.out.println(res);
         model.addAttribute("response",res);
         return "/account/register";
     }
@@ -60,7 +59,6 @@ public class AccountController {
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
         session.invalidate();
         redirectAttributes.addFlashAttribute("message", "로그아웃되었습니다");
-        System.out.println("로그아웃 완료");
         return "redirect:/";  // ← 데이터와 함께 전달
     }
 }

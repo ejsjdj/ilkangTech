@@ -17,6 +17,7 @@ import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
 import com.itwillbs.ilkwangtech.messenger.service.ChatMessageService;
 import com.itwillbs.ilkwangtech.messenger.service.MessengerService;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 
 @Controller
@@ -90,6 +91,13 @@ public class MessengerController {
 
 	    return "messenger/chatroom";
 	}
+	
+	// [추가] 특정 방의 채팅 내역을 JSON으로 반환하는 API
+    @GetMapping("/api/chat/{roomId}")
+    @ResponseBody
+    public List<ChatMessage> getChatHistoryApi(@PathVariable("roomId") Long roomId) {
+        return messengerService.getChatHistory(roomId);
+    }
 
 
 }

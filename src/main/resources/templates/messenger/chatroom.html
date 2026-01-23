@@ -192,8 +192,8 @@ function renderMessages(chatList) {
     box.scrollTop = box.scrollHeight; // 스크롤 하단으로 이동
 }
 
-// [핵심] 3초(3000ms)마다 pollingMessages 실행
-setInterval(pollingMessages, 3000);
+// [핵심] 1초(1000ms)마다 pollingMessages 실행
+setInterval(pollingMessages, 500);
 
 // 페이지 로드 시 1번 즉시 실행
 document.addEventListener("DOMContentLoaded", function() {

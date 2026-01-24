@@ -1,5 +1,7 @@
 package com.itwillbs.ilkwangtech.common.security;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,8 +34,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 	
 	@Override
 	public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
-		log.info("========== loadUserByUsername 시작 ==========");
-		log.info("검색할 사원번호: {}", employeeNumber);
 		
 		// 회원 정보 조회
 		Member member = accountRepository.findByEmployeeNumberWithMemberRoles(employeeNumber)
@@ -64,14 +64,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             }
         }
 
-        log.info("최종 변환된 부서: {}", accountLogin.getDepartment());
-        log.info("최종 변환된 직급: {}", accountLogin.getPosition());
-
-		// ✅ [진단 로그] 이 부분이 false라면 ModelMapper 설정 문제입니다!
-		log.info("👉 매핑 직후 DTO 비밀번호 확인: {}", accountLogin.getPassword());
-		log.info("👉 매핑 성공 여부: {}", (accountLogin.getPassword() != null));
-
-		log.info("========== loadUserByUsername 종료 ==========");
 		return accountLogin;
 	}
 }

@@ -1,5 +1,12 @@
 package com.itwillbs.ilkwangtech.common.security;
 
+import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
+import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
+import com.itwillbs.ilkwangtech.account.repository.LoginAttemptRepository;
+import com.itwillbs.ilkwangtech.account.service.AccountService;
+import com.itwillbs.ilkwangtech.account.service.LoginAttemptService;
+import com.itwillbs.ilkwangtech.common.exception.MemberNotFoundException;
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,41 +24,34 @@ import java.net.URLEncoder;
 @Log4j2
 public class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
+    private final AccountRepository accountRepository;
+    private final LoginAttemptService loginAttemptService;
+    private final LoginAttemptRepository loginAttemptRepository;
+
+    public CustomAuthenticationFailureHandler(AccountRepository accountRepository, LoginAttemptService loginAttemptService, LoginAttemptRepository loginAttemptRepository) {
+        this.accountRepository = accountRepository;
+        this.loginAttemptService = loginAttemptService;
+        this.loginAttemptRepository = loginAttemptRepository;
+    }
+
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
-                                        AuthenticationException exception) throws IOException, ServletException {
+                                        AuthenticationException exception) throws IOException {
 
-        String inputPassword = request.getParameter("password");
-        String inputEmployeeNumber = request.getParameter("username");
+        String username = request.getParameter("username");
 
-        log.error("========== 로그인 실패 상세 진단 ==========");
-        log.error("[입력 정보]");
-        log.error("  사원번호: {}", inputEmployeeNumber);
-        log.error("  비밀번호: '{}'", inputPassword);
-        log.error("  비밀번호 길이: {}", inputPassword != null ? inputPassword.length() : 0);
-        log.error("  비밀번호 첫글자: '{}'", inputPassword != null && inputPassword.length() > 0 ? inputPassword.charAt(0) : "없음");
-        log.error("  비밀번호 마지막글자: '{}'", inputPassword != null && inputPassword.length() > 0 ? inputPassword.charAt(inputPassword.length() - 1) : "없음");
+        Member member = accountRepository.getMemberByEmployeeNumber(username)
+                .orElseThrow(() -> new MemberNotFoundException());
 
-        // ✅ 비밀번호가 null이거나 비어있는지 확인
-        if (inputPassword == null) {
-            log.error("❌ 비밀번호가 null입니다!");
-        } else if (inputPassword.isEmpty()) {
-            log.error("❌ 비밀번호가 빈 문자열입니다!");
-        } else if (inputPassword.trim().isEmpty()) {
-            log.error("❌ 비밀번호가 공백만 포함합니다!");
-        }
+        // 없으면 새로 만들고, 있으면 그대로 가져오는 메서드 사용
+        LoginAttempt loginAttempt = loginAttemptService.getLoginAttempt(member.getId());
 
-        log.error("[예외 정보]");
-        log.error("  예외 클래스: {}", exception.getClass().getSimpleName());
-        log.error("  예외 메시지: {}", exception.getMessage());
+        // 실패 횟수 증가 + 잠금 처리
+        loginAttempt.increaseFailedCount(5);
 
-        if (exception instanceof BadCredentialsException) {
-            log.error("  원인: PasswordEncoder.matches() 실패 (비밀번호 불일치)");
-        } else if (exception instanceof UsernameNotFoundException) {
-            log.error("  원인: 사용자를 찾을 수 없음");
-        }
+        loginAttemptRepository.save(loginAttempt);
 
-        log.error("======================================");
+        response.sendRedirect("/account/login");
     }
 }

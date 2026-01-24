@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.Hr.service;
 
+import com.itwillbs.ilkwangtech.Hr.dto.AttendanceDTO;
 import com.itwillbs.ilkwangtech.Hr.dto.CommuteDTO;
 import com.itwillbs.ilkwangtech.Hr.entity.Attendance;
 import com.itwillbs.ilkwangtech.Hr.repository.AttendanceRepository;
@@ -15,16 +16,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommuteService {
 
-
     private final AttendanceRepository attendanceRepository;
 
+    // 개인의 출퇴근 전체 현황 조회
     @Transactional
-    public void getCommuteList(Long userId){
+    public List<CommuteDTO> getCommuteList(Long userId){
 
-        // Attendance commuteEntity = attendanceRepository.findByMemberId(userId);
+         List<Attendance> commute = attendanceRepository.findByMemberId(userId);
 
-        // return
-
+         return commute.stream().
+                 map(attendance -> CommuteDTO.builder().
+                         inTime(attendance.getInTime()).
+                         goOutTime(attendance.getGoOutTime()).
+                         outTime(attendance.getOutTime()).
+                         returnTime(attendance.getReturnTime()).
+                         build()).
+                 toList();
     }
-
 }

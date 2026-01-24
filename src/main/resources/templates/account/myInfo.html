@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내 정보 관리</title>
+</head>
+<body>
+
+<form th:action="@{/account/update}"
+      method="post"
+      th:object="${user}"
+      enctype="multipart/form-data">
+    <div>
+        <div>기본정보</div>
+        <label for="name">이름</label>
+        <input type="text"
+                id="name"
+                name="name"
+                th:value="${user.name}"
+               readonly="readonly"
+        >
+
+        <label for="employeeNumber">사번</label>
+        <input type="text"
+               id="employeeNumber"
+               name="employeeNumber"
+               th:value="${user.employeeNumber}"
+               readonly="readonly"
+        >
+
+        <label for="gender">성별</label>
+        <input type="text"
+               id="gender"
+               name="gender"
+               th:value="${user.gender}"
+               readonly="readonly"
+        >
+
+        <label for="hireDate">입사일</label>
+        <input type="text"
+                id="hireDate"
+                name="hireDate"
+                th:value="${user.hireDate}"
+                readonly="readonly"
+        >
+
+        <label for="residentNumber">주민등록번호</label>
+        <input type="text"
+               id="residentNumber"
+               name="residentNumber"
+               th:value="${user.residentNumber}"
+               readonly="readonly"
+        >
+
+        <div>
+            <label for="profilePhoto">사원 사진</label>
+            <div style="width:120px;height:150px;margin:0 auto;overflow:hidden;">
+                <img th:if="*{photoUrl != null}"
+                     th:src="@{*{photoUrl}}"
+                >
+            </div>
+            <input id="profilePhoto" type="file" name="photoFile">
+        </div>
+    </div>
+
+    <div>
+        <div>연락/계정</div>
+
+        <label for="email">이메일</label>
+            <input type="email"
+                   id="email"
+                   name="email"
+                   th:value="${user.email}"
+            >
+
+        <label for="phoneNumber">연락처</label>
+            <input type="text"
+                   id="phoneNumber"
+                   name="phoneNumber"
+                   th:value="${user.phoneNumber}"
+            >
+
+    </div>
+
+    <div>
+        <div>조직/직무</div>
+
+        <label for="category">본부</label>
+        <input type="text"
+               id="category"
+               name="category"
+               th:value="${user.category}"
+                readonly="readonly"
+        >
+
+        <label for="departments">부서</label>
+        <input type="text"
+               id="departments"
+               name="departments"
+               th:value="${user.department_name}"
+               readonly="readonly">
+
+        <label for="position">직급</label>
+        <input type="text"
+               id="position"
+               name="position"
+               th:value="${user.position}"
+               readonly="readonly">
+    </div>
+
+    <div>
+        <div>급여통장 정보</div>
+        <label for="bank">은행</label>
+        <input type="text"
+                id="bank"
+                name="bank"
+                th:value="${user.bank}"
+                readonly="readonly">
+
+        <label for="bankAccount">계좌번호</label>
+        <input type="text"
+               id="bankAccount"
+               name="bankAccount"
+               th:value="${user.bankAccount}"
+               readonly="readonly">
+
+    </div>
+
+    <a th:href="/">취소</a>
+    <button type="submit">수정완료</button>
+</form>
+
+</body>
+</html>

@@ -213,8 +213,10 @@
                         <input type="hidden" id="loginPos" th:value="${#authentication.principal.position}">
                     </div>
                 </div>
-            
-                <button class="btn-detail">내 정보</button>
+
+                <a th:href="@{/account/myInfo}">
+                    <button class="btn-detail" type="button">내 정보</button>
+                </a>
             
                 <form th:action="@{/logout}" method="post" style="margin-top: 8px;"> 
                     <button type="submit" class="btn-logout-full" onclick="return confirm('로그아웃 하시겠습니까?');">

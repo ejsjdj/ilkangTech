@@ -59,6 +59,13 @@ public class AccountController {
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
         session.invalidate();
         redirectAttributes.addFlashAttribute("message", "로그아웃되었습니다");
-        return "redirect:/";  // ← 데이터와 함께 전달
+        return "redirect:/";
+    }
+
+    @GetMapping("/myInfo")
+    public String update(Model model) {
+        model.addAttribute("user", null);
+        return "/account/myInfo";
+
     }
 }

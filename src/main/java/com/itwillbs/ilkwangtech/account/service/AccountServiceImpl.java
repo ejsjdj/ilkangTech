@@ -2,9 +2,12 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
+import com.itwillbs.ilkwangtech.account.repository.LoginAttemptRepository;
+import com.itwillbs.ilkwangtech.common.exception.MemberNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
@@ -19,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 // 그 외에 기타사항은 자체적으로 처리한다.
 // 최종적으로 DB 에 CRUD 기능은 repository 를 이용한다.
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -49,7 +53,6 @@ public class AccountServiceImpl implements AccountService {
 		// 5. DB 저장
 		Member savedMember = accountRepository.save(member);
 
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!! 여기는 서비스 " + req.getEmployeeNumber());
 		res.setSuccess(true);
 		res.setEmployeeNumber(savedMember.getEmployeeNumber());
 		res.setMessage("회원가입 성공");
@@ -83,5 +86,7 @@ public class AccountServiceImpl implements AccountService {
 		}
 		return null;
 	}
+
+
 
 }

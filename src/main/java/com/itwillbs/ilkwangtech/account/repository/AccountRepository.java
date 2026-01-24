@@ -2,9 +2,6 @@ package com.itwillbs.ilkwangtech.account.repository;
 
 import java.util.Optional;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountDetail;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,13 +41,7 @@ public interface AccountRepository extends JpaRepository<Member, Long> {
 	// 계좌번호 중복 확인
 	boolean existsByAccountNumber(String accountNumber);
 
-	// 직원번호 중복 확인
-	boolean existsByEmployeeNumber(String employeeNumber);
+	Optional<Member> getMemberById(Long memberId);
 
-	// 이메일로 조회
-	Optional<Member> findByEmail(String email);
-
-	Optional<Member> findByEmployeeNumber(String employeeNumber);
-
-
+	Optional<Member> getMemberByEmployeeNumber(String employeeNumber);
 }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,13 +16,11 @@ import com.itwillbs.ilkwangtech.member.entity.MemberRole;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString
 public class AccountLogin implements UserDetails {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private Long id;					// 아이디
 	private String name;            	// 이름
 	private String employeeNumber;  	// 사원번호
@@ -38,9 +37,8 @@ public class AccountLogin implements UserDetails {
 	private LocalDateTime lastLogin;	// 마지막 로그인시간
 
 	private List<MemberRole> roles; 	// 사용자 권한 목록
-    
-    
-    
+
+	private LoginAttempt loginAttempt;
     // ----------------------------------------------------------
  	// 필수 오버라이딩 메서드
  	// 1) 사용자의 권한 목록 리턴하는 메서드
@@ -62,7 +60,7 @@ public class AccountLogin implements UserDetails {
  	public String getUsername() {
  		return this.employeeNumber;
  	}
- 	
+
  	// 3) 사용자 패스워드를 리턴하는 메서드
  	@Override
  	public String getPassword() {
@@ -82,8 +80,9 @@ public class AccountLogin implements UserDetails {
  	// 5) 계정 잠금 여부 리턴
  	@Override
  	public boolean isAccountNonLocked() {
- 		// 실제 계정 잠금 여부 확인하는 서비스 로직 추가 필요
- 		return true; // 잠기지 않았다는 의미로 임의의 값 true 리턴
+		if (loginAttempt == null) return true;
+		else if (loginAttempt.isLocked()) return false;
+		return true;
  	}
 
  	// 6) 인증 기간 만료(패스워드 기간 만료) 여부 리턴
@@ -96,8 +95,7 @@ public class AccountLogin implements UserDetails {
  	// 7) 계정 사용 가능(활성화) 여부 리턴
  	@Override
  	public boolean isEnabled() {
- 		// 실제 계정 활성화 여부 확인하는 서비스 로직 추가 필요
- 		return true; // 활성화 상태라는 의미로 임의의 값 true 리턴
+		return true; // 활성화 상태라는 의미로 임의의 값 true 리턴
  	}
 
 }

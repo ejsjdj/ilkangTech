@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
 
 // 컨트롤러에서는 사용자가 요청을 하면 그 요청에 맞는 함수를 AccountService 에서 호출을 한다.
 // AccountService 에서는 컨트롤러가 받은 요청을 처리를 할때
@@ -12,6 +13,5 @@ import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
 public interface AccountService {
 
     AccountRegisterResponse register(AccountRegisterRequest request);
-
 
 }

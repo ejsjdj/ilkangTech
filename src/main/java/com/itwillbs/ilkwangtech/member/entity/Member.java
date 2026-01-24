@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.member.entity;
 
 import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
 import com.itwillbs.ilkwangtech.account.entity.Position;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -129,5 +130,8 @@ public class Member {
     @JsonIgnore
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberRole> roles = new ArrayList<>();
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private LoginAttempt loginAttempt;
 
 }

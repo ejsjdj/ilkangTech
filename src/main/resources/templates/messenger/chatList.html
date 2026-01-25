@@ -54,20 +54,66 @@
 		    text-overflow: ellipsis;
 		    white-space: nowrap;
 		}
+		.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+		.modal-content { background: #fff; padding: 20px; border-radius: 12px; width: 350px; max-height: 80vh; display: flex; flex-direction: column; }
+		.member-selector { flex: 1; overflow-y: auto; margin: 15px 0; border: 1px solid #eee; padding: 10px; }
+		.member-item { padding: 8px 0; border-bottom: 1px solid #f9f9f9; }
+		.inviteArea {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        background-color: #f8f9fa; /* 영역 구분을 위해 약간의 배경색 추가 */
+        border-bottom: 1px solid #e5e5e5;
+    }
+    
+    .inviteArea {
+	    display: flex;
+	    justify-content: space-between;
+	    align-items: center;
+	    padding: 12px 16px;
+	    background-color: #f8f9fa; /* 약간의 회색 배경으로 영역 구분 */
+	    border-bottom: 1px solid #e5e5e5;
+	}
+	
+	.inviteArea h3 {
+	    margin: 0;
+	    font-size: 16px;
+	    font-weight: 700;
+	    color: #333;
+	}
+	
+	.invite-btn img {
+	    width: 28px;
+	    height: 28px;
+	    cursor: pointer;
+	    transition: opacity 0.2s;
+	}
+	
+	.invite-btn img:hover {
+	    opacity: 0.7;
+	}
 	</style>
 </head>
 <body>
 
-	<div class="wrapper">
-	    <div class="sidebar-area"
-		    th:insert="~{messenger/messengerLayout :: messengerSidebar('members')}">
-		</div>
+<div class="wrapper">
+	<div class="sidebar-area"
+		 th:insert="~{messenger/messengerLayout :: messengerSidebar('members')}">
+	</div>
 		
 		<div class="main">
 			<div class="searchBarArea">
 			    <input id="chatSearch" type="text" class="searchBar" 
 			           placeholder="채팅방 이름으로 검색" onkeyup="applySearch()">
 			    <button type="button" class="searchBtn" onclick="applySearch()">검색</button>
+			</div>
+		
+			<div class="inviteArea">
+			    <h3>채팅 목록</h3>
+			    <a href="javascript:void(0);" class="invite-btn" onclick="openInviteModal()">
+			       <img th:src="@{/img/messenger/plus.png}" alt="그룹 채팅 초대"> 
+			    </a>
 			</div>
 		
 			<div class="chatList">
@@ -87,7 +133,27 @@
 				</div>			<!-- room : ${rooms} 종료 -->
 				<input type="hidden" id="myId" th:value="${#authentication.principal.id}">
 			</div>			<!-- chatList 종료 -->
+			
 		</div>			<!-- main 종료 -->
+		
+	<div id="inviteModal" class="modal" style="display:none;">
+	    <div class="modal-content">
+	        <h3>그룹 채팅 초대</h3>
+	        <input type="text" id="groupRoomName" placeholder="채팅방 이름을 입력하세요" class="input">
+	        
+	        <div class="member-selector">
+	            <div th:each="member : ${memberList}" class="member-item">
+	                <input type="checkbox" name="selectedMembers" th:value="${member.memberId}">
+	                <span th:text="|${member.memberName} (${member.departmentName})|"></span>
+	            </div>
+	        </div>
+	        
+	        <div class="modal-footer">
+	            <button class="btn" onclick="closeInviteModal()">취소</button>
+	            <button class="btn btn-primary" onclick="createGroupChat()">생성</button>
+	        </div>
+		</div>
+	</div>
 		
 </div>
 	
@@ -150,6 +216,37 @@ function applySearch() {
 
 // 페이지 로드 시 연결 실행
 connectList();
+
+function openInviteModal() {
+    document.getElementById("inviteModal").style.display = "flex";
+}
+
+function closeInviteModal() {
+    document.getElementById("inviteModal").style.display = "none";
+}
+
+function createGroupChat() {
+    const roomName = document.getElementById("groupRoomName").value;
+    const selected = Array.from(document.querySelectorAll('input[name="selectedMembers"]:checked'))
+                          .map(cb => Number(cb.value));
+
+    if (!roomName) return alert("방 이름을 입력해주세요.");
+    if (selected.length < 1) return alert("초대할 멤버를 선택해주세요.");
+
+    // AJAX를 통해 서버에 그룹방 생성 요청
+    fetch('/messenger/createGroup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomName: roomName, memberIds: selected })
+    })
+    .then(res => res.json())
+    .then(roomId => {
+        closeInviteModal();
+        // 생성된 방으로 바로 이동 (새 창 팝업)
+        window.open('/messenger/chatroom/' + roomId, 'chatWindow_' + roomId, 'width=450,height=700');
+        location.reload(); // 목록 갱신
+    });
+}
 
 </script>	
 

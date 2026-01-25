@@ -161,4 +161,28 @@ public class MessengerService {
         }).sorted(Comparator.comparing(ChatRoomListResponseDTO::getLastMessageAt).reversed())
           .collect(Collectors.toList()); 
     }
+
+    @Transactional
+    public Long createGroupRoom(String roomName, List<Long> memberIds, Long creatorId) {
+        // 1. 그룹 채팅방 엔티티 생성 및 저장
+        ChatRoom newRoom = new ChatRoom();
+        newRoom.setRoomType("GROUP");
+        newRoom.setRoomName(roomName);
+        newRoom.setCreatedBy(creatorId);
+        newRoom.setCreatedAt(LocalDateTime.now());
+        
+        ChatRoom savedRoom = chatRoomRepository.save(newRoom);
+
+        // 2. 생성자 본인 참여 처리
+        safeJoin(savedRoom.getId(), creatorId);
+
+        // 3. 초대된 멤버들 참여 처리
+        if (memberIds != null) {
+            for (Long memberId : memberIds) {
+                safeJoin(savedRoom.getId(), memberId);
+            }
+        }
+
+        return savedRoom.getId();
+    }
 }

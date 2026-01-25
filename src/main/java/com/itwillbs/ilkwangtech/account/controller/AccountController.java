@@ -1,11 +1,13 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
 import com.itwillbs.ilkwangtech.account.service.AccountService;
 import com.itwillbs.ilkwangtech.account.service.BankService;
 import com.itwillbs.ilkwangtech.account.service.DepartmentService;
 import com.itwillbs.ilkwangtech.account.service.PositionService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,8 +65,8 @@ public class AccountController {
     }
 
     @GetMapping("/myInfo")
-    public String update(Model model) {
-        model.addAttribute("user", null);
+    public String update(@AuthenticationPrincipal AccountLogin user, Model model) {
+        model.addAttribute("user", user);
         return "/account/myInfo";
 
     }

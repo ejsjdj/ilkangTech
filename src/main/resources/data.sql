@@ -140,43 +140,44 @@ VALUES (2, '002', '산업은행', 'Korea Development Bank', '기타금융', 1);
 COMMIT;
 -- Departments 테이블 초기 데이터
 -- 부서 (0 임원 1 인사 2 구매 3 영업 4 재무회계 5 정보시스템 6 경영 7 안전 8 법무 100 공장장 101 프레스 102 사출 103 도장 104 조립 105 품질 106 금형 107 생산관리 108)
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (0, '임원', '총괄', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (1, '인사', '인사', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (2, '구매', '구매', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (3, '영업', '영업', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (4, '재무회계', '재무', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (5, '정보시스템', 'IT', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (6, '경영', '경영', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (7, '안전', '안전', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (8, '법무', '법무', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (100, '공장장', '생산', NULL, NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (101, '프레스', '생산', '100', NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (102, '사출', '생산', '100', NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (103, '도장', '생산', '100', NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (104, '조립', '생산', '100', NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (105, '품질', '품질', '100', NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (106, '금형', '생산', '100', NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (107, '생산관리', '생산관리', '100', NULL, 1);
-INSERT INTO departments (id, department_name, category, parent_department, sub_department, is_active)
-VALUES (108, '창고', '물류', NULL, NULL, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (0, '대표', null, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (1, '관리부', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (2, '인사', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (3, '구매', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (4, '영업', '영업', 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (5, '재무회계', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (6, '정보시스템', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (7, '경영', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (8, '안전', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (9, '법무', 1, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (100, '생산부', 100, 0);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (101, '프레스', 100, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (102, '사출', 100, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (103, '도장', 100, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (104, '조립', 100, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (105, '품질', 100, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (106, '금형', 100, 1);
+INSERT INTO departments (id, department_name, parent_department, is_active)
+VALUES (107, '생산관리', 100, 1);
 COMMIT;
+
 -- Genders 테이블 초기 데이터
 -- 성별 (1 남자 2 여자)
 INSERT INTO genders (id, gender)

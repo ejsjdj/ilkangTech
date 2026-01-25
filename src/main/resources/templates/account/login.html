@@ -1,65 +1,593 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">>
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>로그인</title>
+    <title>일광건조 ERP - 로그인</title>
+
+    <style>
+        :root {
+            --color-bg: #f3f6fb;
+            --color-card: #ffffff;
+            --color-border: #dde5f0;
+            --color-primary: #2563eb;
+            --color-primary-soft: #e0ecff;
+            --color-accent: #22c55e;
+            --color-text-main: #111827;
+            --color-text-sub: #6b7280;
+            --color-danger: #dc2626;
+            --radius-md: 10px;
+            --radius-lg: 18px;
+            --shadow-card: 0 16px 40px rgba(15, 23, 42, 0.12);
+            --font-main: -apple-system, BlinkMacSystemFont, "Noto Sans KR", system-ui, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: var(--font-main);
+            background:
+                    radial-gradient(circle at top left, #e0edff 0, transparent 55%),
+                    radial-gradient(circle at bottom right, #e0fce9 0, transparent 55%),
+                    #edf2fb;
+            color: var(--color-text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-shell {
+            width: 100%;
+            max-width: 980px;
+            padding: 24px;
+        }
+
+        .login-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        /* 왼쪽 브랜드 / 설명 박스 */
+        .login-hero {
+            border-radius: var(--radius-lg);
+            padding: 24px 24px 26px;
+            background:
+                    linear-gradient(145deg, #ffffff, #f4f7ff);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 45px rgba(148, 163, 184, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-hero::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.16) 0, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(34, 197, 94, 0.12) 0, transparent 45%);
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .login-hero-inner {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 18px;
+            backdrop-filter: blur(8px);
+        }
+
+        .app-logo-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            background: conic-gradient(from 200deg, #2563eb, #22c55e, #38bdf8, #6366f1, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f9fafb;
+            font-size: 14px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .app-logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-logo-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #1e293b;
+        }
+
+        .app-logo-subtitle {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .hero-title {
+            margin: 0 0 4px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            color: #0f172a;
+        }
+
+        .hero-title span.highlight {
+            color: #2563eb;
+        }
+
+        .hero-subtitle {
+            margin: 0 0 18px;
+            font-size: 13px;
+            color: var(--color-text-sub);
+            max-width: 360px;
+        }
+
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .metric-pill {
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px solid #e0e7ff;
+            background-color: #f5f7ff;
+            font-size: 11px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .metric-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background-color: #2563eb;
+            flex-shrink: 0;
+        }
+
+        .hero-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .hero-note {
+            font-size: 11px;
+            color: var(--color-text-sub);
+        }
+
+        .hero-note strong {
+            color: var(--color-text-main);
+        }
+
+        .hero-status {
+            font-size: 11px;
+            color: #16a34a;
+            text-align: right;
+        }
+
+        /* 오른쪽 로그인 카드 */
+        .login-card {
+            background-color: var(--color-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-card);
+            padding: 22px 24px 20px;
+        }
+
+        .login-header {
+            margin-bottom: 16px;
+        }
+
+        .login-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text-main);
+        }
+
+        .login-subtitle {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--color-text-sub);
+        }
+
+        .login-form {
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-label {
+            display: inline-flex;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--color-text-main);
+        }
+
+        .form-label .required {
+            color: var(--color-danger);
+            margin-left: 2px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 13px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            background-color: #f9fafb;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+        }
+
+        .field-hint {
+            margin: 3px 0 0;
+            font-size: 11px;
+            color: var(--color-text-sub);
+        }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 4px 0 10px;
+        }
+
+        .remember-me {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--color-text-sub);
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 13px;
+            height: 13px;
+        }
+
+        .link {
+            font-size: 11px;
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            width: 100%;
+            margin-top: 4px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.45);
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-primary span.icon {
+            font-size: 15px;
+        }
+
+        /* 자동 로그인 버튼 영역 */
+        .quick-login-group {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        .quick-login-label {
+            font-size: 11px;
+            color: var(--color-text-sub);
+            margin-bottom: 6px;
+        }
+
+        .quick-login-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .btn-quick {
+            padding: 7px 8px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            font-size: 11px;
+            color: #111827;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .btn-quick span.role {
+            font-weight: 500;
+        }
+
+        .btn-quick span.badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-quick:hover {
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+            transform: translateY(-0.5px);
+            box-shadow: 0 4px 10px rgba(148, 163, 184, 0.3);
+        }
+
+        .login-footer {
+            margin-top: 16px;
+            font-size: 11px;
+            color: var(--color-text-sub);
+            text-align: center;
+        }
+
+        .login-footer strong {
+            color: var(--color-text-main);
+        }
+
+        @media (max-width: 900px) {
+            .login-layout {
+                grid-template-columns: 1fr;
+            }
+            .login-hero {
+                order: 1;
+            }
+            .login-card {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .login-shell {
+                padding: 16px;
+            }
+
+            .login-card {
+                padding: 18px 16px 16px;
+            }
+
+            .login-hero {
+                padding: 18px 16px 18px;
+            }
+
+            .quick-login-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<div>
-    <h1>일광건조 ERP</h1>
-    <p>사원 로그인</p>
+<div class="login-shell">
+    <div class="login-layout">
+
+        <!-- 브랜드 / 안내 영역 -->
+        <section class="login-hero">
+            <div class="login-hero-inner">
+                <div class="app-logo-wrap">
+                    <div class="app-logo-badge">IL</div>
+                    <div class="app-logo-text">
+                        <span class="app-logo-title">ILGWANG DRYING ERP</span>
+                        <span class="app-logo-subtitle">For internal employees only</span>
+                    </div>
+                </div>
+
+                <h1 class="hero-title">
+                    일광건조 <span class="highlight">ERP</span> 통합 로그인
+                </h1>
+                <p class="hero-subtitle">
+                    생산, 자재, 인사 정보를 한 번에 관리하는 사내 전용 시스템입니다.
+                    사원 계정으로 로그인하여 업무를 시작하세요.
+                </p>
+
+                <div class="hero-metrics">
+                    <div class="metric-pill">
+                        <span class="metric-dot"></span>
+                        <span>실시간 생산·설비 모니터링</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="metric-dot"></span>
+                        <span>인사·근태·급여 통합 관리</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="metric-dot"></span>
+                        <span>권한별 메뉴 및 대시보드</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="metric-dot"></span>
+                        <span>사내 표준 프로세스 연동</span>
+                    </div>
+                </div>
+
+                <div class="hero-footer">
+                    <div class="hero-note">
+                        <strong>보안 안내</strong><br>
+                        공용 PC 사용 시, 업무 종료 후 반드시 로그아웃 및 브라우저 종료를 해주세요.
+                    </div>
+                    <div class="hero-status">
+                        시스템 정상 가동 중<br>
+                        문의: 인사부 · 시스템관리팀
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 로그인 폼 영역 -->
+        <section class="login-card">
+            <header class="login-header">
+                <h2 class="login-title">사원 로그인</h2>
+                <p class="login-subtitle">사원번호와 비밀번호를 입력해 ERP에 접속합니다.</p>
+            </header>
+
+            <form class="login-form"
+                  method="post"
+                  th:action="@{/account/login}">
+                <div class="form-group">
+                    <label for="employeeNumber" class="form-label">
+                        사원번호 <span class="required">*</span>
+                    </label>
+                    <input
+                            type="text"
+                            id="employeeNumber"
+                            name="username"
+                            value="26-00000"
+                            placeholder="예: 26-00001"
+                            required
+                            autofocus
+                            class="form-control"
+                            autocomplete="username"
+                    >
+                    <p class="field-hint">사내에서 부여된 사원번호를 입력해 주세요.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        비밀번호 <span class="required">*</span>
+                    </label>
+                    <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value="1234"
+                            placeholder="비밀번호를 입력하세요"
+                            required
+                            class="form-control"
+                            autocomplete="current-password"
+                    >
+                </div>
+
+                <!-- CSRF: 있으면만 렌더링 -->
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}" />
+
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember-me">
+                        <span>로그인 상태 유지</span>
+                    </label>
+                    <a href="#" class="link">비밀번호 찾기</a>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    <span class="icon">⮕</span>
+                    <span>로그인</span>
+                </button>
+
+                <div class="quick-login-group">
+                    <div class="quick-login-label">테스트용 빠른 로그인</div>
+                    <div class="quick-login-grid">
+                        <button type="button"
+                                class="btn-quick"
+                                onclick="autoLoginAs('99-00001','admin1234')">
+                            <span class="role">시스템 관리자</span>
+                            <span class="badge">SYS</span>
+                        </button>
+                        <button type="button"
+                                class="btn-quick"
+                                onclick="autoLoginAs('01-00001','hr1234')">
+                            <span class="role">인사부 관리자</span>
+                            <span class="badge">HR</span>
+                        </button>
+                        <button type="button"
+                                class="btn-quick"
+                                onclick="autoLoginAs('02-00001','prod1234')">
+                            <span class="role">생산부 관리자</span>
+                            <span class="badge">PRD</span>
+                        </button>
+                        <button type="button"
+                                class="btn-quick"
+                                onclick="autoLoginAs('26-00000','1234')">
+                            <span class="role">일반 사원</span>
+                            <span class="badge">EMP</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="login-footer">
+                    <span><strong>ⓒ 일광건조</strong> · 내부 ERP 시스템 전용 페이지입니다.</span>
+                </div>
+            </form>
+        </section>
+    </div>
 </div>
-
-<form method="post" action="/account/login">
-    <div>
-        <label for="employeeNumber">사원번호</label>
-        <input
-                type="text"
-                id="employeeNumber"
-                name="username"
-                value="26-00000"
-                placeholder="사원번호를 입력하세요"
-                required
-                autofocus
-        >
-    </div>
-    <div>
-        <label for="password">비밀번호</label>
-        <input
-                type="password"
-                id="password"
-                name="password"
-                value="1234"
-                placeholder="비밀번호를 입력하세요"
-                required
-        >
-    </div>
-    <input type="hidden" name="${_csrf.parameterName }"
-           value="${_csrf.token }" >
-
-    <button type="submit">로그인</button>
-
-    <div>
-        <button type="button" class="" onclick="autoLoginAs('', '')">시스템 관리자 로그인</button>
-    </div>
-    <div>
-        <button type="button" class="" onclick="autoLoginAs('', '')">인사부 관리자 로그인</button>
-    </div>
-    <div>
-        <button type="button" class="" onclick="autoLoginAs('', '')">생산부 관리자 로그인</button>
-    </div>
-    <div>
-        <button type="button" class="" onclick="autoLoginAs('', '')">일반 사원 로그인</button>
-    </div>
-
-</form>
 
 <script>
     function autoLoginAs(empNo, password) {
         document.getElementById("employeeNumber").value = empNo;
         document.getElementById("password").value = password;
-        document.querySelector('form').submit();
+        document.querySelector('.login-form').submit();
     }
 </script>
 </body>

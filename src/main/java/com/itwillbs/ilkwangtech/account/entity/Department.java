@@ -18,20 +18,7 @@ public class Department {
     @Id
     Integer id;
     String departmentName;
-    String category;
     String parentDepartment;
-    String subDepartment;
     boolean isActive;
 
-    @Override
-    public String toString() {
-        return "Departments{" +
-                "id=" + id +
-                ", departmentName='" + departmentName + '\'' +
-                ", category='" + category + '\'' +
-                ", parentDepartment=" + parentDepartment +
-                ", subDepartment=" + subDepartment +
-                ", isActive=" + isActive +
-                '}';
-    }
 }

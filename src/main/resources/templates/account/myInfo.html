@@ -1,134 +1,520 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>내 정보 관리</title>
+
+    <style>
+        :root {
+            --color-bg: #f5f7fb;
+            --color-card: #ffffff;
+            --color-border: #dde2eb;
+            --color-primary: #2563eb;
+            --color-primary-soft: #e0ecff;
+            --color-text-main: #111827;
+            --color-text-sub: #6b7280;
+            --color-danger: #dc2626;
+            --radius-md: 8px;
+            --spacing-base: 16px;
+            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08);
+            --font-main: -apple-system, BlinkMacSystemFont, "Noto Sans KR", system-ui, sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body.app-body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-bg);
+            font-family: var(--font-main);
+            color: var(--color-text-main);
+        }
+
+        .page-wrapper {
+            max-width: 1120px;
+            margin: 32px auto;
+            padding: 0 16px 40px;
+        }
+
+        /* 헤더 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .page-subtitle {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: var(--color-text-sub);
+        }
+
+        /* 본문 레이아웃 */
+        .page-content {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+        }
+
+        /* 카드 공통 */
+        .card {
+            background-color: var(--color-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--color-border);
+        }
+
+        /* 프로필 사이드바 */
+        .profile-sidebar .profile-card {
+            padding: 20px 18px 18px;
+        }
+
+        .profile-photo-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .profile-photo {
+            width: 96px;
+            height: 96px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #2563eb, #0ea5e9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .profile-basic {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .profile-meta,
+        .profile-meta-sub {
+            font-size: 13px;
+            color: var(--color-text-sub);
+        }
+
+        .profile-meta {
+            margin-top: 4px;
+        }
+
+        .profile-meta-divider {
+            margin: 0 4px;
+        }
+
+        /* 상세 항목 */
+        .profile-detail-list {
+            margin: 12px 0 0;
+            padding: 12px 0 0;
+            border-top: 1px dashed var(--color-border);
+        }
+
+        .profile-detail-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .profile-detail-item dt {
+            color: var(--color-text-sub);
+        }
+
+        .profile-detail-item dd {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .profile-photo-upload {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--color-border);
+        }
+
+        .form-control-file {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .form-help-text {
+            margin: 4px 0 0;
+            font-size: 11px;
+            color: var(--color-text-sub);
+        }
+
+        /* 메인 폼 카드 */
+        .form-card {
+            padding: 20px 22px 18px;
+        }
+
+        /* 섹션 */
+        .form-section + .form-section {
+            border-top: 1px solid #edf0f7;
+            margin-top: 12px;
+            padding-top: 16px;
+        }
+
+        .section-header {
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .section-subtitle {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: var(--color-text-sub);
+        }
+
+        /* 그리드 */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px 16px;
+        }
+
+        .form-field-full {
+            grid-column: 1 / -1;
+        }
+
+        /* 폼 컨트롤 */
+        .form-label {
+            display: inline-flex;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--color-text-main);
+        }
+
+        .form-label.required::after {
+            content: " *";
+            color: var(--color-danger);
+            margin-left: 2px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 7px 9px;
+            font-size: 13px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+            background-color: #f9fafb;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        }
+
+        .form-control[readonly] {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+            background-color: #ffffff;
+        }
+
+        /* 버튼 */
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 92px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            border-color: #1d4ed8;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            border-color: var(--color-border);
+            color: var(--color-text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* 반응형 */
+        @media (max-width: 900px) {
+            .page-content {
+                grid-template-columns: 1fr;
+            }
+            .profile-sidebar {
+                order: 1;
+            }
+            .profile-main {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .page-wrapper {
+                margin-top: 20px;
+            }
+        }
+    </style>
 </head>
-<body>
 
-<form th:action="@{/account/update}"
-      method="post"
-      th:object="${user}"
-      enctype="multipart/form-data">
-    <div>
-        <div>기본정보</div>
-        <label for="name">이름</label>
-        <input type="text"
-                id="name"
-                name="name"
-                th:value="${user.name}"
-               readonly="readonly"
-        >
+<body class="app-body">
 
-        <label for="employeeNumber">사번</label>
-        <input type="text"
-               id="employeeNumber"
-               name="employeeNumber"
-               th:value="${user.employeeNumber}"
-               readonly="readonly"
-        >
-
-        <label for="gender">성별</label>
-        <input type="text"
-               id="gender"
-               name="gender"
-               th:value="${user.gender}"
-               readonly="readonly"
-        >
-
-        <label for="hireDate">입사일</label>
-        <input type="text"
-                id="hireDate"
-                name="hireDate"
-                th:value="${user.hireDate}"
-                readonly="readonly"
-        >
-
-        <label for="residentNumber">주민등록번호</label>
-        <input type="text"
-               id="residentNumber"
-               name="residentNumber"
-               th:value="${user.residentNumber}"
-               readonly="readonly"
-        >
-
+<div class="page-wrapper">
+    <header class="page-header">
         <div>
-            <label for="profilePhoto">사원 사진</label>
-            <div style="width:120px;height:150px;margin:0 auto;overflow:hidden;">
-                <img th:if="*{photoUrl != null}"
-                     th:src="@{*{photoUrl}}"
-                >
-            </div>
-            <input id="profilePhoto" type="file" name="photoFile">
+            <h1 class="page-title">내 정보 관리</h1>
+            <p class="page-subtitle">기본 인적사항과 연락처 정보를 확인·수정할 수 있습니다.</p>
         </div>
+    </header>
+
+    <div class="page-content">
+        <!-- 왼쪽 프로필 요약 -->
+        <aside class="profile-sidebar">
+            <div class="card profile-card">
+                <div class="profile-photo-wrapper">
+                    <div class="profile-photo">
+                        <span th:text="*{name != null} ? ${#strings.substring(user.name,0,1)} : 'U'"></span>
+                    </div>
+                </div>
+                <div class="profile-basic">
+                    <div class="profile-name" th:text="*{name}">홍길동</div>
+                    <div class="profile-meta">
+                        <span th:text="*{employeeNumber}">20240001</span>
+                        <span class="profile-meta-divider">·</span>
+                        <span th:text="*{department}">생산관리팀</span>
+                    </div>
+                    <div class="profile-meta-sub" th:text="*{position}">대리</div>
+                </div>
+
+                <dl class="profile-detail-list">
+                    <div class="profile-detail-item">
+                        <dt>입사일</dt>
+                        <dd th:text="*{hireDate}">2024-01-01</dd>
+                    </div>
+                    <div class="profile-detail-item">
+                        <dt>성별</dt>
+                        <dd th:text="*{gender}">남</dd>
+                    </div>
+                    <div class="profile-detail-item">
+                        <dt>주민등록번호</dt>
+                        <dd th:text="*{residentNumber}">000000-0000000</dd>
+                    </div>
+                </dl>
+
+                <div class="profile-photo-upload">
+                    <label for="profilePhoto" class="form-label">사원 사진 변경</label>
+                    <input id="profilePhoto"
+                           type="file"
+                           name="photoFile"
+                           class="form-control-file">
+                    <p class="form-help-text">JPG, PNG / 최대 5MB</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 오른쪽 폼 영역 -->
+        <main class="profile-main">
+            <form th:action="@{/account/update}"
+                  method="post"
+                  th:object="${user}"
+                  enctype="multipart/form-data"
+                  class="card form-card">
+
+                <!-- 기본정보 -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">기본정보</h2>
+                        <p class="section-subtitle">사번, 입사일 등 기본 인적사항입니다.</p>
+                    </div>
+                    <div class="section-body grid-2">
+                        <div class="form-field">
+                            <label for="name" class="form-label">이름</label>
+                            <input type="text"
+                                   id="name"
+                                   th:field="*{name}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="employeeNumber" class="form-label">사번</label>
+                            <input type="text"
+                                   id="employeeNumber"
+                                   th:field="*{employeeNumber}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="gender" class="form-label">성별</label>
+                            <input type="text"
+                                   id="gender"
+                                   th:field="*{gender}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="hireDate" class="form-label">입사일</label>
+                            <input type="text"
+                                   id="hireDate"
+                                   th:field="*{hireDate}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="form-field form-field-full">
+                            <label for="residentNumber" class="form-label">주민등록번호</label>
+                            <input type="text"
+                                   id="residentNumber"
+                                   th:field="*{residentNumber}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 연락/계정 -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">연락 / 계정</h2>
+                        <p class="section-subtitle">로그인 및 연락을 위해 사용하는 정보입니다.</p>
+                    </div>
+                    <div class="section-body grid-2">
+                        <div class="form-field">
+                            <label for="email" class="form-label required">이메일</label>
+                            <input type="email"
+                                   id="email"
+                                   th:field="*{email}"
+                                   class="form-control">
+                            <p class="form-help-text">사내·업무용 이메일을 입력해 주세요.</p>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="phoneNumber" class="form-label required">연락처</label>
+                            <input type="text"
+                                   id="phoneNumber"
+                                   th:field="*{phoneNumber}"
+                                   class="form-control">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 조직/직무 -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">조직 / 직무</h2>
+                    </div>
+                    <div class="section-body grid-2">
+                        <div class="form-field">
+                            <label for="departments" class="form-label">부서</label>
+                            <input type="text"
+                                   id="departments"
+                                   th:field="*{department}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="position" class="form-label">직급</label>
+                            <input type="text"
+                                   id="position"
+                                   th:field="*{position}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 급여통장 -->
+                <section class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">급여통장 정보</h2>
+                        <p class="section-subtitle">급여 이체 계좌는 인사 담당자에게 별도 요청 후 변경됩니다.</p>
+                    </div>
+                    <div class="section-body grid-2">
+                        <div class="form-field">
+                            <label for="bank" class="form-label">은행</label>
+                            <input type="text"
+                                   id="bank"
+                                   th:field="*{bank}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="bankAccount" class="form-label">계좌번호</label>
+                            <input type="text"
+                                   id="bankAccount"
+                                   th:value="*{accountNumber}"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 버튼 영역 -->
+                <div class="form-actions">
+                    <a th:href="@{/}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary">수정 완료</button>
+                </div>
+            </form>
+        </main>
     </div>
-
-    <div>
-        <div>연락/계정</div>
-
-        <label for="email">이메일</label>
-            <input type="email"
-                   id="email"
-                   name="email"
-                   th:value="${user.email}"
-            >
-
-        <label for="phoneNumber">연락처</label>
-            <input type="text"
-                   id="phoneNumber"
-                   name="phoneNumber"
-                   th:value="${user.phoneNumber}"
-            >
-
-    </div>
-
-    <div>
-        <div>조직/직무</div>
-
-        <label for="category">본부</label>
-        <input type="text"
-               id="category"
-               name="category"
-               th:value="${user.category}"
-                readonly="readonly"
-        >
-
-        <label for="departments">부서</label>
-        <input type="text"
-               id="departments"
-               name="departments"
-               th:value="${user.department_name}"
-               readonly="readonly">
-
-        <label for="position">직급</label>
-        <input type="text"
-               id="position"
-               name="position"
-               th:value="${user.position}"
-               readonly="readonly">
-    </div>
-
-    <div>
-        <div>급여통장 정보</div>
-        <label for="bank">은행</label>
-        <input type="text"
-                id="bank"
-                name="bank"
-                th:value="${user.bank}"
-                readonly="readonly">
-
-        <label for="bankAccount">계좌번호</label>
-        <input type="text"
-               id="bankAccount"
-               name="bankAccount"
-               th:value="${user.bankAccount}"
-               readonly="readonly">
-
-    </div>
-
-    <a th:href="/">취소</a>
-    <button type="submit">수정완료</button>
-</form>
+</div>
 
 </body>
 </html>

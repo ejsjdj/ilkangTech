@@ -68,6 +68,7 @@ public class ChatSocketController {
         messagingTemplate.convertAndSend("/topic/chatroom/" + saved.getRoomId(), out);
         
         // 디버깅을 위한 로그 추가
+        // 임시
         System.out.println("메시지 전송 - 방 ID: " + saved.getRoomId() + 
                           ", 보낸 사람: " + saved.getMemberId() + 
                           ", 내용: " + saved.getContent());

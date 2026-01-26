@@ -84,7 +84,7 @@ public class ChatSocketController {
                 messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp2() + "/list", out);
             } else {
                 // ★ 그룹 채팅인 경우: 해당 방의 모든 멤버를 찾아서 전송 ★
-                List<ChatRoomMember> members = chatRoomMemberRepository.findByIdRoomId(room.getId());
+                List<ChatRoomMember> members = chatRoomMemberRepository.findByRoomId(room.getId());
                 for (ChatRoomMember m : members) {
                     messagingTemplate.convertAndSend("/topic/user/" + m.getId().getMemberId() + "/list", out);
                 }

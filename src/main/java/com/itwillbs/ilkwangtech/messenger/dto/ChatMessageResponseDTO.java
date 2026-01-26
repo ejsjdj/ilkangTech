@@ -11,4 +11,5 @@ public class ChatMessageResponseDTO {
     private String memberName; 
     private String content;
     private LocalDateTime createdAt;
+    private String msgType;
 }

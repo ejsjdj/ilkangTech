@@ -63,6 +63,19 @@
 	/* 메시지와 시간 가로 정렬 */
 	.msg-row { display: flex; align-items: flex-end; gap: 6px; }
 	.mine .msg-row { flex-direction: row-reverse; }
+	/* 시스템 메시지 스타일 */
+	.system-msg {
+	    width: 100%;
+	    text-align: center;
+	    margin: 15px 0;
+	}
+	.system-msg span {
+	    background-color: #f0f0f0;
+	    color: #666;
+	    padding: 4px 12px;
+	    border-radius: 12px;
+	    font-size: 12px;
+	}
   </style>
 
   <!-- SockJS / Stomp -->
@@ -79,21 +92,25 @@
 	            <img th:src="@{/img/messenger/edit.png}" alt="이름 편집">
 	        </a>
 	        
-	        <a th:href="@{/messenger/leave/{roomId}(roomId=${roomId})}" 
-	           onclick="return confirm('정말 이 채팅방을 나가시겠습니까?');">
-	            <img th:src="@{/img/messenger/out.png}" alt="나가기">
-	        </a>
+	        <a href="javascript:void(0);" onclick="leaveAndClose()">
+			    <img th:src="@{/img/messenger/out.png}" alt="나가기">
+			</a>
 	    </div>
 	</div>
 
 	<div id="messages" class="messages">
-	    <div th:each="msg : ${chatHistory}" class="msgWrap" th:classappend="${msg.memberId == myMemberId} ? 'mine' : ''">
-	        <div class="msg-container">
-	            <div class="sender-name" th:text="${msg.memberName}"></div>
-	            
-	            <div class="msg-row">
-	                <div class="msg" th:text="${msg.content}"></div>
-	                <span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
+	    <div th:each="msg : ${chatHistory}">
+	        <div th:if="${msg.msgType == 'SYSTEM'}" class="system-msg">
+	            <span th:text="${msg.content}"></span>
+	        </div>
+	
+	        <div th:unless="${msg.msgType == 'SYSTEM'}" class="msgWrap" th:classappend="${msg.memberId == myMemberId} ? 'mine' : ''">
+	            <div class="msg-container">
+	                <div class="sender-name" th:text="${msg.memberName}"></div>
+	                <div class="msg-row">
+	                    <div class="msg" th:text="${msg.content}"></div>
+	                    <span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
+	                </div>
 	            </div>
 	        </div>
 	    </div>
@@ -166,6 +183,16 @@ function sendMsg() {
 // 받은 메시지를 채팅창 화면에 나타내는 함수
 function appendMessage(msg) {
     var box = document.getElementById("messages");
+    
+    if (msg.msgType === 'SYSTEM') {
+        var sysDiv = document.createElement("div");
+        sysDiv.className = "system-msg";
+        sysDiv.innerHTML = "<span>" + msg.content + "</span>";
+        box.appendChild(sysDiv);
+        box.scrollTop = box.scrollHeight;
+        return;
+    }
+    
     var myMemberId = Number(document.getElementById("myMemberId").value);
     
     var wrap = document.createElement("div");
@@ -244,6 +271,14 @@ function renderMessages(chatList) {
     box.innerHTML = ""; 
 
     chatList.forEach(msg => {
+    	if (msg.msgType === 'SYSTEM') {
+            var sysDiv = document.createElement("div");
+            sysDiv.className = "system-msg";
+            sysDiv.innerHTML = "<span>" + msg.content + "</span>";
+            box.appendChild(sysDiv);
+            return; // 다음 메시지로 넘어감
+        }
+    	
         var wrap = document.createElement("div");
         wrap.className = "msgWrap" + (msg.memberId === myMemberId ? " mine" : "");
         
@@ -308,6 +343,30 @@ function renameRoom() {
             location.reload(); // 제목 갱신을 위해 새로고침
         }
     });
+}
+
+function leaveAndClose() {
+    if (!confirm('정말 이 채팅방을 나가시겠습니까? 나가면 대화 내용이 모두 삭제됩니다.')) return;
+
+    var roomId = document.getElementById("roomId").value;
+
+    // 서버에 나가기 요청 (POST 방식 권장)
+    fetch('/messenger/api/leave/' + roomId, {
+        method: 'POST'
+    })
+    .then(res => {
+        if (res.ok) {
+            // 1. 부모 창(채팅 목록 페이지)이 열려있다면 새로고침
+            if (window.opener && !window.opener.closed) {
+                window.opener.location.reload();
+            }
+            // 2. 현재 채팅방 창 닫기
+            window.close();
+        } else {
+            alert("나가기 처리 중 오류가 발생했습니다.");
+        }
+    })
+    .catch(err => console.error("Error:", err));
 }
 
 connect();

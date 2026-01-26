@@ -13,5 +13,8 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
 	
 	// 내가 참여 중인 그룹 채팅방의 ID 목록 가져오기
     List<ChatRoomMember> findByIdMemberId(Long memberId);
+    
+    // 특정 방에 속한 모든 멤버 ID 목록 가져오기
+    List<ChatRoomMember> findByIdRoomId(Long roomId);
 	
 }

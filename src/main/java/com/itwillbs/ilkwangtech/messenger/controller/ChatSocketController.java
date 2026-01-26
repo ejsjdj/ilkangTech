@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.messenger.controller;
 
 import java.security.Principal;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -14,6 +15,8 @@ import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatSendRequestDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
+import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomRepository;
 import com.itwillbs.ilkwangtech.messenger.service.ChatMessageService;
 
@@ -23,12 +26,14 @@ public class ChatSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
 
     public ChatSocketController(SimpMessagingTemplate messagingTemplate,
-                                ChatMessageService chatMessageService, ChatRoomRepository chatRoomRepository) {
+                                ChatMessageService chatMessageService, ChatRoomRepository chatRoomRepository, ChatRoomMemberRepository chatRoomMemberRepository) {
         this.messagingTemplate = messagingTemplate;
         this.chatMessageService = chatMessageService;
 		this.chatRoomRepository = chatRoomRepository;
+		this.chatRoomMemberRepository = chatRoomMemberRepository;
     }
 
     @MessageMapping("/chat.send")
@@ -59,7 +64,7 @@ public class ChatSocketController {
         out.setContent(saved.getContent());
         out.setFormattedTime(timeStr);
 
-        // 채팅방 토픽으로 메시지 전송 (모든 구독자에게)
+        // 채팅방 토픽으로 메시지 전송 (모든 구독자)
         messagingTemplate.convertAndSend("/topic/chatroom/" + saved.getRoomId(), out);
         
         // 디버깅을 위한 로그 추가
@@ -70,13 +75,21 @@ public class ChatSocketController {
         // 2. 실시간 목록 갱신을 위해 참여자들에게 전송
         // 현재 방 정보를 가져와 참여자 ID를 확인합니다.
         ChatRoom room = chatRoomRepository.findById(saved.getRoomId()).orElse(null);
-        if (room != null && "DIRECT".equals(room.getRoomType())) {
-            System.out.println("목록 갱신 전송 - 사용자1: " + room.getDirectEmp1() + 
-                              ", 사용자2: " + room.getDirectEmp2());
-            messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp1() + "/list", out);
-            messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp2() + "/list", out);
+        if (room != null) {
+            if ("DIRECT".equals(room.getRoomType())) {
+                // 1:1 채팅인 경우 (기존 로직)
+                messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp1() + "/list", out);
+                messagingTemplate.convertAndSend("/topic/user/" + room.getDirectEmp2() + "/list", out);
+            } else {
+                // ★ 그룹 채팅인 경우: 해당 방의 모든 멤버를 찾아서 전송 ★
+                List<ChatRoomMember> members = chatRoomMemberRepository.findByIdRoomId(room.getId());
+                for (ChatRoomMember m : members) {
+                    messagingTemplate.convertAndSend("/topic/user/" + m.getId().getMemberId() + "/list", out);
+                }
+            }
         }
     }
 }
+
 
 

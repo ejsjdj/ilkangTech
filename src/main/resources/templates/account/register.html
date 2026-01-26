@@ -1,128 +1,151 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>사원 신규 등록</title>
 
-    <!-- Google Font (선택) -->
+    <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
-            --color-bg: #e5e7eb;
+            --color-primary: #4f46e5;
+            --color-primary-hover: #4338ca;
+            --color-bg: #f8fafc;
             --color-card: #ffffff;
-            --color-primary: #2563eb;
-            --color-primary-soft: #dbeafe;
-            --color-border: #e5e7eb;
-            --color-text-main: #111827;
-            --color-text-sub: #6b7280;
-            --color-danger: #dc2626;
-            --radius-md: 10px;
+            --color-border: #e2e8f0;
+            --color-text-main: #1e293b;
+            --color-text-sub: #64748b;
+            --color-danger: #ef4444;
             --radius-lg: 16px;
-            --shadow-card: 0 14px 35px rgba(15, 23, 42, 0.16);
-            --font-main: "Noto Sans KR", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            --radius-md: 10px;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: radial-gradient(circle at top left, #eff6ff 0, #e5e7eb 40%, #f3f4f6 100%);
-            font-family: var(--font-main);
-            color: var(--color-text-main);
+        .register-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 24px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
+            flex-direction: column;
+            gap: 24px;
         }
 
-        .page-shell {
-            width: 100%;
-            max-width: 1100px; /* 가로 더 넓게 */
-        }
-
+        /* 페이지 헤더 디자인 고도화 */
         .page-header {
-            margin-bottom: 14px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header-title-area {
+            display: flex;
+            align-items: center;
             gap: 12px;
         }
 
-        .page-title-wrap h1 {
-            margin: 0;
+        .header-icon-bar {
+            width: 4px;
+            height: 22px;
+            background: linear-gradient(to bottom, #4f46e5, #818cf8);
+            border-radius: 2px;
+        }
+
+        .page-header h1 {
             font-size: 24px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0;
+            letter-spacing: -0.5px;
         }
 
-        .page-title-wrap p {
-            margin: 4px 0 0;
+        .page-subtitle {
             font-size: 13px;
-            color: var(--color-text-sub);
+            color: #64748b;
+            margin-top: 2px;
         }
 
-        .page-badge {
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid var(--color-primary-soft);
-            background-color: #eff6ff;
-            color: #1d4ed8;
-            font-size: 11px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .page-badge-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 999px;
-            background-color: #22c55e;
-        }
-
+        /* 카드 스타일 고도화 */
         .form-card {
-            background-color: var(--color-card);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            border: 1px solid rgba(226, 232, 240, 0.9);
-            padding: 18px 22px 14px; /* 세로 패딩 줄임 */
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            padding: 30px; /* 패딩 약간 축소 */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #4f46e5, #818cf8);
         }
 
         .form-section {
-            padding: 10px 0;
-            border-bottom: 1px dashed var(--color-border);
-        }
-
-        .form-section:last-of-type {
-            border-bottom: none;
+            margin-bottom: 0;
             padding-bottom: 0;
+            border-bottom: none;
         }
 
         .section-header {
-            margin-bottom: 8px;
+            margin-bottom: 24px;
         }
 
         .section-title {
-            margin: 0 0 2px;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #4f46e5;
+            font-size: 20px;
         }
 
         .section-desc {
-            margin: 0;
-            font-size: 12px;
-            color: var(--color-text-sub);
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* 그리드 및 그룹 */
+        .form-grid-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .form-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px 18px; /* 세로 간격 줄임 */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px 24px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px 24px;
         }
 
         .form-row-full {
@@ -132,392 +155,323 @@
         .form-group {
             display: flex;
             flex-direction: column;
+            gap: 8px;
         }
 
         .form-label {
             font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 3px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
 
         .required-mark {
-            color: var(--color-danger);
-            font-size: 12px;
+            color: #ef4444;
+            margin-left: 2px;
         }
 
-        .form-control,
-        .form-select {
-            width: 100%;
-            padding: 7px 10px;
-            font-size: 13px;
-            border-radius: 8px;
-            border: 1px solid var(--color-border);
-            background-color: #f9fafb;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, transform 0.08s ease;
+        .form-control, .form-select {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+            color: #334155;
         }
 
-        .form-control:focus,
-        .form-select:focus {
+        .form-control:focus, .form-select:focus {
             outline: none;
-            border-color: var(--color-primary);
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
             background-color: #ffffff;
-            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
-            transform: translateY(-0.5px);
         }
 
         .form-control::placeholder {
-            color: #9ca3af;
+            color: #cbd5e0;
         }
 
         .field-hint {
-            margin-top: 2px;
-            font-size: 11px;
-            color: var(--color-text-sub);
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
         }
 
-        .field-hint-danger {
-            color: var(--color-danger);
-        }
-
+        /* 버튼 */
         .form-footer {
-            margin-top: 14px;
+            margin-top: 32px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid #f1f5f9;
         }
 
-        .btn-primary {
-            padding: 8px 18px;
-            border-radius: 999px;
-            border: none;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        .btn-submit {
+            padding: 12px 28px;
+            background: #4f46e5;
             color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-submit:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-cancel {
+            padding: 12px 24px;
+            background: #ffffff;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
-            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+            transition: all 0.2s ease;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 26px rgba(37, 99, 235, 0.45);
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-        }
-
-        .btn-primary .icon {
-            font-size: 16px;
-        }
-
-        .btn-secondary {
-            padding: 7px 12px;
-            border-radius: 999px;
-            border: 1px solid var(--color-border);
-            background-color: #f9fafb;
-            color: #6b7280;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background-color 0.12s ease, border-color 0.12s ease;
-        }
-
-        .btn-secondary:hover {
-            background-color: #f3f4f6;
-            border-color: #d1d5db;
-        }
-
-        .form-footer-note {
-            font-size: 11px;
-            color: var(--color-text-sub);
-        }
-
-        .form-footer-note strong {
-            color: var(--color-text-main);
-        }
-
-        input:invalid:focus,
-        select:invalid:focus {
-            border-color: var(--color-danger);
-            box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.2);
+        .btn-cancel:hover {
+            background: #f8fafc;
+            color: #1e293b;
+            border-color: #cbd5e0;
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 12px;
-            }
-            .form-card {
-                padding: 16px 14px 12px;
-            }
             .form-grid {
                 grid-template-columns: 1fr;
             }
-            .form-footer {
-                flex-direction: column-reverse;
-                align-items: stretch;
-            }
-            .btn-primary,
-            .btn-secondary {
-                width: 100%;
-                justify-content: center;
+            .form-card {
+                padding: 20px;
             }
         }
     </style>
 </head>
-
 <body>
-<div class="page-shell">
-    <header class="page-header">
-        <div class="page-title-wrap">
-            <h1>사원 신규 등록</h1>
-            <p>기본 인적사항과 급여 계좌 정보를 입력해 사원 계정을 생성합니다.</p>
-        </div>
-        <div class="page-badge">
-            <span class="page-badge-dot"></span>
-            신규 사원 등록 중
-        </div>
-    </header>
-
-    <section class="form-card">
-        <form action="/account/register" method="post" novalidate>
-
-            <!-- 기본 정보 -->
-            <div class="form-section">
-                <div class="section-header">
-                    <h2 class="section-title">기본 정보</h2>
-                    <p class="section-desc">이름, 성별, 연락처 등 사원의 기본 인적사항을 입력합니다.</p>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="name" class="form-label">
-                            이름 <span class="required-mark">*</span>
-                        </label>
-                        <input type="text"
-                               id="name"
-                               name="name"
-                               class="form-control"
-                               placeholder="예: 홍길동"
-                               required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="gender" class="form-label">
-                            성별 <span class="required-mark">*</span>
-                        </label>
-                        <select id="gender"
-                                name="gender"
-                                class="form-select"
-                                required>
-                            <option value="">성별 선택</option>
-                            <option value="1">남</option>
-                            <option value="2">여</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="hireDate" class="form-label">
-                            입사일 <span class="required-mark">*</span>
-                        </label>
-                        <input type="date"
-                               id="hireDate"
-                               name="hireDate"
-                               class="form-control"
-                               required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="residentNumber" class="form-label">
-                            주민등록번호 <span class="required-mark">*</span>
-                        </label>
-                        <input type="text"
-                               id="residentNumber"
-                               name="residentNumber"
-                               class="form-control"
-                               maxlength="14"
-                               placeholder="예: 900101-1234567"
-                               autocomplete="off"
-                               required>
-                        <p class="field-hint">숫자와 하이픈(-)을 포함해 정확히 입력해 주세요.</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email" class="form-label">
-                            이메일 <span class="required-mark">*</span>
-                        </label>
-                        <input type="email"
-                               id="email"
-                               name="email"
-                               class="form-control"
-                               placeholder="예: user@example.com"
-                               required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="phoneNumber" class="form-label">
-                            연락처 <span class="required-mark">*</span>
-                        </label>
-                        <input type="tel"
-                               id="phoneNumber"
-                               name="phoneNumber"
-                               class="form-control"
-                               maxlength="13"
-                               placeholder="예: 010-1234-5678"
-                               required>
-                        <p class="field-hint">숫자와 하이픈(-) 포함 형식으로 입력해 주세요.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 계정 설정 -->
-            <div class="form-section">
-                <div class="section-header">
-                    <h2 class="section-title">계정 설정</h2>
-                    <p class="section-desc">사원 ERP 로그인에 사용할 비밀번호와 조직 정보를 설정합니다.</p>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group form-row-full">
-                        <label for="password" class="form-label">
-                            비밀번호 <span class="required-mark">*</span>
-                        </label>
-                        <input type="password"
-                               id="password"
-                               name="password"
-                               class="form-control"
-                               placeholder="8자 이상 영문/숫자 조합"
-                               minlength="8"
-                               required>
-                        <p class="field-hint field-hint-danger">8자 이상, 영문과 숫자를 조합해서 입력하시면 안전합니다.</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="department" class="form-label">
-                            부서
-                        </label>
-                        <select id="department"
-                                name="department"
-                                class="form-select">
-                            <option value="">부서 선택</option>
-                            <option th:each="dept : ${departments}"
-                                    th:value="${dept.id}"
-                                    th:text="${dept.departmentName}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="position" class="form-label">
-                            직급 <span class="required-mark">*</span>
-                        </label>
-                        <select id="position"
-                                name="position"
-                                class="form-select"
-                                required>
-                            <option value="">직급 선택</option>
-                            <option th:each="pos : ${positions}"
-                                    th:value="${pos.id}"
-                                    th:text="${pos.positionName}">
-                            </option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 급여 통장 정보 -->
-            <div class="form-section">
-                <div class="section-header">
-                    <h2 class="section-title">급여 통장 정보</h2>
-                    <p class="section-desc">급여 지급을 위한 통장 정보를 정확히 입력해 주세요.</p>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="bank" class="form-label">
-                            은행 <span class="required-mark">*</span>
-                        </label>
-                        <select id="bank"
-                                name="bank"
-                                class="form-select"
-                                required>
-                            <option value="">은행 선택</option>
-                            <option th:each="bank : ${banks}"
-                                    th:value="${bank.id}"
-                                    th:text="${bank.bankName}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="accountNumber" class="form-label">
-                            계좌번호 <span class="required-mark">*</span>
-                        </label>
-                        <input type="text"
-                               id="accountNumber"
-                               name="accountNumber"
-                               class="form-control"
-                               maxlength="20"
-                               placeholder="예: 123-456-789012"
-                               required>
-                        <p class="field-hint">하이픈 포함, 은행에 등록된 계좌번호를 입력해 주세요.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 버튼 영역 -->
-            <div class="form-footer">
-                <div class="form-footer-note">
-                    <strong>*</strong> 표시된 항목은 필수 입력입니다.
-                </div>
+<th:block layout:fragment="content">
+    <div class="register-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+            <div class="header-title-area">
+                <div class="header-icon-bar"></div>
                 <div>
-                    <button type="button" class="btn-secondary" onclick="history.back()">취소</button>
-                    <button type="submit" class="btn-primary">
-                        <span class="icon">⮕</span>
-                        <span>사원 등록</span>
-                    </button>
+                    <h1>사원 등록</h1>
+                    <p class="page-subtitle">새로운 사원의 정보를 등록하고 계정을 생성합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <form id="registerForm" action="/account/register" method="post">
+            <div class="form-grid-main">
+                <!-- 왼쪽 컬럼: 인적 사항 + 버튼 -->
+                <div class="form-column">
+                    <div class="form-card">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h2 class="section-title"><i class="bi bi-person-vcard"></i> 기본 인적 사항</h2>
+                                <p class="section-desc">성명, 연락처, 주민등록번호 등 사원의 기본 정보를 입력합니다.</p>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">성명 <span class="required-mark">*</span></label>
+                                    <input type="text" name="name" class="form-control" placeholder="성명을 입력하세요" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">성별 <span class="required-mark">*</span></label>
+                                    <select name="gender" class="form-select" required>
+                                        <option value="">성별 선택</option>
+                                        <option value="1">남성</option>
+                                        <option value="2">여성</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">입사일 <span class="required-mark">*</span></label>
+                                    <input type="date" name="hireDate" class="form-control" required th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">주민등록번호 <span class="required-mark">*</span></label>
+                                    <input type="text" id="residentNumber" name="residentNumber" class="form-control" placeholder="000000-0000000" maxlength="14" required>
+                                </div>
+                                <div class="form-group form-row-full">
+                                    <label class="form-label">이메일 <span class="required-mark">*</span></label>
+                                    <input type="email" name="email" class="form-control" placeholder="example@company.com" required>
+                                </div>
+                                <div class="form-group form-row-full">
+                                    <label class="form-label">연락처 <span class="required-mark">*</span></label>
+                                    <input type="tel" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="010-0000-0000" maxlength="13" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 푸터 (왼쪽 컬럼 하단 배치) -->
+                    <div class="form-footer" style="margin-top: 0; border-top: none; padding-top: 0; justify-content: flex-start;">
+                        <button type="submit" class="btn-submit">
+                            <i class="bi bi-person-check-fill"></i> 사원 등록 완료
+                        </button>
+                        <button type="button" class="btn-cancel" onclick="location.href='/account/list'">취소</button>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 컬럼: 소속 및 직급 설정 + 급여 정보 -->
+                <div class="form-column">
+                    <!-- 소속 및 직급 설정 -->
+                    <div class="form-card">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h2 class="section-title"><i class="bi bi-building-gear"></i> 소속 및 직급 설정</h2>
+                                <p class="section-desc">부서, 직급 및 로그인 시 사용할 비밀번호를 설정합니다.</p>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">부서 <span class="required-mark">*</span></label>
+                                    <select name="department" class="form-select" required>
+                                        <option value="">부서 선택</option>
+                                        <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.departmentName}"></option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">직급 <span class="required-mark">*</span></label>
+                                    <select name="position" class="form-select" required>
+                                        <option value="">직급 선택</option>
+                                        <option th:each="pos : ${positions}" th:value="${pos.id}" th:text="${pos.positionName}"></option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">비밀번호 <span class="required-mark">*</span></label>
+                                    <input type="password" name="password" class="form-control" placeholder="8자 이상" minlength="8" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">비밀번호 확인 <span class="required-mark">*</span></label>
+                                    <input type="password" id="passwordConfirm" class="form-control" placeholder="다시 입력" required>
+                                </div>
+                                <div class="form-group form-row-full">
+                                    <p class="field-hint">초기 비밀번호는 보안을 위해 8자 이상의 복잡한 조합으로 설정해 주세요.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 급여 정보 (오른쪽 하단으로 이동) -->
+                    <div class="form-card">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h2 class="section-title"><i class="bi bi-bank"></i> 급여 계좌 정보</h2>
+                                <p class="section-desc">급여 지급을 위한 은행 및 계좌번호 정보를 입력합니다.</p>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">은행 <span class="required-mark">*</span></label>
+                                    <select name="bank" class="form-select" required>
+                                        <option value="">은행 선택</option>
+                                        <option th:each="bank : ${banks}" th:value="${bank.id}" th:text="${bank.bankName}"></option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">계좌번호 <span class="required-mark">*</span></label>
+                                    <input type="text" name="accountNumber" class="form-control" placeholder="'-' 없이 입력" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </form>
-    </section>
-</div>
+    </div>
 
-<script>
-    // 주민등록번호, 전화번호 자동 하이픈 보조
-    document.addEventListener('DOMContentLoaded', function () {
-        const rrnInput = document.getElementById('residentNumber');
-        const phoneInput = document.getElementById('phoneNumber');
+    <!-- 성공/실패 메시지 처리 -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const successMessage = /*[[${successMessage}]]*/ null;
+        const errorMessage = /*[[${errorMessage}]]*/ null;
 
-        if (rrnInput) {
-            rrnInput.addEventListener('input', function (e) {
-                let v = e.target.value.replace(/[^0-9]/g, '');
-                if (v.length > 6) v = v.slice(0, 6) + '-' + v.slice(6, 13);
-                e.target.value = v;
+        if (successMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: '등록 완료',
+                text: successMessage,
+                confirmButtonColor: '#4f46e5'
             });
         }
 
-        if (phoneInput) {
-            phoneInput.addEventListener('input', function (e) {
-                let v = e.target.value.replace(/[^0-9]/g, '');
-                if (v.length < 4) {
+        if (errorMessage) {
+            Swal.fire({
+                icon: 'error',
+                title: '등록 실패',
+                text: errorMessage,
+                confirmButtonColor: '#4f46e5'
+            });
+        }
+        /*]]>*/
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 주민등록번호 하이픈 자동 삽입
+            const rrnInput = document.getElementById('residentNumber');
+            if (rrnInput) {
+                rrnInput.addEventListener('input', function (e) {
+                    let v = e.target.value.replace(/[^0-9]/g, '');
+                    if (v.length > 6) v = v.slice(0, 6) + '-' + v.slice(6, 13);
                     e.target.value = v;
-                } else if (v.length < 8) {
-                    e.target.value = v.slice(0, 3) + '-' + v.slice(3);
-                } else {
-                    e.target.value = v.slice(0, 3) + '-' + v.slice(3, 7) + '-' + v.slice(7, 11);
+                });
+            }
+
+            // 전화번호 하이픈 자동 삽입
+            const phoneInput = document.getElementById('phoneNumber');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function (e) {
+                    let v = e.target.value.replace(/[^0-9]/g, '');
+                    if (v.length < 4) {
+                        e.target.value = v;
+                    } else if (v.length < 8) {
+                        e.target.value = v.slice(0, 3) + '-' + v.slice(3);
+                    } else {
+                        e.target.value = v.slice(0, 3) + '-' + v.slice(3, 7) + '-' + v.slice(7, 11);
+                    }
+                });
+            }
+            
+            // 폼 제출 전 유효성 검사
+            const form = document.getElementById('registerForm');
+            form.addEventListener('submit', function(e) {
+                const password = form.querySelector('input[name="password"]').value;
+                const passwordConfirm = document.getElementById('passwordConfirm').value;
+
+                if (password !== passwordConfirm) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: '비밀번호 불일치',
+                        text: '입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다.',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                    return;
                 }
+
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '입력 확인',
+                        text: '필수 항목을 모두 정확히 입력해 주세요.',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                }
+                form.classList.add('was-validated');
             });
-        }
-    });
-</script>
+        });
+    </script>
+</th:block>
 </body>
 </html>

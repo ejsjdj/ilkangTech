@@ -14,4 +14,6 @@ public interface AccountService {
 
     AccountRegisterResponse register(AccountRegisterRequest request);
 
+    boolean updateMyInfo(Long id, String email, String phoneNumber);
+
 }

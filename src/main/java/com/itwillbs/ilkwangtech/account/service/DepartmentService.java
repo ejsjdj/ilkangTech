@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.account.service;
 
+import com.itwillbs.ilkwangtech.account.dto.OrgChartDTO;
 import com.itwillbs.ilkwangtech.account.entity.Department;
 
 import java.util.List;
@@ -11,4 +12,7 @@ public interface DepartmentService {
 
     // 활성화된 부서 목록 조회
     public List<Department> getActiveDepartments();
+
+    // 조직도 데이터 조회
+    OrgChartDTO getOrgChartData();
 }

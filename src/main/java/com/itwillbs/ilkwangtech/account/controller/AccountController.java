@@ -47,10 +47,15 @@ public class AccountController {
 
     // 회원가입요청
     @PostMapping("/register")
-    public String register(Model model, AccountRegisterRequest req) {
+    public String register(AccountRegisterRequest req, RedirectAttributes redirectAttributes) {
         AccountRegisterResponse res = accountService.register(req);
-        model.addAttribute("response",res);
-        return "/account/register";
+        if(res.isSuccess()) {
+            redirectAttributes.addFlashAttribute("successMessage", "사원 등록이 완료되었습니다. 사원번호: " + res.getEmployeeNumber());
+            return "redirect:/account/list";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", res.getMessage());
+            return "redirect:/account/register";
+        }
     }
 
     // 로그인 페이지 요청
@@ -68,6 +73,25 @@ public class AccountController {
     public String update(@AuthenticationPrincipal AccountLogin user, Model model) {
         model.addAttribute("user", user);
         return "/account/myInfo";
+    }
 
+    @PostMapping("/update")
+    public String updateMyInfo(@AuthenticationPrincipal AccountLogin user,
+                               String email,
+                               String phoneNumber,
+                               RedirectAttributes redirectAttributes) {
+        boolean success = accountService.updateMyInfo(user.getId(), email, phoneNumber);
+
+        if (success) {
+            // 세션 정보 갱신 (선택 사항: 현재는 다시 로그인하거나 정보를 다시 로드해야 함)
+            // 여기서는 간단히 성공 메시지만 전달
+            user.setEmail(email);
+            user.setPhoneNumber(phoneNumber);
+            redirectAttributes.addFlashAttribute("successMessage", "내 정보가 수정되었습니다.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "정보 수정에 실패했습니다.");
+        }
+
+        return "redirect:/account/myInfo";
     }
 }

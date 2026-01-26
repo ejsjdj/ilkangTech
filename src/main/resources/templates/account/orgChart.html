@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<div class="treeOrg">
+
+    <div class="top"></div>
+
+    <div class="mid"></div>
+
+    <div class="bottom"></div>
+
+</div>
+
+</body>
+</html>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+
+    document.addEventListener('DOMContentLoaded', () => {
+       fetch('/account/orgCharJson')
+           .then(response => response.json())
+           .then(data => {
+               console.log(data);
+
+               const departments = data.departments;
+               const employees = data.employees;
+
+               departments.forEach(d => {
+                   console.log(d.id, d.departmentName);
+               });
+           })
+           .catch(err => {
+               console('error', error);
+           });
+    });
+
+    document.addEventListener() {
+
+    }
+
+</script>

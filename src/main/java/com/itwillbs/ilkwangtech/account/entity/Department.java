@@ -18,7 +18,7 @@ public class Department {
     @Id
     Integer id;
     String departmentName;
-    String parentDepartment;
+    Integer parentDepartment;
     boolean isActive;
 
 }

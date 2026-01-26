@@ -149,7 +149,7 @@ VALUES (2, '인사', 1, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
 VALUES (3, '구매', 1, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
-VALUES (4, '영업', '영업', 1);
+VALUES (4, '영업', 1, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
 VALUES (5, '재무회계', 1, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
@@ -161,7 +161,7 @@ VALUES (8, '안전', 1, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
 VALUES (9, '법무', 1, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
-VALUES (100, '생산부', 100, 0);
+VALUES (100, '생산부', 0, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
 VALUES (101, '프레스', 100, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
@@ -176,6 +176,7 @@ INSERT INTO departments (id, department_name, parent_department, is_active)
 VALUES (106, '금형', 100, 1);
 INSERT INTO departments (id, department_name, parent_department, is_active)
 VALUES (107, '생산관리', 100, 1);
+
 COMMIT;
 
 -- Genders 테이블 초기 데이터

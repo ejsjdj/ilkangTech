@@ -35,20 +35,44 @@ public class AppointmentEntity {
     private Member memberId; // 사원 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approver_id")
+    @JoinColumn(name = "approver_id", nullable = true)
     private Member approverId; // 승인자 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "previous_dept_id")
+    @JoinColumn(name = "previous_dept_id", nullable = true)
     private Department previousDeptId; // 이전 부서
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nowDept", nullable = true)
+    private Member nowDept; // 현재 부서
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "previous_position_id")
+    @JoinColumn(name = "previous_position_id", nullable = true)
     private Position previousPositionId; // 이전 직급
 
-    @Column(name = "work_status")
+    @Column(name = "work_status", nullable = true)
     private String workStatus; // 근무 상태
 
-    @Column(name = "appointment_date")
+    @Column(name = "appointment_date", nullable = true)
     private LocalDate appointmentDate; // 발령일
+
+    // 부서 변경
+    public void changeDept(Department currentDept){
+        this.previousDeptId = currentDept;
+        this.appointmentDate = LocalDate.now();
+    }
+
+    // 직급 변경
+    public void changeRank(){
+
+
+    }
+
+    // 근무상태 변경
+    public void changeStatus(){
+
+
+    }
+
+
 }

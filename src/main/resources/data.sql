@@ -388,6 +388,7 @@ VALUES (24, 16, 2, 14);
 INSERT INTO leave_status (common_id, total_leave, used_leave, remain_leave)
 VALUES (25, 16, 2, 14);
 
+
 -- ===============================================================================
 -- 게시글 더미 데이터
 -- [1] 고정 게시글 3개 등록 (is_pinned = 1, 배경색 구분을 위해 상단 배치)
@@ -418,6 +419,63 @@ SELECT
     SYSDATE - (LEVEL / 10), SYSDATE
 FROM DUAL 
 CONNECT BY LEVEL <= 98;
+=======
+INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+VALUES (1, NULL, 5, 54, '재직', '2023-01-01');
+
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (2, 1, 5, 6, '재직', '2023-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (11, 1, 2, 5, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (12, 1, 2, 5, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (13, 1, 2, 4, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (14, 1, 3, 4, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (15, 1, 3, 3, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (16, 1, 3, 3, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (17, 1, 1, 2, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (18, 1, 1, 2, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (19, 1, 1, 1, '재직', '2024-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (20, 1, 2, 5, '재직', '2025-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (21, 1, 2, 4, '재직', '2025-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (22, 1, 3, 3, '재직', '2025-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (23, 1, 4, 2, '재직', '2025-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (24, 1, 6, 1, '재직', '2025-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (24, 1,NULL, NULL, '재직', '2026-01-01');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (24, 1,1, 55, '퇴사', '2025-12-31');
+--
+-- INSERT INTO appointment (member_id, approver_id, previous_dept_id, previous_position_id, work_status, appointment_date)
+-- VALUES (24, 1,5, 6, '휴직', '2025-11-11');
 
 -- 반영
 COMMIT;

@@ -98,4 +98,13 @@ public class Attendance {
         this.returnTime = LocalDateTime.now(); 
     }
 
+    // 5. 출근 시간 수정
+    public void changeInTime(LocalDateTime inTime){
+        this.inTime = inTime;
+    }
+
+    // 6. 퇴근 시간 수정
+    public void changeOutTime(LocalDateTime outTime){
+        this.outTime = outTime;
+    }
 }

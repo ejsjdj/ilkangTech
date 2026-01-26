@@ -23,8 +23,8 @@ public class AppointmentService {
                         appointmentId(appointmentEntity.getAppointmentId()).
                         memberId(appointmentEntity.getMemberId().getId()).
                         approverId(appointmentEntity.getApproverId() != null ? appointmentEntity.getApproverId().getId() : null).
-                        previousDeptId(appointmentEntity.getPreviousDeptId().getDepartmentName()).
-                        previoutPositionId(appointmentEntity.getPreviousPositionId().getPositionName()).
+                        previousDeptId(appointmentEntity.getPreviousDeptId() != null ? appointmentEntity.getPreviousDeptId().getDepartmentName() : null).
+                        previoutPositionId(appointmentEntity.getPreviousPositionId() != null ? appointmentEntity.getPreviousPositionId().getPositionName() : null).
                         workStatus(appointmentEntity.getWorkStatus()).
                         appointmentDate(appointmentEntity.getAppointmentDate()).
                         build()).toList();

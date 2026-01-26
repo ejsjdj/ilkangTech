@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Table(name = "draft_document")
 public class DraftEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long draftId;
 
     @ManyToOne

@@ -61,6 +61,7 @@ public class ChatSocketController {
         ChatBroadcastMessageDTO out = new ChatBroadcastMessageDTO();
         out.setRoomId(saved.getRoomId());
         out.setMemberId(saved.getMemberId());
+        out.setSenderName(login.getName());
         out.setContent(saved.getContent());
         out.setFormattedTime(timeStr);
 

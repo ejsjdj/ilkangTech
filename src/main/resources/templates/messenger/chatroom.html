@@ -8,7 +8,38 @@
 	<style>
     html, body { height: 100%; margin: 0; }
     .wrap { height: 100vh; display: flex; flex-direction: column; }
-    .header { height: 52px; border-bottom: 1px solid #e5e5e5; display:flex; align-items:center; padding:0 12px; }
+    .header {
+	    height: 52px;
+	    border-bottom: 1px solid #e5e5e5;
+	    display: flex;
+	    align-items: center;
+	    padding: 0 16px;
+	    background-color: #fff;
+	}
+	.header strong {
+	    flex: 1;
+	    font-size: 16px;
+	    color: #333;
+	    overflow: hidden;
+	    text-overflow: ellipsis;
+	    white-space: nowrap;
+	}
+	.header-btns {
+	    display: flex;
+	    gap: 12px;
+	    align-items: center;
+	}
+	.header-btns img {
+	    width: 22px;
+	    height: 22px;
+	    cursor: pointer;
+	    opacity: 0.6;
+	    transition: all 0.2s ease;
+	}
+	.header-btns img:hover {
+	    opacity: 1;
+	    transform: scale(1.1);
+	}
     .messages { flex: 1; overflow-y: auto; padding: 12px; }
     .msg { padding: 8px 10px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; max-width: 80%; }
     .mine { margin-left: auto; }
@@ -19,6 +50,19 @@
 	.msgWrap.mine { flex-direction: row-reverse; } /* 내가 보낸 건 시간-메시지 순서 */
 	.msg { margin-bottom: 0 !important; } /* 기존 여백 제거 */
 	.time { font-size: 11px; color: #888; white-space: nowrap; margin-bottom: 2px; }
+	.msg-container { display: flex; flex-direction: column; max-width: 80%; }
+	.mine .msg-container { align-items: flex-end; }
+	.sender-name {
+	    font-size: 11px;
+	    color: #666;
+	    margin-bottom: 2px;
+	    margin-left: 2px;
+	}
+	.mine .sender-name { display: none; } /* 내가 보낸 건 이름을 숨기고 싶을 때 */
+	
+	/* 메시지와 시간 가로 정렬 */
+	.msg-row { display: flex; align-items: flex-end; gap: 6px; }
+	.mine .msg-row { flex-direction: row-reverse; }
   </style>
 
   <!-- SockJS / Stomp -->
@@ -28,14 +72,31 @@
 <body>
 <div class="wrap">
 	<div class="header">
-		<strong th:text="${displayTitle}"></strong>
+	    <strong th:text="${displayTitle}"></strong>
+	
+	    <div class="header-btns">
+	        <a href="javascript:void(0);" onclick="renameRoom()">
+	            <img th:src="@{/img/messenger/edit.png}" alt="이름 편집">
+	        </a>
+	        
+	        <a th:href="@{/messenger/leave/{roomId}(roomId=${roomId})}" 
+	           onclick="return confirm('정말 이 채팅방을 나가시겠습니까?');">
+	            <img th:src="@{/img/messenger/out.png}" alt="나가기">
+	        </a>
+	    </div>
 	</div>
 
 	<div id="messages" class="messages">
-		<div th:each="msg : ${chatHistory}" class="msgWrap" th:classappend="${msg.memberId == myMemberId} ? 'mine' : ''">
-			<div class="msg" th:text="${msg.content}"></div>
-			<span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
-		</div>
+	    <div th:each="msg : ${chatHistory}" class="msgWrap" th:classappend="${msg.memberId == myMemberId} ? 'mine' : ''">
+	        <div class="msg-container">
+	            <div class="sender-name" th:text="${msg.memberName}"></div>
+	            
+	            <div class="msg-row">
+	                <div class="msg" th:text="${msg.content}"></div>
+	                <span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
+	            </div>
+	        </div>
+	    </div>
 	</div>
 
   <div class="inputBar">
@@ -104,27 +165,41 @@ function sendMsg() {
 
 // 받은 메시지를 채팅창 화면에 나타내는 함수
 function appendMessage(msg) {
-	var box = document.getElementById("messages");
-	var myMemberId = Number(document.getElementById("myMemberId").value);
-	
-	console.log("메시지 수신:", msg);
-	
-	var wrap = document.createElement("div");
-	wrap.className = "msgWrap" + (msg.memberId === myMemberId ? " mine" : "");
-	
-	var contentDiv = document.createElement("div");
-	contentDiv.className = "msg";
-	contentDiv.textContent = msg.content;
-	
-	var timeSpan = document.createElement("span");
-	timeSpan.className = "time";
-	timeSpan.textContent = msg.formattedTime; // 서버에서 받은 문자열 사용
-	
-	wrap.appendChild(contentDiv);
-	wrap.appendChild(timeSpan);
-	
-	box.appendChild(wrap);
-	box.scrollTop = box.scrollHeight;
+    var box = document.getElementById("messages");
+    var myMemberId = Number(document.getElementById("myMemberId").value);
+    
+    var wrap = document.createElement("div");
+    wrap.className = "msgWrap" + (msg.memberId === myMemberId ? " mine" : "");
+    
+    // 이름과 메시지 행을 감싸는 컨테이너 생성
+    var container = document.createElement("div");
+    container.className = "msg-container";
+
+    // 1. 이름 추가
+    var nameDiv = document.createElement("div");
+    nameDiv.className = "sender-name";
+    nameDiv.textContent = msg.senderName; // Controller에서 보낸 senderName 사용
+    container.appendChild(nameDiv);
+
+    // 2. 메시지 본문과 시간 행 생성
+    var row = document.createElement("div");
+    row.className = "msg-row";
+
+    var contentDiv = document.createElement("div");
+    contentDiv.className = "msg";
+    contentDiv.textContent = msg.content;
+    
+    var timeSpan = document.createElement("span");
+    timeSpan.className = "time";
+    timeSpan.textContent = msg.formattedTime;
+    
+    row.appendChild(contentDiv);
+    row.appendChild(timeSpan);
+    container.appendChild(row);
+    wrap.appendChild(container);
+    
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
 }
 
 // 엔터키 클릭이벤트(엔터키 클릭 시 채팅이 바로 전송되도록)
@@ -166,12 +241,24 @@ function renderMessages(chatList) {
     var box = document.getElementById("messages");
     var myMemberId = Number(document.getElementById("myMemberId").value);
     
-    box.innerHTML = ""; // 기존 내용 초기화
+    box.innerHTML = ""; 
 
     chatList.forEach(msg => {
         var wrap = document.createElement("div");
         wrap.className = "msgWrap" + (msg.memberId === myMemberId ? " mine" : "");
         
+        var container = document.createElement("div");
+        container.className = "msg-container";
+
+        // 이름 추가 (API 결과에 memberName 필드가 있어야 함)
+        var nameDiv = document.createElement("div");
+        nameDiv.className = "sender-name";
+        nameDiv.textContent = msg.memberName; 
+        container.appendChild(nameDiv);
+
+        var row = document.createElement("div");
+        row.className = "msg-row";
+
         var contentDiv = document.createElement("div");
         contentDiv.className = "msg";
         contentDiv.textContent = msg.content;
@@ -179,17 +266,20 @@ function renderMessages(chatList) {
         var timeSpan = document.createElement("span");
         timeSpan.className = "time";
         
-        // 날짜 포맷팅 (간단하게 처리)
         var date = new Date(msg.createdAt);
-        var timeStr = date.getHours() + ":" + date.getMinutes();
+        var timeStr = (date.getHours() >= 12 ? "오후 " : "오전 ") + 
+                      (date.getHours() % 12 || 12) + ":" + 
+                      String(date.getMinutes()).padStart(2, '0');
         timeSpan.textContent = timeStr; 
         
-        wrap.appendChild(contentDiv);
-        wrap.appendChild(timeSpan);
+        row.appendChild(contentDiv);
+        row.appendChild(timeSpan);
+        container.appendChild(row);
+        wrap.appendChild(container);
         box.appendChild(wrap);
     });
     
-    box.scrollTop = box.scrollHeight; // 스크롤 하단으로 이동
+    box.scrollTop = box.scrollHeight;
 }
 
 // [핵심] 1초(1000ms)마다 pollingMessages 실행
@@ -200,6 +290,25 @@ document.addEventListener("DOMContentLoaded", function() {
     pollingMessages();
     // ... 기존 엔터키 이벤트 ...
 });
+
+function renameRoom() {
+    var roomId = document.getElementById("roomId").value;
+    var newName = prompt("변경할 채팅방 이름을 입력해주세요.");
+    
+    if (!newName || newName.trim() === "") return;
+
+    fetch('/messenger/api/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: Number(roomId), newName: newName })
+    })
+    .then(res => {
+        if(res.ok) {
+            alert("방 이름이 변경되었습니다.");
+            location.reload(); // 제목 갱신을 위해 새로고침
+        }
+    });
+}
 
 connect();
 </script>

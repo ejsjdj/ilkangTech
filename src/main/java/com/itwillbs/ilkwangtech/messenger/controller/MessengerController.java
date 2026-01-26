@@ -12,12 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.messenger.dto.ChatMessageResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.GroupChatCreateRequestDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
-import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
-import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
-import com.itwillbs.ilkwangtech.messenger.service.ChatMessageService;
 import com.itwillbs.ilkwangtech.messenger.service.MessengerService;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -79,26 +77,29 @@ public class MessengerController {
 
 
 	@GetMapping("/chatroom/{roomId}")
-	public String chatroom(@PathVariable("roomId") Long roomId, 
-	                       @AuthenticationPrincipal AccountLogin login, 
-	                       Model model) {
-	    Long myId = login.getId();
+    public String chatroom(@PathVariable("roomId") Long roomId, 
+                           @AuthenticationPrincipal AccountLogin login, 
+                           Model model) {
+        Long myId = login.getId();
 
-	    // 상단 타이틀용 이름과 과거 내역 조회
-	    model.addAttribute("displayTitle", messengerService.getRoomDisplayTitle(roomId, myId));
-	    model.addAttribute("chatHistory", messengerService.getChatHistory(roomId));
-	    
-	    model.addAttribute("roomId", roomId);
-	    model.addAttribute("myMemberId", myId);
+        model.addAttribute("displayTitle", messengerService.getRoomDisplayTitle(roomId, myId));
+        
+        // [수정] 서비스가 이제 DTO 리스트를 반환하므로 HTML에서 msg.memberName을 읽을 수 있게 됩니다.
+//        List<ChatMessageResponseDTO> chatHistory = messengerService.getChatHistory(roomId);
+//        model.addAttribute("chatHistory", chatHistory);
+        
+        model.addAttribute("roomId", roomId);
+        model.addAttribute("myMemberId", myId);
 
-	    return "messenger/chatroom";
-	}
+        return "messenger/chatroom";
+    }
 	
 	// [추가] 특정 방의 채팅 내역을 JSON으로 반환하는 API
-    @GetMapping("/api/chat/{roomId}")
+	@GetMapping("/api/chat/{roomId}")
     @ResponseBody
-    public List<ChatMessage> getChatHistoryApi(@PathVariable("roomId") Long roomId) {
-        return messengerService.getChatHistory(roomId);
+    public List<ChatMessageResponseDTO> getChatHistoryApi(@PathVariable("roomId") Long roomId) {
+        // 이 API를 통해 프론트엔드의 renderMessages 함수로 이름(memberName)이 전달
+//        return messengerService.getChatHistory(roomId);
     }
 
     @PostMapping("/createGroup")
@@ -115,6 +116,15 @@ public class MessengerController {
                         );
         
         return newRoomId; // 생성된 방 번호를 반환하여 JS에서 창을 열게 함
+    }
+    
+    @GetMapping("/leave/{roomId}")
+    public String leaveRoom(@PathVariable("roomId") Long roomId, @AuthenticationPrincipal AccountLogin login) {
+        // 서비스에서 내 정보를 해당 방의 참여자 명단에서 삭제
+        messengerService.leaveChatRoom(roomId, login.getId());
+        
+        // 나간 후에는 채팅 목록으로 이동
+        return "redirect:/messenger/chatList";
     }
 
 }

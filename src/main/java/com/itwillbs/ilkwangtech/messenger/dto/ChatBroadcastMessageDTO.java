@@ -13,6 +13,7 @@ public class ChatBroadcastMessageDTO {
 
     private Long roomId;
     private Long memberId;
+    private String msgType;
     private String senderName;
     private String content;
     private String formattedTime;

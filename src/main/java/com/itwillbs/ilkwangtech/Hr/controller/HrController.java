@@ -22,8 +22,14 @@ public class HrController {
 
     // 발령 관리
     @GetMapping("/appointment")
+    public String getAppointment(){
+        return "hr/appointment";
+    }
+
+    // 발령 리스트 조회
+    @GetMapping("/appointment/list")
     @ResponseBody
-    public List<AppointmentDTO> getAppointment(){
+    public List<AppointmentDTO> getAppointmentList(){
         return appointmentService.hrAppointmentService();
     }
 

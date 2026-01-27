@@ -276,12 +276,8 @@ FROM members M, common_code C
 WHERE C.common_code = 'ROLE_USER';
 
 -- 전사 일정 등록
-INSERT INTO IK_SCHEDULE (schedule_id, member_id, schedule_title, schedule_memo, schedule_type, start_date, end_date, reg_date)
-SELECT SEQ_SCHEDULE.NEXTVAL, M.id, '1월 전사 정기 회의', '2026년 상반기 목표 공유 및 부서별 현황 발표', 'COMPANY', TO_DATE('2026-01-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-01-20 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE FROM members M;
 
 -- 개인 일정 등록
-INSERT INTO IK_SCHEDULE (schedule_id, member_id, schedule_title, schedule_memo, schedule_type, start_date, end_date, reg_date)
-SELECT SEQ_SCHEDULE.NEXTVAL, M.id, '개인 업무 정리', '주간 업무 보고서 작성', 'PERSONAL', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-01-21 18:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE FROM members M;
 
 -- 휴가 현황 초기화
 INSERT INTO leave_status (leave_id, common_id, total_leave, used_leave, remain_leave)

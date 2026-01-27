@@ -1,12 +1,12 @@
 package com.itwillbs.ilkwangtech.Hr.entity;
 
-import com.itwillbs.ilkwangtech.account.entity.Department;
-import com.itwillbs.ilkwangtech.account.entity.Position;
+
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -14,16 +14,15 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "appointment")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
 public class AppointmentEntity {
 
-    /*
-    1. 사번
-    2. 이전부서
-    3. 이전직급
-    4. 근무상태
-    5. 발령일
-    */
+    public AppointmentEntity() {}
+
+    // 2. 서비스에서 사용할 생성자 추가 (이게 없어서 에러가 났던 것!)
+    public AppointmentEntity(Member member) {
+        this.memberId = member;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,17 +37,17 @@ public class AppointmentEntity {
     @JoinColumn(name = "approver_id", nullable = true)
     private Member approverId; // 승인자 ID
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "previous_dept_id", nullable = true)
-    private Department previousDeptId; // 이전 부서
+    @Column(name = "pre_dept", nullable = true)
+    private int preDept; // 이전 부서
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nowDept", nullable = true)
-    private Member nowDept; // 현재 부서
+    @Column(name = "current_dept", nullable = true)
+    private int currentDept; // 현재 부서
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "previous_position_id", nullable = true)
-    private Position previousPositionId; // 이전 직급
+    @Column(name = "pre_rank", nullable = true)
+    private int preRank; // 이전 직급
+
+    @Column(name = "current_rank", nullable = true)
+    private int currentRank; // 현재 직급
 
     @Column(name = "work_status", nullable = true)
     private String workStatus; // 근무 상태
@@ -56,23 +55,42 @@ public class AppointmentEntity {
     @Column(name = "appointment_date", nullable = true)
     private LocalDate appointmentDate; // 발령일
 
-    // 부서 변경
-    public void changeDept(Department currentDept){
-        this.previousDeptId = currentDept;
+    // 부서 변경 (현재 부서 -> 이전 부서)
+    public void changeDept(int currentDept){
+        this.preDept = currentDept;
         this.appointmentDate = LocalDate.now();
     }
 
-    // 직급 변경
-    public void changeRank(){
-
-
+    // 직급 변경 (현재 직급 -> 이전 직급)
+    public void changeRank(int currentRank){
+        this.preRank = currentRank;
+        this.appointmentDate = LocalDate.now();
     }
 
     // 근무상태 변경
-    public void changeStatus(){
-
-
+    public void changeStatus(String workStatus){
+        this.workStatus = workStatus;
     }
 
+    // 새로운 부서 등록
+    public void newDept(int newDept){
+        this.currentDept = newDept;
+        this.appointmentDate = LocalDate.now();
+    }
 
+    // 새로운 직급 등록
+    public void newRank(int newRank){
+        this.currentRank = newRank;
+        this.appointmentDate = LocalDate.now();
+    }
+
+    // 승인 날짜 등록
+    public void newDate(LocalDate newDate){
+        this.appointmentDate = LocalDate.now();
+    }
+
+    // 승인자 등록
+    public void newApprover(Member approver){
+        this.approverId = approver;
+    }
 }

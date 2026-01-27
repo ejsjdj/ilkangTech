@@ -27,13 +27,13 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-@SequenceGenerator(
-        name = "MEMBERS_SEQ_GENERATOR", // JPA 에서 사용할 시퀀스 이름(DB 의 시퀀스 이름이 아님!)
-        sequenceName = "MEMBERS_SEQ",   // 오라클에서 사용할 시퀀스 이름
-        initialValue = 10,				// 초기값(오라클 시퀀스의 start with 값과 동일)
-        allocationSize = 1				// 증가값(오라클 시퀀스의 increment by 값과 동일)
-)
-public class Member {
+    @SequenceGenerator(
+            name = "MEMBERS_SEQ_GENERATOR", // JPA 에서 사용할 시퀀스 이름(DB 의 시퀀스 이름이 아님!)
+            sequenceName = "MEMBERS_SEQ",   // 오라클에서 사용할 시퀀스 이름
+            initialValue = 200,				// 초기값(오라클 시퀀스의 start with 값과 동일)
+            allocationSize = 1				// 증가값(오라클 시퀀스의 increment by 값과 동일)
+    )
+    public class Member {
 
     // Member 클래스에 필요한 필드
     // 이름
@@ -53,7 +53,7 @@ public class Member {
     // 통장사본 첨부(추후 구현)
     // 마지막 로그인 시간
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO, generator = "MEMBERS_SEQ_GENERATOR") // JPA 시퀀스 이름 지정
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MEMBERS_SEQ_GENERATOR") // JPA 시퀀스 이름 지정
     private Long id;
 
     // 이름

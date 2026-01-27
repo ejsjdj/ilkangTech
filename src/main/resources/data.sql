@@ -283,12 +283,8 @@ WHERE M.employee_number IN ('26-00000', '26-10000')
 AND C.common_code = 'ROLE_ADMIN';
 
 -- 전사 일정 등록
-INSERT INTO IK_SCHEDULE (schedule_id, member_id, schedule_title, schedule_memo, schedule_type, start_date, end_date, reg_date)
-SELECT SEQ_SCHEDULE.NEXTVAL, M.id, '1월 전사 정기 회의', '2026년 상반기 목표 공유 및 부서별 현황 발표', 'COMPANY', TO_DATE('2026-01-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-01-20 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE FROM members M;
 
 -- 개인 일정 등록
-INSERT INTO IK_SCHEDULE (schedule_id, member_id, schedule_title, schedule_memo, schedule_type, start_date, end_date, reg_date)
-SELECT SEQ_SCHEDULE.NEXTVAL, M.id, '개인 업무 정리', '주간 업무 보고서 작성', 'PERSONAL', TO_DATE('2026-01-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-01-21 18:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE FROM members M;
 
 -- 휴가 현황 초기화
 INSERT INTO leave_status (leave_id, common_id, total_leave, used_leave, remain_leave)
@@ -327,6 +323,7 @@ VALUES (SEQ_NOTICE.NEXTVAL, '[안내] 설 연휴 사내 보안 및 전자기기 
 -- 이 방식은 루프 에러(ORA-06550)를 피할 수 있는 가장 확실한 방법입니다.
 INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
 SELECT
+SELECT 
     SEQ_NOTICE.NEXTVAL,
     '공지사항 테스트 게시글 제 ' || LEVEL || '호',
     '이것은 페이징 테스트를 위한 더미 데이터 본문입니다. 번호: ' || LEVEL,
@@ -335,5 +332,65 @@ SELECT
     SYSDATE - (LEVEL / 10), SYSDATE
 FROM DUAL
     CONNECT BY LEVEL <= 98;
+FROM DUAL 
+CONNECT BY LEVEL <= 98;
+
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (1, null, 5, 2, 54, 6, '재직', '2023-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (2, 1, 5, 2, 6, 6, '재직', '2023-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (50, 80, 2, 2, 5, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (52, 81, 2, 2, 5, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (55, 82, 2, 2, 4, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (58, 83, 2, 2, 4, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (60, 50, 3, 2, 3, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (62, 51, 3, 2, 3, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (65, 52, 1, 2, 2, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (68, 53, 1, 2, 2, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (70, 54, 1, 2, 1, 6, '재직', '2024-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (72, 55, 2, 2, 5, 6, '재직', '2025-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (75, 56, 2, 2, 4, 6, '재직', '2025-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (78, 57, 3, 2, 3, 6, '재직', '2025-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (80, 58, 4, 2, 2, 6, '재직', '2025-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 59, 6, 2, 1, 6, '재직', '2025-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 60, 1, 2, 1, 6, '재직', '2026-01-01');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 61, 1, 2, 55, 6, '퇴사', '2025-12-31');
+
+INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 62, 5, 2, 6, 6, '휴직', '2025-11-11');
 
 COMMIT;

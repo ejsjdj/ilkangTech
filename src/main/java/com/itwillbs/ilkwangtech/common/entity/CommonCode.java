@@ -13,8 +13,14 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@SequenceGenerator(
+        name = "common_code_seq_gen",
+        sequenceName = "common_code_seq",
+        initialValue = 100,
+        allocationSize = 1
+)
 public class CommonCode {
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "common_code_seq_gen")
     private Long id; // 공통코드번호
 
     //	@Column(name = "group_code")

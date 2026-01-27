@@ -10,12 +10,18 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "draft_approval_line")
+@SequenceGenerator(
+        name = "draft_approval_line_seq_gen",
+        sequenceName = "draft_approval_line_seq",
+        initialValue = 100,
+        allocationSize = 1
+)
 public class DraftApprovalLineEntity {
 
     // 결재 라인 ID
     // 기본키
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "draft_approval_line_seq_gen")
     private long lineId;
 
     // 결재 양식 종류

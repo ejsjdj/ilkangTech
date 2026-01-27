@@ -3,28 +3,24 @@
 -- [0] 시퀀스 초기화 및 생성 (Oracle 환경에서 data.sql 재실행 시 충돌 방지)
 -- =================================================================================
 -- 이미 존재하는 경우 삭제 후 재생성하여 ORA-00955 에러를 방지합니다.
--- (Oracle 버전이나 환경에 따라 DROP SEQUENCE가 실패할 수 있으므로 주의가 필요합니다.)
 
--- DROP SEQUENCE draft_approval_line_seq;
--- DROP SEQUENCE draft_document_seq;
--- DROP SEQUENCE leave_status_seq;
--- DROP SEQUENCE member_role_seq;
--- DROP SEQUENCE common_code_seq;
+DROP SEQUENCE draft_approval_line_seq;
+DROP SEQUENCE draft_document_seq;
+DROP SEQUENCE leave_status_seq;
+DROP SEQUENCE member_role_seq;
+DROP SEQUENCE common_code_seq;
+DROP SEQUENCE MEMBERS_SEQ;
+DROP SEQUENCE SEQ_SCHEDULE;
+DROP SEQUENCE SEQ_ATTENDANCE;
 
--- CREATE SEQUENCE draft_approval_line_seq START WITH 100 INCREMENT BY 1;
--- CREATE SEQUENCE draft_document_seq START WITH 100 INCREMENT BY 1;
--- CREATE SEQUENCE leave_status_seq START WITH 100 INCREMENT BY 1;
--- CREATE SEQUENCE member_role_seq START WITH 100 INCREMENT BY 1;
--- CREATE SEQUENCE common_code_seq START WITH 100 INCREMENT BY 1;
-
--- JPA의 spring.jpa.hibernate.ddl-auto 설정이 'create' 또는 'update'일 경우 
--- 엔티티의 @GeneratedValue 설정에 따라 시퀀스가 자동으로 생성될 수 있습니다.
--- 만약 자동 생성되지 않아 'ORA-02289(시퀀스가 존재하지 않습니다)' 에러가 발생하면 위 구문의 주석을 해제하여 사용하십시오.
--- 현재는 'ORA-00955(기존 객체가 이름을 사용 중)' 에러가 발생했으므로 주석 처리하거나 존재 여부를 확인해야 합니다.
-
--- =================================================================================
--- [1] 마스터 데이터 (참조되는 테이블)
--- =================================================================================
+CREATE SEQUENCE draft_approval_line_seq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE draft_document_seq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE leave_status_seq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE member_role_seq START WITH 200 INCREMENT BY 1;
+CREATE SEQUENCE common_code_seq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE MEMBERS_SEQ START WITH 200 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_SCHEDULE START WITH 200 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_ATTENDANCE START WITH 1 INCREMENT BY 1;
 
 -- Common Code (사용자 권한, 메뉴, 게시판 등)
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'MEMBER_ROLE', '사용자권한', '사용자권한 상위코드', 'Y');

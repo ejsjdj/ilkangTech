@@ -17,8 +17,7 @@ public class Position {
     //     (101 기능공 102 기능사 103 선임기능사 104 기능장 105 수석기능장)
 
     @Id
-    private int id;
-
+    private Integer id;
     private String positionName; // "부장", "대리", "사원"
     private String positionType;
     boolean isActive;

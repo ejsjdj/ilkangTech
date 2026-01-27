@@ -35,7 +35,7 @@ import lombok.ToString;
 public class Attendance {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seq_attendance_gen")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_attendance_gen")
     @SequenceGenerator(name = "seq_attendance_gen", sequenceName = "SEQ_ATTENDANCE", allocationSize = 1)
     @Column(name = "attendance_id")
     private Long id;

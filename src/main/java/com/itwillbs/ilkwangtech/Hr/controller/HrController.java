@@ -40,8 +40,8 @@ public class HrController {
     @GetMapping("/appointment/insert/test")
     public void registAppointmentInsert(@AuthenticationPrincipal AccountLogin accountLogin,
                                         @RequestParam("userId") Long userId,
-                                        @RequestParam("newDept") Long newDept,
-                                        @RequestParam("newRank") Long newRank,
+                                        @RequestParam("newDept") int newDept,
+                                        @RequestParam("newRank") int newRank,
                                         @RequestParam("workStatus") String workStatus){
 
         Long approverId = accountLogin.getId();

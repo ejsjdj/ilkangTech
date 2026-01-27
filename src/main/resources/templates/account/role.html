@@ -456,7 +456,26 @@
             if (!confirm('이 직원에게서 권한을 회수하시겠습니까?')) {
                 return;
             }
-            // Implementation...
+
+            fetch(`/account/revokeRole?memberId=${memberId}&roleId=${roleId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // CSRF 토큰이 필요한 경우 여기에 추가해야 함
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('권한이 성공적으로 회수되었습니다.');
+                    loadMembersByRole(); // 목록 새로고침
+                } else {
+                    alert('권한 회수 중 오류가 발생했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버와 통신 중 오류가 발생했습니다.');
+            });
         }
 
         function grantRoleToMember() {
@@ -471,7 +490,29 @@
                 alert('권한을 부여할 직원을 선택하세요.');
                 return;
             }
-            // Implementation...
+
+            if (!confirm('이 직원에게 권한을 부여하시겠습니까?')) {
+                return;
+            }
+
+            fetch(`/account/grantRole?memberId=${memberId}&roleId=${roleId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('권한이 성공적으로 부여되었습니다.');
+                    loadMembersByRole(); // 목록 새로고침
+                } else {
+                    alert('권한 부여 중 오류가 발생했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버와 통신 중 오류가 발생했습니다.');
+            });
         }
     </script>
 </th:block>

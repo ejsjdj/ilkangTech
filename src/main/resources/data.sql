@@ -275,6 +275,13 @@ SELECT member_role_seq.NEXTVAL, M.id, C.id
 FROM members M, common_code C
 WHERE C.common_code = 'ROLE_USER';
 
+-- 특정 사용자(나대표, 김관리)에게 ROLE_ADMIN 권한 추가 부여
+INSERT INTO member_role(id, member_id, member_role_id)
+SELECT member_role_seq.NEXTVAL, M.id, C.id
+FROM members M, common_code C
+WHERE M.employee_number IN ('26-00000', '26-10000')
+AND C.common_code = 'ROLE_ADMIN';
+
 -- 전사 일정 등록
 INSERT INTO IK_SCHEDULE (schedule_id, member_id, schedule_title, schedule_memo, schedule_type, start_date, end_date, reg_date)
 SELECT SEQ_SCHEDULE.NEXTVAL, M.id, '1월 전사 정기 회의', '2026년 상반기 목표 공유 및 부서별 현황 발표', 'COMPANY', TO_DATE('2026-01-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_DATE('2026-01-20 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE FROM members M;

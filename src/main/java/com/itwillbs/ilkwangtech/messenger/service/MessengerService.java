@@ -6,11 +6,16 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
+import com.itwillbs.ilkwangtech.messenger.dto.ChatMessageResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
@@ -96,8 +101,24 @@ public class MessengerService {
 	}
     
  // 1. 과거 채팅 내역 가져오기
-    public List<ChatMessage> getChatHistory(Long roomId) {
-        return chatMessageRepository.findByRoomIdOrderByCreatedAtAsc(roomId);
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponseDTO> getChatHistory(Long roomId, Long myId) {
+        // 나의 참여 정보(joinedAt)를 먼저 가져옵니다.
+        ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, myId))
+                .orElseThrow(() -> new RuntimeException("참여 정보가 없습니다."));
+
+        // 간단해진 레포지토리 메서드 호출
+        List<ChatMessage> messages = chatMessageRepository.findHistory(roomId, membership.getJoinedAt());
+
+        return messages.stream().map(msg -> {
+            ChatMessageResponseDTO dto = new ChatMessageResponseDTO();
+            dto.setMemberId(msg.getMemberId());
+            dto.setContent(msg.getContent());
+            dto.setMsgType(msg.getMsgType());
+            dto.setCreatedAt(msg.getCreatedAt());
+            dto.setMemberName(messengerRepository.findById(msg.getMemberId()).map(Member::getName).orElse("알 수 없는 사용자"));
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     // 2. 채팅방 상단에 표시할 이름 결정하기
@@ -123,53 +144,44 @@ public class MessengerService {
     
     @Transactional(readOnly = true)
     public List<ChatRoomListResponseDTO> getChatRoomList(Long myId) {
-        // 1. 1:1 채팅방 조회 (기존 로직)
-        List<ChatRoom> directRooms = chatRoomRepository.findByDirectEmp1OrDirectEmp2(myId, myId);
+        // 1. 내가 참여 중인 모든 방의 멤버 정보 조회
+        List<ChatRoomMember> memberships = chatRoomMemberRepository.findByMemberId(myId);
 
-        // 2. 그룹 채팅방 조회 (ChatRoomMember 테이블 활용)
-        // 본인이 멤버로 등록된 모든 그룹 방의 ID를 가져와서 해당 ChatRoom 엔티티들을 조회합니다.
-        List<ChatRoomMember> memberships = chatRoomMemberRepository.findByIdMemberId(myId);
-        List<ChatRoom> groupRooms = memberships.stream()
-                .map(m -> chatRoomRepository.findById(m.getId().getRoomId()).orElse(null))
-                .filter(Objects::nonNull)
-                .filter(room -> "GROUP".equals(room.getRoomType())) // 그룹방만 필터링
-                .collect(Collectors.toList());
+        return memberships.stream().map(m -> {
+            ChatRoom room = chatRoomRepository.findById(m.getId().getRoomId()).orElse(null);
+            if (room == null) return null;
 
-        // 3. 두 리스트 합치기
-        List<ChatRoom> allRooms = new ArrayList<>();
-        allRooms.addAll(directRooms);
-        allRooms.addAll(groupRooms);
-
-        // 4. DTO 변환 및 정렬 (기존 로직 유지)
-        return allRooms.stream().distinct().map(room -> { // 중복 제거(distinct) 추가
             ChatRoomListResponseDTO dto = new ChatRoomListResponseDTO();
             dto.setRoomId(room.getId());
 
             if ("DIRECT".equals(room.getRoomType())) {
                 Long partnerId = room.getDirectEmp1().equals(myId) ? room.getDirectEmp2() : room.getDirectEmp1();
                 String partnerName = messengerRepository.findById(partnerId)
-                        .map(m -> m.getName()).orElse("알 수 없는 사용자");
+                        .map(Member::getName).orElse("알 수 없는 사용자");
                 dto.setRoomTitle(partnerName);
             } else {
-                // 그룹방인 경우 설정된 방 이름 사용
                 dto.setRoomTitle(room.getRoomName() != null ? room.getRoomName() : "그룹 채팅방");
             }
 
-            // 마지막 메시지 처리 로직 (기존과 동일)
-            chatMessageRepository.findFirstByRoomIdOrderByCreatedAtDesc(room.getId())
-                .ifPresent(last -> {
-                    dto.setLastMessage(last.getContent());
-                    dto.setLastTime(last.getCreatedAt().format(DateTimeFormatter.ofPattern("a h:mm")));
-                    dto.setLastMessageAt(last.getCreatedAt());
-                });
-
-            if (dto.getLastMessageAt() == null) {
-                dto.setLastMessageAt(room.getCreatedAt()); 
+            List<ChatMessage> latest = chatMessageRepository.findLatest(room.getId(), m.getJoinedAt(), PageRequest.of(0, 1));
+            
+            // 데이터가 있을 때만 DTO에 세팅합니다.
+            if (!latest.isEmpty()) {
+                ChatMessage last = latest.get(0);
+                dto.setLastMessage(last.getContent());
+                dto.setLastTime(last.getCreatedAt().format(DateTimeFormatter.ofPattern("a h:mm")));
+                dto.setLastMessageAt(last.getCreatedAt());
             }
 
             return dto;
         })
-        .sorted((a, b) -> b.getLastMessageAt().compareTo(a.getLastMessageAt()))
+        .filter(Objects::nonNull)
+        // 4. 마지막 메시지 시간 순으로 정렬 (최신순)
+        .sorted((a, b) -> {
+            if (a.getLastMessageAt() == null) return 1;
+            if (b.getLastMessageAt() == null) return -1;
+            return b.getLastMessageAt().compareTo(a.getLastMessageAt());
+        })
         .collect(Collectors.toList());
     }
     
@@ -196,5 +208,38 @@ public class MessengerService {
         }
 
         return savedRoom.getId();
+    }
+
+    @Transactional
+    public ChatBroadcastMessageDTO leaveChatRoom(Long roomId, Long memberId) {
+        // 1. 나가는 사람의 이름 찾기
+        String memberName = messengerRepository.findById(memberId)
+                .map(Member::getName).orElse("알 수 없는 사용자");
+
+        // 2. 참여자 테이블에서 삭제
+        chatRoomMemberRepository.deleteById(new ChatRoomMemberId(roomId, memberId));
+
+        // 3. 시스템 메시지 생성 및 DB 저장
+        ChatMessage systemMsg = new ChatMessage();
+        systemMsg.setRoomId(roomId);
+        systemMsg.setMemberId(memberId); // 누가 나갔는지 기록
+        systemMsg.setContent(memberName + "님이 퇴장하셨습니다.");
+        systemMsg.setMsgType("SYSTEM"); // ★ 타입을 SYSTEM으로 지정
+        chatMessageRepository.save(systemMsg);
+
+        // 4. 웹소켓 전송을 위한 DTO 반환
+        ChatBroadcastMessageDTO dto = new ChatBroadcastMessageDTO();
+        dto.setRoomId(roomId);
+        dto.setContent(systemMsg.getContent());
+        dto.setMsgType("SYSTEM");
+        dto.setFormattedTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("a h:mm")));
+        return dto;
+    }
+
+    @Transactional
+    public void updateRoomName(Long roomId, String newName) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+        room.setRoomName(newName); // 엔티티 수정 시 Dirty Checking으로 자동 업데이트
     }
 }

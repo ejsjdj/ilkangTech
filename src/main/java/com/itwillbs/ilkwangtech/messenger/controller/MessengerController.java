@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.messenger.controller;
 
 import java.util.List;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,12 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
+import com.itwillbs.ilkwangtech.messenger.dto.ChatMessageResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.GroupChatCreateRequestDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
-import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
-import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
-import com.itwillbs.ilkwangtech.messenger.service.ChatMessageService;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
+import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
 import com.itwillbs.ilkwangtech.messenger.service.MessengerService;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -28,9 +30,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class MessengerController {
 	
 	private final MessengerService messengerService;
+	private final SimpMessagingTemplate simpMessagingTemplate;
+	private final ChatRoomMemberRepository chatRoomMemberRepository;
 	
-	public MessengerController(MessengerService messengerService) {
+	public MessengerController(MessengerService messengerService, SimpMessagingTemplate simpMessagingTemplate, ChatRoomMemberRepository chatRoomMemberRepository) {
 		this.messengerService = messengerService;
+		this.simpMessagingTemplate = simpMessagingTemplate;
+		this.chatRoomMemberRepository = chatRoomMemberRepository;
 	}
 
 	@GetMapping("/memberList")
@@ -84,10 +90,11 @@ public class MessengerController {
 	                       Model model) {
 	    Long myId = login.getId();
 
-	    // 상단 타이틀용 이름과 과거 내역 조회
 	    model.addAttribute("displayTitle", messengerService.getRoomDisplayTitle(roomId, myId));
-	    model.addAttribute("chatHistory", messengerService.getChatHistory(roomId));
 	    
+	    List<ChatMessageResponseDTO> chatHistory = messengerService.getChatHistory(roomId, myId); 
+	    
+	    model.addAttribute("chatHistory", chatHistory);
 	    model.addAttribute("roomId", roomId);
 	    model.addAttribute("myMemberId", myId);
 
@@ -95,11 +102,12 @@ public class MessengerController {
 	}
 	
 	// [추가] 특정 방의 채팅 내역을 JSON으로 반환하는 API
-    @GetMapping("/api/chat/{roomId}")
-    @ResponseBody
-    public List<ChatMessage> getChatHistoryApi(@PathVariable("roomId") Long roomId) {
-        return messengerService.getChatHistory(roomId);
-    }
+	@GetMapping("/api/chat/{roomId}")
+	@ResponseBody
+	public List<ChatMessageResponseDTO> getChatHistoryApi(@PathVariable("roomId") Long roomId,
+	                                                       @AuthenticationPrincipal AccountLogin login) {
+	    return messengerService.getChatHistory(roomId, login.getId()); 
+	}
 
     @PostMapping("/createGroup")
     @ResponseBody // JSON 데이터를 반환하기 위해 필요
@@ -115,6 +123,24 @@ public class MessengerController {
                         );
         
         return newRoomId; // 생성된 방 번호를 반환하여 JS에서 창을 열게 함
+    }
+    
+    
+    @PostMapping("/api/leave/{roomId}")
+    @ResponseBody
+    public String leaveRoomApi(@PathVariable("roomId") Long roomId, 
+                               @AuthenticationPrincipal AccountLogin login) {
+        // 1. 서비스 호출하여 DB에서 삭제
+    	ChatBroadcastMessageDTO systemMsg = messengerService.leaveChatRoom(roomId, login.getId());
+    	simpMessagingTemplate.convertAndSend("/topic/chatroom/" + roomId, systemMsg);
+    	
+    	List<ChatRoomMember> members = chatRoomMemberRepository.findByRoomId(roomId);
+        for (ChatRoomMember m : members) {
+            // 각 멤버의 개인 리스트 갱신 토픽으로 시스템 메시지 전송
+            simpMessagingTemplate.convertAndSend("/topic/user/" + m.getId().getMemberId() + "/list", systemMsg);
+        }
+    	
+        return "success";
     }
 
 }

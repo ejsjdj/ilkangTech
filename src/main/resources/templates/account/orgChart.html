@@ -1,45 +1,400 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <title>조직도</title>
+    <th:block layout:fragment="style">
+        <style>
+            .org-container {
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 30px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                min-height: calc(100vh - 140px);
+                position: relative;
+            }
+
+            .org-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 30px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #f1f5f9;
+            }
+
+            .page-title {
+                font-size: 24px;
+                font-weight: 800;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .page-title::before {
+                content: '';
+                width: 4px;
+                height: 24px;
+                background: #3b82f6;
+                border-radius: 2px;
+            }
+
+            .org-chart {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+
+            /* 대표 카드 */
+            .org-ceo {
+                min-width: 220px;
+                background: linear-gradient(135deg, #1e293b, #334155);
+                color: #fff;
+                border-radius: 12px;
+                padding: 16px 24px;
+                text-align: center;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                position: relative;
+                z-index: 1;
+            }
+
+            .org-ceo::after {
+                content: '';
+                position: absolute;
+                bottom: -30px;
+                left: 50%;
+                width: 2px;
+                height: 30px;
+                background: #cbd5e1;
+                transform: translateX(-50%);
+            }
+
+            .org-ceo-role {
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                margin-bottom: 4px;
+                color: #94a3b8;
+            }
+
+            .org-ceo-name {
+                font-size: 18px;
+                font-weight: 700;
+                margin-bottom: 2px;
+            }
+
+            .org-ceo-title {
+                font-size: 13px;
+                color: #cbd5e1;
+            }
+
+            /* 본부 전체 레이아웃 */
+            .divisions-row {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+
+            .division-column {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                width: 100%;
+            }
+
+            /* 본부 카드 */
+            .division-card {
+                min-width: 180px;
+                background: #3b82f6;
+                color: #fff;
+                border-radius: 10px;
+                padding: 12px 18px;
+                text-align: center;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            }
+
+            .division-card--mes {
+                background: #10b981;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            }
+
+            .division-name {
+                font-size: 15px;
+                font-weight: 700;
+                margin-bottom: 4px;
+            }
+
+            .division-head {
+                font-size: 12px;
+                display: flex;
+                justify-content: center;
+                gap: 6px;
+                opacity: 0.9;
+            }
+
+            .division-head span:first-child {
+                border-right: 1px solid rgba(255, 255, 255, 0.3);
+                padding-right: 6px;
+            }
+
+            /* 부서 카드 리스트 레이아웃 */
+            .departments-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 16px;
+                width: 100%;
+                max-width: 1200px;
+                justify-content: center;
+            }
+
+            /* 부서 카드 */
+            .dept-card {
+                background: #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                border: 1px solid #e2e8f0;
+                transition: all 0.2s ease;
+            }
+
+            .dept-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+                border-color: #cbd5e1;
+            }
+
+            .dept-header {
+                background: #f8fafc;
+                color: #334155;
+                padding: 10px;
+                font-size: 13px;
+                font-weight: 700;
+                text-align: center;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .dept-card--blue { border-top: 3px solid #3b82f6; }
+            .dept-card--green { border-top: 3px solid #10b981; }
+
+            .member-list {
+                list-style: none;
+                padding: 8px;
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            .member-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                padding: 6px 4px;
+                border-bottom: 1px solid #f1f5f9;
+            }
+
+            .member-row:last-child {
+                border-bottom: none;
+            }
+
+            .member-name {
+                color: #1e293b;
+                font-weight: 600;
+            }
+
+            .member-title {
+                color: #64728b;
+                font-size: 11px;
+            }
+
+            /* 버튼 그룹 */
+            .header-actions {
+                display: flex;
+                gap: 8px;
+            }
+
+            .toggle-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+                font-weight: 600;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                background: #fff;
+                color: #64748b;
+            }
+
+            .toggle-btn:hover {
+                background: #f8fafc;
+                border-color: #cbd5e1;
+            }
+
+            .toggle-btn.active {
+                background: #3b82f6;
+                color: #fff;
+                border-color: #3b82f6;
+            }
+
+            .toggle-btn.active.btn-mes {
+                background: #10b981;
+                border-color: #10b981;
+            }
+
+            /* 스크롤바 정돈 */
+            .member-list::-webkit-scrollbar { width: 4px; }
+            .member-list::-webkit-scrollbar-track { background: transparent; }
+            .member-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+            @media (max-width: 768px) {
+                .org-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+                .header-actions { width: 100%; }
+                .toggle-btn { flex: 1; }
+            }
+        </style>
+    </th:block>
 </head>
 <body>
+<div layout:fragment="content">
+    <div class="org-container">
+        <div class="org-header">
+            <div class="page-title">조직도</div>
+            <div id="org-actions-portal"></div>
+        </div>
+        <div id="root"></div>
+    </div>
 
-<div class="treeOrg">
+    <!-- React / ReactDOM / Babel CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <div class="top"></div>
+    <!-- 서버 데이터를 전역 변수로 전달 -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.ORG_DATA = /*[[${orgData}]]*/ null;
+        /*]]>*/
+    </script>
 
-    <div class="mid"></div>
+    <!-- React 코드 -->
+    <script type="text/babel">
+        /*<![CDATA[*/
+        const { useState } = React;
+        const { createPortal } = ReactDOM;
 
-    <div class="bottom"></div>
+        const ORG_DATA = window.ORG_DATA || {
+            ceo: { name: "", title: "" },
+            divisions: []
+        };
 
+        const MemberRow = ({ member }) => (
+            <li className="member-row">
+                <span className="member-name">{member.name}</span>
+                <span className="member-title">{member.title}</span>
+            </li>
+        );
+
+        const DepartmentCard = ({ dept, theme }) => {
+            const cardClass = "dept-card" + (theme === "green" ? " dept-card--green" : " dept-card--blue");
+            return (
+                <div className={cardClass}>
+                    <div className="dept-header">{dept.name}</div>
+                    <ul className="member-list">
+                        {dept.members && dept.members.length > 0 ? (
+                            dept.members.map((m, idx) => (
+                                <MemberRow key={idx} member={m} />
+                            ))
+                        ) : (
+                            <li className="member-row" style={{justifyContent: 'center', color: '#ccc'}}>직원 없음</li>
+                        )}
+                    </ul>
+                </div>
+            );
+        };
+
+        const DivisionColumn = ({ division }) => {
+            const cardClass = "division-card" + (division.theme === "green" ? " division-card--mes" : "");
+            return (
+                <div className="division-column">
+                    <div className={cardClass}>
+                        <div className="division-name">{division.name}</div>
+                        <div className="division-head">
+                            <span>{division.headName}</span>
+                            <span>{division.headTitle}</span>
+                        </div>
+                    </div>
+
+                    <div className="departments-grid">
+                        {division.departments.map((dept) => (
+                            <DepartmentCard
+                                key={dept.id}
+                                dept={dept}
+                                theme={division.theme}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const OrgChart = () => {
+            const org = ORG_DATA;
+            const initialDivisionId = org.divisions && org.divisions.length > 0 ? org.divisions[0].id : "";
+            const [selectedDivisionId, setSelectedDivisionId] = useState(initialDivisionId);
+            const selectedDivision = org.divisions ? org.divisions.find(d => d.id === selectedDivisionId) : null;
+
+            if (!org.divisions || org.divisions.length === 0) {
+                return <div style={{ textAlign: 'center', padding: '40px' }}>조직도 데이터를 불러올 수 없습니다.</div>;
+            }
+
+            const actionsPortal = document.getElementById('org-actions-portal');
+
+            return (
+                <div className="org-chart-wrapper">
+                    {actionsPortal && createPortal(
+                        <div className="header-actions">
+                            {org.divisions.map(div => (
+                                <button
+                                    key={div.id}
+                                    className={"toggle-btn" + (div.theme === "green" ? " btn-mes" : "") + (selectedDivisionId === div.id ? " active" : "")}
+                                    onClick={() => setSelectedDivisionId(div.id)}
+                                    type="button"
+                                >
+                                    {div.name}
+                                </button>
+                            ))}
+                        </div>,
+                        actionsPortal
+                    )}
+
+                    <div className="org-chart">
+                        <div className="org-ceo">
+                            <div className="org-ceo-role">CEO</div>
+                            <div className="org-ceo-name">{org.ceo.name}</div>
+                            <div className="org-ceo-title">{org.ceo.title}</div>
+                        </div>
+
+                        <div className="divisions-row">
+                            {selectedDivision && (
+                                <DivisionColumn key={selectedDivision.id} division={selectedDivision} />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<OrgChart />);
+        /*]]>*/
+    </script>
 </div>
-
 </body>
 </html>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script th:inline="javascript">
-
-    document.addEventListener('DOMContentLoaded', () => {
-       fetch('/account/orgCharJson')
-           .then(response => response.json())
-           .then(data => {
-               console.log(data);
-
-               const departments = data.departments;
-               const employees = data.employees;
-
-               departments.forEach(d => {
-                   console.log(d.id, d.departmentName);
-               });
-           })
-           .catch(err => {
-               console('error', error);
-           });
-    });
-
-    document.addEventListener() {
-
-    }
-
-</script>

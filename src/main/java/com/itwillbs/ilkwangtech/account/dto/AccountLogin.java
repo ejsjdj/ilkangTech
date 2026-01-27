@@ -32,7 +32,7 @@ public class AccountLogin implements UserDetails {
 	private String phoneNumber;     	// 전화번호
 	private String department;      	// 부서
 	private String position;        	// 직급
-	private int bank;            		// 은행
+	private String bank;            	// 은행
 	private String accountNumber;   	// 계좌번호
 	private LocalDateTime lastLogin;	// 마지막 로그인시간
 

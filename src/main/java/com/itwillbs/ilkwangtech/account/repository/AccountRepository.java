@@ -44,4 +44,7 @@ public interface AccountRepository extends JpaRepository<Member, Long> {
 	Optional<Member> getMemberById(Long memberId);
 
 	Optional<Member> getMemberByEmployeeNumber(String employeeNumber);
+
+	@Query(value = "SELECT COALESCE(MAX(TO_NUMBER(SUBSTR(employee_number, INSTR(employee_number, '-') + 1))), 10000) FROM members", nativeQuery = true)
+	int findMaxEmployeeIdx();
 }

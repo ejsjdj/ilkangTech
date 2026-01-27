@@ -31,8 +31,6 @@ public class AccountServiceImpl implements AccountService {
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
 
-	static int idx = 100;
-
 	public AccountRegisterResponse register(AccountRegisterRequest req) {
 
 		// 컨트롤러에서 올바른 값이 넘어왔다면 DB에 해당 정보가 중복되는게 있는지 확인
@@ -43,7 +41,8 @@ public class AccountServiceImpl implements AccountService {
 			res = new AccountRegisterResponse();
 		}
 
-		req.setEmployeeNumber(++idx);
+		int maxIdx = accountRepository.findMaxEmployeeIdx();
+		req.setEmployeeNumber(maxIdx + 1);
 		Member member = modelMapper.map(req, Member.class);
 
 		String rawPassword = req.getPassword();
@@ -58,6 +57,18 @@ public class AccountServiceImpl implements AccountService {
 		res.setMessage("회원가입 성공");
 
 		return res;
+	}
+
+	@Override
+	public boolean updateMyInfo(Long id, String email, String phoneNumber) {
+		Member member = accountRepository.findById(id)
+				.orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. ID: " + id));
+
+		member.setEmail(email);
+		member.setPhoneNumber(phoneNumber);
+
+		accountRepository.save(member);
+		return true;
 	}
 
 	private AccountRegisterResponse validateDuplicates(AccountRegisterRequest req) {

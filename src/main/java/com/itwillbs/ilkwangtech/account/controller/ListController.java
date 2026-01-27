@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountDetail;
+import com.itwillbs.ilkwangtech.account.dto.AccountDetailResponse;
 import com.itwillbs.ilkwangtech.account.service.ListService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -26,6 +28,13 @@ public class ListController {
     @GetMapping("/account/list")
     public String accountList(Model model) {
         return "/account/list";
+    }
+
+    @GetMapping("/account/detail/{id}")
+    public String accountDetail(@PathVariable("id") Long id, Model model) {
+        AccountDetailResponse detail = listService.getAccountDetail(id);
+        model.addAttribute("employee", detail);
+        return "/account/detail";
     }
 
     @GetMapping("/account/getList")

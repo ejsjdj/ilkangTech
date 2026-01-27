@@ -35,7 +35,7 @@ import lombok.ToString;
 public class Attendance {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seq_attendance_gen")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_attendance_gen")
     @SequenceGenerator(name = "seq_attendance_gen", sequenceName = "SEQ_ATTENDANCE", allocationSize = 1)
     @Column(name = "attendance_id")
     private Long id;
@@ -98,4 +98,13 @@ public class Attendance {
         this.returnTime = LocalDateTime.now(); 
     }
 
+    // 5. 출근 시간 수정
+    public void changeInTime(LocalDateTime inTime){
+        this.inTime = inTime;
+    }
+
+    // 6. 퇴근 시간 수정
+    public void changeOutTime(LocalDateTime outTime){
+        this.outTime = outTime;
+    }
 }

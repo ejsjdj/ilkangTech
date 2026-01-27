@@ -13,7 +13,7 @@ import lombok.Setter;
 public class LeaveEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long leaveId;
 
     // 부서별, 전직원

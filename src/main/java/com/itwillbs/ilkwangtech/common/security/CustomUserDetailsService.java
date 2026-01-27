@@ -10,9 +10,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.account.entity.Bank;
 import com.itwillbs.ilkwangtech.account.entity.Department;
 import com.itwillbs.ilkwangtech.account.entity.Position;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
+import com.itwillbs.ilkwangtech.account.repository.BankRepository;
 import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
 import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
@@ -28,9 +30,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 	private final AccountRepository accountRepository;
 	private final ModelMapper modelMapper;
 	
-	// 부서, 직급 관련 주입
+	// 부서, 직급, 은행 관련 주입
 	private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
+	private final BankRepository bankRepository;
 	
 	@Override
 	public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
@@ -43,9 +46,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 		AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
 		
 		// 부서 이름 변환
-        int deptId = member.getDepartment();
-        if (deptId > 0) { 
-            Department dept = departmentRepository.findById(deptId).orElse(null);
+        if (member.getDepartment() != null && member.getDepartment() > 0) { 
+            Department dept = departmentRepository.findById(member.getDepartment()).orElse(null);
             
             if (dept != null) {
                 // 로그인 후 AccountLogin 에서 문자로 변환
@@ -54,15 +56,24 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // 직급 이름 변환
-        int posId = member.getPosition();
-        if (posId > 0) { 
-            Position pos = positionRepository.findById(posId).orElse(null);
+        if (member.getPosition() != null && member.getPosition() > 0) { 
+            Position pos = positionRepository.findById(member.getPosition()).orElse(null);
             
             if (pos != null) {
                 // 로그인 후 AccountLogin 에서 문자로 변환
                 accountLogin.setPosition(pos.getPositionName());
             }
         }
+
+		// 은행 이름 변환
+		if (member.getBank() != null && member.getBank() > 0) {
+			Bank bank = bankRepository.findById(member.getBank()).orElse(null);
+
+			if (bank != null) {
+				// 로그인 후 AccountLogin 에서 문자로 변환
+				accountLogin.setBank(bank.getBankName());
+			}
+		}
 
 		return accountLogin;
 	}

@@ -1,8 +1,8 @@
-
 -- =================================================================================
 -- [0] 시퀀스 초기화 및 생성 (Oracle 환경에서 data.sql 재실행 시 충돌 방지)
 -- =================================================================================
 -- 이미 존재하는 경우 삭제 후 재생성하여 ORA-00955 에러를 방지합니다.
+
 
 DROP SEQUENCE draft_approval_line_seq;
 DROP SEQUENCE draft_document_seq;
@@ -12,6 +12,7 @@ DROP SEQUENCE common_code_seq;
 DROP SEQUENCE MEMBERS_SEQ;
 DROP SEQUENCE SEQ_SCHEDULE;
 DROP SEQUENCE SEQ_ATTENDANCE;
+DROP SEQUENCE SEQ_NOTICE;
 
 CREATE SEQUENCE draft_approval_line_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE draft_document_seq START WITH 100 INCREMENT BY 1;
@@ -21,6 +22,7 @@ CREATE SEQUENCE common_code_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE MEMBERS_SEQ START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_SCHEDULE START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_ATTENDANCE START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_NOTICE START WITH 1 INCREMENT BY 1;
 
 -- Common Code (사용자 권한, 메뉴, 게시판 등)
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'MEMBER_ROLE', '사용자권한', '사용자권한 상위코드', 'Y');
@@ -300,5 +302,31 @@ INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUE
 INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 2, 2);
 INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 1);
 INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 11, 2);
+
+COMMIT;
+
+-- [1] 고정 게시글 3개 등록 (is_pinned = 1)
+INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
+VALUES (SEQ_NOTICE.NEXTVAL, '[중요] 전사 통합 ERP 시스템 점검 안내', '시스템 안정화를 위한 정기 점검이 예정되어 있습니다.', '이순신', '사장', '관리부', 120, 1, 1, TO_TIMESTAMP('2026-01-26 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE);
+
+INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
+VALUES (SEQ_NOTICE.NEXTVAL, '[공지] 2026년 상반기 핵심 경영 목표 공유', '금일 전사 회의에서 발표된 경영 목표 자료입니다.', '이순신', '사장', '관리부', 350, 1, 1, TO_TIMESTAMP('2026-01-25 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE);
+
+INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
+VALUES (SEQ_NOTICE.NEXTVAL, '[안내] 설 연휴 사내 보안 및 전자기기 점검 지침', '연휴 기간 중 보안 사고 예방을 위해 지침을 준수해 주세요.', '넬슨', '사장', '관리부', 85, 1, 0, TO_TIMESTAMP('2026-01-24 10:30:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE);
+
+
+-- [2] 일반 게시글 98개 등록 (Oracle 전용 CONNECT BY LEVEL 방식)
+-- 이 방식은 루프 에러(ORA-06550)를 피할 수 있는 가장 확실한 방법입니다.
+INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
+SELECT 
+    SEQ_NOTICE.NEXTVAL,
+    '공지사항 테스트 게시글 제 ' || LEVEL || '호',
+    '이것은 페이징 테스트를 위한 더미 데이터 본문입니다. 번호: ' || LEVEL,
+    '넬슨', '사장', '관리부', MOD(LEVEL, 50), 0,
+    CASE WHEN MOD(LEVEL, 3) = 0 THEN 1 ELSE 0 END,
+    SYSDATE - (LEVEL / 10), SYSDATE
+FROM DUAL 
+CONNECT BY LEVEL <= 98;
 
 COMMIT;

@@ -23,7 +23,7 @@ public class NoticeController {
 	private final NoticeService noticeService;
 	
 	@GetMapping("/list")
-	public String list(@RequestParam(defaultValue = "0") int page, Model model, 
+	public String list(@RequestParam(value = "page", defaultValue = "0") int page, Model model, 
 	                   @AuthenticationPrincipal AccountLogin loginMember) {
 	    
 	    // 고정 게시글 및 일반 리스트 조회

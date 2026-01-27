@@ -2,18 +2,39 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
-import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
 
-// 컨트롤러에서는 사용자가 요청을 하면 그 요청에 맞는 함수를 AccountService 에서 호출을 한다.
-// AccountService 에서는 컨트롤러가 받은 요청을 처리를 할때
-// 세션에 관련된 것들은 helper 패키지에 SessionAccountHelper 를 호출해 처리한다.
-// 암호화와 관련된 작업은 util 패키지에 EncrptionUtils 를 호출해 처리한다.
-// 그 외에 기타사항은 자체적으로 처리한다.
-// 최종적으로 DB 에 CRUD 기능은 repository 를 이용한다.
+/**
+ * 계정 관리 비즈니스 로직을 정의한 서비스 인터페이스
+ * 회원가입, 내 정보 수정, 본인 확인 등의 기능을 정의합니다.
+ */
 public interface AccountService {
 
+    /**
+     * 새로운 사원을 등록(회원가입)합니다.
+     *
+     * @param request 회원가입 정보가 담긴 DTO
+     * @return 등록 성공 여부 및 사원번호 등이 포함된 응답 DTO
+     */
     AccountRegisterResponse register(AccountRegisterRequest request);
 
+    /**
+     * 사원의 개인 정보를 수정합니다. (이메일, 전화번호)
+     *
+     * @param id 사원의 고유 ID
+     * @param email 수정할 이메일 주소
+     * @param phoneNumber 수정할 전화번호
+     * @return 수정 성공 여부
+     */
     boolean updateMyInfo(Long id, String email, String phoneNumber);
+
+    /**
+     * 요청받은 ID가 특정 사원번호의 본인인지 확인합니다.
+     * 보안 검증(IDOR 방지) 시 사용됩니다.
+     *
+     * @param id 확인할 회원의 고유 ID
+     * @param employeeNumber 비교 대상이 될 사원번호
+     * @return 본인 여부
+     */
+    boolean isSelf(Long id, String employeeNumber);
 
 }

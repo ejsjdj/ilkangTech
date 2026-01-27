@@ -38,8 +38,12 @@ public class DepartmentServiceImpl implements DepartmentService {
         // 대표이사 찾기 (부서 0 소속 중 가장 높은 직급)
         List<Member> allMembers = memberRepository.findAll();
         List<Member> ceos = allMembers.stream()
-                .filter(m -> m.getDepartment() != null && m.getDepartment() == 0)
-                .sorted((m1, m2) -> m1.getPosition().compareTo(m2.getPosition()))
+                .filter(m -> m.getDepartment() != null && m.getDepartment().equals(0))
+                .sorted((m1, m2) -> {
+                    if (m1.getPosition() == null) return 1;
+                    if (m2.getPosition() == null) return -1;
+                    return m1.getPosition().compareTo(m2.getPosition());
+                })
                 .collect(Collectors.toList());
         
         String ceoName = "미지정";
@@ -55,9 +59,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         List<OrgChartDTO.DivisionDTO> divisions = new ArrayList<>();
 
-        // 상위 부서들 (parent_department가 '0'이거나 null인 부서들 중 0을 제외)
+        // 상위 부서들 (parent_department가 0이거나 null인 부서들 중 0을 제외)
         List<Department> mainDepts = allDepts.stream()
-                .filter(d -> d.getId() != 0 && ("0".equals(d.getParentDepartment()) || d.getParentDepartment() == null))
+                .filter(d -> d.getId() != 0 && (Integer.valueOf(0).equals(d.getParentDepartment()) || d.getParentDepartment() == null))
                 .filter(Department::isActive)
                 .sorted((d1, d2) -> d1.getId().compareTo(d2.getId())) // 상위 부서 ID 순 정렬 추가
                 .collect(Collectors.toList());
@@ -86,7 +90,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         // 본부장 찾기 (해당 부서 소속 중 가장 높은 직급)
         List<Member> divMembers = allMembers.stream()
                 .filter(m -> m.getDepartment() != null && m.getDepartment().equals(divId))
-                .sorted((m1, m2) -> m1.getPosition().compareTo(m2.getPosition()))
+                .sorted((m1, m2) -> {
+                    if (m1.getPosition() == null) return 1;
+                    if (m2.getPosition() == null) return -1;
+                    return m1.getPosition().compareTo(m2.getPosition());
+                })
                 .collect(Collectors.toList());
         
         String headName = "미지정";
@@ -97,15 +105,18 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         // 하위 부서들 (3단계 팀들)
-        String divIdStr = String.valueOf(divId);
         List<OrgChartDTO.DepartmentDTO> departments = allDepts.stream()
-                .filter(d -> d.getParentDepartment() != null && d.getParentDepartment().equals(divIdStr))
+                .filter(d -> d.getParentDepartment() != null && d.getParentDepartment().equals(divId))
                 .filter(Department::isActive) // 활성화된 부서만 표시
                 .sorted((d1, d2) -> d1.getId().compareTo(d2.getId())) // 부서 ID 순 정렬 추가
                 .map(d -> {
                     List<Member> members = allMembers.stream()
                             .filter(m -> m.getDepartment() != null && m.getDepartment().equals(d.getId()))
-                            .sorted((m1, m2) -> m1.getPosition().compareTo(m2.getPosition()))
+                            .sorted((m1, m2) -> {
+                                if (m1.getPosition() == null) return 1;
+                                if (m2.getPosition() == null) return -1;
+                                return m1.getPosition().compareTo(m2.getPosition());
+                            })
                             .collect(Collectors.toList());
 
                     return OrgChartDTO.DepartmentDTO.builder()

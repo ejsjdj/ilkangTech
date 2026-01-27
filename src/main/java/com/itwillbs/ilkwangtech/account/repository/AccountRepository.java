@@ -1,50 +1,69 @@
 package com.itwillbs.ilkwangtech.account.repository;
 
-import java.util.Optional;
-
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.itwillbs.ilkwangtech.member.entity.Member;
+import java.util.Optional;
 
+/**
+ * 사원(Member) 엔티티에 대한 데이터 액세스를 담당하는 리포지토리
+ */
 @Repository
 public interface AccountRepository extends JpaRepository<Member, Long> {
 
-	/*
-	 * [ JPQL(Java Persistence Query Language) ]
-	 * - JPA 에서 제공하는 객체지향 쿼리 언어
-	 * - 기존 SQL 문처럼 DB 테이블을 대상으로 하는 것이 아니라, 엔티티 객체 및 필드를 대상으로 쿼리 작성
-	 * - JPA 가 JPQL 을 해석하여 실제 DB 의 SQL 문장으로 변환하여 실행해준다!
-	 * - 주의! 기본 문법 구조는 SQL 과 거의 동일하나, 테이블명 대신 엔티티명, 테이블의 컬럼명 대신 엔티티의 필드명 지정
+	/**
+	 * 사원번호를 기준으로 사원 정보와 해당 사원의 권한 목록을 함께 조회합니다.
+	 * JOIN FETCH를 사용하여 지연 로딩(LAZY) 문제를 해결하고 한 번의 쿼리로 연관 데이터를 가져옵니다.
+	 *
+	 * @param employeeNumber 조회할 사원번호
+	 * @return 사원 정보 (Optional)
 	 */
-	// Member 엔티티와 연관관계에 있는 MemberRole 에서 LAZY 로딩에 의한 로딩 문제를 해결하는 방법
-	// email 을 기준으로 Member 엔티티와 함께 사용자 권한을 관리하는 MemberRole 엔티티도 함께 조회될 수 있도록 JPQL 을 사용하여 JOIN 구문 작성(JOIN FETCH 활용)
-	// => 이 때, Member 엔티티의 roles 에 해당하는 MemberRole 엔티티의 CommonCode 엔티티(role)까지도 JOIN 해야함
-	@Query("SELECT m FROM Member m"			// FROM 절 뒤에 테이블명 member 가 아닌 엔티티명 Member 로 지정
-			+ " LEFT JOIN FETCH m.roles r"		// Member 엔티티의 roles 컬렉션에 해당하는 MemberRole 엔티티를 즉시 로딩(= EAGER)하여 가져오기 위한 JOIN(즉, JOIN FETCH 는 연관된 엔티티까지 한꺼번에 SELECT)
-			+ " LEFT JOIN FETCH r.role"			// 중간 엔티티에 해당하는 MemberRole 내부의 CommonCode 엔티티를 다시 JOIN 해서 가져오기
-			+ " WHERE m.employeeNumber = :employeeNumber")	// Member 엔티티의 employeeNumber(m.employeeNumber)이 메서드 파라미터로 전달된 email(:email)과 같은 조건 설정
-	// 이 때, :employereNumber 로 지정한 email 파라미터를 JPQL 에서 접근하기 위해 @Param 어노테이션 적용하여 파라미터명 지정(org.springframework.data.repository.query.Param)
+	@Query("SELECT m FROM Member m"
+			+ " LEFT JOIN FETCH m.roles r"
+			+ " LEFT JOIN FETCH r.role"
+			+ " WHERE m.employeeNumber = :employeeNumber")
 	Optional<Member> findByEmployeeNumberWithMemberRoles(@Param("employeeNumber") String employeeNumber);
 
-	// 이메일 중복 확인
+	/**
+	 * 이메일 중복 여부를 확인합니다.
+	 */
 	boolean existsByEmail(String email);
 
-	// 전화번호 중복 확인
+	/**
+	 * 전화번호 중복 여부를 확인합니다.
+	 */
 	boolean existsByPhoneNumber(String phoneNumber);
 
-	// 주민등록번호 중복 확인
+	/**
+	 * 주민등록번호 중복 여부를 확인합니다.
+	 */
 	boolean existsByResidentNumber(String residentNumber);
 
-	// 계좌번호 중복 확인
+	/**
+	 * 계좌번호 중복 여부를 확인합니다.
+	 */
 	boolean existsByAccountNumber(String accountNumber);
 
+	/**
+	 * ID로 사원 정보를 조회합니다.
+	 */
 	Optional<Member> getMemberById(Long memberId);
 
+	/**
+	 * 사원번호로 사원 정보를 조회합니다.
+	 */
 	Optional<Member> getMemberByEmployeeNumber(String employeeNumber);
 
+	/**
+	 * 현재 등록된 사원번호 중 가장 높은 순번을 조회합니다.
+	 * 새로운 사원번호 생성 시 기반 데이터로 사용됩니다.
+	 * 사원번호 형식(예: 26-10000)에서 하이픈 뒤의 숫자를 추출하여 비교합니다.
+	 *
+	 * @return 최대 사원 순번 (데이터가 없을 경우 기본값 10000)
+	 */
 	@Query(value = "SELECT COALESCE(MAX(TO_NUMBER(SUBSTR(employee_number, INSTR(employee_number, '-') + 1))), 10000) FROM members", nativeQuery = true)
 	int findMaxEmployeeIdx();
 }

@@ -1,14 +1,20 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RequestMapping("/account")
+@RestController
 public class GrantController {
 
-    @GetMapping("account/grant")
+    @GetMapping("/grant/{memberId}")
     public String grant() {
+
+
+
         return "/account/grant";
     }
+
 
 }

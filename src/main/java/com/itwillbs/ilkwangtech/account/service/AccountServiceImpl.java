@@ -2,26 +2,19 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
-import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
-import com.itwillbs.ilkwangtech.account.repository.LoginAttemptRepository;
+import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.common.exception.MemberNotFoundException;
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
-import com.itwillbs.ilkwangtech.member.entity.Member;
-
-import lombok.RequiredArgsConstructor;
-
-// 컨트롤러에서는 사용자가 요청을 하면 그 요청에 맞는 함수를 AccountService 에서 호출을 한다.
-// AccountService 에서는 컨트롤러가 받은 요청을 처리를 할때
-// 세션에 관련된 것들은 helper 패키지에 SessionAccountHelper 를 호출해 처리한다.
-// 암호화와 관련된 작업은 util 패키지에 encryptionUtils 를 호출해 처리한다.
-// 그 외에 기타사항은 자체적으로 처리한다.
-// 최종적으로 DB 에 CRUD 기능은 repository 를 이용한다.
-
+/**
+ * AccountService 인터페이스의 구현체
+ * 회원 등록 시 중복 검증, 사원번호 생성, 비밀번호 암호화 등을 수행합니다.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -31,20 +24,34 @@ public class AccountServiceImpl implements AccountService {
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
 
+	/**
+	 * 회원가입(사원 등록) 로직을 수행합니다.
+	 * 1. 이메일, 전화번호 등의 중복 여부를 검증합니다.
+	 * 2. 현재 등록된 최대 사원번호를 조회하여 새로운 사원번호를 생성합니다.
+	 * 3. 비밀번호를 BCrypt로 암호화합니다.
+	 * 4. DB에 사원 정보를 저장합니다.
+	 *
+	 * @param req 회원가입 요청 데이터
+	 * @return 등록 결과 응답 데이터
+	 */
 	public AccountRegisterResponse register(AccountRegisterRequest req) {
 
-		// 컨트롤러에서 올바른 값이 넘어왔다면 DB에 해당 정보가 중복되는게 있는지 확인
+		// 1. 중복 데이터 검증 (이메일, 전화번호, 주민번호, 계좌번호)
 		AccountRegisterResponse res = validateDuplicates(req);
 		if (res != null) {
-			return res;
+			return res; // 중복이 발견되면 에러 메시지가 담긴 응답 반환
 		} else {
 			res = new AccountRegisterResponse();
 		}
 
+		// 2. 새로운 사원번호 생성을 위한 시퀀스 조회 및 설정
 		int maxIdx = accountRepository.findMaxEmployeeIdx();
 		req.setEmployeeNumber(maxIdx + 1);
+		
+		// 3. DTO를 Entity로 변환
 		Member member = modelMapper.map(req, Member.class);
 
+		// 4. 비밀번호 암호화 처리
 		String rawPassword = req.getPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 		member.setPassword(encodedPassword);
@@ -59,6 +66,14 @@ public class AccountServiceImpl implements AccountService {
 		return res;
 	}
 
+	/**
+	 * 사원의 내 정보(이메일, 연락처)를 수정합니다.
+	 *
+	 * @param id 사원 고유 ID
+	 * @param email 수정할 이메일
+	 * @param phoneNumber 수정할 전화번호
+	 * @return 성공 여부
+	 */
 	@Override
 	public boolean updateMyInfo(Long id, String email, String phoneNumber) {
 		Member member = accountRepository.findById(id)
@@ -71,6 +86,26 @@ public class AccountServiceImpl implements AccountService {
 		return true;
 	}
 
+	/**
+	 * 특정 회원이 로그인한 본인인지 확인합니다.
+	 *
+	 * @param id 확인할 회원 ID
+	 * @param employeeNumber 로그인한 사용자의 사원번호
+	 * @return 본인 여부
+	 */
+	@Override
+	public boolean isSelf(Long id, String employeeNumber) {
+		return accountRepository.findById(id)
+				.map(member -> member.getEmployeeNumber().equals(employeeNumber))
+				.orElse(false);
+	}
+
+	/**
+	 * 등록 시 데이터 중복 여부를 확인하는 헬퍼 메서드
+	 *
+	 * @param req 등록 요청 데이터
+	 * @return 중복 발견 시 에러 메시지가 담긴 응답 DTO, 없으면 null
+	 */
 	private AccountRegisterResponse validateDuplicates(AccountRegisterRequest req) {
 
 		AccountRegisterResponse res = new AccountRegisterResponse();
@@ -97,7 +132,5 @@ public class AccountServiceImpl implements AccountService {
 		}
 		return null;
 	}
-
-
 
 }

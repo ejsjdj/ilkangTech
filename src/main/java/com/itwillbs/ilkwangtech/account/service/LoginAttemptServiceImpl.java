@@ -18,13 +18,14 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
         this.accountRepository = accountRepository;
     }
 
+    @Override
     public LoginAttempt getLoginAttempt(Long memberId) {
 
         LoginAttempt loginAttempt = loginAttemptRepository.findByMemberId(memberId)
                 .orElse(null);
 
         if (loginAttempt == null) {
-            Member member = accountRepository.getMemberById(memberId)
+            Member member = accountRepository.findById(memberId)
                     .orElseThrow(() -> new MemberNotFoundException());
             loginAttempt = new LoginAttempt(member);
             loginAttemptRepository.save(loginAttempt);

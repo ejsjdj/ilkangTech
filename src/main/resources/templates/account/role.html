@@ -1,269 +1,521 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 <head>
     <meta charset="UTF-8">
     <title>권한 관리</title>
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS (Optional as it might be in layout, but keeping it for safety if layout doesn't have it) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
-    <style>
-        body {
-            background-color: #f5f5f7;
-        }
-        h1 {
-            font-weight: 600;
-        }
-        .card {
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-        }
-        .card-header {
-            border-bottom: none;
-            background-color: transparent;
-            padding-bottom: 0;
-        }
-        .table {
-            margin-bottom: 0;
-        }
-        .table thead th {
-            white-space: nowrap;
-            background-color: #f8fafc;
-        }
-        .badge-role {
-            font-size: 0.75rem;
-        }
-    </style>
+    <th:block layout:fragment="style">
+        <style>
+            .role-content-root {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                background-color: #f8fafc;
+            }
+
+            .role-container {
+                max-width: 1400px;
+                width: 100%;
+                margin: 0 auto;
+                padding: 10px 24px 20px 24px; /* Reduced top padding */
+            }
+
+            h1 {
+                font-weight: 800;
+                color: #1e293b;
+                letter-spacing: -0.5px;
+            }
+
+            .header-icon-bar {
+                width: 4px;
+                height: 22px;
+                background: linear-gradient(to bottom, #4f46e5, #818cf8);
+                border-radius: 2px;
+                margin-right: 12px;
+            }
+
+            .card {
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                border: 1px solid #e2e8f0;
+                margin-bottom: 20px;
+            }
+
+            .card-body {
+                padding: 24px;
+            }
+
+            .table thead th {
+                white-space: nowrap;
+                background-color: #f8fafc;
+                cursor: pointer;
+                user-select: none;
+                position: relative;
+                font-weight: 700;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #64748b;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .table tbody td {
+                font-size: 13px;
+                color: #334155;
+                vertical-align: middle;
+            }
+
+            /* 컬럼 너비 고정 */
+            .col-empno { width: 120px; }
+            .col-name { width: 100px; }
+            .col-dept { width: 150px; }
+            .col-pos { width: 100px; }
+            .col-role { width: 150px; }
+            .col-action { width: 100px; }
+
+            .badge-role {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 10px;
+                border-radius: 6px;
+            }
+
+            .sort-indicator {
+                display: inline-block;
+                width: 18px;
+                text-align: center;
+                margin-left: 2px;
+                font-size: 0.8rem;
+            }
+
+            .btn-primary {
+                background-color: #4f46e5;
+                border-color: #4f46e5;
+                font-weight: 600;
+            }
+
+            .btn-primary:hover {
+                background-color: #4338ca;
+                border-color: #4338ca;
+            }
+
+            .btn-success {
+                background-color: #10b981;
+                border-color: #10b981;
+                font-weight: 600;
+            }
+
+            .btn-success:hover {
+                background-color: #059669;
+                border-color: #059669;
+            }
+        </style>
+    </th:block>
 </head>
 <body>
 
-<div class="container py-4">
+<th:block layout:fragment="content">
+    <div class="role-content-root">
+        <div class="role-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">권한 관리</h1>
-        <span class="text-muted">ERP · 시스템 설정</span>
-    </div>
-
-    <!-- 1. 기준 권한 선택 -->
-    <section class="card mb-4">
-        <div class="card-body">
-            <h2 class="h5 mb-3">1. 기준 권한 선택</h2>
-
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="roleSelect" class="form-label">권한 선택</label>
-                    <select id="roleSelect" class="form-select">
-                        <option value="">권한을 선택하세요</option>
-                        <option th:each="r : ${roles}"
-                                th:value="${r.id}"
-                                th:text="${r.commonCodeName}">
-                        </option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <button type="button"
-                            class="btn btn-primary w-100"
-                            onclick="loadMembersByRole()">
-                        선택한 권한의 직원 조회
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 2. 선택된 권한을 가진 직원 목록 (회수) -->
-    <section class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h2 class="h5 mb-0">2. 선택한 권한을 가진 직원</h2>
-                    <small class="text-muted" id="selectedRoleLabel"></small>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon-bar"></div>
+                    <div>
+                        <h1 class="mb-0">권한 관리</h1>
+                        <p class="text-muted mb-0" style="font-size: 13px;">ERP · 시스템 설정</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                    <tr>
-                        <th>사원번호</th>
-                        <th>이름</th>
-                        <th>부서</th>
-                        <th>직급</th>
-                        <th>권한</th>
-                        <th class="text-center">권한 회수</th>
-                    </tr>
-                    </thead>
-                    <tbody id="memberTableBody">
-                    <tr th:each="emp : ${memberRoleViews}"
-                        th:data-member-id="${emp.memberId}"
-                        th:data-role-id="${emp.roleId}">
-                        <td th:text="${emp.employeeNumber}">15-20005</td>
-                        <td th:text="${emp.name}">홍길동</td>
-                        <td th:text="${emp.department}">부서</td>
-                        <td th:text="${emp.position}">직급</td>
-                        <td>
-                            <span class="badge bg-secondary badge-role"
-                                  th:text="${emp.description}">
-                                ROLE_USER
-                            </span>
-                        </td>
-                        <td class="text-center">
+            <!-- 1. 기준 권한 선택 -->
+            <section class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3" style="font-weight: 700; color: #334155;">1. 기준 권한 선택</h2>
+
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="roleSelect" class="form-label" style="font-size: 13px; font-weight: 600; color: #475569;">권한 선택</label>
+                            <select id="roleSelect" class="form-select" style="font-size: 13px; border-radius: 8px;">
+                                <option value="">권한을 선택하세요</option>
+                                <option th:each="r : ${roles}"
+                                        th:value="${r.id}"
+                                        th:text="${r.commonCodeName}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
                             <button type="button"
-                                    class="btn btn-sm btn-outline-danger">
-                                회수
+                                    class="btn btn-primary w-100"
+                                    style="padding: 9px; border-radius: 8px; font-size: 13px;"
+                                    onclick="loadMembersByRole()">
+                                선택한 권한의 직원 조회
                             </button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- 3. 다른 직원에게 권한 부여 -->
-    <section class="card">
-        <div class="card-body">
-            <h2 class="h5 mb-3">3. 다른 직원에게 권한 부여</h2>
-
-            <div class="row g-3 align-items-end">
-                <div class="col-md-5">
-                    <label for="memberSelect" class="form-label">직원 선택</label>
-                    <select id="memberSelect" class="form-select">
-                        <option value="">직원을 선택하세요</option>
-                        <option th:each="m : ${assignableMembers}"
-                                th:value="${m.id}"
-                                th:text="${m.name + ' (' + m.employeeNumber + ')'}">
-                        </option>
-                    </select>
+                        </div>
+                    </div>
                 </div>
+            </section>
 
-                <div class="col-md-3">
-                    <button type="button"
-                            class="btn btn-success w-100"
-                            onclick="grantRoleToMember()">
-                        선택한 직원에게 권한 부여
-                    </button>
+            <!-- 2. 선택된 권한을 가진 직원 목록 (회수) -->
+            <section class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="h5 mb-0" style="font-weight: 700; color: #334155;">2. 선택한 권한을 가진 직원</h2>
+                            <small class="text-muted" id="selectedRoleLabel" style="font-size: 12px;"></small>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" style="table-layout: fixed;">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="col-empno" onclick="toggleSort('employeeNumber')">
+                                    사원번호 <span id="sort_employeeNumber" class="sort-indicator"><i class="bi bi-arrow-up-down text-muted"> </i></span>
+                                </th>
+                                <th class="col-name" onclick="toggleSort('name')">
+                                    이름 <span id="sort_name" class="sort-indicator"><i class="bi bi-arrow-up-down text-muted"> </i></span>
+                                </th>
+                                <th class="col-dept" onclick="toggleSort('department')">
+                                    부서 <span id="sort_department" class="sort-indicator"><i class="bi bi-arrow-up-down text-muted"> </i></span>
+                                </th>
+                                <th class="col-pos" onclick="toggleSort('position')">
+                                    직급 <span id="sort_position" class="sort-indicator"><i class="bi bi-arrow-up-down text-muted"> </i></span>
+                                </th>
+                                <th class="col-role" onclick="toggleSort('description')">
+                                    권한 <span id="sort_description" class="sort-indicator"><i class="bi bi-arrow-up-down text-muted"> </i></span>
+                                </th>
+                                <th class="col-action text-center">권한 회수</th>
+                            </tr>
+                            </thead>
+                            <tbody id="memberTableBody">
+                            <tr th:each="emp : ${memberRoleViews}"
+                                th:data-member-id="${emp.memberId}"
+                                th:data-role-id="${emp.roleId}">
+                                <td class="col-empno" th:text="${emp.employeeNumber}">15-20005</td>
+                                <td class="col-name" th:text="${emp.name}">홍길동</td>
+                                <td class="col-dept text-truncate" th:text="${emp.department}" th:title="${emp.department}">부서</td>
+                                <td class="col-pos" th:text="${emp.position}">직급</td>
+                                <td class="col-role">
+                                    <span class="badge bg-secondary badge-role"
+                                          th:text="${emp.description}">
+                                        ROLE_USER
+                                    </span>
+                                </td>
+                                <td class="col-action text-center">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            style="font-size: 11px; font-weight: 600; border-radius: 6px;">
+                                        회수
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 페이지네이션 추가 영역 -->
+                    <div id="paginationContainer" class="mt-3"></div>
                 </div>
-            </div>
+            </section>
+
+            <!-- 3. 다른 직원에게 권한 부여 -->
+            <section class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3" style="font-weight: 700; color: #334155;">3. 다른 직원에게 권한 부여</h2>
+
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label for="memberSelect" class="form-label" style="font-size: 13px; font-weight: 600; color: #475569;">직원 선택</label>
+                            <select id="memberSelect" class="form-select" style="font-size: 13px; border-radius: 8px;">
+                                <option value="">직원을 선택하세요</option>
+                                <option th:each="m : ${assignableMembers}"
+                                        th:value="${m.id}"
+                                        th:text="${m.name + ' (' + m.employeeNumber + ')'}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <button type="button"
+                                    class="btn btn-success w-100"
+                                    style="padding: 9px; border-radius: 8px; font-size: 13px;"
+                                    onclick="grantRoleToMember()">
+                                선택한 직원에게 권한 부여
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-    </section>
+    </div>
+</th:block>
 
-</div>
+<th:block layout:fragment="script">
+    <script>
+        let currentSortBy = 'memberId';
+        let currentDirection = 'ASC';
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    async function loadMembersByRole() {
-        const select = document.getElementById('roleSelect');
-        const roleId = select.value;
-        const roleName = select.selectedOptions[0]?.textContent || '';
-
-        if (!roleId) {
-            alert('권한을 선택하세요.');
-            return;
+        function toggleSort(sortBy) {
+            if (currentSortBy === sortBy) {
+                currentDirection = currentDirection === 'ASC' ? 'DESC' : 'ASC';
+            } else {
+                currentSortBy = sortBy;
+                currentDirection = 'ASC';
+            }
+            loadMembersByRole(0);
+            updateSortIndicators();
         }
 
-        // 선택한 권한 이름 표시
-        const label = document.getElementById('selectedRoleLabel');
-        label.textContent = roleName ? `현재 권한: ${roleName}` : '';
+        function updateSortIndicators() {
+            // Reset all indicators
+            document.querySelectorAll('.sort-indicator').forEach(el => {
+                el.innerHTML = '<i class="bi bi-arrow-up-down text-muted"></i>';
+            });
 
-        const res = await fetch('/account/findMemberByRole?roleId=' + roleId);
-
-        if (!res.ok) {
-            alert('직원 목록을 불러오는데 실패했습니다.');
-            return;
+            // Update current indicator
+            const currentIndicator = document.getElementById(`sort_${currentSortBy}`);
+            if (currentIndicator) {
+                const icon = currentDirection === 'ASC' ? 'bi-arrow-up' : 'bi-arrow-down';
+                currentIndicator.innerHTML = `<i class="bi ${icon} text-primary"></i>`;
+            }
         }
 
-        const memberRoleViews = await res.json();
+        async function loadMembersByRole(page = 0) {
+            const select = document.getElementById('roleSelect');
+            const roleId = select.value;
+            const roleName = select.selectedOptions[0]?.textContent || '';
 
-        const tbody = document.getElementById('memberTableBody');
-        tbody.innerHTML = '';
+            if (!roleId) {
+                alert('권한을 선택하세요.');
+                return;
+            }
 
-        if (memberRoleViews.length === 0) {
-            const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            td.colSpan = 6;
-            td.className = 'text-center text-muted';
-            td.textContent = '이 권한을 가진 직원이 없습니다.';
-            tr.appendChild(td);
-            tbody.appendChild(tr);
-            return;
+            // 선택한 권한 이름 표시
+            const label = document.getElementById('selectedRoleLabel');
+            label.textContent = roleName ? `현재 권한: ${roleName}` : '';
+
+            const res = await fetch(`/account/findMemberByRole?roleId=${roleId}&page=${page}&size=10&sortBy=${currentSortBy}&direction=${currentDirection}`);
+
+            if (!res.ok) {
+                alert('직원 목록을 불러오는데 실패했습니다.');
+                return;
+            }
+
+            const pageData = await res.json();
+            const memberRoleViews = pageData.content;
+
+            const tbody = document.getElementById('memberTableBody');
+            tbody.innerHTML = '';
+
+            if (memberRoleViews.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 6;
+                td.className = 'text-center text-muted';
+                td.style.padding = '40px';
+                td.textContent = '이 권한을 가진 직원이 없습니다.';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                document.getElementById('paginationContainer').innerHTML = '';
+                return;
+            }
+
+            memberRoleViews.forEach(emp => {
+                const tr = document.createElement('tr');
+
+                const tdEmpNo = document.createElement('td');
+                tdEmpNo.className = 'col-empno';
+                tdEmpNo.style.fontWeight = '700';
+                tdEmpNo.style.color = '#4f46e5';
+                tdEmpNo.textContent = emp.employeeNumber;
+
+                const tdName = document.createElement('td');
+                tdName.className = 'col-name';
+                tdName.textContent = emp.name;
+
+                const tdDept = document.createElement('td');
+                tdDept.className = 'col-dept text-truncate';
+                tdDept.textContent = emp.department;
+                tdDept.title = emp.department;
+
+                const tdPos = document.createElement('td');
+                tdPos.className = 'col-pos';
+                tdPos.textContent = emp.position;
+
+                const tdDesc = document.createElement('td');
+                tdDesc.className = 'col-role';
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary badge-role';
+                badge.textContent = emp.description;
+                tdDesc.appendChild(badge);
+
+                const tdAction = document.createElement('td');
+                tdAction.className = 'col-action text-center';
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-danger';
+                btn.style.fontSize = '11px';
+                btn.style.fontWeight = '600';
+                btn.style.borderRadius = '6px';
+                btn.textContent = '회수';
+                btn.onclick = () => revokeRoleFromMember(emp.memberId);
+                tdAction.appendChild(btn);
+
+                tr.appendChild(tdEmpNo);
+                tr.appendChild(tdName);
+                tr.appendChild(tdDept);
+                tr.appendChild(tdPos);
+                tr.appendChild(tdDesc);
+                tr.appendChild(tdAction);
+
+                tbody.appendChild(tr);
+            });
+
+            renderPagination(pageData);
         }
 
-        memberRoleViews.forEach(emp => {
-            const tr = document.createElement('tr');
+        function renderPagination(pageData) {
+            const container = document.getElementById('paginationContainer');
+            container.innerHTML = '';
 
-            const tdEmpNo = document.createElement('td');
-            tdEmpNo.textContent = emp.employeeNumber;
+            if (pageData.totalPages <= 1) return;
 
-            const tdName = document.createElement('td');
-            tdName.textContent = emp.name;
+            const nav = document.createElement('nav');
+            const ul = document.createElement('ul');
+            ul.className = 'pagination pagination-sm justify-content-center mb-0';
 
-            const tdDept = document.createElement('td');
-            tdDept.textContent = emp.department;
+            // Previous
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${pageData.first ? 'disabled' : ''}`;
+            const prevA = document.createElement('a');
+            prevA.className = 'page-link';
+            prevA.href = '#';
+            prevA.innerHTML = '<i class="bi bi-chevron-left"></i>';
+            prevA.onclick = (e) => {
+                e.preventDefault();
+                if (!pageData.first) loadMembersByRole(pageData.number - 1);
+            };
+            prevLi.appendChild(prevA);
+            ul.appendChild(prevLi);
 
-            const tdPos = document.createElement('td');
-            tdPos.textContent = emp.position;
+            // Page Numbers
+            for (let i = 0; i < pageData.totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${pageData.number === i ? 'active' : ''}`;
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.textContent = i + 1;
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    loadMembersByRole(i);
+                };
+                li.appendChild(a);
+                ul.appendChild(li);
+            }
 
-            const tdDesc = document.createElement('td');
-            const badge = document.createElement('span');
-            badge.className = 'badge bg-secondary badge-role';
-            badge.textContent = emp.description;
-            tdDesc.appendChild(badge);
+            // Next
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${pageData.last ? 'disabled' : ''}`;
+            const nextA = document.createElement('a');
+            nextA.className = 'page-link';
+            nextA.href = '#';
+            nextA.innerHTML = '<i class="bi bi-chevron-right"></i>';
+            nextA.onclick = (e) => {
+                e.preventDefault();
+                if (!pageData.last) loadMembersByRole(pageData.number + 1);
+            };
+            nextLi.appendChild(nextA);
+            ul.appendChild(nextLi);
 
-            const tdAction = document.createElement('td');
-            tdAction.className = 'text-center';
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'btn btn-sm btn-outline-danger';
-            btn.textContent = '회수';
-            btn.onclick = () => revokeRoleFromMember(emp.memberId);
-            tdAction.appendChild(btn);
-
-            tr.appendChild(tdEmpNo);
-            tr.appendChild(tdName);
-            tr.appendChild(tdDept);
-            tr.appendChild(tdPos);
-            tr.appendChild(tdDesc);
-            tr.appendChild(tdAction);
-
-            tbody.appendChild(tr);
-        });
-    }
-
-    function revokeRoleFromMember(memberId) {
-        const roleId = document.getElementById('roleSelect').value;
-
-        if (!roleId) {
-            alert('먼저 기준 권한을 선택하세요.');
-            return;
+            nav.appendChild(ul);
+            container.appendChild(nav);
         }
 
-        if (!confirm('이 직원에게서 권한을 회수하시겠습니까?')) {
-            return;
+        function revokeRoleFromMember(memberId) {
+            const roleId = document.getElementById('roleSelect').value;
+
+            if (!roleId) {
+                alert('먼저 기준 권한을 선택하세요.');
+                return;
+            }
+
+            if (!confirm('이 직원에게서 권한을 회수하시겠습니까?')) {
+                return;
+            }
+
+            fetch(`/account/revokeRole?memberId=${memberId}&roleId=${roleId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // CSRF 토큰이 필요한 경우 여기에 추가해야 함
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('권한이 성공적으로 회수되었습니다.');
+                    loadMembersByRole(); // 목록 새로고침
+                } else {
+                    alert('권한 회수 중 오류가 발생했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버와 통신 중 오류가 발생했습니다.');
+            });
         }
 
-        // TODO: fetch('/account/role/revoke', { ... })
-    }
+        function grantRoleToMember() {
+            const roleId = document.getElementById('roleSelect').value;
+            const memberId = document.getElementById('memberSelect').value;
 
-    function grantRoleToMember() {
-        const roleId = document.getElementById('roleSelect').value;
-        const memberId = document.getElementById('memberSelect').value;
+            if (!roleId) {
+                alert('먼저 기준 권한을 선택하세요.');
+                return;
+            }
+            if (!memberId) {
+                alert('권한을 부여할 직원을 선택하세요.');
+                return;
+            }
 
-        if (!roleId) {
-            alert('먼저 기준 권한을 선택하세요.');
-            return;
+            if (!confirm('이 직원에게 권한을 부여하시겠습니까?')) {
+                return;
+            }
+
+            fetch(`/account/grantRole?memberId=${memberId}&roleId=${roleId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('권한이 성공적으로 부여되었습니다.');
+                    loadMembersByRole(); // 목록 새로고침
+                } else {
+                    alert('권한 부여 중 오류가 발생했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버와 통신 중 오류가 발생했습니다.');
+            });
         }
-        if (!memberId) {
-            alert('권한을 부여할 직원을 선택하세요.');
-            return;
-        }
-
-        // TODO: fetch('/account/role/grant', { ... })
-    }
-</script>
+    </script>
+</th:block>
 
 </body>
 </html>

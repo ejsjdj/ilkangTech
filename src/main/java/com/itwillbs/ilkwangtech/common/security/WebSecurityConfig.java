@@ -14,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfig {
 
 	private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+	private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
 
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -25,9 +26,8 @@ public class WebSecurityConfig {
 		http
 				// 접근 권한 설정
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/account/login", "/account/register", "/css/**", "/js/**", "/img/**", "/error").permitAll()
+						.requestMatchers("/account/login", "/css/**", "/js/**", "/img/**", "/error").permitAll()
 						.anyRequest().authenticated()
-//					.anyRequest().permitAll()
 				);
 
 		http
@@ -36,7 +36,7 @@ public class WebSecurityConfig {
 						.loginProcessingUrl("/account/login")
 						.usernameParameter("username")
 						.passwordParameter("password")
-						.defaultSuccessUrl("/schedule/calendar", true)
+						.successHandler(authenticationSuccessHandler)
 						.failureHandler(authenticationFailureHandler)
 						.permitAll()
 				);

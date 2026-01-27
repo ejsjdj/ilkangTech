@@ -2,14 +2,7 @@ package com.itwillbs.ilkwangtech.member.entity;
 
 import com.itwillbs.ilkwangtech.common.entity.CommonCode;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,8 +18,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@SequenceGenerator(
+        name = "member_role_seq_gen",
+        sequenceName = "member_role_seq",
+        initialValue = 200,
+        allocationSize = 1
+)
 public class MemberRole {
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "member_role_seq_gen")
     private Long id;
 
     // 사용자(Member) 엔티티와의 연관관계 설정

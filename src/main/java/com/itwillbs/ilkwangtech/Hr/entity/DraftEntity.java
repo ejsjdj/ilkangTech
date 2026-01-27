@@ -11,9 +11,15 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Table(name = "draft_document")
+@SequenceGenerator(
+        name = "draft_document_seq_gen",
+        sequenceName = "draft_document_seq",
+        initialValue = 100,
+        allocationSize = 1
+)
 public class DraftEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "draft_document_seq_gen")
     private long draftId;
 
     @ManyToOne

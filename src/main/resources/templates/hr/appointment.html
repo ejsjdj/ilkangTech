@@ -4,29 +4,16 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>발령 리스트</title>
-
-    <!-- Bootstrap / Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <title>발령 관리</title>
     <th:block layout:fragment="style">
         <link rel="stylesheet" th:href="@{/css/appointmentList.css}">
     </th:block>
-
 </head>
-<body layout:fragment="content">
-<body>
-<div class="content-root">
-    <div id="container-wrapper" class="container-wrapper">
 
-        <!-- 페이지 헤더 -->
+<body layout:fragment="content">
+<div class="content-root">
+    <div class="container-wrapper">
+
         <div class="page-header">
             <div class="header-title-area">
                 <div class="header-icon-bar"></div>
@@ -35,17 +22,15 @@
                     <p class="page-subtitle">사원 발령 이력 조회 및 등록</p>
                 </div>
             </div>
-            <a href="/hr/appointment/insert" class="btn-add">
+            <a href="/hr/appointment/register" class="btn-add">
                 <i class="bi bi-person-plus-fill"></i> 발령 등록
             </a>
         </div>
 
-        <!-- 검색 + 테이블 + 페이지네이션을 감싸는 스크롤 영역 -->
         <div class="scroll-area">
-            <!-- 검색 및 필터 영역 -->
             <div class="search-filter-area">
                 <div class="dropdown">
-                    <button class="dropdown-toggle" type="button">
+                    <button class="dropdown-toggle" type="button" id="deptFilterBtn">
                         <i class="bi bi-building"></i> 부서 전체
                         <i class="bi bi-chevron-down ms-1"></i>
                     </button>
@@ -53,25 +38,23 @@
 
                 <div class="search-box">
                     <i class="bi bi-search search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="사번 / 이름 검색">
+                    <input type="text" id="searchInput" placeholder="사번 / 성명 / 발령구분 검색">
                 </div>
 
-                <button class="btn-search" onclick="handleSearch()">
-                    검색
-                </button>
-                <button class="btn-reset" onclick="resetSearch()">
-                    초기화
-                </button>
+                <button class="btn-search" onclick="handleSearch()">검색</button>
+                <button class="btn-reset" onclick="resetSearch()">초기화</button>
             </div>
 
             <div id="tableContainer" class="table-wrapper">
-                <script th:src="@{/js/appointmentList.js}"></script>
+                <div class="loading-state" style="padding: 50px; text-align: center;">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">데이터를 불러오는 중입니다...</p>
+                </div>
             </div>
-
         </div>
     </div>
 </div>
 
-</body>
+<script th:src="@{/js/appointmentList.js}"></script>
 </body>
 </html>

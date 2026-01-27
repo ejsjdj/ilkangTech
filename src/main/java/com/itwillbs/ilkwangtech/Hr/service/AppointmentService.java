@@ -24,7 +24,9 @@ public class AppointmentService {
                         memberId(appointmentEntity.getMemberId().getId()).
                         approverId(appointmentEntity.getMemberId().getId()).
                         preDept(appointmentEntity.getPreDept()).
+                        currentDept(appointmentEntity.getCurrentDept()).
                         preRank(appointmentEntity.getPreRank()).
+                        currentRank(appointmentEntity.getCurrentRank()).
                         workStatus(appointmentEntity.getWorkStatus()).
                         appointmentDate(appointmentEntity.getAppointmentDate()).
                         build()).toList();

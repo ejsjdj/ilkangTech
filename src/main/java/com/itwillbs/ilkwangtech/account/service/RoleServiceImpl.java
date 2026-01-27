@@ -4,10 +4,9 @@ import com.itwillbs.ilkwangtech.account.dto.CommonCode;
 import com.itwillbs.ilkwangtech.account.dto.MemberRoleView;
 import com.itwillbs.ilkwangtech.account.repository.CommonCodeRepository;
 import com.itwillbs.ilkwangtech.account.repository.MemberRoleRepository;
-import com.itwillbs.ilkwangtech.member.entity.Member;
-import com.itwillbs.ilkwangtech.member.entity.MemberRole;
-import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,9 +34,8 @@ public class RoleServiceImpl implements RoleService {
                 .collect(Collectors.toList());
     }
 
-    public List<MemberRoleView> findMemberByRole(long roleId) {
-        List<MemberRoleView> memberRoles = memberRoleRepository.findMembersByRoleId(roleId);
-        return memberRoles;
+    public Page<MemberRoleView> findMemberByRole(long roleId, Pageable pageable) {
+        return memberRoleRepository.findMembersByRoleId(roleId, pageable);
     }
 
 }

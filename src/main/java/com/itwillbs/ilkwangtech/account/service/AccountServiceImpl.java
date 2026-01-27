@@ -2,18 +2,14 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
-import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
-import com.itwillbs.ilkwangtech.account.repository.LoginAttemptRepository;
+import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.common.exception.MemberNotFoundException;
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
-import com.itwillbs.ilkwangtech.member.entity.Member;
-
-import lombok.RequiredArgsConstructor;
 
 // 컨트롤러에서는 사용자가 요청을 하면 그 요청에 맞는 함수를 AccountService 에서 호출을 한다.
 // AccountService 에서는 컨트롤러가 받은 요청을 처리를 할때

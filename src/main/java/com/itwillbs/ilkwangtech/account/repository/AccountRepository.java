@@ -1,13 +1,12 @@
 package com.itwillbs.ilkwangtech.account.repository;
 
-import java.util.Optional;
-
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.itwillbs.ilkwangtech.member.entity.Member;
+import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Member, Long> {

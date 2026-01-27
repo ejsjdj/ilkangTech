@@ -1,20 +1,11 @@
 package com.itwillbs.ilkwangtech.account.dto;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import com.itwillbs.ilkwangtech.member.entity.MemberRole;
+import java.time.LocalDate;
 
 @Getter
 @Setter

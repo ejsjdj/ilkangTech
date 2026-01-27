@@ -445,28 +445,26 @@
 
             <!-- 검색 + 테이블 + 페이지네이션을 감싸는 스크롤 영역 -->
             <div class="scroll-area">
-                <!-- 검색 및 필터 영역 -->
-                <div class="search-filter-area">
-                    <div class="dropdown">
-                        <button class="dropdown-toggle" type="button">
-                            <i class="bi bi-building"></i> 부서 전체
-                            <i class="bi bi-chevron-down ms-1"></i>
-                        </button>
-                        <!-- 실제 부서 선택 드롭다운은 추후 구현 -->
-                    </div>
-
-                    <div class="search-box">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="성명 / 부서 / 직급 / 이메일 검색">
-                    </div>
-
-                    <button class="btn-search" onclick="handleSearch()">
-                        검색
-                    </button>
-                    <button class="btn-reset" onclick="resetSearch()">
-                        초기화
-                    </button>
+            <!-- 검색 및 필터 영역 -->
+            <div class="search-filter-area">
+                <div class="dropdown">
+                    <a href="/account/orgChart" class="dropdown-toggle" style="text-decoration: none;">
+                        <i class="bi bi-diagram-3"></i> 조직도 보기
+                    </a>
                 </div>
+
+                <div class="search-box">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="성명 / 부서 / 직급 / 이메일 검색">
+                </div>
+
+                <button class="btn-search" onclick="handleSearch()">
+                    검색
+                </button>
+                <button class="btn-reset" onclick="resetSearch()">
+                    초기화
+                </button>
+            </div>
 
                 <!-- 테이블 영역 -->
                 <div id="tableContainer" class="table-wrapper">

@@ -1,9 +1,5 @@
 package com.itwillbs.ilkwangtech.common.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-
 public class MemberNotFoundException extends RuntimeException {
 
     public MemberNotFoundException() {

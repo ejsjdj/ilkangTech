@@ -1,20 +1,12 @@
 package com.itwillbs.ilkwangtech.member.entity;
 
-import com.itwillbs.ilkwangtech.account.entity.Department;
-import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
-import com.itwillbs.ilkwangtech.account.entity.Position;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

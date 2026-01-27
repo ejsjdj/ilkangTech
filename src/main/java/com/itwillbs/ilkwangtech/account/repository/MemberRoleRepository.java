@@ -2,7 +2,8 @@ package com.itwillbs.ilkwangtech.account.repository;
 
 import com.itwillbs.ilkwangtech.account.dto.MemberRoleView;
 import com.itwillbs.ilkwangtech.common.entity.CommonCode;
-import com.itwillbs.ilkwangtech.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,11 +26,18 @@ public interface MemberRoleRepository extends JpaRepository<CommonCode, Long> {
         from members m
         join member_role r on m.id = r.member_id
         join common_code c on c.id = r.member_role_id
-        join departments d on d.id = m.department
-        join positions p on p.id = m.position
+        left join departments d on d.id = m.department
+        left join positions p on p.id = m.position
+        where c.id = :roleId
+        """,
+        countQuery = """
+        select count(*)
+        from members m
+        join member_role r on m.id = r.member_id
+        join common_code c on c.id = r.member_role_id
         where c.id = :roleId
         """,
         nativeQuery = true)
-    List<MemberRoleView> findMembersByRoleId(@Param("roleId") Long roleId);
+    Page<MemberRoleView> findMembersByRoleId(@Param("roleId") Long roleId, Pageable pageable);
 
 }

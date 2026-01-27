@@ -1,7 +1,6 @@
 package com.itwillbs.ilkwangtech.member.entity;
 
 import com.itwillbs.ilkwangtech.common.entity.CommonCode;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

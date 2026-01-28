@@ -1,10 +1,25 @@
-$(document).ready(function() {
-    getAppointmentList();
+$(document).ready(function () {
+    // 초기 로드
+    loadAppointmentList();
 });
 
+// 검색 실행
+function handleSearch() {
+    currentState.searchField = $('#searchInput').val();
+    currentState.pageNum = 0;
+    loadAppointmentList();
+}
+
+// 초기화
+function resetSearch() {
+    $('#searchInput').val('');
+    currentState.searchField = '';
+    currentState.pageNum = 0;
+    loadAppointmentList();
+}
 
 
-function getAppointmentList() {
+function loadAppointmentList() {
 
     $.ajax({
         url: '/hr/appointment/list',
@@ -24,59 +39,52 @@ function getAppointmentList() {
     });
 }
 
-function renderTable(response){
+function renderTable(response) {
     const container = $('#tableContainer');
 
-    // 테이블 헤더 생성
-        let html = `
-            <div class="table-scroll">
-                <table class="table emp-table">
-                    <thead>
-                        <tr>
-                            <th>발령대상자 ${getSortIcon('memberId')}</th>
-                            <th>승인자 ${getSortIcon('approvedId')}</th>
-                            <th>이전 부서 ${getSortIcon('preDept')}</th>
-                            <th>현재 부서 ${getSortIcon('currentDept')}</th>
-                            <th>이전 직급 ${getSortIcon('preRank')}</th>
-                            <th>현재 직급 ${getSortIcon('currentRank')}</th>
-                            <th>근무 상태 ${getSortIcon('workStatus')}</th>
-                            <th>승인일 ${getSortIcon('appointmentDate')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-        // 데이터 행 생성
-        if (!pageData.content || pageData.content.length === 0) {
-            html += `<tr><td colspan="7" class="text-center" style="padding: 100px 0;">조회된 발령 내역이 없습니다.</td></tr>`;
-        } else {
-            pageData.content.forEach(item => {
-                html += `
+    // 1. 테이블 헤더 시작
+    let html = `
+        <div class="table-scroll">
+            <table class="table emp-table">
+                <thead>
                     <tr>
-                        <td>${item.appointmentDate || '-'}</td>
-                        <td class="col-empno">${item.employeeNumber || '-'}</td>
-                        <td>${item.name || '-'}</td>
-                        <td><span class="status-badge">${item.appointmentType || '-'}</span></td>
-                        <td class="text-muted" style="font-size: 0.85rem;">${item.prevInfo || '-'}</td>
-                        <td class="fw-bold">${item.currInfo || '-'}</td>
-                        <td class="text-center">
-                            <a href="/hr/appointment/detail/${item.id}" class="action-btn">상세</a>
-                        </td>
+                        <th>발령대상자</th>
+                        <th>승인자</th>
+                        <th>이전 부서</th>
+                        <th>현재 부서</th>
+                        <th>이전 직급</th>
+                        <th>현재 직급</th>
+                        <th>근무 상태</th>
+                        <th>승인일</th>
                     </tr>
-                `;
-            });
-        }
+                </thead>
+                <tbody>
+    `;
 
-        html += `</tbody></table></div>`;
+    if (response && response.length > 0) {
+        response.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.memberName || item.memberId || '-'}</td>
+                    <td>${item.approverName || item.approverId || '-'}</td>
+                    <td>${item.preDeptName || item.preDept || '-'}</td>
+                    <td>${item.currentDeptName || item.currentDept || '-'}</td>
+                    <td>${item.preRankName || item.preRank || '-'}</td>
+                    <td>${item.currentRankName || item.currentRank || '-'}</td>
+                    <td>${item.workStatus || '-'}</td>
+                    <td>${item.appointmentDate || '-'}</td>
+                </tr>
+            `;
+        });
+    } else {
+        html += `<tr><td colspan="8" class="text-center">데이터가 없습니다.</td></tr>`;
+    }
 
-        // 페이지네이션 추가
-        html += renderPagination(pageData);
+    // 3. 테이블 닫기
+    html += `</tbody></table></div>`;
 
-        container.html(html);
-
-
-
-
+    // 4. 화면에 렌더링
+    container.html(html);
 }
 
 

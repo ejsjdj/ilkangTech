@@ -1,6 +1,8 @@
 package com.itwillbs.ilkwangtech.messenger.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,7 +18,6 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatMessageResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
-import com.itwillbs.ilkwangtech.messenger.dto.GroupChatCreateRequestDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
@@ -82,6 +83,15 @@ public class MessengerController {
 	        return "common/messageRedirect"; // 공통 알림 페이지(없다면 새로 만들어야 함)
 	    }
 	}
+	
+	@GetMapping("/direct/{targetId}")
+	public String openDirect(@PathVariable("targetId") Long targetId, 
+	                         @AuthenticationPrincipal AccountLogin login) {
+	    // 서비스 내부에서 이미 상대방 이름을 내 별명으로 초기화하도록 구현됨
+	    Long roomId = messengerService.getOrCreateDirectRoom(login.getId(), targetId);
+	    
+	    return "redirect:/messenger/chatroom/" + roomId;
+	}
 
 
 	@GetMapping("/chatroom/{roomId}")
@@ -109,21 +119,17 @@ public class MessengerController {
 	    return messengerService.getChatHistory(roomId, login.getId()); 
 	}
 
-    @PostMapping("/createGroup")
-    @ResponseBody // JSON 데이터를 반환하기 위해 필요
-    public Long createGroupChat(@RequestBody GroupChatCreateRequestDTO req, 
-                                 @AuthenticationPrincipal AccountLogin login) {
-        
-        // 1. 서비스 호출 (방 이름, 초대 멤버 리스트, 내 ID 전달)
-        // MessengerService에 구현했던 createGroupRoom 메서드를 호출합니다.
-        Long newRoomId = messengerService.createGroupRoom(
-                            req.getRoomName(), 
-                            req.getMemberIds(), 
-                            login.getId()
-                        );
-        
-        return newRoomId; // 생성된 방 번호를 반환하여 JS에서 창을 열게 함
-    }
+	@PostMapping("/createGroup")
+	@ResponseBody
+	public Long createGroup(@RequestBody Map<String, Object> params, 
+	                        @AuthenticationPrincipal AccountLogin login) {
+	    String roomName = (String) params.get("roomName");
+	    List<Integer> ids = (List<Integer>) params.get("memberIds");
+	    List<Long> memberIds = ids.stream().map(Long::valueOf).collect(Collectors.toList());
+
+	    // 모든 참여자에게 '참여자 이름들'을 초기 별명으로 부여하는 서비스 호출
+	    return messengerService.createGroupRoom(roomName, memberIds, login.getId());
+	}
     
     
     @PostMapping("/api/leave/{roomId}")
@@ -142,7 +148,36 @@ public class MessengerController {
     	
         return "success";
     }
+    
+    @PostMapping("/api/rename")
+    @ResponseBody
+    public String renameRoom(@RequestBody Map<String, Object> params, 
+                             @AuthenticationPrincipal AccountLogin login) {
+        // 1. 파라미터 추출 (roomId는 숫자형으로, newName은 문자열로 변환)
+        Long roomId = Long.valueOf(params.get("roomId").toString());
+        String newName = params.get("newName").toString();
+        
+        // 2. 서비스 호출: ChatRoom이 아닌 내 참여 정보(ChatRoomMember)의 별명을 수정
+        messengerService.updateRoomNickname(roomId, login.getId(), newName);
+        
+        return "success";
+    }
 
+    
+    @PostMapping("/api/read/{roomId}")
+    @ResponseBody
+    public String readMessages(@PathVariable("roomId") Long roomId, @AuthenticationPrincipal AccountLogin login) {
+        messengerService.updateLastReadAt(roomId, login.getId());
+        
+        // 실시간으로 '1'이 사라지게 하려면 여기서 웹소켓으로 "누가 읽었다"는 신호를 쏴줘야 합니다.
+        ChatBroadcastMessageDTO readSignal = new ChatBroadcastMessageDTO();
+        readSignal.setRoomId(roomId);
+        readSignal.setMsgType("READ"); // 타입을 READ로 정의
+        readSignal.setMemberId(login.getId());
+        simpMessagingTemplate.convertAndSend("/topic/chatroom/" + roomId, readSignal);
+        
+        return "success";
+    }
 }
 
 

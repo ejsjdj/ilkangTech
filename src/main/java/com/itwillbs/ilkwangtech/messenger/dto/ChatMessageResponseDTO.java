@@ -12,4 +12,6 @@ public class ChatMessageResponseDTO {
     private String content;
     private LocalDateTime createdAt;
     private String msgType;
+    private int unreadCount;
+    private String formattedTime;
 }

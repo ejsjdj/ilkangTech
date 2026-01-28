@@ -14,17 +14,17 @@ import java.time.LocalDate;
 public class AppointmentDTO {
 
     private Long appointmentId;
-    private Long memberId;
-    private Long approverId;
-    private int preDept;
-    private int currentDept;
-    private int preRank;
-    private int currentRank;
+    private String memberId;
+    private String approverId;
+    private String preDept;
+    private String currentDept;
+    private String preRank;
+    private String currentRank;
     private String workStatus;
     private LocalDate appointmentDate;
 
     @Builder
-    public AppointmentDTO(Long appointmentId, Long memberId, Long approverId, int preDept, int currentDept, int currentRank, int preRank, String workStatus, LocalDate appointmentDate){
+    public AppointmentDTO(Long appointmentId, String memberId, String approverId, String preDept, String currentDept, String currentRank, String preRank, String workStatus, LocalDate appointmentDate){
         super();
         this.appointmentId = appointmentId;
         this.memberId = memberId;

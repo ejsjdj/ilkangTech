@@ -55,21 +55,18 @@ public class HrController {
 
     // 발령 등록
     @GetMapping("/appointment/insertData")
-    public void registAppointmentInsert(@AuthenticationPrincipal AccountLogin accountLogin,
-                                        @RequestParam("userId") Long userId,
-                                        @RequestParam("newDept") String newDept,
-                                        @RequestParam("newRank") String newRank,
-                                        @RequestParam("workStatus") String workStatus){
+    public String registAppointmentInsert(@AuthenticationPrincipal AccountLogin accountLogin,
+                                        @RequestParam(name = "userId", required = false) Long userId,
+                                        @RequestParam(name = "newDept", required = false) Integer newDept,
+                                        @RequestParam(name = "newRank", required = false) Integer newRank,
+                                        @RequestParam(name = "workStatus", required = false) String workStatus){
 
-        // 1. DepartmentType.Department 형식으로 참조
-        DepartmentType.Department dept = DepartmentType.Department.fromCode(newDept);
-        int rankType = RankType.fromCode(newRank);
+        System.out.println("발령 정보 -> " + " approverId : " + accountLogin.getId() + ", newDept : " + newDept + ", newRank : " + newRank);
 
-        System.out.println("approverId : " + accountLogin + ", newDept : " + dept + ", newRank : " + rankType);
+        Long approverId = accountLogin.getId();
+        registAppointmentService.registAppointment(approverId, userId, newDept, newRank, workStatus);
 
-
-//        Long approverId = accountLogin.getId();
-//        registAppointmentService.registAppointment(approverId, userId, newDept, newRank, workStatus);
+        return "redirect:/hr/appointment";
     }
 
     // 조직도

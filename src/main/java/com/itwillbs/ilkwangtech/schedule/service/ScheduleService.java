@@ -52,16 +52,12 @@ public class ScheduleService {
 	// [변경] 파라미터가 int page -> Pageable pageable 로 바뀝니다.
 	@Transactional(readOnly = true)
 	public Page<ScheduleDTO> getScheduleList(Long loginMemberId, ScheduleSearchDTO params, Pageable pageable) {
-	    log.info("getScheduleList() 실행! loginMemberId: {}", loginMemberId);
+	    log.info("getScheduleList() 실행!");
 	    
 	    Member loginMember = memberRepository.findById(loginMemberId)
-                                             .orElseThrow(() -> {
-                                                 log.error("사용자 정보를 찾을 수 없음. loginMemberId: {}", loginMemberId);
-                                                 return new IllegalArgumentException("사용자 정보를 찾을 수 없습니다.");
-                                             });
+                                             .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
 	    
-        Integer departmentCode = loginMember.getDepartment();
-        int myDeptId = (departmentCode != null) ? departmentCode : 0;
+        int myDeptId = loginMember.getDepartment();
 		
 	    LocalDateTime startDateTime;
 	    LocalDateTime endDateTime;

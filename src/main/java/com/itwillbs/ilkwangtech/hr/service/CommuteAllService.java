@@ -35,6 +35,7 @@ public class CommuteAllService {
 
         return allList.stream().map(
                 attendance -> CommuteAllDTO.builder().
+                        id(attendance.getId()).
                         name(attendance.getMember().getName()).
                         workDate(attendance.getWorkDate()).
                         inTime(attendance.getInTime()).

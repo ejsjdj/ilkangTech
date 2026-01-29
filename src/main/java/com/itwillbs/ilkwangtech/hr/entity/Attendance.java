@@ -33,6 +33,8 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = "member")
 public class Attendance {
+
+
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_attendance_gen")
@@ -107,4 +109,15 @@ public class Attendance {
     public void changeOutTime(LocalDateTime outTime){
         this.outTime = outTime;
     }
+
+    // 6. 퇴근 시간 수정
+    public void changeGoOutTime(LocalDateTime goOutTime){
+        this.goOutTime = goOutTime;
+    }
+
+    // 6. 퇴근 시간 수정
+    public void changeReturnTime(LocalDateTime returnTime){
+        this.returnTime = returnTime;
+    }
+
 }

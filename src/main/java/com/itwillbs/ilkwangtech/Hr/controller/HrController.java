@@ -7,10 +7,7 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,8 +22,14 @@ public class HrController {
 
     // 발령 관리
     @GetMapping("/appointment")
+    public String getAppointment(){
+        return "hr/appointment";
+    }
+
+    // 발령 리스트 조회
+    @GetMapping("/appointment/list")
     @ResponseBody
-    public List<AppointmentDTO> getAppointment(){
+    public List<AppointmentDTO> getAppointmentList(){
         return appointmentService.hrAppointmentService();
     }
 
@@ -40,13 +43,12 @@ public class HrController {
     @GetMapping("/appointment/insert/test")
     public void registAppointmentInsert(@AuthenticationPrincipal AccountLogin accountLogin,
                                         @RequestParam("userId") Long userId,
-                                        @RequestParam("newDept") Long newDept,
-                                        @RequestParam("newRank") Long newRank,
+                                        @RequestParam("newDept") int newDept,
+                                        @RequestParam("newRank") int newRank,
                                         @RequestParam("workStatus") String workStatus){
 
         Long approverId = accountLogin.getId();
         registAppointmentService.registAppointment(approverId, userId, newDept, newRank, workStatus);
-
     }
 
     // 조직도

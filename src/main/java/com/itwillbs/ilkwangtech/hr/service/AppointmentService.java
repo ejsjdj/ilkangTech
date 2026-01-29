@@ -1,5 +1,9 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
+import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.entity.Position;
+import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
+import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
 import com.itwillbs.ilkwangtech.hr.dto.AppointmentDTO;
 import com.itwillbs.ilkwangtech.hr.entity.AppointmentEntity;
 import com.itwillbs.ilkwangtech.hr.repository.AppointmentRepostiory;

@@ -49,7 +49,7 @@ public class AccountController {
         // 직급 데이터 조회 및 전달
         model.addAttribute("positions", positionService.getActivePositions());
 
-        // 은행 데이터 조회 및 전달
+        // 은행 데이터 조회 전달
         model.addAttribute("banks", bankService.getActiveBanks());
 
         return "account/register";

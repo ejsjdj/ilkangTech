@@ -23,6 +23,7 @@ public class AccountServiceImpl implements AccountService {
 	private final AccountRepository accountRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
+	private final RoleService roleService;
 
 	/**
 	 * 회원가입(사원 등록) 로직을 수행합니다.

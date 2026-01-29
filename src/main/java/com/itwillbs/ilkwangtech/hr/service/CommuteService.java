@@ -32,20 +32,4 @@ public class CommuteService {
                          build()).
                  toList();
     }
-
-
-    @Transactional
-    public List<CommuteDTO> getAllCommuteList(){
-
-        List<Attendance> allCommute = attendanceRepository.findAll();
-
-        return allCommute.stream().
-                map(attendance -> CommuteDTO.builder().
-                        inTime(attendance.getInTime()).
-                        goOutTime(attendance.getGoOutTime()).
-                        outTime(attendance.getOutTime()).
-                        returnTime(attendance.getReturnTime()).
-                        build()).
-                toList();
-    }
 }

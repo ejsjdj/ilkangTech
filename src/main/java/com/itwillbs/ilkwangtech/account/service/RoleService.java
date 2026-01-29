@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.CommonCode;
 import com.itwillbs.ilkwangtech.account.dto.MemberRoleView;
+import com.itwillbs.ilkwangtech.account.dto.MemberSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -47,9 +48,9 @@ public interface RoleService {
     /**
      * 권한을 부여할 수 있는 전체 사원 목록을 조회합니다.
      *
-     * @return 전체 사원 엔티티 목록
+     * @return 전체 사원 DTO 목록
      */
-    List<com.itwillbs.ilkwangtech.member.entity.Member> getAssignableMembers();
+    List<MemberSummary> getAssignableMembers();
 
     /**
      * 사원의 부서 변경에 따른 권한 재부여

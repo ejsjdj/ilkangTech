@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.CommonCode;
 import com.itwillbs.ilkwangtech.account.dto.MemberRoleView;
+import com.itwillbs.ilkwangtech.account.dto.MemberSummary;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.account.repository.CommonCodeRepository;
 import com.itwillbs.ilkwangtech.account.repository.MemberRoleRepository;
@@ -59,7 +60,20 @@ public class RoleServiceImpl implements RoleService {
      * @return 사원 권한 뷰(MemberRoleView) Page
      */
     public Page<MemberRoleView> findMemberByRole(long roleId, Pageable pageable) {
-        return memberRoleRepository.findMembersByRoleId(roleId, pageable);
+        Page<java.util.Map<String, Object>> result = memberRoleRepository.findMembersByRoleId(roleId, pageable);
+        
+        return result.map(map -> {
+            // Oracle 등 DB에 따라 컬럼명이 대문자로 올 수 있으므로 유연하게 처리
+            Long memberId = ((Number) (map.get("MEMBERID") != null ? map.get("MEMBERID") : map.get("memberId"))).longValue();
+            Long rId = ((Number) (map.get("ROLEID") != null ? map.get("ROLEID") : map.get("roleId"))).longValue();
+            String name = (String) (map.get("NAME") != null ? map.get("NAME") : map.get("name"));
+            String empNo = (String) (map.get("EMPLOYEENUMBER") != null ? map.get("EMPLOYEENUMBER") : map.get("employeeNumber"));
+            String dept = (String) (map.get("DEPARTMENT") != null ? map.get("DEPARTMENT") : map.get("department"));
+            String pos = (String) (map.get("POSITION") != null ? map.get("POSITION") : map.get("position"));
+            String desc = (String) (map.get("DESCRIPTION") != null ? map.get("DESCRIPTION") : map.get("description"));
+            
+            return new MemberRoleView(memberId, rId, name, empNo, dept, pos, desc);
+        });
     }
 
     /**
@@ -115,11 +129,13 @@ public class RoleServiceImpl implements RoleService {
     /**
      * 권한 부여 대상이 될 수 있는 전체 사원 목록을 조회합니다.
      *
-     * @return 전체 사원 리스트
+     * @return 전체 사원 DTO 리스트
      */
     @Override
-    public List<Member> getAssignableMembers() {
-        return accountRepository.findAll();
+    public List<MemberSummary> getAssignableMembers() {
+        return accountRepository.findAll().stream()
+                .map(m -> modelMapper.map(m, MemberSummary.class))
+                .collect(Collectors.toList());
     }
 
 }

@@ -66,6 +66,6 @@ public interface MemberRoleRepository extends JpaRepository<MemberRole, Long> {
         where r.member_role_id = :roleId
         """,
         nativeQuery = true)
-    Page<MemberRoleView> findMembersByRoleId(@Param("roleId") Long roleId, Pageable pageable);
+    Page<java.util.Map<String, Object>> findMembersByRoleId(@Param("roleId") Long roleId, Pageable pageable);
 
 }

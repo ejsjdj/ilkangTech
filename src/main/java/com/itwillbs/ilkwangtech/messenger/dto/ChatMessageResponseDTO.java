@@ -14,4 +14,6 @@ public class ChatMessageResponseDTO {
     private String msgType;
     private int unreadCount;
     private String formattedTime;
+    private String deptName;
+    private String positionName;
 }

@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.entity.Position;
+import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
+import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatMessageResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
@@ -33,11 +37,15 @@ public class MessengerController {
 	private final MessengerService messengerService;
 	private final SimpMessagingTemplate simpMessagingTemplate;
 	private final ChatRoomMemberRepository chatRoomMemberRepository;
+	private final DepartmentRepository departmentRepository;
+	private final PositionRepository positionRepository;
 	
-	public MessengerController(MessengerService messengerService, SimpMessagingTemplate simpMessagingTemplate, ChatRoomMemberRepository chatRoomMemberRepository) {
+	public MessengerController(MessengerService messengerService, SimpMessagingTemplate simpMessagingTemplate, ChatRoomMemberRepository chatRoomMemberRepository, PositionRepository positionRepository, DepartmentRepository departmentRepository) {
 		this.messengerService = messengerService;
 		this.simpMessagingTemplate = simpMessagingTemplate;
 		this.chatRoomMemberRepository = chatRoomMemberRepository;
+		this.departmentRepository = departmentRepository;
+		this.positionRepository = positionRepository;
 	}
 
 	@GetMapping("/memberList")
@@ -177,6 +185,40 @@ public class MessengerController {
         simpMessagingTemplate.convertAndSend("/topic/chatroom/" + roomId, readSignal);
         
         return "success";
+    }
+    
+    @GetMapping("/api/members/{roomId}")
+    @ResponseBody
+    public List<ChatMessageResponseDTO> getChatParticipants(@PathVariable("roomId") Long roomId) {
+        List<ChatRoomMember> members = chatRoomMemberRepository.findByRoomId(roomId);
+        
+        return members.stream().map(m -> {
+            ChatMessageResponseDTO dto = new ChatMessageResponseDTO();
+            dto.setMemberId(m.getId().getMemberId());
+            
+            if (m.getMember() != null) {
+                dto.setMemberName(m.getMember().getName());
+                
+                // 1. 부서 ID(Integer)로 부서명 찾기
+                Integer deptId = m.getMember().getDepartment(); // getDepartment()가 Integer를 반환할 때
+                if (deptId != null) {
+                    String dName = departmentRepository.findById(deptId)
+                                    .map(Department::getDepartmentName)
+                                    .orElse("소속 없음");
+                    dto.setDeptName(dName);
+                }
+
+                // 2. 직급 ID(Integer)로 직급명 찾기
+                Integer posId = m.getMember().getPosition(); // getPosition()이 Integer를 반환할 때
+                if (posId != null) {
+                    String pName = positionRepository.findById(posId)
+                                    .map(Position::getPositionName)
+                                    .orElse("직급 없음");
+                    dto.setPositionName(pName);
+                }
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
 }
 

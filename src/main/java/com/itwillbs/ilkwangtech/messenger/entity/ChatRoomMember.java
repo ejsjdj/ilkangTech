@@ -1,9 +1,15 @@
 package com.itwillbs.ilkwangtech.messenger.entity;
 
 import java.time.LocalDateTime;
+
+import com.itwillbs.ilkwangtech.member.entity.Member;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -19,6 +25,10 @@ public class ChatRoomMember {
 
 	@EmbeddedId
     private ChatRoomMemberId id;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", insertable = false, updatable = false)
+	private Member member;
 
     @Column(name = "joined_at", nullable = false) // ★ joinedAt -> joined_at
     private LocalDateTime joinedAt;
@@ -47,4 +57,5 @@ public class ChatRoomMember {
         m.setLastReadAt(LocalDateTime.now()); // 명시적 초기화
         return m;
     }
+
 }

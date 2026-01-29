@@ -18,7 +18,7 @@ public class ChatRoomMemberId implements Serializable {
     @Column(name = "roomId")
     private Long roomId;
 
-    @Column(name = "memberId")
+    @Column(name = "member_Id")
     private Long memberId;
 
     protected ChatRoomMemberId() {

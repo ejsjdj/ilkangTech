@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class CommuteAllDTO {
+    private Long id;
     private String name;
     private String deptName;
     private LocalDate workDate;
@@ -19,8 +20,9 @@ public class CommuteAllDTO {
     private LocalDateTime returnTime; //복귀 시간
 
     @Builder
-    public CommuteAllDTO(String name, String deptName, LocalDate workDate, LocalDateTime inTime, LocalDateTime goOutTime, LocalDateTime outTime, LocalDateTime returnTime){
+    public CommuteAllDTO(Long id, String name, String deptName, LocalDate workDate, LocalDateTime inTime, LocalDateTime goOutTime, LocalDateTime outTime, LocalDateTime returnTime){
         super();
+        this.id = id;
         this.name = name;
         this.deptName = deptName;
         this.workDate = workDate;

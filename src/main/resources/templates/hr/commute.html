@@ -16,13 +16,74 @@
 
       /* 출퇴근 전용 상태 뱃지 */
       .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-      .status-normal { background: #e0f2fe; color: #0369a1; } /* 정상 */
-      .status-late { background: #fee2e2; color: #dc2626; }   /* 지각/결근 */
+      .status-normal { background: #e0f2fe; color: #0369a1; }
+      .status-late { background: #fee2e2; color: #dc2626; }
+
+      /* 모달이 항상 화면 정중앙에 오도록 보정 */
+      .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999; /* 다른 요소보다 위에 오도록 */
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modalBody {
+    background-color: white;
+    margin: 15% auto; /* 화면 중앙 배치 */
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+                    /* 모달 내 공통 버튼 스타일 */
+.modal-footer button {
+    padding: 8px 20px;
+    border-radius: 20px; /* 제공해주신 원형 버튼 스타일과 맞춤 */
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 저장 버튼 (btn-add-event 스타일 계승) */
+.btn-save {
+    background: #5c6bc0;
+    color: white;
+}
+.btn-save:hover {
+    background: #4b5bb0;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 취소 버튼 */
+.btn-cancel {
+    background: #f1f1f1;
+    color: #666;
+    margin-right: 8px;
+}
+.btn-cancel:hover {
+    background: #e5e5e5;
+    transform: scale(1.05);
+}
+
+/* 닫기(X) 아이콘 애니메이션 */
+.close-btn {
+    transition: transform 0.2s, color 0.2s;
+}
+.close-btn:hover {
+    color: #5c6bc0;
+    transform: rotate(90deg);
+}
     </style>
   </th:block>
 </head>
-
 <body layout:fragment="content">
+
 <div class="content-root">
   <div class="container-wrapper">
 
@@ -82,6 +143,9 @@
   </div>
 </div>
 
+<div th:replace="~{hr/commuteModal :: commuteModal}"></div>
+
 <script th:src="@{/js/commute.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

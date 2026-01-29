@@ -69,11 +69,19 @@ public class HrAttendanceController {
     // 출퇴근 기록 수정
     @PostMapping("/commute/update")
     @ResponseBody
-    public void updateCommuteStatus(@RequestParam("attendacneId") long attendanceId,
-                                    @RequestParam("inTime") LocalDateTime inTime,
-                                    @RequestParam("outTime") LocalDateTime outTime){
+    public void updateCommuteStatus(@RequestParam(name = "attendanceId", required = false) Long attendanceId,
+                                    @RequestParam(name = "inTime", required = false) LocalDateTime inTime,
+                                    @RequestParam(name = "outTime", required = false) LocalDateTime outTime,
+                                    @RequestParam(name = "outTime", required = false) LocalDateTime goOutTime,
+                                    @RequestParam(name = "outTime", required = false) LocalDateTime returnTime){
 
-        updateCommuteService.updateCommuteService(attendanceId,inTime, outTime);
+        System.out.println(attendanceId);
+        System.out.println(inTime);
+        System.out.println(outTime);
+        System.out.println(goOutTime);
+        System.out.println(returnTime);
+
+        updateCommuteService.updateCommuteService(attendanceId, inTime, outTime, goOutTime, returnTime);
     }
 
     // 전 사원 근무 현황 조회
@@ -96,5 +104,4 @@ public class HrAttendanceController {
     public AttendanceDTO updateComeBack(@RequestParam("userId") long userId){
         return updateWorkStatusService.updateComeBackService(userId);
     }
-
 }

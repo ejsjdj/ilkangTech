@@ -1,3 +1,5 @@
+let currentData = [];
+
 $(document).ready(function() {
     // 처음 페이지 진입 시 '전사원' 탭이 기본이라면
     switchTab('MY');
@@ -106,22 +108,18 @@ function loadCommuteAllList() {
 // 발령 등록
 function loadAttendanceData() {
     // 1. 현재 화면에 입력/선택된 값 가져오기
-
     const deptCode = document.querySelector('select[name="department"]').value;
     const workDate = document.getElementById('dateFilter').value;
 
     // 3. 컨트롤러 주소에 파라미터를 붙여서 이동 (GET 방식)
-    // 주소 형식: /주소?userId=1&newDept=2...
-    // 페이지 이동(href)이 아니라, 데이터 요청(ajax)을 합니다.
     $.ajax({
-        url: '/attendance/commute/all', // 컨트롤러 @GetMapping 주소
+        url: '/attendance/commute/all',
         type: 'GET',
         data: {
             deptCode: deptCode,
             workDate: workDate
         },
         success: function (response) {
-            // 서버에서 받은 리스트로 테이블만 새로 그림
             renderAllTable(response);
         },
         error: function () {
@@ -139,11 +137,13 @@ function renderAllTable(response) {
             <table class="table emp-table">
                 <thead>
                     <tr>
+                        <th>NO.</th>
                         <th>이름</th>
                         <th>출근 시간</th>
                         <th>퇴근 시간</th>
                         <th>외근 시간</th>
                         <th>복귀 시간</th>
+                        <th>관리</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,11 +153,15 @@ function renderAllTable(response) {
         response.forEach(item => {
             html += `
                 <tr>
+                    <td>${item.id || '-'}</td>
                     <td>${item.name || '-'}</td>
                     <td>${item.inTime || '-'}</td>
                     <td>${item.outTime || '-'}</td>
                     <td>${item.goOutTime || '-'}</td>
                     <td>${item.returnTime || '-'}</td>
+                    <td>
+                       <button class="btn-search" onclick="openEditTimeModal('${item.id}', '${item.inTime || ''}', '${item.outTime || ''}', '${item.goOutTime || ''}', '${item.returnTime || ''}')"> 수정 </button>
+                    </td>
                 </tr>
             `;
         });
@@ -172,3 +176,63 @@ function renderAllTable(response) {
     container.html(html);
 }
 
+function openEditTimeModal(id, inTime, outTime, goOutTime, returnTime) {
+    const modal = document.getElementById("commuteModal");
+
+    console.log(inTime, outTime, goOutTime, returnTime)
+
+    if (modal) {
+            // 모달 내 특정 위치에 사원 ID 등을 미리 세팅할 수 있습니다.
+            document.getElementById("modalEmpIdDisplay").innerText = id;
+            document.getElementById("attendanceId").value = id;
+            document.getElementById("modalInTime").value = inTime;
+            document.getElementById("modalOutTime").value = outTime;
+            document.getElementById("modalGoOutTime").value = goOutTime;
+            document.getElementById("modalReturnTime").value = returnTime;
+
+            modal.style.display = "block";
+        }
+
+    console.log("수정할 출퇴근 번호: ", id);
+}
+
+
+// 2. 모달 닫기
+function closeModal() {
+    const modal = document.getElementById("commuteModal");
+    if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto"; // 배경 스크롤 복원
+    }
+}
+
+// 4. 저장
+function saveTime() {
+    // 1. 값 읽어오기 (컨트롤러 파라미터명과 key를 일치시킵니다)
+    const params = {
+        attendanceId: document.getElementById("attendanceId").value,
+        inTime: document.getElementById("modalInTime").value,
+        outTime: document.getElementById("modalOutTime").value,
+        goOutTime: document.getElementById("modalGoOutTime").value,
+        returnTime: document.getElementById("modalReturnTime").value
+    };
+
+    console.log("전송 데이터:", params);
+
+    // 2. 서버로 전송 (AJAX - @RequestParam 방식에 맞춤)
+    $.ajax({
+        url: '/attendance/commute/update',
+        type: 'POST',
+        // contentType을 지정하지 않아야 기본 폼 전송 방식(application/x-www-form-urlencoded)으로 전송됩니다.
+        data: params,
+        success: function(response) {
+            alert("수정이 완료되었습니다.");
+            closeModal();
+            loadAttendanceData();
+        },
+        error: function(xhr) {
+            console.error(xhr);
+            alert("수정 중 오류가 발생했습니다.");
+        }
+    });
+}

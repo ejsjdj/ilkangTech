@@ -40,6 +40,7 @@ public class AccountLogin implements UserDetails {
 	private String bank;            	// 은행명
 	private String accountNumber;   	// 계좌번호
 	private LocalDateTime lastLogin;	// 마지막 로그인 시간
+	private LocalDateTime lastUpdate;	// 마지막 수정 시간
 
 	private List<MemberRole> roles; 	// 사용자가 보유한 권한 목록
 

@@ -1,10 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko"
+      layout:decorate="~{layout/layout}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <title>사원 신규 등록</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <title>발령 등록</title>
+
+    <th:block layout:fragment="style">
+        <link rel="stylesheet" th:href="@{/css/appointmentRegist.css}">
+    </th:block>
 </head>
 <body>
-  <h1>발령 등록</h1>
+<th:block layout:fragment="content">
+    <div class="register-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+            <div class="header-title-area">
+                <div class="header-icon-bar"></div>
+                <div>
+                    <h1>신규 발령 등록 및 수정</h1>
+                    <p class="page-subtitle">인사 변동을 등록하고 관리합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <form action="/account/register" id="registerForm" method="post">
+            <div class="form-grid-main">
+                <!-- 부서 변경 -->
+                <div class="form-column">
+                    <div class="form-card">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h2 class="section-title"><i class="bi bi-person-vcard"></i> 직원 선택 </h2>
+                                <p class="section-desc">발령 대상자를 클릭하여 선택하세요</p>
+                            </div>
+
+                            <div class="search-box-mini">
+                                <input class="form-control-sm" id="searchInput" onkeyup="handleSearch()" placeholder="이름 검색..."
+                                       type="text">
+                            </div>
+
+                            <div class="employee-list-scroll" id="tableContainer">
+                            </div>
+
+                            <div class="pagination-mini" id="paginationContainer">
+                            </div>
+
+                            <input id="selectedMemberId" name="memberId" required type="hidden">
+                            <div class="selected-viewer" id="selectedEmployeeDisplay">
+                                선택된 직원 없음
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 푸터 (왼쪽 컬럼 하단 배치) -->
+                    <div class="form-group form-row-full">
+                        <p class="field-hint">※ 결재권자의 승인 없이 이루어진 발령은 근로기준법에 따라 해고 및 처벌될 수 있습니다. ※</p>
+                    </div>
+                    <div class="form-footer"
+                         style="margin-top: 0; border-top: none; padding-top: 0; justify-content: flex-start;">
+                        <button class="btn-submit" onclick="registAppointment()" type="submit">
+                            <i class="bi bi-person-check-fill"></i> 발령 등록
+                        </button>
+                        <button class="btn-cancel" onclick="location.href='/account/list'" type="button">취소</button>
+                    </div>
+                </div>
+
+                <!-- 직급 변경 -->
+                <div class="form-column">
+                    <!-- 소속 및 직급 설정 -->
+                    <div class="form-card">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h2 class="section-title"><i class="bi bi-building-gear"></i> 소속 및 직위 변동</h2>
+                                <p class="section-desc">전보/전출/전직/승진/강등</p>
+                            </div>
+                            <div class="form-grid">
+
+                                <div class="form-group">
+                                    <label class="form-label">현재 부서 <span class="required-mark">*</span></label>
+                                    <input class="form-control" disabled id="currentDeptDisplay" name="currentDept"
+                                           placeholder="현재 직급" type="text">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">변동 후 부서 <span class="required-mark">*</span></label>
+                                    <select class="form-select" name="department" required>
+                                        <option value="">부서 선택</option>
+                                        <option th:each="dept : ${departments}" th:text="${dept.departmentName}"
+                                                th:value="${dept.id}"></option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">현재 직급 <span class="required-mark">*</span></label>
+                                    <input class="form-control" disabled id="currentRankDisplay" name="currentRank"
+                                           placeholder="현재 직급" type="text">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">변동 후 직급 <span class="required-mark">*</span></label>
+                                    <select class="form-select" name="position" required>
+                                        <option value="">직급 선택</option>
+                                        <option th:each="pos : ${positions}" th:text="${pos.positionName}"
+                                                th:value="${pos.id}"></option>
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 근무상태 변경 (오른쪽 하단으로 이동) -->
+                    <div class="form-card">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h2 class="section-title"><i class="bi bi-bank"></i> 직무 변동</h2>
+                                <p class="section-desc">재직/휴직/복직</p>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">현재 근무상태 <span class="required-mark">*</span></label>
+                                    <input class="form-control" disabled id="currentStatusDisplay"
+                                           name="accountNumber" placeholder="현재 근무 상태" type="text">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">변동 후 근무상태 <span class="required-mark">*</span></label>
+                                    <select class="form-select" name="bank" required>
+                                        <option value="">근무상태 선택</option>
+                                        <option th:each="bank : ${banks}" th:text="${bank.bankName}"
+                                                th:value="${bank.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script th:src="@{/js/appointmentRegist.js}"></script>
+</th:block>
 </body>
 </html>

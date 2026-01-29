@@ -76,6 +76,20 @@
 	    border-radius: 12px;
 	    font-size: 12px;
 	}
+	/* 읽음 확인 숫자 */
+	.unread-count {
+	    color: #ffeb33; /* 노란색 */
+	    font-size: 10px;
+	    font-weight: bold;
+	    margin: 0 4px;
+	    vertical-align: bottom;
+	}
+	
+	.msg-item {
+	    display: flex;
+	    align-items: flex-end; /* 숫자와 시간을 말풍선 하단에 맞춤 */
+	    margin-bottom: 10px;
+	}
   </style>
 
   <!-- SockJS / Stomp -->
@@ -108,9 +122,10 @@
 	            <div class="msg-container">
 	                <div class="sender-name" th:text="${msg.memberName}"></div>
 	                <div class="msg-row">
-	                    <div class="msg" th:text="${msg.content}"></div>
-	                    <span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
-	                </div>
+					    <span class="unread-count" th:if="${msg.unreadCount > 0}" th:text="${msg.unreadCount}"></span>
+					    <div class="msg" th:text="${msg.content}"></div>
+					    <span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
+					</div>
 	            </div>
 	        </div>
 	    </div>
@@ -137,10 +152,14 @@ function connect() {
     var roomId = document.getElementById("roomId").value;
     console.log("WebSocket 연결 성공 - 방 ID: " + roomId);
 
-    stompClient.subscribe("/topic/chatroom/" + roomId, function (message) {
-      var payload = JSON.parse(message.body);
-      console.log("데이터 도착함:", message.body);
-      appendMessage(payload);
+    stompClient.subscribe('/topic/chatroom/' + roomId, function (message) {
+        var payload = JSON.parse(message.body);
+
+        if (payload.msgType === 'READ') {
+            pollingMessages(); 
+        } else {
+            appendMessage(payload);
+        }
     });
     
     // 연결 상태 모니터링
@@ -194,23 +213,32 @@ function appendMessage(msg) {
     }
     
     var myMemberId = Number(document.getElementById("myMemberId").value);
+    var isMine = (msg.memberId === myMemberId);
     
+    // 2. 메시지 전체 감싸는 래퍼 생성
     var wrap = document.createElement("div");
-    wrap.className = "msgWrap" + (msg.memberId === myMemberId ? " mine" : "");
+    wrap.className = "msgWrap" + (isMine ? " mine" : "");
     
-    // 이름과 메시지 행을 감싸는 컨테이너 생성
     var container = document.createElement("div");
     container.className = "msg-container";
 
-    // 1. 이름 추가
+    // 3. 이름 추가 (남이 보낸 경우에만 표시하고 싶다면 조건부로 설정 가능)
     var nameDiv = document.createElement("div");
     nameDiv.className = "sender-name";
-    nameDiv.textContent = msg.senderName; // Controller에서 보낸 senderName 사용
+    nameDiv.textContent = msg.memberName; 
     container.appendChild(nameDiv);
 
-    // 2. 메시지 본문과 시간 행 생성
+    // 4. 메시지 본문과 정보(시간, 숫자) 행 생성
     var row = document.createElement("div");
     row.className = "msg-row";
+
+    // 5. [핵심] 안 읽은 숫자 생성
+    if (msg.unreadCount > 0) {
+	    var countSpan = document.createElement("span");
+	    countSpan.className = "unread-count";
+	    countSpan.textContent = msg.unreadCount;
+	    row.appendChild(countSpan);
+	}
 
     var contentDiv = document.createElement("div");
     contentDiv.className = "msg";
@@ -219,9 +247,18 @@ function appendMessage(msg) {
     var timeSpan = document.createElement("span");
     timeSpan.className = "time";
     timeSpan.textContent = msg.formattedTime;
-    
-    row.appendChild(contentDiv);
-    row.appendChild(timeSpan);
+
+    // 6. 배치 순서 결정 (내 메시지는 숫자가 시간 왼쪽에, 남의 메시지는 오른쪽에)
+    if (isMine) {
+        if (countSpan) row.appendChild(countSpan); // 숫자 먼저
+        row.appendChild(timeSpan);               // 그 다음 시간
+        row.appendChild(contentDiv);             // 마지막에 말풍선
+    } else {
+        row.appendChild(contentDiv);             // 말풍선 먼저
+        row.appendChild(timeSpan);               // 그 다음 시간
+        if (countSpan) row.appendChild(countSpan); // 마지막에 숫자
+    }
+
     container.appendChild(row);
     wrap.appendChild(container);
     
@@ -368,6 +405,12 @@ function leaveAndClose() {
     })
     .catch(err => console.error("Error:", err));
 }
+
+function markAsRead() {
+    var roomId = document.getElementById("roomId").value;
+    fetch('/messenger/api/read/' + roomId, { method: 'POST' });
+}
+document.addEventListener("DOMContentLoaded", markAsRead);
 
 connect();
 </script>

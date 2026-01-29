@@ -641,10 +641,7 @@
 
     }); // ready end
 
-    // ============================================================
-    // [파일 처리 관련 함수들] (List.html 로직)
-    // ============================================================
-    
+    // [파일 처리 관련 함수들] (List.html 로직)    
     // 1. 썸네일 미리보기 함수
     function previewThumbnail(input, areaSelector, imgSelector) {
         const file = input.files[0];
@@ -705,10 +702,7 @@
         }
     }
 
-    // ============================================================
     // [캘린더 및 데이터 로드]
-    // ============================================================
-
     function initCalendar() {
         const Calendar = tui.Calendar;
         calendar = new Calendar('#calendar', {
@@ -793,7 +787,6 @@
                 }
 
                 // 2. 제목에 [연차]가 있으면 색상 강제 변경 (나중에 실행되어 덮어씀)
-                // [수정 포인트] 이 로직을 switch문 아래로 내렸습니다.
                 if (dto.title.includes('[연차]') || dto.title.includes('[반차]')) {
                      bgColor = '#b7f3c4'; // 연두색 (덮어쓰기)
                      color = '#333';      // 글자색
@@ -819,10 +812,7 @@
         });
     }
 
-    // ============================================================
     // [모달 열기 및 데이터 로드] (수정됨)
-    // ============================================================
-
     function openRegistModal(startVal, endVal) {
         $('#scheduleForm')[0].reset();
         
@@ -903,10 +893,7 @@
         });
     }
 
-    // ============================================================
     // [CRUD Ajax 함수] (FormData 수동 처리)
-    // ============================================================
-
     function registerSchedule() {
         const formData = new FormData($('#scheduleForm')[0]);
         
@@ -964,10 +951,7 @@
         }).fail((xhr) => alert(xhr.responseText || '삭제 실패'));
     }
 
-    // ============================================================
     // [유틸 및 기타]
-    // ============================================================
-
     function toLocalISOString(date) {
         const offset = date.getTimezoneOffset() * 60000;
         const localIso = new Date(date - offset).toISOString();

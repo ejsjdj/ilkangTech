@@ -77,8 +77,13 @@ public class RoleController {
      */
     @DeleteMapping("/revokeRole")
     public ResponseEntity<Void> revokeRole(
-            @RequestParam("memberId") Long memberId,
-            @RequestParam("roleId") Long roleId) {
+            @RequestParam(value = "memberId", required = false) Long memberId,
+            @RequestParam(value = "roleId", required = false) Long roleId,
+            @RequestBody(required = false) java.util.Map<String, Long> params) {
+        
+        if (memberId == null && params != null) memberId = params.get("memberId");
+        if (roleId == null && params != null) roleId = params.get("roleId");
+
         roleService.revokeRole(memberId, roleId);
         return ResponseEntity.ok().build();
     }
@@ -92,8 +97,13 @@ public class RoleController {
      */
     @PostMapping("/grantRole")
     public ResponseEntity<Void> grantRole(
-            @RequestParam("memberId") Long memberId,
-            @RequestParam("roleId") Long roleId) {
+            @RequestParam(value = "memberId", required = false) Long memberId,
+            @RequestParam(value = "roleId", required = false) Long roleId,
+            @RequestBody(required = false) java.util.Map<String, Long> params) {
+        
+        if (memberId == null && params != null) memberId = params.get("memberId");
+        if (roleId == null && params != null) roleId = params.get("roleId");
+
         roleService.grantRole(memberId, roleId);
         return ResponseEntity.ok().build();
     }

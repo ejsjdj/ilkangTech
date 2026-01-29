@@ -35,6 +35,7 @@ public class AppointmentService {
 
         // 2. 리스트를 돌면서 각 엔티티의 코드를 이름으로 변환
         return appointmentEntities.stream().map(entity -> {
+            // 각 행(entity)마다 가지고 있는 코드값을 여기서 꺼내야 합니다.
             String preDeptName = deptMap.getOrDefault(entity.getPreDept(), "부서 미지정");
             String currDeptName = deptMap.getOrDefault(entity.getCurrentDept(), "부서 미지정");
             String preRankName = positionMap.getOrDefault(entity.getPreRank(), "직급 미지정");

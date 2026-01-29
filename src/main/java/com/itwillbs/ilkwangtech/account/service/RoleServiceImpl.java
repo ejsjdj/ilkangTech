@@ -49,6 +49,8 @@ public class RoleServiceImpl implements RoleService {
                 .collect(Collectors.toList());
     }
 
+
+
     /**
      * 특정 권한 ID를 가진 모든 사원 정보를 조회합니다.
      *
@@ -72,6 +74,14 @@ public class RoleServiceImpl implements RoleService {
         memberRoleRepository.deleteByMemberIdAndRoleId(memberId, roleId);
     }
 
+    @Override
+    @Transactional
+    public void regrantRolebyAppointment(Long memberId, Long departmentId) {
+        memberRoleRepository.deleteAllByMemberId(memberId);
+        grantRole(memberId, departmentId);
+        grantRole(memberId, 1000L);
+    }
+
     /**
      * 특정 사원에게 새로운 권한을 부여합니다.
      * 이미 동일한 권한을 가지고 있는 경우 중복 부여하지 않습니다.
@@ -82,12 +92,13 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void grantRole(Long memberId, Long roleId) {
+
         // 1. 회원 정보 조회
         Member member = accountRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
-        
+     
         // 2. 부여할 권한(공통코드) 정보 조회
-        com.itwillbs.ilkwangtech.common.entity.CommonCode role = commonCodeRepository.findById(roleId.intValue())
+        com.itwillbs.ilkwangtech.common.entity.CommonCode role = commonCodeRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("권한을 찾을 수 없습니다."));
 
         // 3. 이미 해당 권한이 있는지 확인

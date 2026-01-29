@@ -51,4 +51,11 @@ public interface RoleService {
      */
     List<com.itwillbs.ilkwangtech.member.entity.Member> getAssignableMembers();
 
+    /**
+     * 사원의 부서 변경에 따른 권한 재부여
+     * @param memberId 사원 고유 ID
+     * @param departmentId 부여할 권한 ID
+     */
+    public void regrantRolebyAppointment(Long memberId, Long departmentId);
+
 }

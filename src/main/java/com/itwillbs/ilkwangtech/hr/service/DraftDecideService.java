@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.itwillbs.ilkwangtech.hr.entity.DraftApproveStatusEntity;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.hr.repository.DraftApproveStatusRepository;
 import com.itwillbs.ilkwangtech.hr.repository.DraftRepository;
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
 import com.itwillbs.ilkwangtech.schedule.service.ScheduleService;
@@ -35,7 +37,7 @@ public class DraftDecideService {
         this.memberRepository = memberRepository;
     }
     
-    private static final Integer TEAM_LEADER_POS_ID = 1;
+    private static final List<Integer> MANAGER_POS_IDS = Arrays.asList(1, 2, 3);
 
     // 승인 반려
     @Transactional
@@ -106,14 +108,16 @@ public class DraftDecideService {
             // Member 엔티티에서 department는 Integer 타입이므로 바로 가져옴
             Integer deptId = draft.getMember().getDepartment();
             
-            // 해당 부서의 팀장(지정된 직급 ID)을 조회
-            memberRepository.findTeamLeader(deptId, TEAM_LEADER_POS_ID).ifPresent(leader -> {
-                // 팀장이 기안자 본인이 아닌 경우에만 리스트에 추가 (중복 방지)
-                if (!leader.getId().equals(draft.getMember().getId())) {
-                    sharedMemberIds.add(leader.getId());
-                    log.info("캘린더 공유 대상 추가(팀장): {}", leader.getName());
+         // [핵심 변경] 리스트로 조회하여 반복문으로 추가
+            List<Member> managers = memberRepository.findTeamManagers(deptId, MANAGER_POS_IDS);
+            
+            for (Member manager : managers) {
+                // 본인이 간부인 경우 중복 추가 방지
+                if (!manager.getId().equals(draft.getMember().getId())) {
+                    sharedMemberIds.add(manager.getId());
+                    log.info("캘린더 공유 대상 추가(간부): {} {}", manager.getPosition(), manager.getName());
                 }
-            });
+            }
 
             // DTO에 공유 대상 설정
             scheduleDto.setSharedMemberIds(sharedMemberIds);

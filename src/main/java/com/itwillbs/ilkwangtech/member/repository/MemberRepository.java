@@ -20,7 +20,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	List<Member> findByDepartmentOrderByPositionAsc(Integer departmentId);
 
 	// [추가] 부서 ID와 직급('팀장')을 기준으로 팀장 정보 조회
-	@Query("SELECT m FROM Member m WHERE m.department = :deptId AND m.position = :posId")
-    Optional<Member> findTeamLeader(@Param("deptId") Integer deptId, @Param("posId") Integer posId);
+	@Query("SELECT m FROM Member m WHERE m.department = :deptId AND m.position IN :posIds")
+    List<Member> findTeamManagers(@Param("deptId") Integer deptId, @Param("posIds") List<Integer> posIds);
+	
 
 }

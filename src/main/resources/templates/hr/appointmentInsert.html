@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko"
-      layout:decorate="~{layout/layout}"
+<html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+      layout:decorate="~{layout/layout}"
+      lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>사원 신규 등록</title>
 
     <!-- Google Font -->
-    <link href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -34,7 +33,7 @@
             </div>
         </div>
 
-        <form action="/account/register" id="registerForm" method="post">
+        <form id="registerForm" action="/account/register" method="post">
             <div class="form-grid-main">
                 <!-- 부서 변경 -->
                 <div class="form-column">
@@ -46,18 +45,14 @@
                             </div>
 
                             <div class="search-box-mini">
-                                <input class="form-control-sm" id="searchInput" onkeyup="handleSearch()" placeholder="이름 검색..."
-                                       type="text">
+                                <input type="text" id="searchInput" class="form-control-sm" placeholder="이름 검색..." onkeyup="handleSearch()">
                             </div>
 
-                            <div class="employee-list-scroll" id="tableContainer">
+                            <div id="tableContainer" class="employee-list-scroll">
                             </div>
 
-                            <div class="pagination-mini" id="paginationContainer">
-                            </div>
-
-                            <input id="selectedMemberId" name="memberId" required type="hidden">
-                            <div class="selected-viewer" id="selectedEmployeeDisplay">
+                            <input type="hidden" name="memberId" id="selectedMemberId" required>
+                            <div id="selectedEmployeeDisplay" class="selected-viewer">
                                 선택된 직원 없음
                             </div>
                         </div>
@@ -67,12 +62,11 @@
                     <div class="form-group form-row-full">
                         <p class="field-hint">※ 결재권자의 승인 없이 이루어진 발령은 근로기준법에 따라 해고 및 처벌될 수 있습니다. ※</p>
                     </div>
-                    <div class="form-footer"
-                         style="margin-top: 0; border-top: none; padding-top: 0; justify-content: flex-start;">
-                        <button class="btn-submit" onclick="registAppointment()" type="submit">
+                    <div class="form-footer" style="margin-top: 0; border-top: none; padding-top: 0; justify-content: flex-start;">
+                        <button type="submit" class="btn-submit" onclick="registAppointment()">
                             <i class="bi bi-person-check-fill"></i> 발령 등록
                         </button>
-                        <button class="btn-cancel" onclick="location.href='/account/list'" type="button">취소</button>
+                        <button type="button" class="btn-cancel" onclick="location.href='/account/list'">취소</button>
                     </div>
                 </div>
 
@@ -89,31 +83,28 @@
 
                                 <div class="form-group">
                                     <label class="form-label">현재 부서 <span class="required-mark">*</span></label>
-                                    <input class="form-control" disabled id="currentDeptDisplay" name="currentDept"
-                                           placeholder="현재 직급" type="text">
+                                    <input type="text" name="currentDept" id="currentDeptDisplay" class="form-control" placeholder="현재 직급" disabled>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label">변동 후 부서 <span class="required-mark">*</span></label>
-                                    <select class="form-select" name="department" required>
+                                    <select name="department" class="form-select" required>
                                         <option value="">부서 선택</option>
-                                        <option th:each="dept : ${departments}" th:text="${dept.departmentName}"
-                                                th:value="${dept.id}"></option>
+                                        <option th:each="dept : ${departments}" th:value="${dept.id}"
+                                                th:text="${dept.departmentName}"></option>
                                     </select>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label">현재 직급 <span class="required-mark">*</span></label>
-                                    <input class="form-control" disabled id="currentRankDisplay" name="currentRank"
-                                           placeholder="현재 직급" type="text">
+                                    <input type="text" name="currentRank" id="currentRankDisplay" class="form-control" placeholder="현재 직급" disabled>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label">변동 후 직급 <span class="required-mark">*</span></label>
-                                    <select class="form-select" name="position" required>
+                                    <select name="position" class="form-select" required>
                                         <option value="">직급 선택</option>
-                                        <option th:each="pos : ${positions}" th:text="${pos.positionName}"
-                                                th:value="${pos.id}"></option>
+                                        <option th:each="pos : ${positions}" th:value="${pos.id}" th:text="${pos.positionName}"></option>
                                     </select>
                                 </div>
 
@@ -131,15 +122,13 @@
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label class="form-label">현재 근무상태 <span class="required-mark">*</span></label>
-                                    <input class="form-control" disabled id="currentStatusDisplay"
-                                           name="accountNumber" placeholder="현재 근무 상태" type="text">
+                                    <input type="text" name="accountNumber" id="currentStatusDisplay" class="form-control" placeholder="현재 근무 상태" disabled>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">변동 후 근무상태 <span class="required-mark">*</span></label>
-                                    <select class="form-select" name="bank" required>
+                                    <select name="bank" class="form-select" required>
                                         <option value="">근무상태 선택</option>
-                                        <option th:each="bank : ${banks}" th:text="${bank.bankName}"
-                                                th:value="${bank.id}"></option>
+                                        <option th:each="bank : ${banks}" th:value="${bank.id}" th:text="${bank.bankName}"></option>
                                     </select>
                                 </div>
                             </div>

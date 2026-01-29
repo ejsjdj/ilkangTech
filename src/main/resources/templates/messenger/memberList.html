@@ -82,6 +82,19 @@
 	  white-space: nowrap;
 	}
 	.searchBtn:hover { background: #f6f6f6; }
+	
+	.memberRow.my-row {
+	    background-color: #f9f9f9; /* 연한 회색 배경 */
+	    cursor: default; /* 포인터 커서 해제 */
+	}
+	
+	.memberRow.my-row:hover {
+	    background-color: #f9f9f9 !important; /* 호버 시 색상 변화 방지 */
+	}
+	
+	.memberRow.my-row .memberName {
+	    color: #999; /* 이름 색상을 약간 흐리게 */
+	}
   </style>
 </head>
 
@@ -104,42 +117,54 @@
 			<div class="memberRow"
 			     th:each="member : ${memberList}"
 			     th:object="${member}"
+			     th:classappend="${member.memberId == myMemberId} ? 'my-row' : ''"
 			     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
 			     ondblclick="goChat(this)">
 			
-				<button type="button"
-				        class="starBtn starOff"
-				        title="즐겨찾기"
-				        onclick="event.stopPropagation()">☆</button>
-				
-				<div class="memberName" th:text="*{memberName}"></div>
+			    <button type="button"
+			            class="starBtn starOff"
+			            title="즐겨찾기"
+			            onclick="event.stopPropagation()">☆</button>
+			    
+			    <div class="memberName">
+			        <span th:text="*{memberName}"></span>
+			        <span th:if="${member.memberId == myMemberId}" style="font-size: 12px; color: #1f3bff; margin-left: 4px;">(나)</span>
+			    </div>
 			
-				<div class="memberDept">
-					<span th:text="*{departmentName} + ' 팀'"></span>
-				</div>
+			    <div class="memberDept">
+			        <span th:text="*{departmentName}"></span>
+			    </div>
 			</div>
 		</div>
 	
 	</div>
 </div>
 
+<input type="hidden" id="myMemberId" th:value="${myMemberId}">
+
 <script>
 function goChat(el) {
-  var memberId = el.dataset.id;
+	  var memberId = el.dataset.id;
+	  var myId = document.getElementById("myMemberId").value;
 
-  // 팝업(새 창) 옵션: 필요하면 사이즈 조절
-  var w = 420;
-  var h = 720;
-  var left = Math.max(0, (screen.width - w) / 2);
-  var top = Math.max(0, (screen.height - h) / 2);
+	  // [추가] 클릭한 대상이 나 자신이면 채팅창을 열지 않음
+	  if (memberId == myId) {
+	      console.log("나 자신과는 채팅할 수 없습니다.");
+	      return;
+	  }
 
-  var url = "/messenger/direct?memberId=" + memberId;
+	  var w = 420;
+	  var h = 720;
+	  var left = Math.max(0, (screen.width - w) / 2);
+	  var top = Math.max(0, (screen.height - h) / 2);
 
-  window.open(
-    url,
-    "chat_" + memberId,
-    "width=" + w + ",height=" + h + ",left=" + left + ",top=" + top + ",resizable=yes,scrollbars=yes"
-  );
+	  var url = "/messenger/direct?memberId=" + memberId;
+
+	  window.open(
+	    url,
+	    "chat_" + memberId,
+	    "width=" + w + ",height=" + h + ",left=" + left + ",top=" + top + ",resizable=yes,scrollbars=yes"
+	  );
 }
 
 function norm(s) {
@@ -158,9 +183,7 @@ function applySearch() {
     var name = norm(row.dataset.name);
     var dept = norm(row.dataset.dept);
 
-    // "팀"까지 입력해도 검색되게(예: 인사팀)
-    var deptWithTeam = dept + " 팀";
-    var ok = (q === "") || name.includes(q) || dept.includes(q) || deptWithTeam.includes(q);
+    var ok = (q === "") || name.includes(q) || dept.includes(q) || dept.includes(q);
 
     row.style.display = ok ? "" : "none";
   });

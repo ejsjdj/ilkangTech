@@ -36,12 +36,6 @@ public class RegistAppointmentService {
             appointmentEntity.newDept(newDept);
 
             member.setDepartment(newDept);
-
-        } else {
-
-            appointmentEntity.newDept(member.getDepartment());
-
-            appointmentEntity.changeDept(member.getDepartment());
         }
 
         // 2. 직급 등록
@@ -52,13 +46,6 @@ public class RegistAppointmentService {
             appointmentEntity.newRank(newRank);
 
             member.setPosition(newRank);
-
-        } else {
-
-            appointmentEntity.newRank(member.getPosition());
-
-            appointmentEntity.changeRank(member.getPosition());
-
         }
 
         // 3. 근무상태 등록
@@ -75,7 +62,5 @@ public class RegistAppointmentService {
         appointmentEntity.newApprover(approver);
 
         appointmentRepostiory.save(appointmentEntity);
-
-        System.out.println("발령 등록 완료!");
     }
 }

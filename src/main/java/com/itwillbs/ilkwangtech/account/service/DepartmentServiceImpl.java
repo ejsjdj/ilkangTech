@@ -35,7 +35,6 @@ public class DepartmentServiceImpl implements DepartmentService {
         Map<Integer, String> posMap = allPositions.stream()
                 .collect(Collectors.toMap(Position::getId, Position::getPositionName, (existing, replacement) -> existing));
 
-
         // 대표이사 찾기 (부서 0 소속 중 가장 높은 직급)
         List<Member> allMembers = memberRepository.findAll();
         List<Member> ceos = allMembers.stream()

@@ -18,22 +18,32 @@ CREATE SEQUENCE draft_approval_line_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE draft_document_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE leave_status_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE member_role_seq START WITH 200 INCREMENT BY 1;
-CREATE SEQUENCE common_code_seq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE common_code_seq START WITH 1001 INCREMENT BY 1;
 CREATE SEQUENCE MEMBERS_SEQ START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_SCHEDULE START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_ATTENDANCE START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_NOTICE START WITH 1 INCREMENT BY 1;
 
 -- Common Code (사용자 권한, 메뉴, 게시판 등)
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (0, 'MEMBER_ROLE', 'MEMBER_ROLE', '일반 사용자 권한', '일반 사용자 권한', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'MANAGEMENT', '경영팀', '시스템 메뉴 상위코드', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'HR', '인사팀', '인사 관리자 권한', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'PURCHASING', '구매팀', '구매 관리자 권한', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'SALES', '영업팀', '영업 관리자 권한', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'FINANCE', '재무회계팀', '재무회계 관리자 권한', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'INFORMATION', '정보시스템팀', '정보시스템 관리자 권한', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'SAFETY', '안전팀', '안전 관리자 권한', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', 'REGAL', '법무팀', '법무 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (1000, 'MEMBER_ROLE', '일반 사용자 권한', '일반 사용자 권한', '일반 사용자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (0, 'MENU', 'CEO', '임원팀', '임원 관리자 상위코드', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (1, 'MENU', 'MANAGEMENT', '경영팀', '경영 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (2, 'MENU', 'HR', '인사팀', '인사 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (3, 'MENU', 'PURCHASING', '구매팀', '구매 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (4, 'MENU', 'SALES', '영업팀', '영업 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (5, 'MENU', 'FINANCE', '재무회계팀', '재무회계 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (6, 'MENU', 'INFORMATION', '정보시스템팀', '정보시스템 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (7, 'MENU', 'SAFETY', '안전팀', '안전 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (8, 'MENU', 'REGAL', '법무팀', '법무 관리자 권한', 'Y');
+
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (100, 'MENU', 'PRODUCTION_MANAGER', '생산부', '생산부 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (101, 'MENU', 'PRESS', '프레스팀', '프레스 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (102, 'MENU', 'EJACULATION', '사출팀', '사출 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (103, 'MENU', 'COATING', '도장팀', '도장 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (104, 'MENU', 'ASSEMBLY', '조립팀', '조립 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (105, 'MENU', 'QUALITY', '품질팀', '품질 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (106, 'MENU', 'MOLD', '금형팀', '금형 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (107, 'MENU', 'PRODUCTION', '생산관리팀', '생산관리 권한', 'Y');
 
 -- Genders (성별)
 INSERT INTO genders (id, gender) VALUES (1, '남자');
@@ -271,12 +281,12 @@ COMMIT;
 INSERT INTO member_role(id, member_id, member_role_id)
 SELECT member_role_seq.NEXTVAL, M.id, C.id
 FROM members M, common_code C
-WHERE C.common_code = 'MEMBER_ROLE';
+WHERE C.id = 1000;
 
 INSERT INTO member_role(id, member_id, member_role_id)
 SELECT member_role_seq.NEXTVAL, M.id, C.id
 FROM members M, common_code C
-WHERE C.id = m.department + 99;
+WHERE C.id = M.department;
 
 -- 전사 일정 등록
 

@@ -70,9 +70,8 @@ public class AccountServiceImpl implements AccountService {
 		// 6. 해당 사원의 권한 저장
 		Long memberId = savedMember.getId();
 		Long departmentIdx = Long.valueOf(savedMember.getDepartment());
-		roleService.grantRole(memberId, 0L);	// 기본 권한 자동 부여
-		System.out.println(departmentIdx);
-		roleService.grantRole(memberId, departmentIdx + 99L);		// 해당 권한에 맞는 권한 부여
+		roleService.grantRole(memberId, 1000L);	// 기본 권한 자동 부여
+		roleService.grantRole(memberId, departmentIdx);		// 해당 권한에 맞는 권한 부여
 
 		return res;
 	}

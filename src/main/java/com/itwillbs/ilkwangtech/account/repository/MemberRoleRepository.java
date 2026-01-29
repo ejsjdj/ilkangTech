@@ -30,6 +30,13 @@ public interface MemberRoleRepository extends JpaRepository<MemberRole, Long> {
     void deleteByMemberIdAndRoleId(@Param("memberId") Long memberId, @Param("roleId") Long roleId);
 
     /**
+     * 특정 사원의 모든 권한 정보를 삭제합니다.
+     *
+     * @param memberId 사원 고유 ID
+     */
+    void deleteAllByMemberId(Long memberId);
+
+    /**
      * 특정 권한 ID를 가진 사원들의 목록을 조회합니다.
      * 사원 정보, 부서명, 직급명, 권한명을 포함하여 Native Query로 작성되었습니다.
      *

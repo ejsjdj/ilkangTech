@@ -43,10 +43,10 @@ public class RoleServiceImpl implements RoleService {
      */
     public List<CommonCode> getRoles() {
 
-        return commonCodeRepository
-                .findAll()
+        return commonCodeRepository.findAll()
                 .stream()
-                .map(role -> modelMapper.map(role, CommonCode.class))
+                .filter(c -> "MEMBER_ROLE".equals(c.getGroupCode()))
+                .map(role -> new CommonCode(role.getId(), role.getCommonCodeName()))
                 .collect(Collectors.toList());
     }
 
@@ -110,6 +110,7 @@ public class RoleServiceImpl implements RoleService {
         // 1. 회원 정보 조회
         Member member = accountRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+     
         // 2. 부여할 권한(공통코드) 정보 조회
         com.itwillbs.ilkwangtech.common.entity.CommonCode role = commonCodeRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("권한을 찾을 수 없습니다."));

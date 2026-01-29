@@ -89,6 +89,7 @@ public class ChatSocketController {
                     messagingTemplate.convertAndSend("/topic/user/" + m.getId().getMemberId() + "/list", out);
                 }
             }
+            // 시험용
         }
     }
 }

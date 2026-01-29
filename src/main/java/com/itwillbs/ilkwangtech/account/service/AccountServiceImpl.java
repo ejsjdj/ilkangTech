@@ -11,8 +11,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 /**
  * AccountService 인터페이스의 구현체
  * 회원 등록 시 중복 검증, 사원번호 생성, 비밀번호 암호화 등을 수행합니다.
@@ -25,7 +23,6 @@ public class AccountServiceImpl implements AccountService {
 	private final AccountRepository accountRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
-	private final RoleService roleService;
 
 	/**
 	 * 회원가입(사원 등록) 로직을 수행합니다.
@@ -33,7 +30,6 @@ public class AccountServiceImpl implements AccountService {
 	 * 2. 현재 등록된 최대 사원번호를 조회하여 새로운 사원번호를 생성합니다.
 	 * 3. 비밀번호를 BCrypt로 암호화합니다.
 	 * 4. DB에 사원 정보를 저장합니다.
-	 * 5. 해당 사원의 권한 정보를 저장합니다.
 	 *
 	 * @param req 회원가입 요청 데이터
 	 * @return 등록 결과 응답 데이터
@@ -89,9 +85,9 @@ public class AccountServiceImpl implements AccountService {
 		Member member = accountRepository.findById(id)
 				.orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다. ID: " + id));
 
-		member.setUpdatedAt(LocalDateTime.now());
 		member.setEmail(email);
 		member.setPhoneNumber(phoneNumber);
+
 		accountRepository.save(member);
 		return true;
 	}

@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.itwillbs.ilkwangtech.Hr.entity.DraftApproveStatusEntity;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 
 @Repository

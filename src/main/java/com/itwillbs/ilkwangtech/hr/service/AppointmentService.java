@@ -1,12 +1,12 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
-import com.itwillbs.ilkwangtech.hr.dto.AppointmentDTO;
-import com.itwillbs.ilkwangtech.hr.entity.AppointmentEntity;
-import com.itwillbs.ilkwangtech.hr.repository.AppointmentRepostiory;
 import com.itwillbs.ilkwangtech.account.entity.Department;
 import com.itwillbs.ilkwangtech.account.entity.Position;
 import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
 import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
+import com.itwillbs.ilkwangtech.hr.dto.AppointmentDTO;
+import com.itwillbs.ilkwangtech.hr.entity.AppointmentEntity;
+import com.itwillbs.ilkwangtech.hr.repository.AppointmentRepostiory;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,23 +34,22 @@ public class AppointmentService {
                 .collect(Collectors.toMap(Position::getId, Position::getPositionName, (e, r) -> e));
 
         // 2. 리스트를 돌면서 각 엔티티의 코드를 이름으로 변환
-        return appointmentEntities.stream().map(entity -> {
-            // 각 행(entity)마다 가지고 있는 코드값을 여기서 꺼내야 합니다.
-            String preDeptName = deptMap.getOrDefault(entity.getPreDept(), "부서 미지정");
-            String currDeptName = deptMap.getOrDefault(entity.getCurrentDept(), "부서 미지정");
-            String preRankName = positionMap.getOrDefault(entity.getPreRank(), "직급 미지정");
-            String currRankName = positionMap.getOrDefault(entity.getCurrentRank(), "직급 미지정");
+        return appointmentEntities.stream().map(appointmentEntity -> {
+            String preDeptName = deptMap.getOrDefault(appointmentEntity.getPreDept(), "부서 미지정");
+            String currDeptName = deptMap.getOrDefault(appointmentEntity.getCurrentDept(), "부서 미지정");
+            String preRankName = positionMap.getOrDefault(appointmentEntity.getPreRank(), "직급 미지정");
+            String currRankName = positionMap.getOrDefault(appointmentEntity.getCurrentRank(), "직급 미지정");
 
             return AppointmentDTO.builder()
-                    .appointmentId(entity.getAppointmentId())
-                    .memberId(entity.getMemberId().getName())
-                    .approverId(entity.getApproverId() != null ? entity.getApproverId().getName() : "승인 대기")
+                    .appointmentId(appointmentEntity.getAppointmentId())
+                    .memberId(appointmentEntity.getMemberId().getName())
+                    .approverId(appointmentEntity.getApproverId() != null ? appointmentEntity.getApproverId().getName() : "승인 대기")
                     .preDept(preDeptName)
                     .currentDept(currDeptName)
                     .preRank(preRankName)
                     .currentRank(currRankName)
-                    .workStatus(entity.getWorkStatus())
-                    .appointmentDate(entity.getAppointmentDate())
+                    .workStatus(appointmentEntity.getWorkStatus())
+                    .appointmentDate(appointmentEntity.getAppointmentDate())
                     .build();
         }).toList();
     }

@@ -1,17 +1,18 @@
 package com.itwillbs.ilkwangtech.hr.controller;
 
-import com.itwillbs.ilkwangtech.hr.dto.AttendanceDTO;
-import com.itwillbs.ilkwangtech.hr.dto.CommuteDTO;
-import com.itwillbs.ilkwangtech.hr.dto.LeaveDTO;
-import com.itwillbs.ilkwangtech.hr.dto.WorkStatusDTO;
+import com.itwillbs.ilkwangtech.account.service.DepartmentService;
+import com.itwillbs.ilkwangtech.hr.dto.*;
 import com.itwillbs.ilkwangtech.hr.service.*;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Controller
@@ -24,6 +25,8 @@ public class HrAttendanceController {
     private final WorkStatusService workStatusService;
     private final UpdateWorkStatusService updateWorkStatusService;
     private final UpdateCommuteService updateCommuteService;
+    private final CommuteAllService commuteAllService;
+    private final DepartmentService departmentService;
 
     // 휴가 조회
     @GetMapping("/vacation")
@@ -33,19 +36,34 @@ public class HrAttendanceController {
         return leaveService.getLeaveStatus(accountLogin.getId());
     }
 
-    // 개인 출퇴근 기록 조회
+
+    // 출퇴근 현황 페이지 이동
     @GetMapping("/commute")
+    public String getCommuteStatus(Model model){
+        // 부서 데이터 조회 및 전달
+        model.addAttribute("departments", departmentService.getActiveDepartments());
+
+        return "hr/commute";
+    }
+
+    // 개인 출퇴근 기록 조회
+    @GetMapping("/commute/list")
     @ResponseBody
-    public List<CommuteDTO> getCommuteStatus(@AuthenticationPrincipal AccountLogin accountLogin){
+    public List<CommuteDTO> getCommuteList(@AuthenticationPrincipal AccountLogin accountLogin){
         return commuteService.getPersonalCommuteList(accountLogin.getId());
     }
 
-    // 전체 출퇴근 기록 조회
-    @GetMapping("/allCommute")
+    // 부서별 출퇴근 기록 조회
+    @GetMapping("/commute/all")
     @ResponseBody
-    public List<CommuteDTO> getAllCommuteStatus(){
-        // TODO :: 부서명, 이름, 직급 반환 필요
-        return commuteService.getAllCommuteList();
+    public List<CommuteAllDTO> getCommuteAllList(@RequestParam(name = "deptCode") Integer deptCode,
+                                                 @RequestParam(name = "workDate") LocalDate workDate){
+
+        System.out.println("부서 코드: " + deptCode);
+        System.out.println("근무일: " + workDate);
+
+        return commuteAllService.getCommuteAllList(deptCode, workDate);
+
     }
 
     // 출퇴근 기록 수정
@@ -61,8 +79,8 @@ public class HrAttendanceController {
     // 전 사원 근무 현황 조회
     @GetMapping("/status")
     @ResponseBody
-    public List<WorkStatusDTO> getWorkStatus(){
-        return workStatusService.getWorkStatus();
+    public void getWorkStatus(){
+        // return workStatusService.getWorkStatus();
     }
 
     // 특정 사원의 퇴근 처리

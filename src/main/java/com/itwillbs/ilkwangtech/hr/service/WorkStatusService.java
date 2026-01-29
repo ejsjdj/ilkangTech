@@ -14,21 +14,21 @@ public class WorkStatusService {
 
     private AttendanceRepository attendanceRepository;
 
-    public List<WorkStatusDTO> getWorkStatus(){
+    public void getWorkStatus(){
 
-        List<Attendance> workStatus = attendanceRepository.findAllWithMemberAndDepartments();
-
-        return workStatus.stream()
-                .map(attendance -> WorkStatusDTO.builder().
-                        name(attendance.getMember().getName()).
-                        // department(attendance.getMember().getDepartment()).
-                        // position(attendance.getMember().getPosition()).
-                        inTime(attendance.getInTime()).
-                        goOutTime(attendance.getGoOutTime()).
-                        outTime(attendance.getOutTime()).
-                        returnTime(attendance.getReturnTime()).
-                        // status(attendance.getStatus()).
-                        build())
-                .toList();
+//        List<Attendance> workStatus = attendanceRepository.findAllWithMemberAndDepartments();
+//
+//        return workStatus.stream()
+//                .map(attendance -> WorkStatusDTO.builder().
+//                        name(attendance.getMember().getName()).
+//                        // department(attendance.getMember().getDepartment()).
+//                        // position(attendance.getMember().getPosition()).
+//                        inTime(attendance.getInTime()).
+//                        goOutTime(attendance.getGoOutTime()).
+//                        outTime(attendance.getOutTime()).
+//                        returnTime(attendance.getReturnTime()).
+//                        // status(attendance.getStatus()).
+//                        build())
+//                .toList();
     }
 }

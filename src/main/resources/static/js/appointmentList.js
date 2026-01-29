@@ -25,7 +25,6 @@ function loadAppointmentList() {
         url: '/hr/appointment/list',
         type: 'GET',
         success: function (response) {
-            console.log(response)
             renderTable(response)
         },
         error: function () {

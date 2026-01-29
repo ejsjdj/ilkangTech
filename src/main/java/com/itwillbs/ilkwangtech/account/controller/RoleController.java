@@ -60,7 +60,9 @@ public class RoleController {
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "sortBy", defaultValue = "memberId") String sortBy,
             @RequestParam(name = "direction", defaultValue = "ASC") String direction) {
-        
+
+
+
         Sort.Direction sortDir = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
         

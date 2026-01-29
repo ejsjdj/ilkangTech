@@ -394,6 +394,7 @@
                 <form th:action="@{/account/update}" method="post" th:object="${user}" id="updateForm" style="height: 100%;">
                     <!-- CSRF protection -->
                     <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" th:field="*{id}">
                     <div class="form-card">
                         <div class="section-header">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">

@@ -14,6 +14,7 @@ import lombok.*;
 // 실패시 가입성공여부 false, 응답메시지 ~ 때문에 안된다 메시지, accountId = null, account = null
 public class AccountRegisterResponse {
 
+    private Long id;            // 생성된 사원의 id
     private boolean success;	// 가입 성공 여부
     private String message;		// 응답 메시지
     private String employeeNumber; // 생성된 사원 정보

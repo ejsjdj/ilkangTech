@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.common.security;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.account.repository.LoginAttemptRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,12 +13,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final LoginAttemptRepository loginAttemptRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     @Transactional
@@ -31,6 +34,14 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         loginAttemptRepository.findByMemberId(accountLogin.getId()).ifPresent(loginAttempt -> {
             loginAttempt.reset();
             loginAttemptRepository.save(loginAttempt);
+        });
+
+        LocalDateTime lastLoginTime = accountLogin.getLastLogin();
+
+        // 마지막 로그인 시간을 갱신함
+        accountRepository.findById(accountLogin.getId()).ifPresent(account -> {
+            account.setLastLogin(LocalDateTime.now());
+            accountRepository.save(account);
         });
 
         response.sendRedirect("/schedule/calendar");

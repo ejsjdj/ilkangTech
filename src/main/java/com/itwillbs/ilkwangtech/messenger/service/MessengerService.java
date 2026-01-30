@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.messenger.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,7 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatMessageResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
@@ -20,9 +24,12 @@ import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberId;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberSetting;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberSettingId;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatMessageRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomRepository;
+import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomSettingRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.MessengerRepository;
 
 @Service
@@ -32,13 +39,24 @@ public class MessengerService {
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MessengerRepository messengerRepository;
+    private final ChatRoomSettingRepository settingRepository;
+    private final MemberRepository memberRepository;
+    private final DepartmentRepository departmentRepository;
 
     public MessengerService(ChatRoomRepository chatRoomRepository,
-                            ChatRoomMemberRepository chatRoomMemberRepository, MessengerRepository messengerRepository, ChatMessageRepository chatMessageRepository) {
+                            ChatRoomMemberRepository chatRoomMemberRepository, 
+                            MessengerRepository messengerRepository, 
+                            ChatMessageRepository chatMessageRepository, 
+                            ChatRoomSettingRepository settingRepository,
+                            MemberRepository memeberRepository,
+                            DepartmentRepository departmentRepository) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatRoomMemberRepository = chatRoomMemberRepository;
 		this.chatMessageRepository = chatMessageRepository;
 		this.messengerRepository = messengerRepository;
+		this.settingRepository = settingRepository;
+		this.memberRepository = memeberRepository;
+		this.departmentRepository = departmentRepository;
     }
 
     @Transactional
@@ -178,7 +196,11 @@ public class MessengerService {
                            ? m.getRoomNickname() : getRoomDisplayTitle(room.getId(), myId);
             dto.setRoomTitle(title);
 
-            // 최신 메시지 조회
+            // [추가] 즐겨찾기 상태 조회
+            settingRepository.findById(new ChatRoomMemberSettingId(room.getId(), myId))
+                .ifPresent(s -> dto.setIsFavorite(s.getIsFavorite()));
+
+            // 최신 메시지 조회 로직 (기존 유지)
             Optional<ChatMessage> latest = chatMessageRepository.findLatest(room.getId(), m.getJoinedAt(), PageRequest.of(0, 1))
                     .stream().findFirst();
             latest.ifPresent(last -> {
@@ -189,8 +211,11 @@ public class MessengerService {
             return dto;
         })
         .filter(Objects::nonNull)
-        // ★ 람다식 본문을 추가하여 정렬 로직을 완성합니다.
+        // [수정] 즐겨찾기(Y)가 최상단에 오고, 그 다음 최신 메시지 시간순으로 정렬
         .sorted((a, b) -> {
+            if ("Y".equals(a.getIsFavorite()) && !"Y".equals(b.getIsFavorite())) return -1;
+            if (!"Y".equals(a.getIsFavorite()) && "Y".equals(b.getIsFavorite())) return 1;
+            
             if (a.getLastTime() == null) return 1;
             if (b.getLastTime() == null) return -1;
             return b.getLastTime().compareTo(a.getLastTime());
@@ -257,6 +282,69 @@ public class MessengerService {
         
         membership.setRoomNickname(newName); // Dirty Checking으로 자동 업데이트
     }
+
+    @Transactional
+    public void updateFavoriteStatus(Long roomId, Long memberId, String status) {
+        // 1. 복합 ID 생성
+        ChatRoomMemberSettingId settingId = new ChatRoomMemberSettingId(roomId, memberId);
+
+        // 2. 기존 설정 존재 여부 확인
+        ChatRoomMemberSetting setting = settingRepository.findById(settingId)
+                .orElseGet(() -> {
+                    // 데이터가 없으면 새 객체 생성 및 기본값 세팅
+                    ChatRoomMemberSetting newSetting = new ChatRoomMemberSetting();
+                    newSetting.setId(settingId);
+                    return newSetting;
+                });
+
+        // 3. 상태 업데이트 및 날짜 처리
+        setting.setIsFavorite(status);
+        if ("Y".equals(status)) {
+            setting.setFavoritedAt(LocalDateTime.now()); // 즐겨찾기 지정 일시
+        } else {
+            setting.setFavoritedAt(null); // 즐겨찾기 해제 시 날짜 삭제
+        }
+
+        // 4. 저장 (JPA Dirty Checking에 의해 생략 가능하나 명시적 호출도 무방)
+        settingRepository.save(setting);
+    }
     
+    public List<MemberDeptRowDTO> getMemberListWithFavorite(Long myId) {
+        List<Member> members = memberRepository.findAll();
+        
+        return members.stream().map(m -> {
+            MemberDeptRowDTO dto = new MemberDeptRowDTO();
+            dto.setMemberId(m.getId());
+            dto.setMemberName(m.getName());
+            
+            // 부서 정보 세팅 (기존 로직 유지)
+            Integer deptId = m.getDepartment(); 
+            String dName = (deptId != null) ? 
+                departmentRepository.findById(deptId).map(Department::getDepartmentName).orElse("소속 없음") 
+                : "소속 없음";
+            dto.setDepartmentName(dName);
+            
+            // [수정] 실제 1:1 채팅방의 ID를 기반으로 즐겨찾기 여부를 확인합니다.
+            Long emp1 = (myId < m.getId()) ? myId : m.getId();
+            Long emp2 = (myId < m.getId()) ? m.getId() : myId;
+
+            chatRoomRepository.findByRoomTypeAndDirectEmp1AndDirectEmp2("DIRECT", emp1, emp2)
+                .ifPresent(room -> {
+                    // 방 ID와 내 ID를 조합한 복합키로 설정을 조회합니다.
+                    settingRepository.findById(new ChatRoomMemberSettingId(room.getId(), myId))
+                        .ifPresent(s -> dto.setIsFavorite(s.getIsFavorite()));
+                });
+            
+            return dto;
+        })
+        .sorted(Comparator.comparing(MemberDeptRowDTO::getIsFavorite).reversed()
+                .thenComparing(MemberDeptRowDTO::getMemberName))
+        .collect(Collectors.toList());
+    }
     
+    public String getFavoriteStatus(Long roomId, Long memberId) {
+        return settingRepository.findById(new ChatRoomMemberSettingId(roomId, memberId))
+                .map(ChatRoomMemberSetting::getIsFavorite)
+                .orElse("N"); // 설정이 없으면 기본값 'N'
+    }
 }

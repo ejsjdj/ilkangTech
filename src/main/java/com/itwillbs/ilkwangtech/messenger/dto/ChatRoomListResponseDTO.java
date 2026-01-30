@@ -17,4 +17,5 @@ public class ChatRoomListResponseDTO {
     private String lastMessage;  // 마지막 메시지 내용
     private String lastTime;     // 마지막 메시지 시간 (ex) 오후 1:32)
     private LocalDateTime lastMessageAt;
+    private String isFavorite = "N";
 }

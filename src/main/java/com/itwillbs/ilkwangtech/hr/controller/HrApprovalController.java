@@ -64,10 +64,8 @@ public class HrApprovalController {
     @PostMapping("/register")
     @ResponseBody
     public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO, @AuthenticationPrincipal AccountLogin accountLogin){
-    	log.info("createApprovalPOST() 실행!");
         Long userId = accountLogin.getId();
 
-        log.info("createApprovalPOST() 실행!");
         draftRegistService.putDraft(draftRegistDTO, userId);
     }
 

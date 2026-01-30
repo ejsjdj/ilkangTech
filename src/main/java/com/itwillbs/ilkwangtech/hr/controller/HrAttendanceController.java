@@ -28,11 +28,19 @@ public class HrAttendanceController {
     private final CommuteAllService commuteAllService;
     private final DepartmentService departmentService;
 
-    // 휴가 조회
+
+    // 휴가 관리 페이지 이동
     @GetMapping("/vacation")
+    public String getVacation(){
+
+        return "hr/vacation";
+    }
+
+    // 휴가 목록 조회
+    @GetMapping("/vacation/list")
     @ResponseBody
-    public List<LeaveDTO> getVacationManage(@AuthenticationPrincipal AccountLogin accountLogin){
-        // TODO :: 부서별 휴가 현황 조회 필요
+    public List<LeaveDTO> getVacationList(@AuthenticationPrincipal AccountLogin accountLogin){
+
         return leaveService.getLeaveStatus(accountLogin.getId());
     }
 
@@ -75,31 +83,39 @@ public class HrAttendanceController {
                                     @RequestParam(name = "outTime", required = false) LocalDateTime goOutTime,
                                     @RequestParam(name = "outTime", required = false) LocalDateTime returnTime){
 
-        System.out.println(attendanceId);
-        System.out.println(inTime);
-        System.out.println(outTime);
-        System.out.println(goOutTime);
-        System.out.println(returnTime);
-
         updateCommuteService.updateCommuteService(attendanceId, inTime, outTime, goOutTime, returnTime);
     }
 
+    // 근무 현황 페이지 이동
+    @GetMapping("/work")
+    public String getWorkStatus(Model model){
+
+        model.addAttribute("departments", departmentService.getActiveDepartments());
+
+        return "hr/workStatus";
+    }
+
     // 전 사원 근무 현황 조회
-    @GetMapping("/status")
+    @GetMapping("/work/list")
     @ResponseBody
-    public void getWorkStatus(){
-        // return workStatusService.getWorkStatus();
+    public List<WorkStatusDTO> getWorkList(@RequestParam(name = "deptCode") Integer deptCode,
+                                           @RequestParam(name = "workDate") LocalDate workDate){
+
+        System.out.println(deptCode);
+        System.out.println(workDate);
+
+        return workStatusService.getWorkStatus(deptCode, workDate);
     }
 
     // 특정 사원의 퇴근 처리
-    @PostMapping("/status/updateGoOut")
+    @PostMapping("/work/updateGoOut")
     @ResponseBody
     public AttendanceDTO updateGoOut(@RequestParam("userId") long userId){
         return updateWorkStatusService.updateGoOutService(userId);
     }
 
     // 특정 사원의 외근 복귀 처리
-    @PostMapping("/status/updateComeBack")
+    @PostMapping("/work/updateComeBack")
     @ResponseBody
     public AttendanceDTO updateComeBack(@RequestParam("userId") long userId){
         return updateWorkStatusService.updateComeBackService(userId);

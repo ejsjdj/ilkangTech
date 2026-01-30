@@ -88,6 +88,5 @@ public class HrApprovalController {
             log.error("결재 처리 중 오류 발생", e);
             return "fail";
         }
-        // return "redirect:/draft/list";
     }
 }

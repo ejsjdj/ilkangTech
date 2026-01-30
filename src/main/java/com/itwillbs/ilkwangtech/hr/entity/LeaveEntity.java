@@ -33,7 +33,6 @@ public class LeaveEntity {
     @Column(nullable = true)
     private long remainLeave;
 
-    public void calculateRemainLeave(){
-        this.remainLeave = this.totalLeave - this.usedLeave;
+    public void calculateRemainLeave(){this.remainLeave = this.totalLeave - this.usedLeave;
     }
 }

@@ -103,6 +103,7 @@ async function postDraft(){
         draftFile: document.getElementById('draftFile').value,
         draftStartDate: document.getElementById('startDate').value,
         draftEndDate: document.getElementById('endDate').value,
+        draftTotalDate: calculateDays(),
         draftStatus: "대기",
     }
 
@@ -139,4 +140,49 @@ async function postDraft(){
         console.error('Fetch error:', error);
         alert('서버와 통신 중 오류가 발생했습니다.');
     }
+}
+
+/*날짜 계산*/
+function calculateDays() {
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+
+    if (start && end) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        // 날짜 차이 계산 (밀리초 단위)
+        const diffInMs = getBusinessDays(startDate, endDate);
+
+        // 일 단위로 변환 (1000ms * 60s * 60m * 24h)
+        const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+        if (diffInDays < 0) {
+            alert("종료일은 시작일보다 빠를 수 없습니다.");
+            document.getElementById('endDate').value = "";
+            return;
+        }
+
+        // 당일 포함을 위해 +1을 해줍니다.
+        const totalBusinessDays = getBusinessDays(startDate, endDate);
+
+        console.log("총 평일(휴가) 일수:", totalBusinessDays);
+        return totalBusinessDays;
+    }
+}
+
+
+/*주말 제외*/
+function getBusinessDays(startDate, endDate) {
+    let count = 0;
+    let curDate = new Date(startDate);
+
+    while (curDate <= endDate) {
+        const dayOfWeek = curDate.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            count++;
+        }
+        curDate.setDate(curDate.getDate() + 1);
+    }
+    return count;
 }

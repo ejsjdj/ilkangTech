@@ -105,13 +105,11 @@ function loadCommuteAllList() {
     });
 }
 
-// 발령 등록
 function loadAttendanceData() {
-    // 1. 현재 화면에 입력/선택된 값 가져오기
+
     const deptCode = document.querySelector('select[name="department"]').value;
     const workDate = document.getElementById('dateFilter').value;
 
-    // 3. 컨트롤러 주소에 파라미터를 붙여서 이동 (GET 방식)
     $.ajax({
         url: '/attendance/commute/all',
         type: 'GET',

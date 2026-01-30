@@ -3,7 +3,9 @@ package com.itwillbs.ilkwangtech.hr.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import com.itwillbs.ilkwangtech.hr.entity.LeaveEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,11 +74,11 @@ public class DraftDecideService {
             draftRepository.updateFinalStatus(draftId, "승인");
             
             // [추가] 최종 승인이 났을 때 캘린더 등록 로직 호출
-            registerVacationToCalendar(draftId);
+            registerVacationToCalendar(userId, draftId);
         }
     }
 
-	private void registerVacationToCalendar(long draftId) {
+	private void registerVacationToCalendar(long userId, long draftId) {
 		// 결재 정보 조회
         DraftEntity draft = draftRepository.findById(draftId)
                 .orElseThrow(() -> new IllegalArgumentException("문서 정보가 존재하지 않습니다."));
@@ -89,7 +91,22 @@ public class DraftDecideService {
             ScheduleDTO scheduleDto = new ScheduleDTO();
             scheduleDto.setTitle("[연차] " + draft.getMember().getName()); // 제목: [연차] 홍길동
             scheduleDto.setContent(draft.getDraftContent()); // 내용: 결재 내용 복사
-            
+
+            // 잔여 휴가 갱신
+//            LeaveEntity leave = draftRepository.findApprovedLeaveDraft(userId, draftId)
+//                    .orElseThrow(() -> new IllegalArgumentException("휴가 정보를 찾을 수 없습니다"));
+//            long usingLeave = draft.getDraftTotalDate(); // 사용할 휴가
+//
+//            long totalLeave = leave.getTotalLeave(); // 총 휴가
+//            long usedLeave = leave.getUsedLeave(); // 사용한 휴가
+//
+//            long usedResult = usingLeave - usedLeave; // 사용한 휴가 + 사용할 휴가
+//            long remainResult = totalLeave - usedResult; // 전체 휴가 - (사용한 휴가 + 사용할 휴가) = 잔여휴가
+//
+//            leave.setUsedLeave(usedResult);
+//            leave.setRemainLeave(remainResult);
+
+
             // 날짜 변환: LocalDate -> LocalDateTime
             // 시작일 00:00, 종료일 23:59로 설정하여 캘린더에 꽉 차게 표시
             scheduleDto.setStartDate(draft.getDraftStartDate().atStartOfDay());

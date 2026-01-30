@@ -18,14 +18,10 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     // 사원 번호로 개인 출퇴근 현황 조회
     List<Attendance> findByMemberId(Long userId);
 
-    // 부서별 출퇴근 현황 조회
-    @Query("SELECT a FROM Attendance a JOIN FETCH a.member m WHERE m.department = :dept AND a.workDate = :date")
+    // 부서별 출퇴근/근무 현황 조회
+    @Query("SELECT a " +
+            "FROM Attendance a JOIN FETCH a.member m " +
+            "WHERE m.department = :dept AND a.workDate = :date")
     List<Attendance> findByDepartmentAndDate(@Param("dept") Integer dept, @Param("date") LocalDate date);
-
-//    // 전 사원 근무 현황 조회
-//    @Query("""
-//            SELECT a FROM Attendance a JOIN FETCH a.member m WHERE m.department = :dept AND a.workDate = :date
-//            """)
-//    List<Attendance> findAllWithMemberAndDepartments();
 
 }

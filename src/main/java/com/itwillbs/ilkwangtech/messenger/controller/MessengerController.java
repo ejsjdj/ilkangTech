@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -49,14 +51,14 @@ public class MessengerController {
 	}
 
 	@GetMapping("/memberList")
-	public String memberList(Model model) {
-		
-		List<MemberDeptRowDTO> memberList = messengerService.getMemberDeptRows();
-		
-		model.addAttribute("memberList", memberList);
-		
-		// 수정
-		return "/messenger/memberList";
+	public String memberList(Model model, Authentication auth) {
+	    Long myId = ((AccountLogin)auth.getPrincipal()).getId();
+	    List<MemberDeptRowDTO> memberList = messengerService.getMemberListWithFavorite(myId);
+	    
+	    model.addAttribute("myMemberId", myId);
+	    model.addAttribute("memberList", memberList);
+	    
+	    return "messenger/memberList"; // "/messenger/memberList"에서 앞의 슬래시 제거
 	}
 	
 	@GetMapping("/chatList")
@@ -112,6 +114,7 @@ public class MessengerController {
 	    
 	    List<ChatMessageResponseDTO> chatHistory = messengerService.getChatHistory(roomId, myId); 
 	    
+	    model.addAttribute("isFavorite", messengerService.getFavoriteStatus(roomId, myId));
 	    model.addAttribute("chatHistory", chatHistory);
 	    model.addAttribute("roomId", roomId);
 	    model.addAttribute("myMemberId", myId);
@@ -219,6 +222,35 @@ public class MessengerController {
             }
             return dto;
         }).collect(Collectors.toList());
+    }
+    
+    @PostMapping("/api/favorite")
+    @ResponseBody
+    public ResponseEntity<String> toggleFavorite(@RequestBody Map<String, Object> params) {
+        Long roomId = Long.valueOf(params.get("roomId").toString());
+        Long memberId = Long.valueOf(params.get("myMemberId").toString());
+        String status = params.get("status").toString(); // "Y" 또는 "N"
+
+        // CHAT_ROOM_MEMBER_SETTING 테이블에 상태 업데이트 또는 Insert 로직 수행
+        messengerService.updateFavoriteStatus(roomId, memberId, status);
+        
+        return ResponseEntity.ok("success");
+    }
+    
+    @PostMapping("/api/favorite/member")
+    @ResponseBody
+    public ResponseEntity<String> toggleMemberFavorite(@RequestBody Map<String, Object> params) {
+        Long myId = Long.valueOf(params.get("myMemberId").toString());
+        Long targetId = Long.valueOf(params.get("targetMemberId").toString());
+        String status = params.get("status").toString();
+
+        // 1. 나와 상대방의 1:1 채팅방 ID를 가져옵니다. (없으면 생성됨)
+        Long roomId = messengerService.getOrCreateDirectRoom(myId, targetId);
+
+        // 2. 해당 방에 대한 즐겨찾기 설정을 업데이트합니다.
+        messengerService.updateFavoriteStatus(roomId, myId, status);
+        
+        return ResponseEntity.ok("success");
     }
 }
 

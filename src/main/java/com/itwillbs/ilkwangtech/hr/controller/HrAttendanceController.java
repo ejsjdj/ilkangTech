@@ -59,7 +59,7 @@ public class HrAttendanceController {
     public List<LeaveByDepartmentDTO> getVacationAll(@AuthenticationPrincipal AccountLogin accountLogin,
                                                      @RequestParam(name = "workDate") LocalDate workDate){
 
-        System.out.println(accountLogin.getId());
+        System.out.println("부서 코드 : " + accountLogin.getDepartment());
 
         return leaveAllService.getLeaveAllList(Integer.parseInt(accountLogin.getDepartment()), workDate);
 

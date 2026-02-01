@@ -19,9 +19,9 @@ public class LeaveService {
     @Transactional
     public List<LeaveDTO> getLeaveStatus(Long userId, LocalDate workDate){
 
-        LocalDate start = workDate.withDayOfMonth(1);
-        LocalDate end = workDate.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
+        LocalDate startDate = workDate.withDayOfMonth(1);
+        LocalDate endDate = workDate.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
 
-        return leaveRepository.findVacationAndLeaveDetails(userId, start, end);
+        return leaveRepository.findVacationAndLeaveDetails(userId, startDate, endDate, workDate);
     }
 }

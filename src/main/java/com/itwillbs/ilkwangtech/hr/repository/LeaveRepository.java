@@ -27,7 +27,8 @@ public interface LeaveRepository extends JpaRepository<LeaveEntity, Long> {
             "AND d.draftEndDate >= CAST(:workDate AS date) " +
             "WHERE l.member.id = :userId")
     List<LeaveDTO> findVacationAndLeaveDetails(@Param("userId") long userId,
-                                               @Param("workDate") LocalDate startDate,
-                                               @Param("endDate") LocalDate endDate );
+                                               @Param("startDate") LocalDate startDate,
+                                               @Param("endDate") LocalDate endDate,
+                                               @Param("workDate") LocalDate workDate);
 }
 

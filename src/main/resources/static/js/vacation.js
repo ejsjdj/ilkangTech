@@ -1,41 +1,66 @@
-$(document).ready(function() {
-    loadVacationList();
+$(document).ready(function () {
+    setCurrentMonth();      // 최초 1회만
+    loadCurrentTabData();
 
-    $('#dateFilter').on('change', function() {
-        if ($('#tabMyVac').hasClass('active')) {
-            loadVacationList();
-        } else {
-            loadVacationAllList();
-        }
+    $('#dateFilter').on('change', function () {
+        loadCurrentTabData();
     });
 });
 
 
+function setCurrentMonth() {
+    const now = new Date();
+    const month = now.toISOString().slice(0, 7); // yyyy-MM
+    $('#dateFilter').val(month);
+}
+
+function loadCurrentTabData() {
+    if ($('#tabMyVac').hasClass('active')) {
+        loadVacationList();
+    } else {
+        loadVacationAllList();
+    }
+}
 /**
- * 탭 전환 로직
+ * 탭 전환 로직 (수정됨)
  */
 function switchTab(tabType) {
     $('.tab-item').removeClass('active');
-    const dateInput = document.getElementById('dateFilter');
-    const now = new Date();
 
     if (tabType === 'MY') {
         $('#tabMyVac').addClass('active');
-        $('#deptFilterContainer').hide();
-
-        dateInput.type = 'month';
-        dateInput.value = now.toISOString().substring(0, 7);
-
+        $('#vacationContainer').show();
         loadVacationList();
     } else {
         $('#tabAllVac').addClass('active');
-        $('#deptFilterContainer').show();
-
-        dateInput.type = 'month';
-        dateInput.value = now.toISOString().substring(0, 7);
-
+        $('#vacationContainer').hide();
         loadVacationAllList();
     }
+}
+
+// 부서별 휴가 현황 조회
+function loadVacationAllList() {
+    let monthVal = $('#dateFilter').val();
+    if (!monthVal) return;
+
+    $.ajax({
+        url: '/attendance/vacation/all',
+        type: 'GET',
+        data: {
+            workDate: monthVal.length === 7 ? monthVal + "-01" : monthVal
+        },
+        success: function (response) {
+            console.log('ALL VACATION', response);
+            renderVacationAllList(response);
+        },
+        error: function () {
+            $('#vacationListContainer').html(`
+                <div class="text-center text-danger py-4">
+                    휴가 목록을 가져올 수 없습니다.
+                </div>
+            `);
+        }
+    });
 }
 
 
@@ -54,32 +79,6 @@ function loadVacationList(){
             console.log(response);
             renderVacation(response);
             renderVacationList(response);
-        },
-        error: function (){
-            const container = document.getElementById('vacationContainer');
-            container.innerHTML =
-                '<div class="empty-state">' +
-                '<i class="bi bi-exclamation-circle"></i>' +
-                '<p>휴가 목록을 가져올 수 없습니다.</p>' +
-                '</div>';
-        }
-    });
-}
-
-// 부서별 휴가 현황 로드
-function loadVacationAllList(){
-    let monthVal = $('#dateFilter').val(); // "2026-02"
-    if (!monthVal) return;
-
-    $. ajax({
-        url: '/attendance/vacation/all',
-        type: 'GET',
-        data: {
-            workDate: monthVal.length === 7 ? monthVal + "-01" : monthVal
-        },
-        success: function (response){
-            console.log(response);
-            renderVacationAllList(response);
         },
         error: function (){
             const container = document.getElementById('vacationContainer');

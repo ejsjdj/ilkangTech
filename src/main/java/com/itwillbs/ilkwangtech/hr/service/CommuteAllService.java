@@ -1,7 +1,6 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
-import com.itwillbs.ilkwangtech.account.entity.Department;
-import com.itwillbs.ilkwangtech.account.entity.Position;
+
 import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
 import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
 import com.itwillbs.ilkwangtech.hr.dto.CommuteAllDTO;
@@ -13,8 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 // 부서별 출퇴근 현황 조회
 @Service

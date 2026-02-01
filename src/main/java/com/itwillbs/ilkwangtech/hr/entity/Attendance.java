@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.hr.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.itwillbs.ilkwangtech.hr.constant.AttendanceStatus;
 import com.itwillbs.ilkwangtech.member.entity.Member;
@@ -101,23 +102,23 @@ public class Attendance {
     }
 
     // 5. 출근 시간 수정
-    public void changeInTime(LocalDateTime inTime){
-        this.inTime = inTime;
+    public void changeInTime(String inTime, LocalDate baseDate){
+        this.inTime = LocalDateTime.of(baseDate, LocalTime.parse(inTime));
     }
 
     // 6. 퇴근 시간 수정
-    public void changeOutTime(LocalDateTime outTime){
-        this.outTime = outTime;
+    public void changeOutTime(String outTime, LocalDate baseDate){
+        this.outTime = LocalDateTime.of(baseDate, LocalTime.parse(outTime));
     }
 
-    // 6. 퇴근 시간 수정
-    public void changeGoOutTime(LocalDateTime goOutTime){
-        this.goOutTime = goOutTime;
+    // 6. 외근 시간 시간 수정
+    public void changeGoOutTime(String goOutTime, LocalDate baseDate){
+        this.goOutTime = LocalDateTime.of(baseDate, LocalTime.parse(goOutTime));
     }
 
-    // 6. 퇴근 시간 수정
-    public void changeReturnTime(LocalDateTime returnTime){
-        this.returnTime = returnTime;
+    // 6. 외근복귀 시간 수정
+    public void changeReturnTime(String returnTime, LocalDate baseDate){
+        this.returnTime = LocalDateTime.of(baseDate, LocalTime.parse(returnTime));
     }
 
 }

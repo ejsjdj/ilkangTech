@@ -5,14 +5,15 @@ import com.itwillbs.ilkwangtech.hr.dto.*;
 import com.itwillbs.ilkwangtech.hr.service.*;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Controller
@@ -27,6 +28,7 @@ public class HrAttendanceController {
     private final UpdateCommuteService updateCommuteService;
     private final CommuteAllService commuteAllService;
     private final DepartmentService departmentService;
+    private final LeaveAllService leaveAllService;
 
 
     // 휴가 관리 페이지 이동
@@ -39,9 +41,28 @@ public class HrAttendanceController {
     // 휴가 목록 조회
     @GetMapping("/vacation/list")
     @ResponseBody
-    public List<LeaveDTO> getVacationList(@AuthenticationPrincipal AccountLogin accountLogin){
+    public List<LeaveDTO> getVacationList(@AuthenticationPrincipal AccountLogin accountLogin,
+                                          @RequestParam(name = "workDate") LocalDate workDate){
 
-        return leaveService.getLeaveStatus(accountLogin.getId());
+        System.out.println(accountLogin.getId());
+
+        List<LeaveDTO> DTO = leaveService.getLeaveStatus(accountLogin.getId(), workDate);
+
+        System.out.println(DTO);
+
+        return DTO;
+    }
+
+    // 부서별 휴가 목록 조회
+    @GetMapping("/vacation/all")
+    @ResponseBody
+    public List<LeaveByDepartmentDTO> getVacationAll(@AuthenticationPrincipal AccountLogin accountLogin,
+                                                     @RequestParam(name = "workDate") LocalDate workDate){
+
+        System.out.println(accountLogin.getId());
+
+        return leaveAllService.getLeaveAllList(Integer.parseInt(accountLogin.getDepartment()), workDate);
+
     }
 
 
@@ -57,18 +78,17 @@ public class HrAttendanceController {
     // 개인 출퇴근 기록 조회
     @GetMapping("/commute/list")
     @ResponseBody
-    public List<CommuteDTO> getCommuteList(@AuthenticationPrincipal AccountLogin accountLogin){
-        return commuteService.getPersonalCommuteList(accountLogin.getId());
+    public List<CommuteDTO> getCommuteList(@AuthenticationPrincipal AccountLogin accountLogin,
+                                           @RequestParam LocalDate workDate){
+        return commuteService.getPersonalCommuteList(accountLogin.getId(), workDate);
     }
 
     // 부서별 출퇴근 기록 조회
     @GetMapping("/commute/all")
     @ResponseBody
     public List<CommuteAllDTO> getCommuteAllList(@RequestParam(name = "deptCode") Integer deptCode,
-                                                 @RequestParam(name = "workDate") LocalDate workDate){
-
-        System.out.println("부서 코드: " + deptCode);
-        System.out.println("근무일: " + workDate);
+                                                 @RequestParam(name = "workDate") LocalDate workDate
+                                                 ){
 
         return commuteAllService.getCommuteAllList(deptCode, workDate);
 
@@ -78,10 +98,10 @@ public class HrAttendanceController {
     @PostMapping("/commute/update")
     @ResponseBody
     public void updateCommuteStatus(@RequestParam(name = "attendanceId", required = false) Long attendanceId,
-                                    @RequestParam(name = "inTime", required = false) LocalDateTime inTime,
-                                    @RequestParam(name = "outTime", required = false) LocalDateTime outTime,
-                                    @RequestParam(name = "outTime", required = false) LocalDateTime goOutTime,
-                                    @RequestParam(name = "outTime", required = false) LocalDateTime returnTime){
+                                    @RequestParam(name = "inTime", required = false) String inTime,
+                                    @RequestParam(name = "outTime", required = false) String outTime,
+                                    @RequestParam(name = "goOutTime", required = false) String goOutTime,
+                                    @RequestParam(name = "returnTime", required = false) String returnTime){
 
         updateCommuteService.updateCommuteService(attendanceId, inTime, outTime, goOutTime, returnTime);
     }

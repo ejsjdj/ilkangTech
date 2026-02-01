@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,6 +18,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     // 사원 번호로 개인 출퇴근 현황 조회
     List<Attendance> findByMemberId(Long userId);
+
+    // 시작일(startDate)과 종료일(endDate) 사이의 모든 기록을 조회
+    List<Attendance> findByMemberIdAndWorkDateBetween(Long memberId, LocalDate startDate, LocalDate endDate);
 
     // 부서별 출퇴근/근무 현황 조회
     @Query("SELECT a " +

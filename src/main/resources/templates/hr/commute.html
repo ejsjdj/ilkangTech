@@ -97,30 +97,32 @@
       </div>
     </div>
 
-    <div class="tab-container">
-      <div class="tab-item active" onclick="switchTab('MY')">내 출퇴근 관리</div>
-      <div class="tab-item" onclick="switchTab('ALL')">전사원 출퇴근 관리</div>
-    </div>
+      <div class="tab-container">
+          <div id="tabMy" class="tab-item active" onclick="switchTab('MY')">내 출퇴근 관리</div>
+          <div id="tabAll" class="tab-item" onclick="switchTab('ALL')">전사원 출퇴근 관리</div>
+      </div>
 
     <div class="scroll-area">
       <div class="search-filter-area">
-        <div class="dropdown" id="deptFilterContainer" style="display: none;">
-          <select class="form-select" name="department" required>
-            <option th:each="dept : ${departments}" th:text="${dept.departmentName}"
-                    th:value="${dept.id}"></option>
-          </select>
-        </div>
 
-        <div class="dropdown">
-          <input type="date" id="dateFilter" class="form-control-sm" style="border:1px solid #ddd; border-radius:4px; padding:5px;">
-        </div>
+          <div class="dropdown" id="deptFilterContainer">
+              <select class="form-select" id="deptFilter" name="department" required>
+                  <option th:each="dept : ${departments}"
+                          th:text="${dept.departmentName}"
+                          th:value="${dept.id}"></option>
+              </select>
+          </div>
+
+          <div class="dropdown">
+              <input type="date" id="dateFilter" class="form-control-sm">
+          </div>
 
         <div class="search-box" id="memberSearchBox" style="display:none;">
           <i class="bi bi-search search-icon"></i>
           <input type="text" id="searchInput" placeholder="사원명 또는 부서 검색">
         </div>
 
-        <button class="btn-search" onclick="loadAttendanceData()">조회</button>
+        <!--<button class="btn-search" onclick="loadAttendanceData()">조회</button>-->
       </div>
 
       <div id="tableContainer" class="table-wrapper">
@@ -139,6 +141,9 @@
           </tbody>
         </table>
       </div>
+
+        <div id="paginationContainer"></div>
+
     </div>
   </div>
 </div>

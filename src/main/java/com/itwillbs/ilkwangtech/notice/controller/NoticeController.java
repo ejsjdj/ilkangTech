@@ -97,10 +97,61 @@ public class NoticeController {
     
     // 1-2. 상세 페이지 이동
     @GetMapping("/detail/{id}")
-    public String detail(@PathVariable("id") Long id, Model model) {
+    public String detail(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal AccountLogin loginMember) {
         NoticeDetailDTO notice = noticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
+        
+        // 3. 권한 체크 (수정/삭제 버튼 노출용)
+        boolean canEdit = false;
+        if (loginMember != null) {
+            String dept = loginMember.getDepartment();
+            if ("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept)) {
+                canEdit = true;
+            }
+        }
+        model.addAttribute("canEdit", canEdit);
+        
         return "notice/detail";
+    }
+    
+    // [추가] 1. 수정 페이지 이동 (기존 내용 불러오기)
+    @GetMapping("/modify/{id}")
+    public String modifyForm(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal AccountLogin loginMember) {
+        // 권한 체크
+        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+            return "redirect:/notice/list";
+        }
+
+        // 기존 데이터 조회
+        NoticeDetailDTO notice = noticeService.getNoticeDetail(id);
+        model.addAttribute("notice", notice);
+        
+        return "notice/modify";
+    }
+
+    // [추가] 2. 수정 처리
+    @PostMapping("/modify")
+    public String modify(NoticeWriteDTO dto, @AuthenticationPrincipal AccountLogin loginMember) throws IOException {
+        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+            return "redirect:/notice/list";
+        }
+        noticeService.updateNotice(dto, loginMember);
+        return "redirect:/notice/detail/" + dto.getId();
+    }
+
+    // [추가] 3. 삭제 처리
+    @PostMapping("/delete")
+    public String delete(@RequestParam("id") Long id, @AuthenticationPrincipal AccountLogin loginMember) {
+        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+            return "redirect:/notice/list";
+        }
+        noticeService.deleteNotice(id);
+        return "redirect:/notice/list";
+    }
+
+    // 권한 체크 헬퍼 메서드
+    private boolean isAuthorized(String dept) {
+        return "정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept);
     }
 
     // 첨부파일 다운로드 처리

@@ -11,13 +11,13 @@
 	
 	<th:block layout:fragment="style">
 		<style>
-			.page-container { 
-            	background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 800px;
-                position: relative; display: flex; flex-direction: column; 
-            }
-            .page-container { 
-            background: #ffffff; border-radius: 12px; padding: 30px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); min-height: 800px;
+		.page-container { 
+        	background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 800px;
+            position: relative; display: flex; flex-direction: column; 
+        }
+        .page-container { 
+	        background: #ffffff; border-radius: 12px; padding: 30px; 
+	        box-shadow: 0 4px 20px rgba(0,0,0,0.05); min-height: 800px;
         }
         
         /* 캡처 화면(image_90ca6f.png) 페이지네이션 스타일 재현 */
@@ -91,7 +91,30 @@
 		.table th, .table td {
 		    border-bottom: 1px solid #f1f5f9;
 		}
-		/* 테스트 주석 */
+		/* [추가] 일정관리 페이지와 동일한 버튼 스타일 */
+		.btn-custom-blue {
+		    background-color: #fff; 
+		    border: 1px solid #5c6bc0; 
+		    color: #5c6bc0; 
+		    padding: 0 15px; 
+		    display: inline-flex; 
+		    align-items: center; 
+		    justify-content: center; 
+		    font-weight: 600; 
+		    text-decoration: none; 
+		    cursor: pointer;
+		    height: 38px !important; 
+		    line-height: 1.5; 
+		    font-size: 13px; 
+		    box-sizing: border-box; 
+		    vertical-align: middle; 
+		    border-radius: 4px;
+		    transition: all 0.2s;
+		}
+		.btn-custom-blue:hover { 
+		    background-color: #5c6bc0; 
+		    color: white; 
+		}
 		</style>
 	</th:block>
 </head>
@@ -99,10 +122,12 @@
 	<div layout:fragment="content">
 		<div class="page-container">
 			<div class="d-flex justify-content-between align-items-center mb-4">
-	            <h2 class="fw-bold m-0" style="font-size: 24px;">공지사항</h2>
-	            <a th:if="${canWrite}" th:href="@{/notice/write}" class="btn btn-primary px-4 py-2" 
-	               style="border-radius: 8px; font-weight: 600;">+ 공지 등록</a>
-	        </div>
+			    <h2 class="fw-bold m-0" style="font-size: 24px;">공지사항</h2>
+			    
+			    <a th:if="${canWrite}" th:href="@{/notice/write}" class="btn-custom-blue">
+			        <i class="fa-solid fa-plus" style="margin-right: 4px;"></i> 공지 등록
+			    </a>
+			</div>
 	
 	        <div class="table-responsive bg-white rounded-3 shadow-sm">
 	            <table class="table table-hover custom-table align-middle mb-0 text-center" style="min-width: 900px;">

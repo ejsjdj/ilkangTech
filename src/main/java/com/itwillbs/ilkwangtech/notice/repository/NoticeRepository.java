@@ -15,5 +15,8 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 
 	// 일반 게시글 페이징 (고정되지 않은 글들만 최신순으로)
 	Page<Notice> findByIsPinnedFalseOrderByRegDateDesc(Pageable pageable);
+	
+	// 기존 코드에 추가
+	long countByIsPinnedTrue();
 
 }

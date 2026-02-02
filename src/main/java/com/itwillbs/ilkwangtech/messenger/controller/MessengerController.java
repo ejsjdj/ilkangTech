@@ -101,6 +101,7 @@ public class MessengerController {
 	    Long roomId = messengerService.getOrCreateDirectRoom(login.getId(), targetId);
 	    
 	    return "redirect:/messenger/chatroom/" + roomId;
+	    // 임시
 	}
 
 

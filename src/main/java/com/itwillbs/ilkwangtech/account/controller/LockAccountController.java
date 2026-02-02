@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LockAccountController {
 
-    private final LockAccountService lockAccountService;
-
-    @GetMapping("/lockAccounts")
-    public ResponseEntity<LockAccount> login() {
-
-
-
-        return ResponseEntity.ok(lockAccount);
-    }
+//    private final LockAccountService lockAccountService;
+//
+//    @GetMapping("/lockAccounts")
+//    public ResponseEntity<LockAccount> login() {
+//
+//
+//
+//        return ResponseEntity.ok(lockAccount);
+//    }
 
 }

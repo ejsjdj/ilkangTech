@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.util.UriUtils;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeDetailDTO;
+import com.itwillbs.ilkwangtech.notice.dto.NoticeSearchDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeWriteDTO;
 import com.itwillbs.ilkwangtech.notice.entity.NoticeFile;
 import com.itwillbs.ilkwangtech.notice.repository.NoticeFileRepository;
@@ -41,11 +43,13 @@ public class NoticeController {
 	
 	@GetMapping("/list")
 	public String list(@RequestParam(value = "page", defaultValue = "0") int page, Model model, 
-	                   @AuthenticationPrincipal AccountLogin loginMember) {
+	                   @AuthenticationPrincipal AccountLogin loginMember,
+	                   @ModelAttribute NoticeSearchDTO searchDTO) {
 	    
 	    // 고정 게시글 및 일반 리스트 조회
 	    model.addAttribute("pinnedList", noticeService.getPinnedNotices());
-	    model.addAttribute("noticeList", noticeService.getNoticeList(page));
+        model.addAttribute("noticeList", noticeService.getNoticeList(page, searchDTO));
+        model.addAttribute("searchDTO", searchDTO);
 
 	    // 1-4. 권한 체크: 전산관리부 혹은 관리부 계정 확인
 	    boolean canWrite = false;

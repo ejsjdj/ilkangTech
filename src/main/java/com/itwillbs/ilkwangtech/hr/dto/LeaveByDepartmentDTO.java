@@ -10,20 +10,22 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class LeaveDTO {
+public class LeaveByDepartmentDTO {
+
+    private String name;
     private LocalDate startDate;
     private LocalDate endDate;
-    private long totalLeave;
-    private long usedLeave;
-    private long remainLeave;
+    private String status;
+    private Long totalDate;
 
     @Builder
-    public LeaveDTO(LocalDate startDate, LocalDate endDate, long totalLeave, long usedLeave, long remainLeave){
+    public LeaveByDepartmentDTO(String name, LocalDate startDate, LocalDate endDate, String status, Long totalDate){
         super();
+        this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.totalLeave = totalLeave;
-        this.usedLeave = usedLeave;
-        this.remainLeave = remainLeave;
+        this.status = status;
+        this.totalDate = totalDate;
     }
+
 }

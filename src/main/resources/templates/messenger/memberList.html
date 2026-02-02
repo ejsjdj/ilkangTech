@@ -121,10 +121,12 @@
 			     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
 			     ondblclick="goChat(this)">
 			
-			    <button type="button"
-			            class="starBtn starOff"
-			            title="즐겨찾기"
-			            onclick="event.stopPropagation()">☆</button>
+			    <button type="button" 
+			            class="starBtn" 
+			            th:classappend="${member.isFavorite == 'Y'} ? 'starOn' : 'starOff'"
+			            th:onclick="'toggleFavoriteMember(' + ${member.memberId} + ', this)'">
+			        ★
+			    </button>
 			    
 			    <div class="memberName">
 			        <span th:text="*{memberName}"></span>
@@ -203,6 +205,31 @@ function applySearch() {
     }
   });
 })();
+
+function toggleFavoriteMember(targetId, btn) {
+    event.stopPropagation(); // 행 클릭 이벤트(채팅방 이동) 방지
+    const isAdding = btn.classList.contains('starOff');
+    const status = isAdding ? 'Y' : 'N';
+    const myId = document.getElementById("myMemberId").value;
+
+    fetch('/messenger/api/favorite/member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetMemberId: targetId, myMemberId: myId, status: status })
+    })
+    .then(res => {
+        if(res.ok) {
+            btn.classList.toggle('starOn');
+            btn.classList.toggle('starOff');
+            const row = btn.closest('.memberRow');
+            if (status === 'Y') {
+                document.querySelector(".memberList").prepend(row); // 상단 고정
+            } else {
+                location.reload(); // 정렬을 위해 새로고침 (혹은 원래 위치로 이동 로직)
+            }
+        }
+    });
+}
 </script>
 
 

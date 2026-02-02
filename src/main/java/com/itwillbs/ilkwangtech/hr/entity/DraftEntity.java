@@ -47,4 +47,7 @@ public class DraftEntity {
     @Column(nullable = true)
     private String draftStatus;
 
+    @Column(nullable = true)
+    private Long draftTotalDate;
+
 }

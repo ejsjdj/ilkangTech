@@ -64,10 +64,8 @@ public class HrApprovalController {
     @PostMapping("/register")
     @ResponseBody
     public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO, @AuthenticationPrincipal AccountLogin accountLogin){
-    	log.info("createApprovalPOST() 실행!");
         Long userId = accountLogin.getId();
 
-        log.info("createApprovalPOST() 실행!");
         draftRegistService.putDraft(draftRegistDTO, userId);
     }
 
@@ -90,6 +88,5 @@ public class HrApprovalController {
             log.error("결재 처리 중 오류 발생", e);
             return "fail";
         }
-        // return "redirect:/draft/list";
     }
 }

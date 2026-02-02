@@ -26,12 +26,13 @@ public class DraftRegistDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate draftEndDate;
     private List<String> draftApprover;
+    private Long draftTotalDate;
     private String draftFile;
 
 
 
     @Builder
-    public DraftRegistDTO(String draftType, String draftTitle, String draftContent, LocalDate draftStartDate, LocalDate draftEndDate, List<String> draftApprover, String draftFile, String draftStatus){
+    public DraftRegistDTO(String draftType, String draftTitle, String draftContent, LocalDate draftStartDate, LocalDate draftEndDate, List<String> draftApprover, String draftFile, Long draftTotalDate, String draftStatus){
         super();
         this.draftType = draftType;
         this.draftTitle = draftTitle;
@@ -40,6 +41,7 @@ public class DraftRegistDTO {
         this.draftEndDate = draftEndDate;
         this.draftApprover = draftApprover;
         this.draftFile = draftFile;
+        this.draftTotalDate = draftTotalDate;
         this.draftStatus = draftStatus;
     }
 }

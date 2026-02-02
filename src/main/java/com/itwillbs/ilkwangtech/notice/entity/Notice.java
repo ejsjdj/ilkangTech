@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,13 +21,18 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@SequenceGenerator(
+	    name = "notice_seq_gen", 
+	    sequenceName = "SEQ_NOTICE", 
+	    allocationSize = 1 
+	)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Notice {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notice_seq_gen")
     private Long id;
 
     @Column(nullable = false)

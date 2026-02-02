@@ -2,6 +2,8 @@ package com.itwillbs.ilkwangtech.notice.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeDetailDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeListDTO;
+import com.itwillbs.ilkwangtech.notice.dto.NoticeSearchDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeWriteDTO;
 import com.itwillbs.ilkwangtech.notice.entity.Notice;
 import com.itwillbs.ilkwangtech.notice.entity.NoticeFile;
@@ -44,13 +47,32 @@ public class NoticeService {
                 .collect(Collectors.toList());
     }
 
-    public Page<NoticeListDTO> getNoticeList(int page) {
-        // 1-3. 페이지당 10개씩
+ // [수정] 검색 조건을 포함한 리스트 조회
+    public Page<NoticeListDTO> getNoticeList(int page, NoticeSearchDTO searchDTO) {
         Pageable pageable = PageRequest.of(page, 10);
-        return noticeRepository.findByIsPinnedFalseOrderByRegDateDesc(pageable)
-                .map(n -> new NoticeListDTO(n.getId(), n.getTitle(), n.getWriterName(), 
-                        n.getWriterRank(), n.getRegDate(), n.getModDate(), 
-                        n.getViewCount(), n.isPinned(), n.isHasAttachment()));
+        
+        // 날짜 변환 (LocalDate -> LocalDateTime)
+        LocalDateTime startDateTime = null;
+        LocalDateTime endDateTime = null;
+
+        if (searchDTO.getStartDate() != null) {
+            startDateTime = searchDTO.getStartDate().atStartOfDay(); // 00:00:00
+        }
+        if (searchDTO.getEndDate() != null) {
+            endDateTime = searchDTO.getEndDate().atTime(LocalTime.MAX); // 23:59:59.999...
+        }
+
+        // 레포지토리 호출
+        return noticeRepository.searchNotices(
+                startDateTime, 
+                endDateTime, 
+                searchDTO.getSearchType(), 
+                searchDTO.getKeyword(), 
+                pageable
+        ).map(n -> new NoticeListDTO(
+                n.getId(), n.getTitle(), n.getWriterName(), 
+                n.getWriterRank(), n.getRegDate(), n.getModDate(), 
+                n.getViewCount(), n.isPinned(), n.isHasAttachment()));
     }
     
     // 1-6. 현재 고정 게시글 개수 확인

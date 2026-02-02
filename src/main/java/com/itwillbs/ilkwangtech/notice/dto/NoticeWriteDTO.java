@@ -10,6 +10,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class NoticeWriteDTO {
+	private Long id; // 수정 시 게시글 ID 식별용
     private String title;
     private String content;
     private boolean isPinned; // 고정 여부
@@ -17,4 +18,7 @@ public class NoticeWriteDTO {
     // 파일 처리를 위한 필드
     private List<MultipartFile> imageFiles; // 이미지 (최대 5개)
     private List<MultipartFile> generalFiles; // 일반 파일 (최대 10개)
+    
+    // 수정 시 삭제할 기존 파일들의 ID 리스트
+    private List<Long> deleteFileIds;
 }

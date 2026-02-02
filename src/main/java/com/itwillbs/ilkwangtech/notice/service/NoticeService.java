@@ -169,12 +169,101 @@ public class NoticeService {
         dto.setWriterDept(notice.getWriterDept());
         dto.setViewCount(notice.getViewCount());
         dto.setRegDate(notice.getRegDate());
+        dto.setPinned(notice.isPinned());
         
         // 분리한 리스트 주입
         dto.setImageFiles(imageList);
         dto.setGeneralFiles(fileList);
 
         return dto;
+    }
+    
+    // [추가] 게시글 삭제 (파일 포함)
+    @Transactional
+    public void deleteNotice(Long id) {
+        // 1. 파일 삭제 (디스크 + DB)
+        List<NoticeFile> files = noticeFileRepository.findByNoticeId(id);
+        for (NoticeFile file : files) {
+            File localFile = new File(file.getFilePath());
+            if (localFile.exists()) localFile.delete();
+        }
+        
+        // DB에서 파일 데이터 삭제 (Cascade 설정이 없으므로 수동 삭제)
+        noticeFileRepository.deleteByNoticeId(id);
+
+        // 2. 게시글 삭제
+        noticeRepository.deleteById(id);
+    }
+
+    // [추가] 게시글 수정
+    @Transactional
+    public void updateNotice(NoticeWriteDTO dto, AccountLogin loginMember) throws IOException {
+        Notice notice = noticeRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
+
+        // 1. 기본 정보 수정 (Dirty Checking)
+        notice.setTitle(dto.getTitle());
+        notice.setContent(dto.getContent());
+        notice.setPinned(dto.isPinned());
+        // 수정자 정보 업데이트 (선택 사항: 보통 작성자는 유지하고 수정일만 갱신됨)
+        // notice.setModDate(LocalDateTime.now()); // @UpdateTimestamp가 있어 자동 처리됨
+
+        // 2. 삭제 요청된 기존 파일 삭제
+        if (dto.getDeleteFileIds() != null) {
+            for (Long fileId : dto.getDeleteFileIds()) {
+                NoticeFile file = noticeFileRepository.findById(fileId).orElse(null);
+                if (file != null) {
+                    // 실제 파일 삭제
+                    File localFile = new File(file.getFilePath());
+                    if (localFile.exists()) localFile.delete();
+                    
+                    // DB 삭제
+                    noticeFileRepository.delete(file);
+                }
+            }
+        }
+
+        // 3. 새로운 파일 추가 (기존 register 로직 활용)
+        boolean hasNewFile = false;
+        
+        // (1) 새 이미지 저장
+        if (dto.getImageFiles() != null) {
+            for (MultipartFile file : dto.getImageFiles()) {
+                if (!file.isEmpty()) {
+                    saveFile(file, notice, true);
+                    hasNewFile = true;
+                }
+            }
+        }
+        // (2) 새 일반 파일 저장
+        if (dto.getGeneralFiles() != null) {
+            for (MultipartFile file : dto.getGeneralFiles()) {
+                if (!file.isEmpty()) {
+                    saveFile(file, notice, false);
+                    hasNewFile = true;
+                }
+            }
+        }
+
+        // 4. 첨부파일 여부(hasAttachment) 갱신
+        // 기존 파일이 남아있거나, 새로 추가된 파일이 있으면 true
+        List<NoticeFile> remainingFiles = noticeFileRepository.findByNoticeId(notice.getId());
+        notice.setHasAttachment(!remainingFiles.isEmpty());
+    }
+
+    // 파일 디스크 삭제 헬퍼 메서드
+    private void deleteFileFromDisk(String filePath) {
+        if (filePath != null) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+    }
+    
+    // [추가] 수정 폼용 데이터 조회 (DetailDTO 재활용)
+    public NoticeDetailDTO getNoticeForEdit(Long id) {
+        return getNoticeDetail(id); // 기존 상세 조회 로직 활용 (조회수 증가 로직이 포함되어 있다면 분리 고려)
     }
 
 }

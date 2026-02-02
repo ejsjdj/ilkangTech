@@ -17,6 +17,9 @@ public class NoticeDetailDTO {
     private int viewCount;
     private LocalDateTime regDate;
     
+    // [추가] 고정 공지 여부 필드 추가
+    private boolean isPinned;
+    
     // 분리된 파일 리스트
     private List<NoticeFileDTO> imageFiles;   // 이미지 파일들
     private List<NoticeFileDTO> generalFiles; // 일반 첨부 파일들

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항 수정</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <th:block layout:fragment="style">
+        <style>
+            .page-container { background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); min-height: 800px; }
+            .page-title { font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 25px; }
+            .form-label { font-weight: 600; color: #495057; margin-bottom: 8px; }
+            .form-control, .form-select { border-radius: 6px; padding: 10px; }
+
+            /* 토글 스위치 */
+            .switch { position: relative; display: inline-block; width: 50px; height: 26px; vertical-align: middle; }
+            .switch input { opacity: 0; width: 0; height: 0; }
+            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+            .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+            input:checked + .slider { background-color: #6366f1; }
+            input:checked + .slider:before { transform: translateX(24px); }
+            .toggle-label { margin-left: 10px; font-weight: 600; color: #64748b; }
+            input:checked ~ .toggle-label { color: #6366f1; }
+
+            /* 기존 이미지 표시 박스 */
+            .old-img-box { position: relative; width: 150px; height: 150px; border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6; }
+            .old-img-box img { width: 100%; height: 100%; object-fit: cover; }
+            .old-img-box .btn-del { position: absolute; top: 5px; right: 5px; background: rgba(220, 53, 69, 0.9); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; }
+
+            /* 새 이미지 미리보기 */
+            #imagePreviewArea { min-height: 150px; background-color: #f8f9fa; border: 1px dashed #ced4da; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 15px; padding: 15px; justify-content: center; align-items: center; }
+            .img-preview-box { position: relative; width: 150px; height: 150px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: white; }
+            .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+            .btn-img-delete { position: absolute; top: 5px; right: 5px; background: rgba(220, 53, 69, 0.9); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+            /* 새 첨부파일 리스트 */
+            .file-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background-color: #fff; }
+            .file-list-item:first-child { border-top: 1px solid #f0f0f0; margin-top: 10px; }
+            .btn-file-delete { border: 1px solid #dc3545; background: white; color: #dc3545; font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+            .btn-file-delete:hover { background: #dc3545; color: white; }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="page-title">공지사항 수정</h2>
+            </div>
+
+            <form action="/notice/modify" method="post" enctype="multipart/form-data" id="modifyForm">
+                
+                <input type="hidden" name="id" th:value="${notice.id}">
+
+                <div class="mb-4">
+                    <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="title" name="title" 
+                           th:value="${notice.title}" placeholder="제목을 입력하세요">
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="templateSelect" class="form-label">공지 양식 선택</label>
+                        <select class="form-select" id="templateSelect">
+                            <option value="">-- 양식을 선택하세요 (기존 내용 덮어씀) --</option>
+                            <option value="1">1. 회사 경영 및 전체 공지문</option>
+                            <option value="2">2. 연휴 관련 사내 공휴일 보도문</option>
+                            <option value="3">3. 사내 이슈 및 주의문</option>
+                            <option value="4">4. 회사 전산 시스템 점검 및 수정 사항 공지문</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-center mt-4">
+                        <label class="switch">
+                            <input type="checkbox" id="isPinned" name="pinned" 
+                                   th:checked="${notice.isPinned}">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label" id="toggleText"
+                              th:text="${notice.isPinned} ? '고정 공지' : '일반 공지'"
+                              th:style="${notice.isPinned} ? 'color: #6366f1' : ''"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="content" name="content" rows="10" 
+                              th:text="${notice.content}" placeholder="내용을 입력하세요"></textarea>
+                </div>
+
+                <div class="mb-4" th:if="${not #lists.isEmpty(notice.imageFiles)}">
+                    <label class="form-label text-primary fw-bold">기존 이미지 (삭제할 이미지만 X 클릭)</label>
+                    <div class="d-flex flex-wrap gap-3 p-3 bg-light border rounded">
+                        <div th:each="img : ${notice.imageFiles}" class="old-img-box">
+                            <img th:src="@{|/upload/${img.savedFileName}|}">
+                            <button type="button" class="btn-del" th:onclick="'markFileForDelete(this, ' + ${img.id} + ')'">X</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">썸네일 파일 (추가)</label>
+                    <input type="file" class="form-control" id="imageInput" accept="image/*" multiple>
+                    <input type="file" name="imageFiles" id="realImageInput" style="display:none;" multiple>
+                    <div class="form-text mb-2">※ JPG, PNG, GIF 파일만 가능합니다.</div>
+                    <div id="imagePreviewArea"><span class="text-muted small">추가할 이미지가 없습니다.</span></div>
+                </div>
+
+                <div class="mb-4" th:if="${not #lists.isEmpty(notice.generalFiles)}">
+                    <label class="form-label text-primary fw-bold">기존 첨부파일 (삭제할 파일만 [삭제] 클릭)</label>
+                    <ul class="list-group">
+                        <li th:each="file : ${notice.generalFiles}" class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fa-regular fa-file me-2"></i><span th:text="${file.originalFileName}">파일명</span></span>
+                            <button type="button" class="btn btn-sm btn-outline-danger" th:onclick="'markFileForDelete(this, ' + ${file.id} + ')'">삭제</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">자료 파일 (추가)</label>
+                    <input type="file" class="form-control" id="fileInput" multiple>
+                    <input type="file" name="generalFiles" id="realFileInput" style="display:none;" multiple>
+                    <div class="form-text">가능 확장자: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, zip</div>
+                    <div id="fileListArea"></div>
+                </div>
+
+                <div id="deleteFilesContainer"></div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/notice/list" class="btn btn-secondary px-4 py-2" style="border-radius: 8px;">취소</a>
+                    <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 8px; font-weight: 600;">수정 완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <th:block layout:fragment="script">
+        <script>
+            // [핵심 변경] 1. 기존 파일 삭제 표시 함수 (ID 기반 -> DOM 탐색 기반으로 변경)
+            function markFileForDelete(btn, fileId) {
+                if(!confirm('수정 완료 시 해당 파일은 영구 삭제됩니다.\n삭제하시겠습니까?')) return;
+                
+                // 1. 화면에서 해당 요소 즉시 제거 (jQuery closest 활용)
+                // 이미지 박스(.old-img-box) 혹은 파일 리스트 아이템(.list-group-item)을 찾아서 제거
+                $(btn).closest('.old-img-box, .list-group-item').remove();
+                
+                // 2. form 내부에 hidden input 생성하여 삭제할 ID 추가
+                const container = document.getElementById('deleteFilesContainer');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'deleteFileIds';
+                input.value = fileId;
+                container.appendChild(input);
+            }
+
+            $(document).ready(function() {
+                const dtImages = new DataTransfer();
+                const dtFiles = new DataTransfer();
+
+                // 2. 새 이미지 처리
+                $('#imageInput').change(function() {
+                    const files = this.files;
+                    if (dtImages.items.length + files.length > 5) { alert("이미지는 최대 5개까지만 등록 가능합니다."); this.value = ''; return; }
+                    for (let i = 0; i < files.length; i++) { dtImages.items.add(files[i]); }
+                    $('#realImageInput')[0].files = dtImages.files;
+                    renderImagePreviews();
+                    this.value = ''; 
+                });
+
+                function renderImagePreviews() {
+                    const $area = $('#imagePreviewArea'); $area.empty();
+                    if (dtImages.files.length === 0) { $area.html('<span class="text-muted small">추가할 이미지가 없습니다.</span>'); return; }
+                    Array.from(dtImages.files).forEach((file, index) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            $area.append(`<div class="img-preview-box"><img src="${e.target.result}"><button type="button" class="btn-img-delete" onclick="removeImage(${index})"><i class="fa-solid fa-xmark"></i></button></div>`);
+                        }
+                        reader.readAsDataURL(file);
+                    });
+                }
+                window.removeImage = function(index) {
+                    const newDt = new DataTransfer();
+                    Array.from(dtImages.files).forEach((file, i) => { if (i !== index) newDt.items.add(file); });
+                    dtImages.items.clear(); Array.from(newDt.files).forEach(file => dtImages.items.add(file));
+                    $('#realImageInput')[0].files = dtImages.files;
+                    renderImagePreviews();
+                }
+
+                // 3. 새 첨부파일 처리
+                $('#fileInput').change(function() {
+                    const files = this.files;
+                    if (dtFiles.items.length + files.length > 10) { alert("파일은 최대 10개까지만 등록 가능합니다."); this.value = ''; return; }
+                    for (let i = 0; i < files.length; i++) { dtFiles.items.add(files[i]); }
+                    $('#realFileInput')[0].files = dtFiles.files;
+                    renderFileList();
+                    this.value = '';
+                });
+
+                function renderFileList() {
+                    const $area = $('#fileListArea'); $area.empty();
+                    if (dtFiles.files.length === 0) return;
+                    Array.from(dtFiles.files).forEach((file, index) => {
+                        $area.append(`<div class="file-list-item"><div class="file-info"><span class="fw-bold">${file.name}</span></div><button type="button" class="btn-file-delete" onclick="removeFile(${index})">삭제</button></div>`);
+                    });
+                }
+                window.removeFile = function(index) {
+                    const newDt = new DataTransfer();
+                    Array.from(dtFiles.files).forEach((file, i) => { if (i !== index) newDt.items.add(file); });
+                    dtFiles.items.clear(); Array.from(newDt.files).forEach(file => dtFiles.items.add(file));
+                    $('#realFileInput')[0].files = dtFiles.files;
+                    renderFileList();
+                }
+
+                // 4. 템플릿 선택 및 고정핀 토글
+                const templates = {
+                    "1": "[전사 공지]\n\n안녕하십니까, 경영지원팀입니다.\n회사의 주요 경영 사항 및 전체 공지 내용을 아래와 같이 전달해 드립니다.\n\n1. 주요 내용:\n2. 시행 일자:\n3. 문의 사항:\n\n임직원 여러분의 많은 협조 부탁드립니다.",
+                    "2": "[휴무 안내]\n\n즐거운 명절/공휴일을 맞이하여 사내 휴무 일정을 안내드립니다.\n\n- 휴무 기간: 2026년 00월 00일 ~ 00월 00일\n- 업무 재개: 2026년 00월 00일\n\n연휴 기간 동안 보안 및 시설물 점검에 유의해 주시기 바랍니다.",
+                    "3": "[사내 이슈/주의]\n\n최근 사내에서 발생한 이슈와 관련하여 주의 사항을 안내드립니다.\n\n- 발생 내용:\n- 주의 사항:\n\n쾌적하고 안전한 근무 환경을 위해 협조 바랍니다.",
+                    "4": "[시스템 점검]\n\n안정적인 서비스 제공을 위해 전산 시스템 정기 점검이 진행될 예정입니다.\n\n- 점검 일시: 2026년 00월 00일 00:00 ~ 00:00 (약 0시간)\n- 점검 대상: 그룹웨어 및 ERP 시스템\n- 유의 사항: 점검 시간 동안 접속이 제한됩니다."
+                };
+                
+                $('#templateSelect').change(function() {
+                    const val = $(this).val();
+                    if(val && templates[val] && confirm('작성 중인 내용이 사라지고 선택한 양식으로 대체됩니다. 적용하시겠습니까?')) {
+                        $('#content').val(templates[val]);
+                    }
+                });
+
+                $('#isPinned').change(function() {
+                    if($(this).is(':checked')) {
+                        $.ajax({ url: '/notice/api/check-pinned', type: 'GET', success: function(limit) {
+                            if(limit) { alert("고정 공지는 최대 3개까지만 가능합니다."); $('#isPinned').prop('checked', false); }
+                            else { $('#toggleText').text('고정 공지').css('color', '#6366f1'); }
+                        }});
+                    } else { $('#toggleText').text('일반 공지').css('color', '#64748b'); }
+                });
+
+                $('#modifyForm').submit(function(e) {
+                    if(!$('#title').val().trim() || !$('#content').val().trim()) { 
+                        alert('제목과 내용은 필수 입력입니다.'); 
+                        return false; 
+                    }
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

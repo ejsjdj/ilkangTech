@@ -178,14 +178,18 @@ public class MessengerController {
     @PostMapping("/api/read/{roomId}")
     @ResponseBody
     public String readMessages(@PathVariable("roomId") Long roomId, @AuthenticationPrincipal AccountLogin login) {
-        messengerService.updateLastReadAt(roomId, login.getId());
+        Long myId = login.getId();
+        messengerService.updateLastReadAt(roomId, myId);
         
-        // 실시간으로 '1'이 사라지게 하려면 여기서 웹소켓으로 "누가 읽었다"는 신호를 쏴줘야 합니다.
+        // 1. 채팅방 내부용 신호 (숫자 1 제거용)
         ChatBroadcastMessageDTO readSignal = new ChatBroadcastMessageDTO();
         readSignal.setRoomId(roomId);
-        readSignal.setMsgType("READ"); // 타입을 READ로 정의
-        readSignal.setMemberId(login.getId());
+        readSignal.setMsgType("READ");
+        readSignal.setMemberId(myId);
         simpMessagingTemplate.convertAndSend("/topic/chatroom/" + roomId, readSignal);
+        
+        // 읽음 처리
+        simpMessagingTemplate.convertAndSend("/topic/user/" + myId + "/list", readSignal);
         
         return "success";
     }
@@ -252,6 +256,14 @@ public class MessengerController {
         
         return ResponseEntity.ok("success");
     }
+    
+    
+    @GetMapping("/api/unread-exists")
+    @ResponseBody
+    public boolean checkUnreadExists(@AuthenticationPrincipal AccountLogin login) {
+        return messengerService.hasAnyUnread(login.getId());
+    }
+    
 }
 
 

@@ -3,12 +3,10 @@
 <head>
 	<meta charset="UTF-8">
 	<title>사원 목록</title>
+	<th:block th:replace="~{messenger/messengerLayout :: messengerStyle}"></th:block>
 	<style>
     html, body { height: 100%; margin: 0; }
     .wrapper { display: flex; height: 100vh; }
-    .blank {height: 60px;}
-    .sidebar-area { flex: 1; }
-    .sidebar { height: 100vh; flex: 1; background-color: #1f3bff; } 
     .main { flex: 7; display: flex; flex-direction: column; }
 
     .status { border-bottom: 1px solid #e5e5e5; height: 25px; display:flex; align-items:center; padding: 0 12px; font-size: 12px; color:#666; }
@@ -68,8 +66,6 @@
 
     .empty { padding: 16px; color: #6b7280; }
     
-    .memberListBtn img, .chatListBtn img {width: 60px; height: 60px;}
-    
     .searchBarArea { gap: 8px; }
 	
 	.searchBtn{
@@ -106,7 +102,7 @@
 
 
 	<div class="main">
-		<div class="status">상태</div>
+<!-- 		<div class="status">상태</div> -->
 		
 		<div class="searchBarArea">
 			<input id="memberSearch" type="text" class="searchBar" placeholder="사원 또는 부서로 검색">

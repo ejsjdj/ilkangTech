@@ -94,15 +94,100 @@ function selectEmployee(element, id, name, dept, pos) {
     document.getElementById('currentStatusDisplay').value = status;
 }
 
-// 발령 등록
+// 발령 데이터 가공
 function registAppointment() {
     // 1. 현재 화면에 입력/선택된 값 가져오기
     const userId = document.getElementById('selectedMemberId').value;
+    const userName = document.getElementById('hiddenName').value;
     const newDept = document.querySelector('select[name="department"]').value;
+    const currentDept = document.getElementById('currentDeptDisplay').value;
     const newRank = document.querySelector('select[name="position"]').value;
+    const currentRank = document.getElementById('currentRankDisplay').value;
     const workStatus = document.querySelector('select[name="bank"]').value; // HTML의 name에 맞춤
+
+    // --- 제목 생성 로직 시작 ---
+    let generatedTitle = '';
+    let generatedContent = '';
+    const isDeptChanged = (newDept && newDept !== currentDept);
+    const isRankChanged = (newRank && newRank !== currentRank);
+
+    if (isDeptChanged && isRankChanged) {
+        generatedTitle += `[인사이동]${currentDept} ${userName} 직원 영전 요청의 건`;
+        generatedContent += `해당 인사의 업무 성과 달성 및 조직개편으로 인한 인사 발령(${currentDept} -> ${newDept}, ${currentRank} -> ${newRank})이 있으니, 담당자분들은 확인하시고 승인/반려 해주시기 바랍니다.`;
+    } else if (isDeptChanged) {
+        generatedTitle += `[인사이동]${currentDept} ${userName} 직원 전보/전직 요청의 건`;
+        generatedContent += `조직 개편으로 인한 인사발령(${currentDept} -> ${newDept}, ${currentRank} -> ${newRank})을 요청하오니, 담당자분들은 확인하시고 승인/반려 해주시기 바랍니다.`;
+    } else if (isRankChanged) {
+        generatedTitle += `[인사이동]${currentDept} ${userName} 직원 승진 요청의 건`;
+        generatedContent += `인사평가 결과 목표 및 역량 달성으로 인한 인사 발령(${currentDept} -> ${newDept}, ${currentRank} -> ${newRank})을 요청하오니, 담당자분들은 확인하시고 승인/반려 해주시기 바랍니다.`;
+    } else {
+        generatedTitle += `인사 발령 요청서`; // 변경사항이 없는 기본 케이스
+    }
+
+    postDraft(generatedTitle, generatedContent)
 
     // 3. 컨트롤러 주소에 파라미터를 붙여서 이동 (GET 방식)
     // 주소 형식: /주소?userId=1&newDept=2...
     location.href = `/hr/appointment/insertData?userId=${userId}&newDept=${newDept}&newRank=${newRank}&workStatus=${encodeURIComponent(workStatus)}`;
+}
+
+
+// 결재 문서 등록
+async function postDraft(generatedTitle, generatedContent){
+
+    const baseDate = document.getElementById('selectedDate').value;
+    const startDate = today();
+    const endDate = plusDays(startDate, 3);
+
+    const draftData = {
+        draftTitle: generatedTitle,
+        draftContent: generatedContent,
+        draftType: 'APP',
+        draftStartDate: startDate,
+        draftEndDate: endDate,
+        draftStatus: "대기",
+    }
+
+    console.log("발령 데이터 : ", draftData);
+
+    // 전송
+    try {
+        const response = await fetch('/draft/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(draftData)
+        });
+
+        // 3. 응답 처리
+        if (response.ok) {
+            alert('발령 등록이 완료되었습니다. 전자결재 탭을 확인하세요.');
+        } else {
+            const errorText = await response.text();
+            console.error('Error:', errorText);
+            alert('발령 등록에 실패했습니다. 다시 시도해주세요');
+        }
+
+    } catch (error) {
+        console.error('Fetch error:', error);
+        alert('서버와 통신 중 오류가 발생했습니다. 재접속 해주세요');
+    }
+}
+
+
+/*날짜 계산*/
+function plusDays(dateStr, days) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+// 오늘날짜 정의
+function today() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }

@@ -134,7 +134,6 @@ function renderListTable(response) {
  * 6. 수정 요청 모달 및 저장 로직
  */
 function openRequestUpdateModal(attendanceId, workDate) {
-    console.log("선택된 날짜, Id : ", workDate, attendanceId);
 
     const modal = document.getElementById("commuteRequestModal");
 
@@ -144,21 +143,23 @@ function openRequestUpdateModal(attendanceId, workDate) {
     }
 
     $('#modalAttendanceId').val(attendanceId);
-    $('#modalUpdateDate').text(workDate);
+    $('#modalTargetDate').text(workDate);
+    $('#hiddenTargetDate').val(workDate);  // 서버 전송용
     modal.style.display = "block";
 }
 
 function requestUpdateTime() {
     const params = {
         attendanceId: $('#modalAttendanceId').val(),
-        type: $('#reasonCategory').val(),
         context: $('#context').val(),
         contextDetail: $('#contextDetail').val(),
-        file: $('#evidenceFile').val()
+        targetDate: $('#hiddenTargetDate').val(),
     };
 
+    console.log("수정 요청 데이터 : ", params);
+
     $.ajax({
-        url: '/attendance/commute/update',
+        url: '/attendance/commute/request',
         type: 'POST',
         data: params,
         success: function() {

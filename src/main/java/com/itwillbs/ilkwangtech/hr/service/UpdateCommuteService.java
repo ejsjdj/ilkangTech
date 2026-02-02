@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+// 출퇴근 시간 수정
 @Service
 @AllArgsConstructor
 public class UpdateCommuteService {
@@ -17,7 +18,7 @@ public class UpdateCommuteService {
 
     // 출퇴근 시간 조정
     @Transactional
-    public void updateCommuteService(long attendanceId, String inTime, String outTime, String goOutTime, String returnTime){
+    public void updateCommuteService(Long userId, Long attendanceId, String inTime, String outTime, String goOutTime, String returnTime){
 
         Attendance attendance = attendanceRepository.findById(attendanceId)
                 .orElseThrow(() -> new IllegalArgumentException("출퇴근 기록이 존재하지 않습니다."));
@@ -43,5 +44,8 @@ public class UpdateCommuteService {
         if (returnTime != null && !returnTime.isEmpty()) {
             attendance.changeReturnTime(returnTime, baseDate);
         }
+
+        // 5. 승인자 정보 저장
+        attendance.setApprover(userId);
     }
 }

@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.hr.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,50 +18,45 @@ public class CommuteUpdateRequestEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "draft_approval_line_seq_gen")
-    private Long requestId;
+    private Long requestId; // 기본키
 
 //    @OneToOne
 //    @JoinColumn(name = "attendance_id")
     @Column(name = "attendance_id", nullable = true)
-    private Long attendance;
-
-    @ManyToOne
-    @JoinColumn(name = "requester_id")
-    private Member requester;
+    private Long attendance; // 근태 ID
 
     @ManyToOne
     @JoinColumn(name = "approver_id", nullable = true)
-    private Member approver;
+    private Member approver; // 승인자
 
-    @Column(name = "allow_type", nullable = true)
-    private String allowType;
+    @Column(name = "req_context", nullable = true)
+    private String context; // 제목
 
-    @Column(name = "allow_context", nullable = true)
-    private String context;
+    @Column(name = "req_context_detail", nullable = true)
+    private String contextDetail; // 상세내용
 
-    @Column(name = "allow_context_detail", nullable = true)
-    private String contextDetail;
-
-    @Column(name = "allow_file", nullable = true)
-    private String file;
-
-    @Column(name = "allow_status", nullable = true)
-    private String allowStatus;
-
-    @Column(name = "allow_regist_date", nullable = true)
-    private LocalDate registDate;
+    @Column(name = "target_date", nullable = true)
+    private LocalDate targetDate; // 대상 날짜
 
     @Column(name = "allow_date", nullable = true)
-    private LocalDate allowDate;
+    private LocalDate allowDate; // 승인 날짜
 
-
-//    public void setRequestData(Member requester, Attendance attendanceId, String allowType, String context, String contextDetail, String file){
-//        this.requester = requester;
-//        this.attendance = attendanceId;
-//        this.allowType = allowType;
+//    @Builder
+//    public void setRequestData(Long attendance, Member approver, String context, String contextDetail,  LocalDate targetDate, LocalDate allowDate){
+//        this.attendance = attendance;
+//        this.approver = approver;
 //        this.context = context;
 //        this.contextDetail = contextDetail;
-//        this.file = file;
+//        this.targetDate = targetDate;
+//        this.allowDate = allowDate;
 //    }
+
+    // 요청자 입력 set
+    public void setNewDate(Long attendance, String context, String contextDetail, LocalDate targetDate){
+        this.attendance = attendance;
+        this.context = context;
+        this.contextDetail = contextDetail;
+        this.targetDate = targetDate;
+    }
 
 }

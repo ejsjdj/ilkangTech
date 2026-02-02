@@ -309,8 +309,11 @@ INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_
 VALUES (draft_document_seq.NEXTVAL, 21, '기안서', '프레스 설비 점검 요청', '노후 설비 정기 점검 및 부품 교체 건', 'download/illkang/press_maintenance.pdf', TO_DATE('2026-02-15', 'YYYY-MM-DD'), TO_DATE('2026-02-15', 'YYYY-MM-DD'), '대기',2);
 
 -- 결재선 (Draft Approval Line) - common_id는 결재자를 의미하며 반드시 members 테이블에 존재해야 함
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 1, 1);
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 1);
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 1, 1); -- 휴가
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'HTO', 1, 1); -- 반차
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 1); -- 구매
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'EXP', 1, 1); -- 지출
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'APP', 1, 1); -- 발령
 
 COMMIT;
 
@@ -434,19 +437,15 @@ VALUES (81, 62, 5, 2, 6, 6, '휴직', '2025-11-11');
 INSERT INTO commute_update_request (
     request_id,
     attendance_id,
-    requester_id,
     approver_id,
-    allow_type,      -- 매칭 완료
-    allow_context,     -- context에서 변경
-    allow_context_detail, -- context_detail에서 변경
-    allow_file,
-    allow_status,
-    allow_regist_date,
+    req_context,
+    req_context_detail,
+    target_date,
     allow_date
 )
 VALUES (
            COMMUTE_UPDATE_REQUEST_SEQ.NEXTVAL,
-           10, 1, 2, 'SYS', '안녕하세요', '안녕하세요', 'file/hello.png', 'APPROVE', '2026-02-01', '2025-02-02'
+           10, 1, '출근시간 조정 요청', '서버 장비 장애로 인한 출근 누락', '2026-01-28', '2026-02-01'
        );
 
 COMMIT;

@@ -3,21 +3,24 @@ package com.itwillbs.ilkwangtech.hr.service;
 import com.itwillbs.ilkwangtech.hr.dto.DraftRegistDTO;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.hr.entity.DraftApproveStatusEntity;
+import com.itwillbs.ilkwangtech.hr.repository.DraftApprovalLineRepository;
 import com.itwillbs.ilkwangtech.hr.repository.DraftApproveStatusRepository;
 import com.itwillbs.ilkwangtech.hr.repository.DraftRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static java.lang.Long.parseLong;
 
 @Service
+@AllArgsConstructor
 public class DraftRegistService {
 
     @PersistenceContext
@@ -26,13 +29,7 @@ public class DraftRegistService {
     private final DraftApproveStatusRepository draftApproveStatusRepository;
     private final ModelMapper modelMapper;
     private final MemberRepository memberRepository;
-
-    public DraftRegistService(DraftRepository draftRepository, DraftApproveStatusRepository draftApproveStatusRepository, ModelMapper modelMapper, MemberRepository memberRepository) {
-        this.draftRepository = draftRepository;
-        this.draftApproveStatusRepository = draftApproveStatusRepository;
-        this.memberRepository = memberRepository;
-        this.modelMapper = modelMapper;
-    }
+    private final DraftApprovalLineRepository draftApprovalLineRepository;
 
     @Transactional
     public void putDraft(DraftRegistDTO draftRegistDTO, Long userId) {
@@ -45,29 +42,45 @@ public class DraftRegistService {
         DraftEntity savedDraft = draftRepository.save(draftEntity);
 
         // 결재자 리스트
-        List<String> approvers = draftRegistDTO.getDraftApprover();
+        List<String> approverStrings;
 
-        // 리스트 가공
-        for(String approverString : approvers){
+        if (draftRegistDTO.getDraftApprover() == null
+                || draftRegistDTO.getDraftApprover().isEmpty()) {
 
-            // null 체크
-            if (approverString == null || approverString.trim().isEmpty()) {
-                break;
-            }
+            // 기본 결재선 조회
+            approverStrings = draftApprovalLineRepository
+                    .findByDraftType("APP")
+                    .stream()
+                    .map(line ->
+                            line.getMember().getId() + " " + line.getSequence()
+                    )
+                    .toList();
 
-            DraftApproveStatusEntity draftApproveStatusEntity = new DraftApproveStatusEntity();
-
-            String[] parts = approverString.trim().split("\\s+");
-            Long memberId = Long.parseLong(parts[0]); // 사원 ID 추출
-            int sequence = Integer.parseInt(parts[parts.length - 1]); // 결재 순서 추출
-            Member approver = entityManager.getReference(Member.class, memberId); // member 엔티티에서 결재자 ID 참조
-
-            draftApproveStatusEntity.setDraftEntity(savedDraft);// 결재문서 ID 등록
-            draftApproveStatusEntity.setMember(approver); // 결재 지정자 등록
-            draftApproveStatusEntity.setSequence(sequence); // 결재 순서 등록
-            draftApproveStatusEntity.setStatus("대기"); // 결재 상태 등록
-            draftApproveStatusRepository.save(draftApproveStatusEntity);
+        } else {
+            approverStrings = draftRegistDTO.getDraftApprover();
         }
 
+        // 리스트 가공
+        for (String approverString : approverStrings) {
+
+            if (approverString == null || approverString.trim().isEmpty()) {
+                continue;
+            }
+
+            DraftApproveStatusEntity entity = new DraftApproveStatusEntity();
+
+            String[] parts = approverString.trim().split("\\s+");
+            Long memberId = Long.parseLong(parts[0]);
+            int sequence = Integer.parseInt(parts[parts.length - 1]);
+
+            Member approver = entityManager.getReference(Member.class, memberId);
+
+            entity.setDraftEntity(savedDraft);
+            entity.setMember(approver);
+            entity.setSequence(sequence);
+            entity.setStatus("대기");
+
+            draftApproveStatusRepository.save(entity);
+        }
     }
 }

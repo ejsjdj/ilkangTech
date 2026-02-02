@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.itwillbs.ilkwangtech.hr.entity.AppointmentEntity;
 import com.itwillbs.ilkwangtech.hr.entity.LeaveEntity;
+import com.itwillbs.ilkwangtech.hr.repository.AppointmentRepostiory;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,22 +25,16 @@ import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
+@AllArgsConstructor
 public class DraftDecideService {
 
     private final DraftApproveStatusRepository draftApproveStatusRepository;
     private final DraftRepository draftRepository;
+    private final AppointmentRepostiory appointmentRepostiory;
     
     // [추가] 일정 등록과 팀장 정보 조회를 위해 서비스와 리포지토리 주입
     private final ScheduleService scheduleService;
     private final MemberRepository memberRepository;
-
-    public DraftDecideService(DraftApproveStatusRepository draftApproveStatusRepository, DraftRepository draftRepository, 
-    		                  ScheduleService scheduleService, MemberRepository memberRepository){
-        this.draftApproveStatusRepository = draftApproveStatusRepository;
-        this.draftRepository = draftRepository;
-        this.scheduleService = scheduleService;
-        this.memberRepository = memberRepository;
-    }
     
     private static final List<Integer> MANAGER_POS_IDS = Arrays.asList(1, 2, 3);
 
@@ -68,13 +65,29 @@ public class DraftDecideService {
         boolean allApproved = statusFinal.stream()
                 .allMatch(s -> "승인".equals(s.getStatus()));
 
+
+
         if(hasRejected) {
             draftRepository.updateFinalStatus(draftId, "반려");
         } else if (allApproved) {
             draftRepository.updateFinalStatus(draftId, "승인");
-            
-            // [추가] 최종 승인이 났을 때 캘린더 등록 로직 호출
-            registerVacationToCalendar(userId, draftId);
+
+            // DraftEntity 가져오기
+            DraftEntity draft = statusEntity.getDraftEntity();
+            String type = draft.getDraftType();
+
+            // 1. 휴가/반차인 경우 캘린더 및 연차 차감
+            if ("PTO".equals(type) || "HDF".equals(type)) {
+                registerVacationToCalendar(userId, draftId);
+            }
+
+            // 2. [추가] 인사발령(APP)인 경우 발령 확정 및 사원 정보 갱신
+            else if ("APP".equals(type)) {
+                // 아까 만든 발령 등록 서비스 호출
+                // registAppointmentService.registAppointment(...)
+                updateAppointmentStatus(draftId);
+            }
+
         }
     }
 
@@ -126,7 +139,7 @@ public class DraftDecideService {
             // 2) 소속 팀장 추가
             // Member 엔티티에서 department는 Integer 타입이므로 바로 가져옴
             Integer deptId = draft.getMember().getDepartment();
-            
+
          // [핵심 변경] 리스트로 조회하여 반복문으로 추가
             List<Member> managers = memberRepository.findTeamManagers(deptId, MANAGER_POS_IDS);
             
@@ -144,6 +157,28 @@ public class DraftDecideService {
             // 일정 등록 서비스 호출 (작성자는 기안자로 설정)
             scheduleService.registSchedule(scheduleDto, draft.getMember().getId());
         }
-		
 	}
+
+    @Transactional
+    private void updateAppointmentStatus(long draftId) {
+
+        log.info("로그 1: 발령 확인 시작 - draftId: {}", draftId);
+
+        DraftEntity draft = draftRepository.findById(draftId)
+                .orElseThrow(() -> new IllegalArgumentException("문서 정보가 존재하지 않습니다."));
+
+        // 타입이 발령(APP)인 경우에만 실행
+        if ("APP".equals(draft.getDraftType())) {
+            log.info("인사발령 최종 승인 처리 시작 - draftId: {}", draftId);
+
+            // draftId를 외래키로 가지고 있는 Appointment를 조회합니다.
+            AppointmentEntity appointment = appointmentRepostiory.findByDraftId(draftId)
+                    .orElseThrow(() -> new IllegalArgumentException("연결된 발령 정보를 찾을 수 없습니다."));
+            log.info("로그 2: 발령 데이터 찾음, 상태 변경 시도");
+
+            appointment.setApproveStatus("승인");
+
+            log.info("인사발령 상태 업데이트 완료 - draftId: {}", draftId);
+        }
+    }
 }

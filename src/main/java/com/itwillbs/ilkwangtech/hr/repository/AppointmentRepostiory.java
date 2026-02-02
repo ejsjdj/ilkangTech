@@ -9,9 +9,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 
 @Repository
 public interface AppointmentRepostiory extends JpaRepository<AppointmentEntity, Long> {
+
+    @Query("""
+            SELECT d 
+            FROM DraftEntity d
+            WHERE d.draftId =: draftId
+            """)
+    Optional<AppointmentEntity> findByDraftId(@Param("draftId") Long draftId);
 
     // 발령 리스트 전체 조회 or 검색 조건 조회(이름, 사번)
     @Query("SELECT a FROM AppointmentEntity a " +

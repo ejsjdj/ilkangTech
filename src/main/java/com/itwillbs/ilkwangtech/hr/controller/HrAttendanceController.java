@@ -29,6 +29,7 @@ public class HrAttendanceController {
     private final CommuteAllService commuteAllService;
     private final DepartmentService departmentService;
     private final LeaveAllService leaveAllService;
+    private final RequestUpdateCommuteService requestUpdateCommuteService;
 
 
     // 휴가 관리 페이지 이동
@@ -59,9 +60,9 @@ public class HrAttendanceController {
     public List<LeaveByDepartmentDTO> getVacationAll(@AuthenticationPrincipal AccountLogin accountLogin,
                                                      @RequestParam(name = "workDate") LocalDate workDate){
 
-        System.out.println("부서 코드 : " + accountLogin.getDepartment());
+        System.out.println("부서: " + accountLogin.getDepartment());
 
-        return leaveAllService.getLeaveAllList(Integer.parseInt(accountLogin.getDepartment()), workDate);
+        return leaveAllService.getLeaveAllList(accountLogin.getDepartment(), workDate);
 
     }
 
@@ -94,16 +95,30 @@ public class HrAttendanceController {
 
     }
 
+    // 출퇴근 기록 수정 요청
+    @PostMapping("/commute/request")
+    @ResponseBody
+    public void requestUpdateCommuteStatus(@RequestParam(name = "attendanceId", required = false) Long attendanceId,
+                                           @RequestParam(name = "context", required = false) String context,
+                                           @RequestParam(name = "contextDetail", required = false) String contextDetail,
+                                           @RequestParam(name = "targetDate", required = false) LocalDate targetDate){
+
+        System.out.println(attendanceId + context + contextDetail + targetDate);
+
+        requestUpdateCommuteService.requestUpdateCommute(attendanceId, context, contextDetail, targetDate);
+    }
+
     // 출퇴근 기록 수정
     @PostMapping("/commute/update")
     @ResponseBody
-    public void updateCommuteStatus(@RequestParam(name = "attendanceId", required = false) Long attendanceId,
+    public void updateCommuteStatus(@AuthenticationPrincipal AccountLogin accountLogin,
+                                    @RequestParam(name = "attendanceId", required = false) Long attendanceId,
                                     @RequestParam(name = "inTime", required = false) String inTime,
                                     @RequestParam(name = "outTime", required = false) String outTime,
                                     @RequestParam(name = "goOutTime", required = false) String goOutTime,
                                     @RequestParam(name = "returnTime", required = false) String returnTime){
 
-        updateCommuteService.updateCommuteService(attendanceId, inTime, outTime, goOutTime, returnTime);
+        updateCommuteService.updateCommuteService(accountLogin.getId(), attendanceId, inTime, outTime, goOutTime, returnTime);
     }
 
     // 근무 현황 페이지 이동

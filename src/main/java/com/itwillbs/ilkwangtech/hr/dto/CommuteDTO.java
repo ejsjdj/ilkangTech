@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 public class CommuteDTO {
+    private Long attendanceId;
     private LocalDate workDate;
     private String inTime; // 출근 시간
     private String goOutTime; // 퇴근 시간
@@ -18,8 +19,9 @@ public class CommuteDTO {
     private String returnTime; //복귀 시간
 
     @Builder
-    public CommuteDTO(LocalDate workDate, LocalDateTime inTime, LocalDateTime goOutTime, LocalDateTime outTime, LocalDateTime returnTime){
+    public CommuteDTO(Long attendanceId, LocalDate workDate, LocalDateTime inTime, LocalDateTime goOutTime, LocalDateTime outTime, LocalDateTime returnTime){
         super();
+        this.attendanceId = attendanceId;
         this.workDate = workDate;
         this.inTime = inTime != null ? inTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")) : "";
         this.goOutTime = goOutTime != null ? goOutTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")) : "";

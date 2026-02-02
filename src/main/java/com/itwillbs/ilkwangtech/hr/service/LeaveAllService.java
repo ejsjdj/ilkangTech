@@ -1,5 +1,7 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
+import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
 import com.itwillbs.ilkwangtech.hr.dto.LeaveByDepartmentDTO;
 import com.itwillbs.ilkwangtech.hr.dto.LeaveDTO;
 import com.itwillbs.ilkwangtech.hr.entity.LeaveEntity;
@@ -17,12 +19,20 @@ import java.util.List;
 public class LeaveAllService {
 
     private DraftRepository draftRepository;
+    private final DepartmentRepository departmentRepository;
 
-    public List<LeaveByDepartmentDTO> getLeaveAllList(Integer department, LocalDate workDate){
+    public List<LeaveByDepartmentDTO> getLeaveAllList(String department, LocalDate workDate){
+
+        if (department == null || department.trim().isEmpty()) {
+            throw new IllegalArgumentException("부서 정보가 입력되지 않았습니다. 다시 로그인해주세요");
+        }
+
+        Department deptCode = departmentRepository.findByDepartmentName(department)
+                .orElseThrow(() -> new IllegalArgumentException("부서코드가 부적절합니다. 시스템 관리자에게 문의하세요."));
 
         LocalDate start = workDate.withDayOfMonth(1);
         LocalDate end = workDate.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
 
-        return draftRepository.findLeaveSummaryByDept(department, start, end);
+        return draftRepository.findLeaveSummaryByDept(deptCode.getId(), start, end);
     }
 }

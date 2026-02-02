@@ -77,6 +77,10 @@ public class Attendance {
     @Column(name = "memo", length = 500)
     private String memo;
 
+    // 수정 승인자
+    @Column(name = "approver", length = 500)
+    private Long approverId;
+
     // 1. 퇴근 처리
     public void recordClockOut(LocalDateTime time) {
         this.outTime = time;
@@ -119,6 +123,10 @@ public class Attendance {
     // 6. 외근복귀 시간 수정
     public void changeReturnTime(String returnTime, LocalDate baseDate){
         this.returnTime = LocalDateTime.of(baseDate, LocalTime.parse(returnTime));
+    }
+
+    public void setApprover(Long approverId){
+        this.approverId = approverId;
     }
 
 }

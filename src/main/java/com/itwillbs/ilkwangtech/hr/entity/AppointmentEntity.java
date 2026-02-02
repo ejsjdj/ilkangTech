@@ -17,7 +17,6 @@ public class AppointmentEntity {
 
     public AppointmentEntity() {}
 
-    // 2. 서비스에서 사용할 생성자 추가 (이게 없어서 에러가 났던 것!)
     public AppointmentEntity(Member member) {
         this.memberId = member;
     }
@@ -35,6 +34,10 @@ public class AppointmentEntity {
     @JoinColumn(name = "approver_id", nullable = true)
     private Member approverId; // 승인자 ID
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "draft_id", nullable = true)
+    private DraftEntity draft; // 승인자 ID
+
     @Column(name = "pre_dept", nullable = true)
     private int preDept; // 이전 부서
 
@@ -50,8 +53,13 @@ public class AppointmentEntity {
     @Column(name = "work_status", nullable = true)
     private String workStatus; // 근무 상태
 
+    @Column(name = "appointment_status", nullable = true)
+    private String approveStatus; // 승인 상태
+
     @Column(name = "appointment_date", nullable = true)
-    private LocalDate appointmentDate; // 발령일
+    private LocalDate appointmentDate; // 승인일
+
+
 
     // 부서 변경 (현재 부서 -> 이전 부서)
     public void changeDept(int currentDept){

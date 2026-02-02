@@ -46,6 +46,7 @@
 
                             <div class="search-box-mini">
                                 <input type="text" id="searchInput" class="form-control-sm" placeholder="이름 검색..." onkeyup="handleSearch()">
+                                <input type="hidden" id="hiddenName">
                             </div>
 
                             <div id="tableContainer" class="employee-list-scroll">
@@ -57,6 +58,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <input type="hidden" id="selectedDate" name="selectedDate" value="2025-01-01">
 
                     <!-- 푸터 (왼쪽 컬럼 하단 배치) -->
                     <div class="form-group form-row-full">

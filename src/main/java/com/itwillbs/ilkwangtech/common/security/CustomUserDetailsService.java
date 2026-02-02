@@ -41,7 +41,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 		AccountLogin accountLogin = modelMapper.map(member, AccountLogin.class);
 		
 		// 부서 이름 변환
-        if (member.getDepartment() != null && member.getDepartment() > 0) { 
+        if (member.getDepartment() != null && member.getDepartment() >= 0) {
             Department dept = departmentRepository.findById(member.getDepartment()).orElse(null);
             
             if (dept != null) {

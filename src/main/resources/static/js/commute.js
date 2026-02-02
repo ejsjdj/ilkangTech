@@ -101,7 +101,7 @@ function renderListTable(response) {
             <table class="table emp-table">
                 <thead>
                     <tr>
-                        <th>날짜</th><th>출근</th><th>퇴근</th><th>외근</th><th>복귀</th>
+                        <th>날짜</th><th>출근</th><th>퇴근</th><th>외근</th><th>복귀</th><th>관리</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,13 +109,18 @@ function renderListTable(response) {
 
     if (response?.length > 0) {
         response.forEach(item => {
+            const args = `'${item.workDate}'`;
             html += `
                 <tr>
+                    <td>${item.attendanceId || '-'}</td>
                     <td>${item.workDate || '-'}</td>
                     <td>${item.inTime || '-'}</td>
                     <td>${item.outTime || '-'}</td>
                     <td>${item.goOutTime || '-'}</td>
                     <td>${item.returnTime || '-'}</td>
+                    <td>
+                    <button class="btn-search" onclick="openRequestUpdateModal('${item.attendanceId}', '${item.workDate}')">수정</button>
+                    </td>
                 </tr>`;
         });
     } else {
@@ -123,6 +128,46 @@ function renderListTable(response) {
     }
     $('#tableContainer').html(html + `</tbody></table></div>`);
 
+}
+
+/**
+ * 6. 수정 요청 모달 및 저장 로직
+ */
+function openRequestUpdateModal(attendanceId, workDate) {
+    console.log("선택된 날짜, Id : ", workDate, attendanceId);
+
+    const modal = document.getElementById("commuteRequestModal");
+
+    if (!modal) {
+        console.error("모달 요소를 찾을 수 없습니다.");
+        return;
+    }
+
+    $('#modalAttendanceId').val(attendanceId);
+    $('#modalUpdateDate').text(workDate);
+    modal.style.display = "block";
+}
+
+function requestUpdateTime() {
+    const params = {
+        attendanceId: $('#modalAttendanceId').val(),
+        type: $('#reasonCategory').val(),
+        context: $('#context').val(),
+        contextDetail: $('#contextDetail').val(),
+        file: $('#evidenceFile').val()
+    };
+
+    $.ajax({
+        url: '/attendance/commute/update',
+        type: 'POST',
+        data: params,
+        success: function() {
+            alert("수정 요청이 완료되었습니다.");
+            closeModal();
+            $('.tab-item#tabMy').hasClass('active') ? loadCommuteList() : loadCommuteAllList();
+        },
+        error: () => alert("요청 중 오류가 발생했습니다.")
+    });
 }
 
 /**
@@ -162,8 +207,9 @@ function renderAllTable(response) {
     $('#tableContainer').html(html + `</tbody></table></div>`);
 }
 
+
 /**
- * 6. 모달 및 저장 로직
+ * 7. 수정 모달 및 저장 로직
  */
 function openEditTimeModal(id, inTime, outTime, goOutTime, returnTime) {
     const modal = document.getElementById("commuteModal");
@@ -204,6 +250,7 @@ function saveTime() {
 
 function closeModal() {
     $("#commuteModal").hide();
+    $("#commuteRequestModal").hide();
     $("body").css("overflow", "auto");
 }
 

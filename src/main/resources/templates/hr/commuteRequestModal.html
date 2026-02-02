@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<htm lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  </head>
+  <body>
+  <!-- 시간 수정 요청 모달 -->
+  <div th:fragment="commuteRequestModal">
+    <div id="commuteRequestModal" class="modal">
+
+      <div class="modalBody">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+          <h3 style="margin: 0; color: #333; font-size: 1.25rem;">근로시간 수정 요청</h3>
+          <span class="close-btn" onclick="closeModal()" style="cursor: pointer; font-size: 28px; line-height: 1;">&times;</span>
+        </div>
+
+        <div class="modal-content" style="margin-bottom: 30px;">
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+            <p style="margin: 0; font-size: 14px; color: #666;">
+              선택 일자: <strong id="modalUpdateDate" style="color: #5c6bc0;">-</strong>
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>변경 사유 구분</label>
+          <select id="reasonCategory" class="form-control">
+            <option value="">-- 선택하세요 --</option>
+            <option value="SYSTEM">1. 시스템 오류</option>
+            <option value="SCHEDULE">2. 근무 일정 변경</option>
+            <option value="DISASTER">3. 천재지변</option>
+            <option value="PERSONAL">4. 개인 사유</option>
+          </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <div>
+            <input type="hidden" id="modalAttendanceId">
+            <label style="display: block; font-size: 13px; color: #888; margin-bottom: 5px;">사유</label>
+            <input type="text" id="context" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;" placeholder="일광테크 계약 미팅 건으로 인한 근무 시간 수정 요청">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 13px; color: #888; margin-bottom: 5px;">상세</label>
+            <textarea type="text" id="contextDetail" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;" placeholder="일광테크 계약 아침 미팅(9:30)으로 인한 지각. 회의 일정 및 이동시간을 고려하여 정상출근으로 수정 요청"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>증빙파일 업로드</label>
+            <input type="file" id="evidenceFile" class="form-control">
+          </div>
+        </div>
+
+        <div class="modal-footer" style="text-align: right;">
+          <button type="button" class="btn-cancel" onclick="closeModal()">닫기</button>
+          <button type="button" class="btn-save" onclick="requestUpdateTime()">요청</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  </body>
+</htm>

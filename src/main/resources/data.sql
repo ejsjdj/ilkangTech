@@ -430,4 +430,23 @@ VALUES (81, 61, 1, 2, 55, 6, '퇴사', '2025-12-31');
 INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
 VALUES (81, 62, 5, 2, 6, 6, '휴직', '2025-11-11');
 
+
+INSERT INTO commute_update_request (
+    request_id,
+    attendance_id,
+    requester_id,
+    approver_id,
+    allow_type,      -- 매칭 완료
+    allow_context,     -- context에서 변경
+    allow_context_detail, -- context_detail에서 변경
+    allow_file,
+    allow_status,
+    allow_regist_date,
+    allow_date
+)
+VALUES (
+           COMMUTE_UPDATE_REQUEST_SEQ.NEXTVAL,
+           10, 1, 2, 'SYS', '안녕하세요', '안녕하세요', 'file/hello.png', 'APPROVE', '2026-02-01', '2025-02-02'
+       );
+
 COMMIT;

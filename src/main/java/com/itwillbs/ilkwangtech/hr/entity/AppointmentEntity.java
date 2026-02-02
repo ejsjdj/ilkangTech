@@ -17,7 +17,6 @@ public class AppointmentEntity {
 
     public AppointmentEntity() {}
 
-    // 2. 서비스에서 사용할 생성자 추가 (이게 없어서 에러가 났던 것!)
     public AppointmentEntity(Member member) {
         this.memberId = member;
     }

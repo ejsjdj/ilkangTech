@@ -30,6 +30,7 @@ public class CommuteService {
 
          return commute.stream().
                  map(attendance -> CommuteDTO.builder().
+                         attendanceId(attendance.getId()).
                          workDate(attendance.getWorkDate()).
                          inTime(attendance.getInTime()).
                          goOutTime(attendance.getGoOutTime()).

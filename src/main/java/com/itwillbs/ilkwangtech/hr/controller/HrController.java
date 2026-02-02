@@ -9,6 +9,8 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.service.DepartmentService;
 import com.itwillbs.ilkwangtech.account.service.PositionService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,8 +38,10 @@ public class HrController {
     // 발령 리스트 조회
     @GetMapping("/appointment/list")
     @ResponseBody
-    public List<AppointmentDTO> getAppointmentList(){
-        return appointmentService.hrAppointmentService();
+    public Page<AppointmentDTO> getAppointmentList(Pageable pageable,
+                                                   @RequestParam(name = "searchField") String searchField){
+
+        return appointmentService.hrAppointmentService(pageable, searchField);
     }
 
     // 발령 등록 페이지 이동

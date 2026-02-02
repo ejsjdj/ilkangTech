@@ -27,9 +27,9 @@ public interface DraftRepository extends JpaRepository<DraftEntity, Long> {
                     " d.draftEndDate, " +
                     " d.draftStatus, " +
                     " d.draftTotalDate " +
-                    ") " +                          // ← 공백 중요
-                    "FROM DraftEntity d " +          // ← 공백
-                    "JOIN d.member m " +             // ← 공백
+                    ") " +
+                    "FROM DraftEntity d " +
+                    "JOIN d.member m " +
                     "WHERE m.department = :deptCode " +
                     "AND d.draftType = 'PTO' " +
                     "AND d.draftStatus IN ('승인', '대기') " +

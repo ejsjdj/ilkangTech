@@ -20,7 +20,7 @@
                 <div>
                     <h1>발령 현황</h1>
                     <p class="page-subtitle">사원 발령 이력 조회 및 등록</p>
-                </div>Q
+                </div>
             </div>
             <a href="/hr/appointment/insert" class="btn-add">
                 <i class="bi bi-person-plus-fill"></i> 발령 등록
@@ -29,16 +29,10 @@
 
         <div class="scroll-area">
             <div class="search-filter-area">
-                <div class="dropdown">
-                    <button class="dropdown-toggle" type="button" id="deptFilterBtn">
-                        <i class="bi bi-building"></i> 부서 전체
-                        <i class="bi bi-chevron-down ms-1"></i>
-                    </button>
-                </div>
 
                 <div class="search-box">
                     <i class="bi bi-search search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="사번 / 성명 / 발령구분 검색">
+                    <input type="text" id="searchInput" placeholder="사번 / 성명 검색">
                 </div>
 
                 <button class="btn-search" onclick="handleSearch()">검색</button>
@@ -51,6 +45,9 @@
                     <p class="mt-2">데이터를 불러오는 중입니다...</p>
                 </div>
             </div>
+
+            <div id="paginationBlock" class="pagination-container"></div>
+
         </div>
     </div>
 </div>

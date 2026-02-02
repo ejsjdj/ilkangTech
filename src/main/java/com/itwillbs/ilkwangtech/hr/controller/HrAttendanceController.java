@@ -29,6 +29,7 @@ public class HrAttendanceController {
     private final CommuteAllService commuteAllService;
     private final DepartmentService departmentService;
     private final LeaveAllService leaveAllService;
+    private final RequestUpdateCommuteService requestUpdateCommuteService;
 
 
     // 휴가 관리 페이지 이동
@@ -59,9 +60,9 @@ public class HrAttendanceController {
     public List<LeaveByDepartmentDTO> getVacationAll(@AuthenticationPrincipal AccountLogin accountLogin,
                                                      @RequestParam(name = "workDate") LocalDate workDate){
 
-        System.out.println("부서 코드 : " + accountLogin.getDepartment());
+        System.out.println("부서: " + accountLogin.getDepartment());
 
-        return leaveAllService.getLeaveAllList(Integer.parseInt(accountLogin.getDepartment()), workDate);
+        return leaveAllService.getLeaveAllList(accountLogin.getDepartment(), workDate);
 
     }
 
@@ -92,6 +93,19 @@ public class HrAttendanceController {
 
         return commuteAllService.getCommuteAllList(deptCode, workDate);
 
+    }
+
+    // 출퇴근 기록 수정 요청
+    @PostMapping("/commute/request")
+    @ResponseBody
+    public void requestUpdateCommuteStatus(@AuthenticationPrincipal AccountLogin accountLogin,
+                                           @RequestParam(name = "attendanceId", required = false) Long attendanceId,
+                                           @RequestParam(name = "type", required = false) String type,
+                                           @RequestParam(name = "context", required = false) String context,
+                                           @RequestParam(name = "contextDetail", required = false) String contextDetail,
+                                           @RequestParam(name = "file", required = false) String file){
+
+        requestUpdateCommuteService.requestUpdateCommute(accountLogin.getId(), attendanceId, type, context, contextDetail, file);
     }
 
     // 출퇴근 기록 수정

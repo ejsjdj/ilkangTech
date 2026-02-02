@@ -45,7 +45,6 @@ public class RoleServiceImpl implements RoleService {
 
         return commonCodeRepository.findAll()
                 .stream()
-                .filter(c -> "MEMBER_ROLE".equals(c.getGroupCode()))
                 .map(role -> new CommonCode(role.getId(), role.getCommonCodeName()))
                 .collect(Collectors.toList());
     }

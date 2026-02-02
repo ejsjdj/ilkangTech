@@ -43,7 +43,18 @@ public class CustomUserDetailsService implements UserDetailsService {
 		// 부서 이름 변환
         if (member.getDepartment() != null && member.getDepartment() >= 0) {
             Department dept = departmentRepository.findById(member.getDepartment()).orElse(null);
-            
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println(member.getDepartment());
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
+			System.out.println("=========================================================");
             if (dept != null) {
                 // 로그인 후 AccountLogin 에서 문자로 변환
                 accountLogin.setDepartment(dept.getDepartmentName()); 
@@ -51,7 +62,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // 직급 이름 변환
-        if (member.getPosition() != null && member.getPosition() > 0) { 
+        if (member.getPosition() != null && member.getPosition() > 0) {
             Position pos = positionRepository.findById(member.getPosition()).orElse(null);
             
             if (pos != null) {

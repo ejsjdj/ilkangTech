@@ -28,5 +28,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     @Query("SELECT m FROM ChatMessage m WHERE m.roomId = :roomId AND m.createdAt > :joinedAt ORDER BY m.createdAt DESC")
     List<ChatMessage> findLatest(@Param("roomId") Long roomId, 
                                  @Param("joinedAt") LocalDateTime joinedAt, 
-                                 Pageable pageable); 
+                                 Pageable pageable);
+
+    long countByRoomIdAndCreatedAtAfter(Long roomId, LocalDateTime createdAt); 
 }

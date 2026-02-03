@@ -20,20 +20,21 @@ import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomRepository;
 import com.itwillbs.ilkwangtech.messenger.service.ChatMessageService;
+import com.itwillbs.ilkwangtech.messenger.service.MessengerService;
 
 @Controller
 public class ChatSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
-    private final ChatRoomRepository chatRoomRepository;
+    private final MessengerService messengerService;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
 
     public ChatSocketController(SimpMessagingTemplate messagingTemplate,
-                                ChatMessageService chatMessageService, ChatRoomRepository chatRoomRepository, ChatRoomMemberRepository chatRoomMemberRepository) {
+                                ChatMessageService chatMessageService, ChatRoomRepository chatRoomRepository, ChatRoomMemberRepository chatRoomMemberRepository, MessengerService messengerService) {
         this.messagingTemplate = messagingTemplate;
         this.chatMessageService = chatMessageService;
-		this.chatRoomRepository = chatRoomRepository;
+		this.messengerService = messengerService;
 		this.chatRoomMemberRepository = chatRoomMemberRepository;
     }
 

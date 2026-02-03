@@ -377,6 +377,12 @@
                             <span class="detail-label">주민등록번호</span>
                             <span class="detail-value" th:text="${user.residentNumber}">000000-0000000</span>
                         </div>
+                        <div class="detail-item" style="margin-bottom: 20px;">
+                            <span class="detail-label">보유 권한</span>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end;">
+                                <span th:each="role : ${user.authorities}" class="info-badge primary" th:text="${role.authority}">ROLE_USER</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #f1f5f9; padding-top: 20px; padding-right: 30px;">

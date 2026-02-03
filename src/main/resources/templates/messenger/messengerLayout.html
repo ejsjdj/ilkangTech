@@ -1,22 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="messengerStyle">
+    <style>
+        .sidebar {
+            width: 70px;
+            height: 100vh;
+            background-color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            position: fixed; /* 사이드바 고정 */
+            left: 0;
+            top: 0;
+        }
+        .sidebar-area { width: 70px; flex-shrink: 0; } /* 영역 확보용 */
+        .sidebar a {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        /* 아이콘 이미지 - 필터로 색상 제어 */
+        .sidebar a img {
+            width: 28px;
+            height: 28px;
+            filter: brightness(0) invert(1);
+            opacity: 0.7;
+        }
+        .sidebar a:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .sidebar a:hover img { opacity: 1; }
+        .sidebar a.active {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .sidebar a.active img { opacity: 1; transform: scale(1.1); }
+        .blank { height: 20px; }
+        
+        .chatListBtn { position: relative; }
+        
+        /* ... 기존 스타일 유지 ... */
+	    .notification-container { position: relative; display: inline-block; }
+	    .red-dot {
+		    position: absolute;
+		    bottom: 12px; /* 우측 하단 배치 */
+		    right: 4px;
+		    width: 10px;
+		    height: 10px;
+		    background-color: #ff3b30; 
+		    border-radius: 50%;
+		    border: 2px solid #fff; 
+		    display: none; 
+		    z-index: 10;
+		}
+    </style>
+</head>
 <body>
-	<div th:fragment="messengerSidebar(active)">
-		<div class="sidebar">
-			<div class="blank"></div>
-			
-			<a th:href="@{/messenger/memberList}"
-			   class="memberListBtn"
-			   th:classappend="${active == 'members'} ? ' active' : ''">
-				<img th:src="@{/img/messenger/people.png}" alt="사원 목록">
-			</a>
-			
-			<a th:href="@{/messenger/chatList}"
-			   class="chatListBtn"
-			   th:classappend="${active == 'chats'} ? ' active' : ''">
-			<img th:src="@{/img/messenger/chatList.png}" alt="채팅 목록">
-			</a>
-		</div>
-	</div>
+    <div th:fragment="messengerSidebar(active)">
+        <div class="sidebar">
+            <div class="blank"></div>
+            <a th:href="@{/messenger/memberList}"
+               class="memberListBtn"
+               th:classappend="${active == 'members'} ? ' active' : ''">
+                <img th:src="@{/img/messenger/memberList.png}" alt="사원 목록">
+            </a>
+            <a th:href="@{/messenger/chatList}"
+               class="chatListBtn"
+               th:classappend="${active == 'chats'} ? ' active' : ''">
+                <img th:src="@{/img/messenger/chatList.png}" alt="채팅 목록">
+                <span id="main-unread-dot" class="red-dot"></span>
+            </a>
+        </div>
+    </div>
 </body>
 </html>

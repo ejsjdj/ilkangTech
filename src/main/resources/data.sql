@@ -18,23 +18,32 @@ CREATE SEQUENCE draft_approval_line_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE draft_document_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE leave_status_seq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE member_role_seq START WITH 200 INCREMENT BY 1;
-CREATE SEQUENCE common_code_seq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE common_code_seq START WITH 1001 INCREMENT BY 1;
 CREATE SEQUENCE MEMBERS_SEQ START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_SCHEDULE START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_ATTENDANCE START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_NOTICE START WITH 1 INCREMENT BY 1;
 
 -- Common Code (사용자 권한, 메뉴, 게시판 등)
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'MEMBER_ROLE', '사용자권한', '사용자권한 상위코드', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_ADMIN', '전체 관리자 권한', '', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_USER', '일반 사용자 권한', '', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MEMBER_ROLE', 'ROLE_ADMIN_SUB', '보조 관리자 권한', '', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'MENU', '시스템 메뉴', '시스템 메뉴 상위코드', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', '1', '메뉴 - 공지사항', '', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'MENU', '2', '메뉴 - 상품페이지', '', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, '', 'BOARD', '게시판', '게시판 상위코드', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'BOARD', 'NOTICE', '공지사항', '게시판 - 공지사항', 'Y');
-INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (common_code_seq.NEXTVAL, 'BOARD', 'FREE', '자유게시판', '게시판 - 자유게시판', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (1000, 'MEMBER_ROLE', '일반 사용자 권한', '일반 사용자 권한', '일반 사용자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (0, 'MENU', 'CEO', '임원팀', '임원 관리자 상위코드', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (1, 'MENU', 'MANAGEMENT', '경영팀', '경영 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (2, 'MENU', 'HR', '인사팀', '인사 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (3, 'MENU', 'PURCHASING', '구매팀', '구매 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (4, 'MENU', 'SALES', '영업팀', '영업 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (5, 'MENU', 'FINANCE', '재무회계팀', '재무회계 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (6, 'MENU', 'INFORMATION', '정보시스템팀', '정보시스템 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (7, 'MENU', 'SAFETY', '안전팀', '안전 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (8, 'MENU', 'REGAL', '법무팀', '법무 관리자 권한', 'Y');
+
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (100, 'MENU', 'PRODUCTION_MANAGER', '생산부', '생산부 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (101, 'MENU', 'PRESS', '프레스팀', '프레스 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (102, 'MENU', 'EJACULATION', '사출팀', '사출 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (103, 'MENU', 'COATING', '도장팀', '도장 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (104, 'MENU', 'ASSEMBLY', '조립팀', '조립 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (105, 'MENU', 'QUALITY', '품질팀', '품질 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (106, 'MENU', 'MOLD', '금형팀', '금형 관리자 권한', 'Y');
+INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (107, 'MENU', 'PRODUCTION', '생산관리팀', '생산관리 권한', 'Y');
 
 -- Genders (성별)
 INSERT INTO genders (id, gender) VALUES (1, '남자');
@@ -273,14 +282,13 @@ COMMIT;
 INSERT INTO member_role(id, member_id, member_role_id)
 SELECT member_role_seq.NEXTVAL, M.id, C.id
 FROM members M, common_code C
-WHERE C.common_code = 'ROLE_USER';
+WHERE C.id = 1000;
 
 -- 특정 사용자(나대표, 김관리)에게 ROLE_ADMIN 권한 추가 부여
 INSERT INTO member_role(id, member_id, member_role_id)
 SELECT member_role_seq.NEXTVAL, M.id, C.id
 FROM members M, common_code C
-WHERE M.employee_number IN ('26-00000', '26-10000')
-AND C.common_code = 'ROLE_ADMIN';
+WHERE C.id = M.department;
 
 -- 전사 일정 등록
 
@@ -291,20 +299,21 @@ INSERT INTO leave_status (leave_id, common_id, total_leave, used_leave, remain_l
 SELECT leave_status_seq.NEXTVAL, M.id, 15, 0, 15 FROM members M;
 
 -- 전자결재 문서 (Draft Documents)
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (draft_document_seq.NEXTVAL, 1, '휴가신청서', '연차 신청합니다.', '개인 사정으로 인한 연차 신청', 'download/illkang/vacation_request.pdf', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-21', 'YYYY-MM-DD'), '승인');
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (draft_document_seq.NEXTVAL, 1, '지출결의서', '비품 구매 건', '사무용품(A4용지 등) 구매', 'download/illkang/expense_report.docx', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-17', 'YYYY-MM-DD'), '승인');
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (draft_document_seq.NEXTVAL, 11, '휴가신청서', '동계 휴가 신청', '가족 여행으로 인한 휴가 신청', 'download/illkang/vacation_winter.pdf', TO_DATE('2026-02-10', 'YYYY-MM-DD'), TO_DATE('2026-02-13', 'YYYY-MM-DD'), '승인');
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status)
-VALUES (draft_document_seq.NEXTVAL, 21, '기안서', '프레스 설비 점검 요청', '노후 설비 정기 점검 및 부품 교체 건', 'download/illkang/press_maintenance.pdf', TO_DATE('2026-02-15', 'YYYY-MM-DD'), TO_DATE('2026-02-15', 'YYYY-MM-DD'), '대기');
+INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 1, '휴가신청서', '연차 신청합니다.', '개인 사정으로 인한 연차 신청', 'download/illkang/vacation_request.pdf', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-21', 'YYYY-MM-DD'), '승인', 3);
+INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 1, '지출결의서', '비품 구매 건', '사무용품(A4용지 등) 구매', 'download/illkang/expense_report.docx', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-17', 'YYYY-MM-DD'), '승인', 3);
+INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 11, '휴가신청서', '동계 휴가 신청', '가족 여행으로 인한 휴가 신청', 'download/illkang/vacation_winter.pdf', TO_DATE('2026-02-10', 'YYYY-MM-DD'), TO_DATE('2026-02-13', 'YYYY-MM-DD'), '승인',5);
+INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_file, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 21, '기안서', '프레스 설비 점검 요청', '노후 설비 정기 점검 및 부품 교체 건', 'download/illkang/press_maintenance.pdf', TO_DATE('2026-02-15', 'YYYY-MM-DD'), TO_DATE('2026-02-15', 'YYYY-MM-DD'), '대기',2);
 
 -- 결재선 (Draft Approval Line) - common_id는 결재자를 의미하며 반드시 members 테이블에 존재해야 함
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 1, 1);
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 2, 2);
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 1);
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 11, 2);
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 1, 1); -- 휴가
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'HTO', 1, 1); -- 반차
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 1); -- 구매
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'EXP', 1, 1); -- 지출
+INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'APP', 1, 1); -- 발령
 
 COMMIT;
 
@@ -367,61 +376,76 @@ CONNECT BY LEVEL <= 90;
 COMMIT;
 
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (1, null, 5, 2, 54, 6, '재직', '2023-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (1, 5, 2, 54, 6, '재직', '2023-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (2, 1, 5, 2, 6, 6, '재직', '2023-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (2, 5, 2, 6, 6, '재직', '2023-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (50, 80, 2, 2, 5, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (50, 2, 2, 5, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (52, 81, 2, 2, 5, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (52, 2, 2, 5, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (55, 82, 2, 2, 4, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (55, 2, 2, 4, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (58, 83, 2, 2, 4, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (58, 2, 2, 4, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (60, 50, 3, 2, 3, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (60, 3, 2, 3, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (62, 51, 3, 2, 3, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (62, 3, 2, 3, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (65, 52, 1, 2, 2, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (65, 1, 2, 2, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (68, 53, 1, 2, 2, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (68, 1, 2, 2, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (70, 54, 1, 2, 1, 6, '재직', '2024-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (70, 1, 2, 1, 6, '재직', '2024-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (72, 55, 2, 2, 5, 6, '재직', '2025-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (72, 2, 2, 5, 6, '재직', '2025-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (75, 56, 2, 2, 4, 6, '재직', '2025-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (75, 2, 2, 4, 6, '재직', '2025-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (78, 57, 3, 2, 3, 6, '재직', '2025-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (78, 3, 2, 3, 6, '재직', '2025-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (80, 58, 4, 2, 2, 6, '재직', '2025-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (80, 4, 2, 2, 6, '재직', '2025-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (81, 59, 6, 2, 1, 6, '재직', '2025-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 6, 2, 1, 6, '재직', '2025-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (81, 60, 1, 2, 1, 6, '재직', '2026-01-01');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 1, 2, 1, 6, '재직', '2026-01-01');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (81, 61, 1, 2, 55, 6, '퇴사', '2025-12-31');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 1, 2, 55, 6, '퇴사', '2025-12-31');
 
-INSERT INTO appointment (member_id, approver_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
-VALUES (81, 62, 5, 2, 6, 6, '휴직', '2025-11-11');
+INSERT INTO appointment (member_id, pre_dept, current_dept, pre_rank, current_rank, work_status, appointment_date)
+VALUES (81, 5, 2, 6, 6, '휴직', '2025-11-11');
+
+
+INSERT INTO commute_update_request (
+    request_id,
+    attendance_id,
+    approver_id,
+    req_context,
+    req_context_detail,
+    target_date,
+    allow_date
+)
+VALUES (
+           COMMUTE_UPDATE_REQUEST_SEQ.NEXTVAL,
+           10, 1, '출근시간 조정 요청', '서버 장비 장애로 인한 출근 누락', '2026-01-28', '2026-02-01'
+       );
 
 COMMIT;

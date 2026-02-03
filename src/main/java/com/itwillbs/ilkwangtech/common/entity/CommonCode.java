@@ -16,7 +16,7 @@ import lombok.ToString;
 @SequenceGenerator(
         name = "common_code_seq_gen",
         sequenceName = "common_code_seq",
-        initialValue = 100,
+        initialValue = 1001,
         allocationSize = 1
 )
 public class CommonCode {

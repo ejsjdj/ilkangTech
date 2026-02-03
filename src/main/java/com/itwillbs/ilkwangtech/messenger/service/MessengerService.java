@@ -349,4 +349,19 @@ public class MessengerService {
                 .map(ChatRoomMemberSetting::getIsFavorite)
                 .orElse("N"); // 설정이 없으면 기본값 'N'
     }
+    
+    // 새로운 메세지 표시 로직
+    @Transactional(readOnly = true)
+    public boolean hasAnyUnread(Long myId) {
+        // 1. 내가 참여 중인 모든 방 정보를 가져옵니다.
+        List<ChatRoomMember> memberships = chatRoomMemberRepository.findByMemberId(myId);
+        
+        for (ChatRoomMember m : memberships) {
+            // 각 방에서 내가 마지막으로 읽은 시간 이후의 메시지가 있는지 확인
+        	LocalDateTime lastRead = (m.getLastReadAt() != null) ? m.getLastReadAt() : m.getJoinedAt();
+        	long count = chatMessageRepository.countByRoomIdAndCreatedAtAfter(m.getId().getRoomId(), lastRead);
+            if (count > 0) return true;
+        }
+        return false;
+    }
 }

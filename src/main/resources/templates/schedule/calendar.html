@@ -368,7 +368,7 @@
                                 <div class="col-md-3">
                                     <select class="form-select" id="schedType" name="type">
                                         <option value="PERSONAL" selected>개인</option>
-                                        <option value="LEAVE">연차</option>
+                                        <!-- <option value="LEAVE">연차</option> -->
                                         <option value="COMPANY">회사</option>
                                         <option value="TEAM">팀</option>
                                         <option value="SPECIFIC">특정</option>
@@ -457,7 +457,7 @@
                                         <option value="COMPANY">회사</option>
                                         <option value="TEAM">팀</option>
                                         <option value="SPECIFIC">특정</option>
-                                        <option value="LEAVE">연차</option>
+                                        <!-- <option value="LEAVE">연차</option> -->
                                     </select>
                                 </div>
                                 <div class="col-md-9" id="detailShareTargetArea" style="display:none;">
@@ -641,10 +641,7 @@
 
     }); // ready end
 
-    // ============================================================
-    // [파일 처리 관련 함수들] (List.html 로직)
-    // ============================================================
-    
+    // [파일 처리 관련 함수들] (List.html 로직)    
     // 1. 썸네일 미리보기 함수
     function previewThumbnail(input, areaSelector, imgSelector) {
         const file = input.files[0];
@@ -705,10 +702,7 @@
         }
     }
 
-    // ============================================================
     // [캘린더 및 데이터 로드]
-    // ============================================================
-
     function initCalendar() {
         const Calendar = tui.Calendar;
         calendar = new Calendar('#calendar', {
@@ -778,30 +772,47 @@
         }
 
         $.get('/schedule/api/events', { start: startStr, end: endStr }, function(dbData) {
-            const events = dbData.map(dto => {
+        	const events = dbData.map(dto => {
                 let color = '#333';
                 let bgColor = '#ccc';
+                let category = 'allday'; // 기본값
+
+                // 1. 기본 타입에 따른 색상 설정 (먼저 실행)
                 switch(dto.type) {
                     case 'COMPANY': bgColor = '#ff5b7f'; break;
                     case 'TEAM':    bgColor = '#3da5ff'; break;
                     case 'PERSONAL':bgColor = '#f1c40f'; break;
                     case 'LEAVE':   bgColor = '#b7f3c4'; color = '#333'; break;
-                    case 'SPECIFIC':bgColor = '#9C27B0'; break;
+                    case 'SPECIFIC':bgColor = '#9C27B0'; break; // 여기서 보라색으로 설정되지만...
                 }
+
+                // 2. 제목에 [연차]가 있으면 색상 강제 변경 (나중에 실행되어 덮어씀)
+                if (dto.title.includes('[연차]') || dto.title.includes('[반차]')) {
+                     bgColor = '#b7f3c4'; // 연두색 (덮어쓰기)
+                     color = '#333';      // 글자색
+                     category = 'allday';
+                }
+
                 return {
-                    id: dto.id, calendarId: 'cal1', title: dto.title, category: 'allday',
-                    start: dto.startDate, end: dto.endDate,
-                    color: color, backgroundColor: bgColor, borderColor: bgColor, dragBackColor: bgColor
+                    id: dto.id,
+                    calendarId: 'cal1',
+                    title: dto.title,
+                    category: category,
+                    start: dto.startDate,
+                    end: dto.endDate,
+                    color: color,
+                    backgroundColor: bgColor,
+                    borderColor: bgColor,
+                    dragBackColor: bgColor,
+                    // [연차]가 포함되면 읽기 전용 처리
+                    isReadOnly: (dto.title.includes('[연차]') || dto.title.includes('[반차]'))
                 };
             });
             calendar.createEvents(events);
         });
     }
 
-    // ============================================================
     // [모달 열기 및 데이터 로드] (수정됨)
-    // ============================================================
-
     function openRegistModal(startVal, endVal) {
         $('#scheduleForm')[0].reset();
         
@@ -882,10 +893,7 @@
         });
     }
 
-    // ============================================================
     // [CRUD Ajax 함수] (FormData 수동 처리)
-    // ============================================================
-
     function registerSchedule() {
         const formData = new FormData($('#scheduleForm')[0]);
         
@@ -943,10 +951,7 @@
         }).fail((xhr) => alert(xhr.responseText || '삭제 실패'));
     }
 
-    // ============================================================
     // [유틸 및 기타]
-    // ============================================================
-
     function toLocalISOString(date) {
         const offset = date.getTimezoneOffset() * 60000;
         const localIso = new Date(date - offset).toISOString();

@@ -6,31 +6,35 @@
 <head>
     <title>일정 관리(캘린더)</title>  
     <th:block layout:fragment="style">
-    	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
         <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css">
+
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        
+        <script src="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
         
         <style>
             /* --- [기존 스타일 유지] --- */
             .dashboard { display: flex; gap: 20px; height: 100%; min-height: 700px; }
             .calendar-wrapper { flex: 3; background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
             
-            /* [수정] 헤더 레이아웃 조정 */
             .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
             .calendar-header .left { display: flex; align-items: center; gap: 15px; }
-            .calendar-header .right-controls { display: flex; align-items: center; gap: 10px; } /* 추가 */
+            .calendar-header .right-controls { display: flex; align-items: center; gap: 10px; }
             
             .calendar-header strong { font-size: 20px; color: #333; }
-            .calendar-header button.nav-btn { border: none; background: none; font-size: 18px; cursor: pointer; color: #555; } /* 클래스 추가 */
+            .calendar-header button.nav-btn { border: none; background: none; font-size: 18px; cursor: pointer; color: #555; }
             
             .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-			.color-dot.personal { background: #f1c40f; }
-			.color-dot.leave { background: #b7f3c4; }
-			.color-dot.company { background: #ff5b7f; }
-			.color-dot.team { background: #3da5ff; }
-			.color-dot.specific { background: #9C27B0; }
+            .color-dot.personal { background: #f1c40f; }
+            .color-dot.leave { background: #b7f3c4; }
+            .color-dot.company { background: #ff5b7f; }
+            .color-dot.team { background: #3da5ff; }
+            .color-dot.specific { background: #9C27B0; }
             #calendar { flex: 1; min-height: 0; }
         
             .right-sidebar { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 250px; }
@@ -38,7 +42,6 @@
             
             .profile { position: relative; }
             
-            /* 버튼 및 배지 */
             .status-badges { display: flex; gap: 10px; margin-bottom: 15px; }
             .status-badges button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
             .status-badges button:disabled { opacity: 0.5; cursor: not-allowed; background-color: #e0e0e0; color: #888; }
@@ -60,15 +63,14 @@
             .btn-detail:hover { background: #1565c0; }
             
             .card-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: block; color: #444; }
-            .empty-box { height: 60px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
-        
-            /* 뷰 전환 버튼 */
+            
+            /* [삭제됨] 기존 빈 박스 스타일 제거 (.empty-box) */
+            
             .view-buttons.segmented { position: relative; display: inline-flex; background: #f1f3f5; border-radius: 8px; padding: 4px; }
             .view-buttons.segmented button { position: relative; z-index: 2; border: none; background: transparent; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; border-radius: 6px; }
             .view-buttons.segmented button.active { color: #fff; }
             .view-buttons.segmented .indicator { position: absolute; top: 4px; left: 4px; bottom: 4px; background: #4b6ef5; border-radius: 6px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; width: 0; }
             
-            /* [추가] 일정 등록 버튼 (+) */
             .btn-add-event {
                 width: 36px; height: 36px; border-radius: 50%; border: none;
                 background: #5c6bc0; color: white; font-size: 18px; cursor: pointer;
@@ -77,20 +79,16 @@
             }
             .btn-add-event:hover { transform: scale(1.1); background: #4b5bb0; }
 
-            /* [추가] 모달 공통 스타일 (List.html 기반) */
             .required-star { color: #dc3545; margin-left: 2px; }
             #filePreviewArea { margin-top: 10px; padding: 10px; border: 1px dashed #ced4da; background: #fafafa; text-align: center; }
             #filePreviewArea img { max-width: 100%; max-height: 200px; }
             
-            /* [추가] 조직도 검색 결과 */
             .search-result-box { max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; margin-top: 10px; }
             .search-result-item { padding: 10px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; cursor: pointer; }
             .search-result-item:hover { background-color: #f8f9fa; }
             
-            /* [추가] Toast UI Calendar 커스텀 (형광펜 효과 텍스트 색상) */
             .toastui-calendar-event-time-content { font-weight: 600; color: #fff !important; }
 
-            /* 기존 근태 모달 스타일 유지 */
             .custom-modal-overlay {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background-color: rgba(0, 0, 0, 0.4); display: none;
@@ -123,7 +121,6 @@
             .btn-logout-full:hover { background-color: #fff1f0; color: #e54f4b; border-color: #ffa39e; }
             .btn-logout-full i { font-size: 13px; }
 
-			/* 날씨 위젯 스타일 */
 			.weather-widget { 
 				background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px; padding: 30px; 
 			    color: #fff; box-shadow: 0 10px 25px rgba(0, 198, 255, 0.3); font-family: 'Segoe UI', sans-serif; 
@@ -153,38 +150,73 @@
 			.detail-item i { font-size: 24px; text-align: center; opacity: 0.9; }
 			.detail-item span { font-weight: 700; font-size: 18px; }
 			
-			/* 1. 목록 컨테이너를 가로 플렉스 박스로 변경 */
             #fileListPreview ul, 
             #detailNewFilePreview ul, 
             #detailFileListArea ul {
                 display: flex;
-                flex-wrap: wrap;        /* 공간이 부족하면 다음 줄로 넘김 */
-                gap: 8px;               /* 아이템 사이 간격 */
+                flex-wrap: wrap;       
+                gap: 8px;               
                 padding: 5px;
-                flex-direction: row !important; /* 강제로 가로 방향 설정 */
+                flex-direction: row !important; 
             }
 
-            /* 2. 개별 파일 아이템 스타일 (둥근 배지 모양) */
             #fileListPreview .list-group-item, 
             #detailNewFilePreview .list-group-item, 
             #detailFileListArea .list-group-item {
                 border: 1px solid #dee2e6;
-                border-radius: 20px;    /* 둥글게 처리 */
+                border-radius: 20px;    
                 padding: 6px 14px;
                 background-color: #fff;
-                display: inline-flex;   /* 내부 요소 가로 정렬 */
+                display: inline-flex;   
                 align-items: center;
-                width: auto;            /* 내용만큼만 너비 차지 */
-                margin-bottom: 0;       /* 하단 여백 제거 */
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 살짝 그림자 */
+                width: auto;            
+                margin-bottom: 0;       
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
             }
 
-            /* 3. 파일명과 삭제 버튼 사이 간격 조정 */
             .list-group-item span {
                 margin-right: 8px;
                 display: flex;
                 align-items: center;
             }
+
+            /* --- [추가] 공지사항 슬라이더 스타일 --- */
+            .notice-slider-wrapper {
+                height: 60px; /* 카드 높이에 맞춤 */
+                overflow: hidden;
+            }
+            .notice-list {
+                margin: 0; padding: 0; list-style: none;
+            }
+            .notice-item {
+			    height: 60px; /* 높이 고정 */
+			    padding: 0;   /* 패딩 제거 (a태그로 이동) */
+			}
+			/* [추가] 링크 스타일 (꽉 채우기) */
+			.notice-link {
+			    display: flex; 
+			    align-items: center; 
+			    gap: 8px; 
+			    height: 100%; 
+			    padding: 0 10px; /* 패딩을 여기로 이동 */
+			    text-decoration: none; /* 밑줄 제거 */
+			    color: inherit; /* 글자색 상속 */
+			    width: 100%; /* 클릭 영역 확장 */
+			    cursor: pointer;
+			}
+            .notice-link:hover .notice-title { 
+			    text-decoration: underline; 
+			    color: #3da5ff; 
+			}
+            .badge-pinned {
+                background-color: #6366f1; color: white; padding: 3px 8px; 
+                border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap;
+            }
+            .notice-title {
+                font-size: 14px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            }
+            /* bxSlider 기본 테두리/그림자 제거 */
+            .bx-wrapper { box-shadow: none; border: none; background: transparent; margin-bottom: 0; }
         </style>
     </th:block>
 </head>
@@ -267,7 +299,22 @@
 
             <div class="card">
                 <span class="card-title">📢 사내 공지사항</span>
-                <div class="empty-box"></div>
+                
+                <div class="notice-slider-wrapper">
+                    <ul class="notice-list" id="noticeSlider" th:if="${not #lists.isEmpty(pinnedNotices)}">
+				        <li th:each="notice : ${pinnedNotices}" class="notice-item">
+				            <a th:href="@{/notice/detail/{id}(id=${notice.id})}" class="notice-link">
+				                <span class="badge-pinned">고정</span>
+				                <span class="notice-title" th:text="${notice.title}">공지 제목입니다.</span>
+				            </a>
+				        </li>
+				    </ul>
+                    
+                    <div th:if="${#lists.isEmpty(pinnedNotices)}" 
+                         style="height: 60px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 13px;">
+                        등록된 고정 공지가 없습니다.
+                    </div>
+                </div>
             </div>
 
             <div class="weather-widget">
@@ -368,7 +415,6 @@
                                 <div class="col-md-3">
                                     <select class="form-select" id="schedType" name="type">
                                         <option value="PERSONAL" selected>개인</option>
-                                        <!-- <option value="LEAVE">연차</option> -->
                                         <option value="COMPANY">회사</option>
                                         <option value="TEAM">팀</option>
                                         <option value="SPECIFIC">특정</option>
@@ -457,8 +503,7 @@
                                         <option value="COMPANY">회사</option>
                                         <option value="TEAM">팀</option>
                                         <option value="SPECIFIC">특정</option>
-                                        <!-- <option value="LEAVE">연차</option> -->
-                                    </select>
+                                        </select>
                                 </div>
                                 <div class="col-md-9" id="detailShareTargetArea" style="display:none;">
                                     <div class="input-group">
@@ -561,48 +606,54 @@
         updateDate();         
         loadWeather();        
 
+        // [추가] bxSlider 초기화 (세로 롤링)
+        if ($('#noticeSlider li').length > 0) {
+            $('#noticeSlider').bxSlider({
+                mode: 'vertical',    // 위아래로 움직임
+                auto: true,          // 자동 재생
+                pause: 4000,         // 3초 대기
+                speed: 800,          // 애니메이션 속도
+                controls: false,     // 좌우(상하) 화살표 숨김
+                pager: false,        // 하단 점(pager) 숨김
+                minSlides: 1,
+                maxSlides: 1,
+                moveSlides: 1,
+                autoHover: true,      // 마우스 올리면 멈춤
+                touchEnabled: false, // [추가] 터치/드래그 방지하여 클릭 인식률 높임
+                autoHover: true
+            });
+        }
+
         const $monthBtn = $('.view-buttons.segmented button').eq(1);
         if ($monthBtn.length) setMonth($monthBtn[0]);
 
-        // ============================================================
-        // [이벤트 핸들러 등록]
-        // ============================================================
-
+        // ... [이하 기존 이벤트 핸들러 및 함수들 그대로 유지] ...
+        
         // 1. 등록 모달 열기 (초기화 포함)
         $('#btnOpenScheduleModal').click(() => { 
             activeModalSource = 'regist'; 
             openRegistModal(); 
         });
 
-        // 2. 파일 입력 및 삭제 관련 이벤트 (List.html 로직 이식)
-        // [등록] 썸네일 미리보기
+        // 2. 파일 입력 및 삭제 관련 이벤트
         $('#schedThumbnail').change(function() { previewThumbnail(this, '#thumbnailPreview'); });
-        
-        // [등록] 다중 파일 선택 (누적)
         $('#schedDataFiles').change(function() { handleFileSelect(this); });
-
-        // [상세] 썸네일 미리보기
         $('#detailThumbnailFile').change(function() { 
             previewThumbnail(this, '#detailThumbnailArea', '#detailThumbnailImg'); 
-            $('#btnDownloadThumbnail').hide(); // 새 이미지 선택 시 기존 다운로드 버튼 숨김
+            $('#btnDownloadThumbnail').hide(); 
         });
-
-        // [상세] 다중 파일 선택 (누적)
         $('#detailDataFiles').change(function() { handleFileSelect(this); });
 
-        // [공통] 파일 목록에서 [삭제] 버튼 클릭 (새로 추가한 파일 - 배열에서 삭제)
         $(document).on('click', '.btn-remove-file', function() {
             const index = $(this).data('index');
-            totalSelectedFiles.splice(index, 1); // 배열에서 제거
-            updateFilePreview(); // UI 갱신
+            totalSelectedFiles.splice(index, 1);
+            updateFilePreview();
         });
 
-        // [상세] 기존 DB 저장 파일 [삭제] 버튼 클릭 (서버 통신)
         $(document).on('click', '.btn-delete-db-file', function() {
             if(!confirm('이 파일을 영구적으로 삭제하시겠습니까?')) return;
             const fileId = $(this).data('id');
             const $liItem = $('#file-item-' + fileId);
-            
             $.ajax({
                 url: '/schedule/file/delete',
                 type: 'POST',
@@ -610,7 +661,6 @@
                 success: function(res) {
                     alert("삭제되었습니다.");
                     $liItem.remove();
-                    // 다 지워졌으면 메시지 표시
                     if ($('#detailFileListArea li').length === 0) {
                         $('#detailFileListArea').html('<span class="text-muted small">첨부된 파일이 없습니다.</span>');
                     }
@@ -619,7 +669,7 @@
             });
         });
 
-        // 3. 공유 범위 UI 변경 이벤트
+        // 3. 공유 범위 UI 변경
         $('#schedType, #detailType').change(function() {
             const isRegist = ($(this).attr('id') === 'schedType');
             updateShareUI(isRegist ? 'regist' : 'detail', $(this).val());
@@ -627,92 +677,67 @@
             else { $('#detailTargetNames').val(''); $('#detailHiddenIdArea').empty(); }
         });
 
-        // 4. 조직도 모달 관련
+        // 4. 조직도 모달
         $('#btnOpenTargetModal').click(() => openSearchModal('regist'));
         $('#btnOpenDetailTargetModal').click(() => openSearchModal('detail'));
         $('#btnTargetSearch').click(searchTarget);
         $('#targetSearchKeyword').on('keyup', (e) => { if(e.keyCode==13) searchTarget(); });
         $('#btnConfirmTarget').click(confirmTarget);
         
-        // 5. CRUD 버튼 핸들러 (수정된 함수 연결)
+        // 5. CRUD 버튼
         $('#btnRegister').click(registerSchedule);
         $('#btnUpdate').click(updateSchedule);
         $('#btnDelete').click(deleteSchedule);
 
     }); // ready end
 
-    // [파일 처리 관련 함수들] (List.html 로직)    
-    // 1. 썸네일 미리보기 함수
+    // [파일 처리 관련 함수들] (기존 유지)    
     function previewThumbnail(input, areaSelector, imgSelector) {
         const file = input.files[0];
         const $area = $(areaSelector);
         const $img = imgSelector ? $(imgSelector) : $area.find('img');
-        
         if (file && file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                $img.attr('src', e.target.result);
-                $area.show();
-            }
+            reader.onload = function(e) { $img.attr('src', e.target.result); $area.show(); }
             reader.readAsDataURL(file);
         } else {
-            // 등록창일 때는 이미지를 비우고 숨김, 상세창 수정일 때는 유지
-            if(!imgSelector) {
-                $img.attr('src', '');
-                $area.hide();
-            }
+            if(!imgSelector) { $img.attr('src', ''); $area.hide(); }
         }
     }
 
-    // 2. 파일 선택 핸들러 (누적 처리)
     function handleFileSelect(input) {
         const newFiles = Array.from(input.files);
-        totalSelectedFiles = totalSelectedFiles.concat(newFiles); // 배열에 누적
-        updateFilePreview(); // UI 갱신
-        $(input).val(''); // 입력창 초기화 (연속 선택 가능하도록)
+        totalSelectedFiles = totalSelectedFiles.concat(newFiles);
+        updateFilePreview();
+        $(input).val('');
     }
 
-    // 3. 파일 목록 UI 렌더링 (등록/상세 공통 사용)
     function updateFilePreview() {
-        // 현재 활성화된 모달에 따라 그릴 위치 결정
         const $area = (activeModalSource === 'regist') ? $('#fileListPreview') : $('#detailNewFilePreview');
         $area.empty();
-
         if (totalSelectedFiles.length > 0) {
             let html = '<ul class="list-group list-group-flush">';
             totalSelectedFiles.forEach((file, index) => {
                 let size = (file.size / 1024).toFixed(1) + ' KB';
-                // 상세 모달일 경우 New 배지 추가
                 const newBadge = (activeModalSource === 'detail') ? '<span class="badge bg-warning text-dark ms-1">New</span>' : '';
-                
                 html += `
                     <li class="list-group-item d-flex justify-content-between align-items-center py-1">
-                        <span>
-                            <i class="fa-solid fa-file me-2 text-secondary"></i>
-                            ${file.name} <span class="text-muted" style="font-size:12px;">(${size})</span> 
-                            ${newBadge}
-                        </span>
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file" data-index="${index}" style="font-size: 12px; padding: 2px 6px;">
-                            <i class="fa-solid fa-xmark"></i> 삭제
-                        </button>
+                        <span><i class="fa-solid fa-file me-2 text-secondary"></i> ${file.name} <span class="text-muted" style="font-size:12px;">(${size})</span> ${newBadge}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file" data-index="${index}" style="font-size: 12px; padding: 2px 6px;"><i class="fa-solid fa-xmark"></i> 삭제</button>
                     </li>`;
             });
-            html += '</ul>';
-            $area.html(html);
+            html += '</ul>'; $area.html(html);
         }
     }
 
-    // [캘린더 및 데이터 로드]
+    // [캘린더 및 데이터 로드] (기존 유지)
     function initCalendar() {
         const Calendar = tui.Calendar;
         calendar = new Calendar('#calendar', {
             defaultView: 'month',
-            useFormPopup: false,
-            useDetailPopup: false,
-            isReadOnly: false,
+            useFormPopup: false, useDetailPopup: false, isReadOnly: false,
             week: { startDayOfWeek: 0, dayNames: ['일','월','화','수','목','금','토'] },
             month: { dayNames: ['일','월','화','수','목','금','토'] },
-            
             eventSorter: function(a, b) {
                 const aIsHoliday = String(a.id).startsWith('holiday');
                 const bIsHoliday = String(b.id).startsWith('holiday');
@@ -736,11 +761,7 @@
             loadDetail(scheduleId);
         });
 
-        setTimeout(() => { 
-            calendar.render(); 
-            updateCalendarTitle();
-            loadSchedules(); 
-        }, 100);
+        setTimeout(() => { calendar.render(); updateCalendarTitle(); loadSchedules(); }, 100);
     }
 
     function loadSchedules() {
@@ -757,13 +778,8 @@
         } else {
             $.get(`/api/calendar/holidays?year=${year}`, function(holidayData) {
                 const holidayEvents = holidayData.map(holiday => ({
-                    id: 'holiday-' + holiday.locdate,
-                    calendarId: 'holiday',
-                    title: holiday.dateName,
-                    category: 'allday',
-                    start: formatLocdate(holiday.locdate),
-                    end: formatLocdate(holiday.locdate),
-                    isReadOnly: true,
+                    id: 'holiday-' + holiday.locdate, calendarId: 'holiday', title: holiday.dateName, category: 'allday',
+                    start: formatLocdate(holiday.locdate), end: formatLocdate(holiday.locdate), isReadOnly: true,
                     color: '#e54f4b', backgroundColor: '#ffe8e8', dragBackColor: '#ffe8e8', borderColor: '#e54f4b'
                 }));
                 holidayCache[year] = holidayEvents;
@@ -773,38 +789,18 @@
 
         $.get('/schedule/api/events', { start: startStr, end: endStr }, function(dbData) {
         	const events = dbData.map(dto => {
-                let color = '#333';
-                let bgColor = '#ccc';
-                let category = 'allday'; // 기본값
-
-                // 1. 기본 타입에 따른 색상 설정 (먼저 실행)
+                let color = '#333', bgColor = '#ccc', category = 'allday';
                 switch(dto.type) {
                     case 'COMPANY': bgColor = '#ff5b7f'; break;
                     case 'TEAM':    bgColor = '#3da5ff'; break;
                     case 'PERSONAL':bgColor = '#f1c40f'; break;
                     case 'LEAVE':   bgColor = '#b7f3c4'; color = '#333'; break;
-                    case 'SPECIFIC':bgColor = '#9C27B0'; break; // 여기서 보라색으로 설정되지만...
+                    case 'SPECIFIC':bgColor = '#9C27B0'; break; 
                 }
-
-                // 2. 제목에 [연차]가 있으면 색상 강제 변경 (나중에 실행되어 덮어씀)
-                if (dto.title.includes('[연차]') || dto.title.includes('[반차]')) {
-                     bgColor = '#b7f3c4'; // 연두색 (덮어쓰기)
-                     color = '#333';      // 글자색
-                     category = 'allday';
-                }
-
+                if (dto.title.includes('[연차]') || dto.title.includes('[반차]')) { bgColor = '#b7f3c4'; color = '#333'; category = 'allday'; }
                 return {
-                    id: dto.id,
-                    calendarId: 'cal1',
-                    title: dto.title,
-                    category: category,
-                    start: dto.startDate,
-                    end: dto.endDate,
-                    color: color,
-                    backgroundColor: bgColor,
-                    borderColor: bgColor,
-                    dragBackColor: bgColor,
-                    // [연차]가 포함되면 읽기 전용 처리
+                    id: dto.id, calendarId: 'cal1', title: dto.title, category: category, start: dto.startDate, end: dto.endDate,
+                    color: color, backgroundColor: bgColor, borderColor: bgColor, dragBackColor: bgColor,
                     isReadOnly: (dto.title.includes('[연차]') || dto.title.includes('[반차]'))
                 };
             });
@@ -812,15 +808,12 @@
         });
     }
 
-    // [모달 열기 및 데이터 로드] (수정됨)
+    // [모달 열기 및 데이터 로드]
     function openRegistModal(startVal, endVal) {
         $('#scheduleForm')[0].reset();
-        
-        // [초기화] 파일 배열 및 UI
         totalSelectedFiles = [];
         $('#fileListPreview').empty();
         $('#thumbnailPreview').hide().find('img').attr('src', '');
-        
         $('#shareTargetArea').hide(); $('#hiddenIdArea').empty();
         
         if(startVal && endVal) { $('#schedStart').val(startVal); $('#schedEnd').val(endVal); } 
@@ -830,9 +823,7 @@
     }
 
     function loadDetail(id) {
-        activeModalSource = 'detail'; // 모달 소스 변경
-        
-        // [초기화] 파일 배열 및 UI
+        activeModalSource = 'detail';
         totalSelectedFiles = [];
         $('#detailNewFilePreview').empty();
         $('#detailThumbnailFile').val('');
@@ -847,16 +838,12 @@
             if(data.startDate) $('#detailStartDate').val(data.startDate);
             if(data.endDate) $('#detailEndDate').val(data.endDate);
             
-            // [수정] 1. 썸네일 처리
             if (data.thumbnailPath) {
                 $('#detailThumbnailImg').attr('src', '/upload/' + data.thumbnailPath);
                 $('#btnDownloadThumbnail').attr('href', '/schedule/download/thumbnail/' + data.id).show();
                 $('#detailThumbnailArea').show();
-            } else {
-                $('#detailThumbnailArea').hide();
-            }
+            } else { $('#detailThumbnailArea').hide(); }
 
-            // [수정] 2. 기존 첨부파일 리스트 처리 (DB 데이터)
             const $fileArea = $('#detailFileListArea');
             $fileArea.empty();
             if (data.fileList && data.fileList.length > 0) {
@@ -870,13 +857,9 @@
                             <button type="button" class="btn btn-sm btn-outline-danger btn-delete-db-file" data-id="${f.id}" style="font-size: 11px; padding: 1px 6px;">삭제</button>
                         </li>`;
                 });
-                html += '</ul>';
-                $fileArea.html(html);
-            } else {
-                $fileArea.html('<span class="text-muted small">첨부된 파일이 없습니다.</span>');
-            }
+                html += '</ul>'; $fileArea.html(html);
+            } else { $fileArea.html('<span class="text-muted small">첨부된 파일이 없습니다.</span>'); }
 
-            // [수정] 3. 공유 범위 UI 복원
             updateShareUI('detail', data.type);
             const $hidden = $('#detailHiddenIdArea').empty();
             const $names = $('#detailTargetNames').val('');
@@ -893,61 +876,37 @@
         });
     }
 
-    // [CRUD Ajax 함수] (FormData 수동 처리)
+    // [CRUD Ajax 함수]
     function registerSchedule() {
         const formData = new FormData($('#scheduleForm')[0]);
-        
-        // 기존 input 값 제거 후 배열에 있는 파일들로 교체
         formData.delete('dataFiles');
-        if (totalSelectedFiles.length > 0) {
-            totalSelectedFiles.forEach(file => {
-                formData.append('dataFiles', file);
-            });
-        }
+        if (totalSelectedFiles.length > 0) { totalSelectedFiles.forEach(file => formData.append('dataFiles', file)); }
 
         $.ajax({ url: '/schedule/regist', type: 'POST', data: formData, contentType: false, processData: false, 
-            success: () => { 
-                alert('등록되었습니다.'); 
-                bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
-                loadSchedules(); 
-            }, error: () => alert('등록 실패') 
+            success: () => { alert('등록되었습니다.'); bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide(); loadSchedules(); }, 
+            error: () => alert('등록 실패') 
         });
     }
 
     function updateSchedule() {
         if(!confirm('수정하시겠습니까?')) return;
-        
         const formData = new FormData($('#detailForm')[0]);
-        
-        // 기존 input 값 제거 후 배열에 있는 파일들로 교체
         formData.delete('dataFiles');
-        if (totalSelectedFiles.length > 0) {
-            totalSelectedFiles.forEach(file => {
-                formData.append('dataFiles', file);
-            });
-        }
+        if (totalSelectedFiles.length > 0) { totalSelectedFiles.forEach(file => formData.append('dataFiles', file)); }
 
-        // 공유 대상 필수 체크
         const type = $('#detailType').val();
-        if ((type === 'TEAM' || type === 'SPECIFIC') && $('#detailHiddenIdArea').children().length === 0) {
-             alert("공유할 대상을 지정해주세요."); return;
-        }
+        if ((type === 'TEAM' || type === 'SPECIFIC') && $('#detailHiddenIdArea').children().length === 0) { alert("공유할 대상을 지정해주세요."); return; }
 
         $.ajax({ url: '/schedule/update', type: 'POST', data: formData, contentType: false, processData: false, 
-            success: () => { 
-                alert('수정되었습니다.'); 
-                bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
-                loadSchedules(); 
-            }, error: (xhr) => alert(xhr.responseText || '수정 실패') 
+            success: () => { alert('수정되었습니다.'); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); loadSchedules(); }, 
+            error: (xhr) => alert(xhr.responseText || '수정 실패') 
         });
     }
 
     function deleteSchedule() {
         if(!confirm('일정을 삭제하시겠습니까?')) return;
         $.post('/schedule/delete', {id: $('#detailId').val()}).done(() => { 
-            alert('삭제되었습니다.'); 
-            bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
-            loadSchedules(); 
+            alert('삭제되었습니다.'); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); loadSchedules(); 
         }).fail((xhr) => alert(xhr.responseText || '삭제 실패'));
     }
 
@@ -957,17 +916,9 @@
         const localIso = new Date(date - offset).toISOString();
         return localIso.slice(0, 16);
     }
-    
-    function formatDateForApi(date) {
-        return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
-    }
-    
-    function formatLocdate(locdate) {
-        const s = String(locdate);
-        return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`;
-    }
+    function formatDateForApi(date) { return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0'); }
+    function formatLocdate(locdate) { const s = String(locdate); return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`; }
 
-    // 네비게이션
     window.movePrev = function() { calendar.prev(); updateCalendarTitle(); loadSchedules(); };
     window.moveNext = function() { calendar.next(); updateCalendarTitle(); loadSchedules(); };
     function updateCalendarTitle() { const d = calendar.getDate(); $('#calendarTitle').text(`${d.getFullYear()}년 ${d.getMonth() + 1}월`); }
@@ -988,7 +939,6 @@
         else { $area.show().css('display','flex'); $btn.html(type === 'TEAM' ? '<i class="fa-solid fa-users me-1"></i> +공유팀' : '<i class="fa-solid fa-user-plus me-1"></i> +공유자'); }
     }
 
-    // 조직도 및 검색
     function openSearchModal(source) {
         activeModalSource = source;
         const type = $(source === 'regist' ? '#schedType' : '#detailType').val();
@@ -1026,7 +976,6 @@
         bootstrap.Modal.getInstance(document.getElementById('searchTargetModal')).hide();
     }
 
-    // 근태/날씨/날짜 (기존 유지)
     function checkCurrentStatus() { $.get('/api/attendance/status', function(data) { updateButtonUI(data.status, data.memo); }); }
     function updateButtonUI(status, memo) {
         currentStatus = status;

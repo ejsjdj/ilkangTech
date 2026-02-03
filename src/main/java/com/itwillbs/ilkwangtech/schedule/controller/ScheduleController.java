@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.schedule.controller;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.notice.service.NoticeService;
 
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +52,7 @@ import lombok.extern.log4j.Log4j2;
 public class ScheduleController {
 
 	private final ScheduleService scheduleService;
+	private final NoticeService noticeService;
 	
 	// [추가 1] 빈 문자열("")을 null로 변환하여 LocalDate 바인딩 에러 방지
 	@InitBinder
@@ -59,8 +61,11 @@ public class ScheduleController {
     }
 
 	@GetMapping("/calendar")
-	public String calendarGET() {
+	public String calendarGET(Model model) {
 		log.info("calendarGET() 실행!");
+		
+		model.addAttribute("pinnedNotices", noticeService.getPinnedNotices());
+		
 		log.info("calendarGET() 종료!");
 		return "/schedule/calendar";
 	}

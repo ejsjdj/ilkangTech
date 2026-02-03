@@ -15,5 +15,6 @@ public class ChatSendRequestDTO {
     private Long memberId;
     private String content;
     private String msgType;
+    private Long attachId;
 
 }

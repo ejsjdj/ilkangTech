@@ -1,9 +1,16 @@
 package com.itwillbs.ilkwangtech.messenger.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
@@ -25,29 +32,47 @@ import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatMessageResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatRoomListResponseDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.MemberDeptRowDTO;
+import com.itwillbs.ilkwangtech.messenger.entity.ChatAttachment;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
+import com.itwillbs.ilkwangtech.messenger.repository.ChatAttachmentRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
+import com.itwillbs.ilkwangtech.messenger.service.ChatFileService;
 import com.itwillbs.ilkwangtech.messenger.service.MessengerService;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Controller
 @RequestMapping("/messenger")
 public class MessengerController {
 	
+	@Value("${file.uploadBaseLocation}")
+    private String uploadBaseLocation;
+
+    @Value("${file.chatFileLocation}")
+    private String chatFileLocation;
+	
 	private final MessengerService messengerService;
 	private final SimpMessagingTemplate simpMessagingTemplate;
 	private final ChatRoomMemberRepository chatRoomMemberRepository;
 	private final DepartmentRepository departmentRepository;
 	private final PositionRepository positionRepository;
+	private final ChatFileService chatFileService;
+	private final ChatAttachmentRepository chatAttachmentRepository;
 	
-	public MessengerController(MessengerService messengerService, SimpMessagingTemplate simpMessagingTemplate, ChatRoomMemberRepository chatRoomMemberRepository, PositionRepository positionRepository, DepartmentRepository departmentRepository) {
+	public MessengerController(MessengerService messengerService, SimpMessagingTemplate simpMessagingTemplate, ChatRoomMemberRepository chatRoomMemberRepository, PositionRepository positionRepository, DepartmentRepository departmentRepository, ChatFileService chatFileService, ChatAttachmentRepository chatAttachmentRepository) {
 		this.messengerService = messengerService;
 		this.simpMessagingTemplate = simpMessagingTemplate;
 		this.chatRoomMemberRepository = chatRoomMemberRepository;
 		this.departmentRepository = departmentRepository;
 		this.positionRepository = positionRepository;
+		this.chatFileService = chatFileService;
+		this.chatAttachmentRepository = chatAttachmentRepository;
 	}
 
 	@GetMapping("/memberList")
@@ -258,12 +283,46 @@ public class MessengerController {
         return ResponseEntity.ok("success");
     }
     
-    
-    @GetMapping("/api/unread-exists")
+ // 파일 업로드 API
+    @PostMapping("/api/upload")
     @ResponseBody
-    public boolean checkUnreadExists(@AuthenticationPrincipal AccountLogin login) {
-        return messengerService.hasAnyUnread(login.getId());
+    public ResponseEntity<ChatAttachment> uploadFile(@RequestParam("file") MultipartFile file, 
+                                                     @RequestParam("roomId") Long roomId,
+                                                     @AuthenticationPrincipal AccountLogin login) throws IOException {
+        
+        ChatAttachment savedAttach = chatFileService.saveChatFile(file, roomId, login.getId());
+        
+        return ResponseEntity.ok(savedAttach);
     }
+
+    // 파일 다운로드 API
+ // MessengerController.java 내부의 downloadFile 함수 전체
+    @GetMapping("/download/{attachId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable("attachId") Long attachId) throws IOException {
+        ChatAttachment attach = chatAttachmentRepository.findById(attachId)
+                .orElseThrow(() -> new RuntimeException("파일을 찾을 수 없습니다."));
+
+        Path path = Paths.get(uploadBaseLocation, attach.getStorePath())
+                         .resolve(attach.getStoredName())
+                         .normalize();
+        
+        Resource resource = new UrlResource(path.toUri());
+        String contentType = Files.probeContentType(path);
+        if(contentType == null) contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+
+        // [수정] 이미지면 inline(화면표시), 아니면 attachment(다운로드)
+        String dispositionType = (contentType.startsWith("image")) ? "inline" : "attachment";
+
+        ContentDisposition contentDisposition = ContentDisposition.builder(dispositionType)
+                .filename(attach.getOriginalName(), java.nio.charset.StandardCharsets.UTF_8)
+                .build();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+                .body(resource);
+    }
+    
     
 }
 

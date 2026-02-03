@@ -1,10 +1,13 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
+import com.itwillbs.ilkwangtech.hr.dto.AttachmentDTO;
 import com.itwillbs.ilkwangtech.hr.dto.DraftDetailDTO;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.hr.repository.DraftRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class DraftDetailService {
@@ -22,10 +25,19 @@ public class DraftDetailService {
         DraftEntity draftDetail = draftRepository.findById(draftId).
                 orElseThrow(() -> new IllegalArgumentException("문서가 삭제되었거나 존재하지 않습니다"));
 
+        // 등록 파일 조회
+        List<AttachmentDTO> files = draftDetail.getDraftFile().stream()
+                .map(e -> {
+                    AttachmentDTO dto = new AttachmentDTO();
+                    dto.setFileId(e.getFileId());
+                    return dto;
+                })
+                .toList();
+
         return DraftDetailDTO.builder()
                 .detailTitle(draftDetail.getDraftTitle())
                 .detailContent(draftDetail.getDraftContent())
-                .detailFile(draftDetail.getDraftFile())
+                .detailFile(files)
                 .detailStartDate(draftDetail.getDraftStartDate())
                 .detailEndDate(draftDetail.getDraftEndDate())
                 .build();

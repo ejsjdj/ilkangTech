@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.hr.service;
 
 import com.itwillbs.ilkwangtech.hr.dto.AppointmentRegistDTO;
 import com.itwillbs.ilkwangtech.hr.dto.DraftRegistDTO;
+import com.itwillbs.ilkwangtech.hr.entity.DraftAttachmentEntity;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.hr.entity.DraftApproveStatusEntity;
 import com.itwillbs.ilkwangtech.hr.repository.DraftApprovalLineRepository;
@@ -38,8 +39,17 @@ public class DraftRegistService {
 
         // Draft 엔티티에 새로문 결재문서 등록
         DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class); // DTO와 Entity 매핑
-        //Member memberRef = entityManager.getReference(Member.class, userId); // member 엔티티에서 작성자 ID 참조
         draftEntity.setMember(entityManager.getReference(Member.class, userId)); // 작성자 ID 등록
+
+        List<DraftAttachmentEntity> attachment = draftRegistDTO.getDraftFile().stream()
+                .map(attachmentDTO -> {
+                    DraftAttachmentEntity e = new DraftAttachmentEntity();
+                    e.setFileId(attachmentDTO.getFileId());
+                    e.setDraft(draftEntity);
+                    return e;
+                }).toList();
+
+        draftEntity.setDraftFile(attachment);
         draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus()); // 최종 결재상태(기본값 WAT) 등록
 
         DraftEntity savedDraft = draftRepository.save(draftEntity);

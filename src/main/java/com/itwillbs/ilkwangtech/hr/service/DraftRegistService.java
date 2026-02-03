@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
+import com.itwillbs.ilkwangtech.hr.dto.AppointmentRegistDTO;
 import com.itwillbs.ilkwangtech.hr.dto.DraftRegistDTO;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.hr.entity.DraftApproveStatusEntity;
@@ -30,16 +31,22 @@ public class DraftRegistService {
     private final ModelMapper modelMapper;
     private final MemberRepository memberRepository;
     private final DraftApprovalLineRepository draftApprovalLineRepository;
+    private final RegistAppointmentService registAppointmentService;
 
     @Transactional
     public void putDraft(DraftRegistDTO draftRegistDTO, Long userId) {
 
         // Draft 엔티티에 새로문 결재문서 등록
         DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class); // DTO와 Entity 매핑
-        Member memberRef = entityManager.getReference(Member.class, userId); // member 엔티티에서 작성자 ID 참조
-        draftEntity.setMember(memberRef); // 작성자 ID 등록
+        //Member memberRef = entityManager.getReference(Member.class, userId); // member 엔티티에서 작성자 ID 참조
+        draftEntity.setMember(entityManager.getReference(Member.class, userId)); // 작성자 ID 등록
         draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus()); // 최종 결재상태(기본값 WAT) 등록
+
         DraftEntity savedDraft = draftRepository.save(draftEntity);
+
+        if("APP".equals(draftRegistDTO.getDraftType())){
+            registAppointmentService.registAppointment(draftRegistDTO, savedDraft);
+        }
 
         // 결재자 리스트
         List<String> approverStrings;

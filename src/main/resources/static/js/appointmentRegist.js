@@ -69,7 +69,6 @@ function renderEmployeeTable(pageData) {
                         `;
         });
     }
-
     container.innerHTML = html;
 }
 
@@ -87,7 +86,6 @@ function selectEmployee(element, id, name, dept, pos) {
     document.getElementById('selectedEmployeeDisplay').innerHTML =
         `<i class="bi bi-check-circle-fill"></i> 선택됨: ${name} (${dept} / ${pos})`;
 
-
     // 4. 선택된 직급, 부서 연결
     document.getElementById('currentDeptDisplay').value = dept;
     document.getElementById('currentRankDisplay').value = pos;
@@ -97,13 +95,11 @@ function selectEmployee(element, id, name, dept, pos) {
 // 발령 데이터 가공
 function registAppointment() {
     // 1. 현재 화면에 입력/선택된 값 가져오기
-    const userId = document.getElementById('selectedMemberId').value;
     const userName = document.getElementById('hiddenName').value;
     const newDept = document.querySelector('select[name="department"]').value;
     const currentDept = document.getElementById('currentDeptDisplay').value;
     const newRank = document.querySelector('select[name="position"]').value;
     const currentRank = document.getElementById('currentRankDisplay').value;
-    const workStatus = document.querySelector('select[name="bank"]').value; // HTML의 name에 맞춤
 
     // --- 제목 생성 로직 시작 ---
     let generatedTitle = '';
@@ -126,19 +122,27 @@ function registAppointment() {
 
     postDraft(generatedTitle, generatedContent)
 
-    // 3. 컨트롤러 주소에 파라미터를 붙여서 이동 (GET 방식)
-    // 주소 형식: /주소?userId=1&newDept=2...
-    location.href = `/hr/appointment/insertData?userId=${userId}&newDept=${newDept}&newRank=${newRank}&workStatus=${encodeURIComponent(workStatus)}`;
+
 }
 
-
-// 결재 문서 등록
+/* 결재 문서 등록 */
 async function postDraft(generatedTitle, generatedContent){
 
     const baseDate = document.getElementById('selectedDate').value;
     const startDate = today();
     const endDate = plusDays(startDate, 3);
 
+
+    // 전자결재 등록
+    const appointmentRegistDTO = {
+        memberId: document.getElementById('selectedMemberId').value,
+        newDept: document.querySelector('select[name="department"]').value,
+        newRank: document.querySelector('select[name="position"]').value,
+        workStatus: document.querySelector('select[name="bank"]').value, // select의 name
+        approveStatus: "대기"
+    };
+
+    // 2. 통합 데이터 생성
     const draftData = {
         draftTitle: generatedTitle,
         draftContent: generatedContent,
@@ -146,7 +150,14 @@ async function postDraft(generatedTitle, generatedContent){
         draftStartDate: startDate,
         draftEndDate: endDate,
         draftStatus: "대기",
-    }
+        // [중요] 상세 정보를 객체 형태로 포함
+        appointmentRegistDTO: appointmentRegistDTO
+    };
+
+
+
+    // 3. appointment 등록
+    // userId, newDept, newRank, workStatus`;
 
     console.log("발령 데이터 : ", draftData);
 
@@ -176,14 +187,14 @@ async function postDraft(generatedTitle, generatedContent){
 }
 
 
-/*날짜 계산*/
+/* 날짜 계산 */
 function plusDays(dateStr, days) {
   const d = new Date(dateStr);
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
 }
 
-// 오늘날짜 정의
+/* 오늘날짜 정의 */
 function today() {
   const d = new Date();
   const yyyy = d.getFullYear();

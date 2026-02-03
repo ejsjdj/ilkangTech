@@ -58,16 +58,16 @@ public class HrController {
     }
 
     // 발령 등록
-    @GetMapping("/appointment/insertData")
-    public void registAppointmentInsert(@AuthenticationPrincipal AccountLogin accountLogin,
-                                        @RequestParam(name = "userId") Long userId,
-                                        @RequestParam(name = "newDept", required = false) Integer newDept,
-                                        @RequestParam(name = "newRank", required = false) Integer newRank,
-                                        @RequestParam(name = "workStatus", required = false) String workStatus){
-
-        Long approverId = accountLogin.getId();
-        registAppointmentService.registAppointment(approverId, userId, newDept, newRank, workStatus);
-    }
+//    @GetMapping("/appointment/insertData")
+//    public void registAppointmentInsert(@AuthenticationPrincipal AccountLogin accountLogin,
+//                                        @RequestParam(name = "userId") Long userId,
+//                                        @RequestParam(name = "newDept", required = false) Integer newDept,
+//                                        @RequestParam(name = "newRank", required = false) Integer newRank,
+//                                        @RequestParam(name = "workStatus", required = false) String workStatus){
+//
+//        Long approverId = accountLogin.getId();
+//        registAppointmentService.registAppointment(approverId, userId, newDept, newRank, workStatus);
+//    }
 
     // 조직도
     @GetMapping("/organization")

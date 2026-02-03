@@ -30,13 +30,9 @@ public class AppointmentEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member memberId; // 사원 ID
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approver_id", nullable = true)
-    private Member approverId; // 승인자 ID
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "draft_id", nullable = true)
-    private DraftEntity draft; // 승인자 ID
+    private DraftEntity draft; // 결재 ID
 
     @Column(name = "pre_dept", nullable = true)
     private int preDept; // 이전 부서
@@ -58,8 +54,6 @@ public class AppointmentEntity {
 
     @Column(name = "appointment_date", nullable = true)
     private LocalDate appointmentDate; // 승인일
-
-
 
     // 부서 변경 (현재 부서 -> 이전 부서)
     public void changeDept(int currentDept){
@@ -90,13 +84,18 @@ public class AppointmentEntity {
         this.appointmentDate = LocalDate.now();
     }
 
-    // 승인 날짜 등록
-    public void newDate(LocalDate newDate){
-        this.appointmentDate = LocalDate.now();
+    // 문서 정보 등록
+    public void setDraft(DraftEntity draft){
+        this.draft = draft;
     }
 
+    // 승인 날짜 등록
+    /*public void newDate(LocalDate newDate){
+        this.appointmentDate = LocalDate.now();
+    }*/
+
     // 승인자 등록
-    public void newApprover(Member approver){
+    /*public void newApprover(Member approver){
         this.approverId = approver;
-    }
+    }*/
 }

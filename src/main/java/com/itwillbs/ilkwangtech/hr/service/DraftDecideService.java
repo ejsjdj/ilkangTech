@@ -83,8 +83,6 @@ public class DraftDecideService {
 
             // 2. [추가] 인사발령(APP)인 경우 발령 확정 및 사원 정보 갱신
             else if ("APP".equals(type)) {
-                // 아까 만든 발령 등록 서비스 호출
-                // registAppointmentService.registAppointment(...)
                 updateAppointmentStatus(draftId);
             }
 
@@ -159,8 +157,7 @@ public class DraftDecideService {
         }
 	}
 
-    @Transactional
-    private void updateAppointmentStatus(long draftId) {
+    public void updateAppointmentStatus(long draftId) {
 
         log.info("로그 1: 발령 확인 시작 - draftId: {}", draftId);
 

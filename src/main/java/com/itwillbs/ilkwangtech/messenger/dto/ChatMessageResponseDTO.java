@@ -16,4 +16,5 @@ public class ChatMessageResponseDTO {
     private String formattedTime;
     private String deptName;
     private String positionName;
+    private Long attachId;
 }

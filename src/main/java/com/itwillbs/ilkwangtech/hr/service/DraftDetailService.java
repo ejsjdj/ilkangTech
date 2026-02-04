@@ -54,7 +54,9 @@ public class DraftDetailService {
                 }).toList();
 
         return DraftDetailDTO.builder()
+                .userId(userId)
                 .detailWriterId(draftDetail.getMember().getId())
+                .detailRoles(roleList)
                 .detailTitle(draftDetail.getDraftTitle())
                 .detailContent(draftDetail.getDraftContent())
                 .detailFile(files)

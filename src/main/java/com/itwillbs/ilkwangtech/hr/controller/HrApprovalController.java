@@ -79,6 +79,7 @@ public class HrApprovalController {
 
     // 결재 승인/반려
     @PutMapping("/decide")
+    @ResponseBody
     public String approvalDecide(@RequestBody Map<String, Object> payload,
                                @AuthenticationPrincipal AccountLogin accountLogin){
     	log.info("approvalDecidePOST() 실행!");
@@ -91,7 +92,7 @@ public class HrApprovalController {
         // 서비스 호출 (최종 승인 시 캘린더 등록 로직 포함됨)
         try {
             draftDecideService.putApprovalDecide(userId, draftId, decision);
-            return "success"; // AJAX 호출에 대한 응답
+            return "/draft/list"; // AJAX 호출에 대한 응답
         } catch (Exception e) {
             log.error("결재 처리 중 오류 발생", e);
             return "fail";

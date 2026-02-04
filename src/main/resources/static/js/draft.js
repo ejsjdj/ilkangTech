@@ -29,10 +29,12 @@ function draftDetail(draftId) {
         .then(response => response.json())
         .then(data => {
             const buttonGroup = document.getElementById('detail_Button_Group');
-            const loginId = String(window.currentLoginId);
-            const roles = window.userRoles || [];
-            console.log("유저 권한 : ", roles);
-            console.log("받아온 데이터: ", data);
+            const loginId = String(data.userId);
+            const writerId = String(data.detailWriterId);
+            const roles = data.detailRoles || [];
+            console.log("로그인 유저 ID:", loginId);
+            console.log("작성자 ID:", writerId);
+            console.log("유저 권한:", roles);
 
             // 데이터 매핑
             const titleView = document.getElementById('detailTitle_view');
@@ -62,13 +64,9 @@ function draftDetail(draftId) {
             }
 
             if (buttonGroup) {
-                // 권한 체크: ROLE_CEO 또는 ROLE_HR이 포함되어 있는지 확인
-                const isManager = roles.some(role => {
-                    const roleName = typeof role === 'string' ? role : role.authority;
-                    return roleName === 'CEO' || roleName === 'HR';
-                });
+                const isManager = roles.includes('CEO') || roles.includes('HR');
 
-                // 조건: (기안자가 아니거나) OR (CEO/HR 권한을 가진 관리자라면)
+                // ✔ 작성자가 아니거나 ✔ 관리자라면 버튼 표시
                 if (writerId !== loginId || isManager) {
                     buttonGroup.style.display = 'block';
                 } else {

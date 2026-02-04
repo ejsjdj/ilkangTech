@@ -13,7 +13,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class DraftDetailDTO {
+    private Long userId;
     private Long detailWriterId;
+    private List<String> detailRoles;
     private String detailTitle;
     private String detailContent;
     private List<AttachmentDTO> detailFile;
@@ -23,8 +25,10 @@ public class DraftDetailDTO {
     private LocalDate detailEndDate;
 
     @Builder
-    public DraftDetailDTO(Long detailWriterId, String detailTitle, String detailContent, List<AttachmentDTO> detailFile, LocalDate detailStartDate, LocalDate detailEndDate){
+    public DraftDetailDTO(Long userId, Long detailWriterId, List<String> detailRoles, String detailTitle, String detailContent, List<AttachmentDTO> detailFile, LocalDate detailStartDate, LocalDate detailEndDate){
+        this.userId = userId;
         this.detailWriterId = detailWriterId;
+        this.detailRoles = detailRoles;
         this.detailTitle = detailTitle;
         this.detailContent = detailContent;
         this.detailFile = detailFile;

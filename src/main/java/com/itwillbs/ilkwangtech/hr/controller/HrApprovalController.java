@@ -7,6 +7,7 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/draft")
@@ -41,10 +43,18 @@ public class HrApprovalController {
     // 결재문서 상세보기
     @GetMapping("/detail")
     @ResponseBody
-    public DraftDetailDTO getApprovalDetail(@RequestParam("draftId") long draftId, @AuthenticationPrincipal AccountLogin accountLogin){
+    public DraftDetailDTO getApprovalDetail(@RequestParam("draftId") long draftId,
+                                            @AuthenticationPrincipal AccountLogin accountLogin){
         System.out.println("상세보기 문서 Id : " + draftId);
+
         Long userId = accountLogin.getId();
-        return draftDetailService.getDraftDetail(userId, draftId);
+
+        List<String> roleList = accountLogin.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+
+        return draftDetailService.getDraftDetail(userId, draftId, roleList);
     }
 
     // 결재문서 양식 선택

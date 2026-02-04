@@ -5,6 +5,9 @@ let currentDraftId = null;
 function openModal() {
     const modal = document.getElementById('draftModal');
     modal.style.display = 'block'
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('startDate').value = today;
 }
 
 /*모달 닫기*/
@@ -15,28 +18,35 @@ function closeModal() {
 
 /*상세보기 모달 열기*/
 function draftDetail(draftId) {
-    // 모달 열때 문서 번호 전역변수에 저장
     currentDraftId = draftId;
 
     const modal = document.getElementById("draftDetailModal");
-    modal.style.display = 'block'
+    modal.style.display = 'block';
 
-    console.log("문서 ID " + draftId);
+    console.log("문서 ID 조회 시작: " + draftId);
 
     fetch(`/draft/detail?draftId=${draftId}`)
         .then(response => response.json())
         .then(data => {
+            const buttonGroup = document.getElementById('detail_Button_Group');
+            const loginId = String(window.currentLoginId);
+            const roles = window.userRoles || [];
+            console.log("유저 권한 : ", roles);
             console.log("받아온 데이터: ", data);
 
+            // 데이터 매핑
             const titleView = document.getElementById('detailTitle_view');
             const contentView = document.getElementById('detailContent_view');
             const startView = document.getElementById('detailStartDate_view');
             const endView = document.getElementById('detailEndDate_view');
             const fileView = document.getElementById('fileListContainer');
 
+
+            // 1. 텍스트 값 세팅
             if (titleView) titleView.value = data.detailTitle || "";
             if (contentView) contentView.value = data.detailContent || "";
 
+            // 2. 날짜 세팅
             if (startView && data.detailStartDate) {
                 startView.value = data.detailStartDate.substring(0, 10);
             }
@@ -44,14 +54,29 @@ function draftDetail(draftId) {
                 endView.value = data.detailEndDate.substring(0, 10);
             }
 
+            // 3. 파일 목록 렌더링
             if (data.detailFile && data.detailFile.length > 0) {
-                fileView.value = data.detailFile[0].fileName;
                 renderFileList(data.detailFile);
             } else {
-                fileView.value = "첨부파일 없음";
                 renderFileList([]);
             }
-        });
+
+            if (buttonGroup) {
+                // 권한 체크: ROLE_CEO 또는 ROLE_HR이 포함되어 있는지 확인
+                const isManager = roles.some(role => {
+                    const roleName = typeof role === 'string' ? role : role.authority;
+                    return roleName === 'CEO' || roleName === 'HR';
+                });
+
+                // 조건: (기안자가 아니거나) OR (CEO/HR 권한을 가진 관리자라면)
+                if (writerId !== loginId || isManager) {
+                    buttonGroup.style.display = 'block';
+                } else {
+                    buttonGroup.style.display = 'none';
+                }
+            }
+        })
+        .catch(err => console.error("데이터 로드 중 에러:", err));
 }
 
 /*파일 다운로드*/
@@ -91,22 +116,26 @@ function loadApprovalLine(draftType) {
     fetch(`/draft/type?type=${draftType}`)
         .then(response => response.json())
         .then(data => {
-            // 1. 기존 input들 초기화 (이전 데이터 삭제)
-            document.getElementById('approver1').value = '';
-            document.getElementById('approver2').value = '';
-            document.getElementById('approver3').value = '';
+            // 초기화
+            for(let i=1; i<=3; i++) {
+                document.getElementById(`approver${i}`).value = '';
+                document.getElementById(`display_approver${i}`).innerText = '미지정';
+            }
 
-            // 2. sequence 기준으로 오름차순 정렬 (1, 2, 3...)
             data.sort((a, b) => a.sequence - b.sequence);
 
-            // 3. 정렬된 데이터를 각 input에 할당
             data.forEach((item) => {
-                // sequence가 1이면 approver1, 2이면 approver2에 넣음
-                const inputId = `approver${item.sequence}`;
-                const targetInput = document.getElementById(inputId);
+                const seq = item.sequence;
+                const hiddenInput = document.getElementById(`approver${seq}`);
+                const displayDiv = document.getElementById(`display_approver${seq}`);
 
-                if (targetInput) {
-                    targetInput.value = `${item.id} ${item.position} ${item.name} ${item.sequence}`;
+                if (hiddenInput && displayDiv) {
+                    // 서버로 보낼 값 (ID 등)
+                    hiddenInput.value = item.id;
+                    // 화면에 보여줄 값 (직급 + 성함)
+                    displayDiv.innerText = `${item.name} ${item.position}`;
+                    displayDiv.style.color = "#007bff"; // 지정된 사람은 파란색으로 강조
+                    displayDiv.style.fontWeight = "bold";
                 }
             });
         })
@@ -114,7 +143,7 @@ function loadApprovalLine(draftType) {
 }
 
 /*결재 승인하기*/
-function decideApprove(decision){
+async function decideApprove(decision){
     console.log(decision);
     fetch('/draft/decide', {
         method: 'PUT',
@@ -136,6 +165,8 @@ try {
         // 파일 업로드 (있을 때만)
         if (fileInput.files.length > 0) {
             uploadedFile = await uploadFile();
+        } else {
+            alert("첨부파일을 등록하세요.")
         }
 
         // 결재 데이터 구성 (JSON)
@@ -175,7 +206,6 @@ try {
         alert('결재 등록이 완료되었습니다.');
 
     } catch (error) {
-        console.error(error);
         alert('등록 중 오류가 발생했습니다.');
     }
 }

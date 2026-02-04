@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class DraftDetailDTO {
+    private Long detailWriterId;
     private String detailTitle;
     private String detailContent;
     private List<AttachmentDTO> detailFile;
@@ -22,12 +23,12 @@ public class DraftDetailDTO {
     private LocalDate detailEndDate;
 
     @Builder
-    public DraftDetailDTO(String detailTitle, String detailContent, List<AttachmentDTO> detailFile, LocalDate detailStartDate, LocalDate detailEndDate){
+    public DraftDetailDTO(Long detailWriterId, String detailTitle, String detailContent, List<AttachmentDTO> detailFile, LocalDate detailStartDate, LocalDate detailEndDate){
+        this.detailWriterId = detailWriterId;
         this.detailTitle = detailTitle;
         this.detailContent = detailContent;
         this.detailFile = detailFile;
         this.detailStartDate = detailStartDate;
         this.detailEndDate = detailEndDate;
     }
-
 }

@@ -23,9 +23,9 @@ public class DraftDetailService {
     private final FileMetaRepository fileMetaRepository;
 
     @Transactional
-    public DraftDetailDTO getDraftDetail(Long userId, Long draftId){
+    public DraftDetailDTO getDraftDetail(Long userId, Long draftId, List<String> roleList){
 
-        // 문서 상세내용 조회
+        // 1. 문서 상세내용 조회
         DraftEntity draftDetail = draftRepository.findById(draftId).
                 orElseThrow(() -> new IllegalArgumentException("문서가 삭제되었거나 존재하지 않습니다"));
 
@@ -34,12 +34,17 @@ public class DraftDetailService {
                 .map(DraftAttachmentEntity::getFileId)
                 .toList();
 
-        // 3. FileMetaRepository에서 한 번에 파일 이름들 조회 (In절 활용)
+        // 3. 기안자 확인
+//        if(draftDetail.getMember().getId().equals(userId)){
+//            throw new IllegalArgumentException("기안자 본인은 결재를 처리할 수 없습니다.");
+//        }
+
+        // 4. FileMetaRepository에서 한 번에 파일 이름들 조회 (In절 활용)
         // Map<ID, FileName> 형태로 변환하여 매칭하기 쉽게 만듦
         Map<Long, String> fileMetaMap = fileMetaRepository.findAllById(fileIds).stream()
                 .collect(Collectors.toMap(FileMeta::getId, FileMeta::getOriginalName));
 
-        // 4. DTO 조립
+        // 5. DTO 조립
         List<AttachmentDTO> files = draftDetail.getDraftFile().stream()
                 .map(e -> {
                     AttachmentDTO dto = new AttachmentDTO();
@@ -49,6 +54,7 @@ public class DraftDetailService {
                 }).toList();
 
         return DraftDetailDTO.builder()
+                .detailWriterId(draftDetail.getMember().getId())
                 .detailTitle(draftDetail.getDraftTitle())
                 .detailContent(draftDetail.getDraftContent())
                 .detailFile(files)

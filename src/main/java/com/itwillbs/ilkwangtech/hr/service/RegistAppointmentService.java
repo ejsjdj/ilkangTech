@@ -34,8 +34,6 @@ public class RegistAppointmentService {
 
         Member member = memberRepository.findById(userId).orElseThrow(); // Member 테이블에서 발령 대상인 사원 찾기
 
-        // Member approver = memberRepository.findById(approverId).orElseThrow();
-
         AppointmentEntity appointmentEntity = new AppointmentEntity(member);
 
         // 1. 부서 등록

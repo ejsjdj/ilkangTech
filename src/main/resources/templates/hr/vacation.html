@@ -2,7 +2,9 @@
 <html lang="ko"
       layout:decorate="~{layout/layout}"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
 <head>
     <meta charset="UTF-8">
     <title>휴가 현황</title>
@@ -36,7 +38,9 @@
 
         <div class="tab-container">
             <div id="tabMyVac" class="tab-item active" onclick="switchTab('MY')">개인 휴가 관리</div>
-            <div id="tabAllVac" class="tab-item" onclick="switchTab('ALL')">부서원 휴가 현황</div>
+            <l1 sec:authorize="hasAnyAuthority('CEO','HR')">
+                <div id="tabAllVac" class="tab-item" onclick="switchTab('ALL')">부서원 휴가 현황</div>
+            </l1>
         </div>
 
         <!-- 휴가 요약 카드 영역 -->

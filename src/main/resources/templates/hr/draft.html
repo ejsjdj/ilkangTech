@@ -2,6 +2,7 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout/layout}">
 
 <head>
@@ -17,7 +18,7 @@
 
     <h1>전자결재 문서 목록</h1>
 
-    <button typ="button" onclick="openModal()">결재 등록</button>
+    <button type="button" onclick="openModal()">결재 등록</button>
 
     <!-- 문서 작성 모달 -->
     <div th:replace="hr/draftModal :: draftModal"></div>
@@ -55,6 +56,7 @@
 </div>
 
 <th:block layout:fragment="script">
+
     <script th:src="@{/js/draft.js}"></script>
 </th:block>
 

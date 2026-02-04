@@ -92,8 +92,10 @@ public class MessengerController {
 	    // 1. 현재 로그인한 사용자의 ID로 참여 중인 채팅방 목록 조회
 	    List<ChatRoomListResponseDTO> rooms = messengerService.getChatRoomList(login.getId());
 	    model.addAttribute("rooms", rooms); 
+	    model.addAttribute("memberList", messengerService.getMemberDeptRows());
 	    
-	    model.addAttribute("memberList", messengerService.getMemberDeptRows()); 
+	    model.addAttribute("myMemberId", login.getId());
+	    
 	    
 	    return "messenger/chatList"; 
 	}
@@ -207,15 +209,18 @@ public class MessengerController {
         Long myId = login.getId();
         messengerService.updateLastReadAt(roomId, myId);
         
-        // 1. 채팅방 내부용 신호 (숫자 1 제거용)
+        // 채팅방 내부용 신호 (숫자 1 제거용)
         ChatBroadcastMessageDTO readSignal = new ChatBroadcastMessageDTO();
         readSignal.setRoomId(roomId);
         readSignal.setMsgType("READ");
         readSignal.setMemberId(myId);
         simpMessagingTemplate.convertAndSend("/topic/chatroom/" + roomId, readSignal);
         
-        // 읽음 처리
-        simpMessagingTemplate.convertAndSend("/topic/user/" + myId + "/list", readSignal);
+        // 
+        List<ChatRoomMember> members = chatRoomMemberRepository.findByRoomId(roomId);
+        for (ChatRoomMember m : members) {
+            simpMessagingTemplate.convertAndSend("/topic/user/" + m.getId().getMemberId() + "/list", readSignal);
+        }
         
         return "success";
     }
@@ -323,6 +328,12 @@ public class MessengerController {
                 .body(resource);
     }
     
+    @GetMapping("/api/unread-exists")
+    @ResponseBody
+    public boolean unreadExists(@AuthenticationPrincipal AccountLogin login) {
+        if (login == null) return false;
+        return messengerService.hasAnyUnread(login.getId());
+    }
     
 }
 

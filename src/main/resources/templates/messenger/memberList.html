@@ -102,7 +102,6 @@
 
 
 	<div class="main">
-<!-- 		<div class="status">상태</div> -->
 		
 		<div class="searchBarArea">
 			<input id="memberSearch" type="text" class="searchBar" placeholder="사원 또는 부서로 검색">
@@ -117,12 +116,15 @@
 			     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
 			     ondblclick="goChat(this)">
 			
-			    <button type="button" 
+			    <button th:if="${member.memberId != myMemberId}" 
+			            type="button" 
 			            class="starBtn" 
 			            th:classappend="${member.isFavorite == 'Y'} ? 'starOn' : 'starOff'"
 			            th:onclick="'toggleFavoriteMember(' + ${member.memberId} + ', this)'">
 			        ★
 			    </button>
+			    
+			    <div th:if="${member.memberId == myMemberId}" class="starBtn"></div>
 			    
 			    <div class="memberName">
 			        <span th:text="*{memberName}"></span>
@@ -228,6 +230,7 @@ function toggleFavoriteMember(targetId, btn) {
 }
 </script>
 
+<div th:replace="~{messenger/messengerLayout :: messengerScript}"></div>
 
 </body>
 </html>

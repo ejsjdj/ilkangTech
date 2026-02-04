@@ -2,7 +2,7 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+      layout:decorate="~{layout/layout}" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -438,7 +438,7 @@
                         <p class="page-subtitle">사원 정보 조회 및 관리</p>
                     </div>
                 </div>
-                <a href="/account/register" class="btn-add">
+                <a href="/account/register" class="btn-add" sec:authorize="hasAnyAuthority('CEO','HR')">
                     <i class="bi bi-person-plus-fill"></i> 사원 등록
                 </a>
             </div>

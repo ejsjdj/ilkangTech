@@ -27,6 +27,8 @@ public class WebSecurityConfig {
 				// 접근 권한 설정
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/account/login", "/css/**", "/js/**", "/img/**", "/error").permitAll()
+						.requestMatchers("/account/role").hasAnyAuthority("CEO","INFORMATION")
+						.requestMatchers("/account/lockAccount").hasAnyAuthority("CEO", "HR")
 						.anyRequest().authenticated()
 				);
 

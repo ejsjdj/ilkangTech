@@ -39,7 +39,7 @@
     .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .header { background: transparent; padding: 14px 20px; flex-shrink: 0; }
     .header-box { width: 100%; height: 60px; background: #ffffff; border-radius: 16px; display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .messenger-btn { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #f3f4f6; transition: background 0.2s; }
+    .messenger-btn { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #f3f4f6; transition: background 0.2s; position: relative; }
     .messenger-btn:hover { background: #e5e7eb; }
     .messenger-btn img { width: 20px; height: 20px; }
     .content { flex: 1; padding: 0 20px 20px 20px; overflow-y: auto; }
@@ -48,7 +48,7 @@
     .logo { display: flex; align-items: center; padding-bottom: 20px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
     .logo-link { display: inline-flex; align-items: center; justify-content: center; padding: 6px 10px; border-radius: 10px; transition: background 0.2s ease; }
     .logo-link:hover { background: #f3f4f6; }
-    .logo img { width: 150px; height: 53px; object-fit: contain; margin-left: 45px; }
+    .logo img { width: 150px; height: 53px; object-fit: contain; margin: 0px 36px; }
     
     /* 상단 메뉴를 일반 메뉴와 동일한 디자인으로 변경 */
 	.top-menu { display: flex; flex-direction: column; gap: 0; margin-bottom: 5px; }
@@ -64,6 +64,21 @@
 	/* ERP 구분선 텍스트 스타일 */
 	.menu-category { font-size: 13px; font-weight: 600; color: #9ca3af; margin: 15px 0 5px 10px; display: flex; align-items: center; gap: 8px; }
 	.menu-category::before { content: "—"; font-size: 10px; }
+	
+	.notification-container {position: relative; display: inline-block; }
+	
+	.red-dot {
+	    position: absolute;
+	    bottom: 0px; /* 우측 하단 배치 */
+	    right: 0px;
+	    width: 15px;
+	    height: 15px;
+	    background-color: #ff3b30; 
+	    border-radius: 50%;
+	    border: 2px solid #fff; 
+	    display: none; 
+	    z-index: 10;
+	}
 </style>
 </head>
 <body>
@@ -101,8 +116,8 @@
                 </button>
                 <ul class="nav-children" id="menu-att">
                     <li><a class="nav-child" th:href="@{/attendance/commute}">출퇴근 현황</a></li>
-                    <li><a class="nav-child" th:href="@{/hr/work}">근무 현황</a></li>
-                    <li><a class="nav-child" th:href="@{/hr/vacation}">휴가 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/attendance/work}">근무 현황</a></li>
+                    <li><a class="nav-child" th:href="@{/attendance/vacation}">휴가 관리</a></li>
                 </ul>
             </div>
             
@@ -112,7 +127,6 @@
                 </button>
                 <ul class="nav-children" id="menu-appr">
                     <li><a class="nav-child" th:href="@{/draft/list}">전자결재 목록</a></li>
-                    <li><a class="nav-child" th:href="@{/approval/sales}">영업결재 목록</a></li>
                 </ul>
             </div>
 
@@ -121,8 +135,13 @@
                     <span class="nav-icon">💼</span><span class="nav-menu">영업관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-sales">
-                    <li><a class="nav-child" th:href="@{/sales/orders}">수주 관리</a></li>
-                    <li><a class="nav-child" th:href="@{/sales/production}">발주 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/sales/management}">영업관리 메인</a></li>
+                    <li><a class="nav-child" th:href="@{/sales/customer/list}">고객사 관리</a></li>
+                    <li><a class="nav-child" href="#" onclick="alert('견적 관리 페이지 준비 중입니다'); return false;">견적 관리</a></li>
+                    <li><a class="nav-child" href="#" onclick="alert('판매 주문 페이지 준비 중입니다'); return false;">판매 주문</a></li>
+                    <li><a class="nav-child" href="#" onclick="alert('배송 관리 페이지 준비 중입니다'); return false;">배송 관리</a></li>
+                    <li><a class="nav-child" href="#" onclick="alert('인보이스 페이지 준비 중입니다'); return false;">인보이스</a></li>
+                    <li><a class="nav-child" href="#" onclick="alert('창고 관리 페이지 준비 중입니다'); return false;">창고 관리</a></li>
                 </ul>
             </div>
         </nav>
@@ -133,11 +152,12 @@
             <div class="header-box">
                 <a href="/messenger/memberList" class="messenger-btn" onclick="openMessenger(event)">
                    <img th:src="@{/img/messenger/chat.png}" alt="Talk"> 
+                   <span id="main-unread-dot" class="red-dot"></span>
                 </a>
             </div>
         </div>
 
-        <div class="content" layout:fragment="content"></div>
+        <div class="content" layout:fragment="content">..</div>
     </div> 
 </div>
 
@@ -168,6 +188,60 @@
         "width=500,height=700,resizable=yes,scrollbars=yes"
     );
 }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script th:inline="javascript">
+    // Thymeleaf 변수를 자바스크립트 변수로 안전하게 할당
+    const myId = /*[[${#authentication.principal.id}]]*/ 0; 
+    
+    // 페이지 로드 시 즉시 실행되지 않도록 함수로 감싸거나 하단에 배치
+    document.addEventListener("DOMContentLoaded", function() {
+        const mainDot = document.getElementById('main-unread-dot');
+
+        // 1. 초기 로드 시 안 읽은 메시지 체크
+        fetch('/messenger/api/unread-exists')
+            .then(res => res.json())
+            .then(exists => { 
+                if(mainDot && exists) mainDot.style.display = 'block'; 
+            })
+            .catch(err => console.error("초기 알림 체크 실패:", err));
+
+        //  웹소켓 실시간 알림 구독
+        function connectNotification() {
+            const socket = new SockJS("/ws");
+            const stomp = Stomp.over(socket);
+            
+            // 디버그 로그 끄기 (선택사항)
+            stomp.debug = null; 
+
+            stomp.connect({}, function () {
+            	stomp.subscribe("/topic/user/" + myId + "/list", function (message) {
+            	    const payload = JSON.parse(message.body);
+            	    const mainDot = document.getElementById('main-unread-dot');
+            	    
+            	    if (!mainDot) return;
+
+            	    if (payload.msgType === 'READ') {
+            	        // 읽음 신호를 받으면 서버에 안 읽은 게 남았는지 다시 물어봄
+            	        fetch('/messenger/api/unread-exists')
+            	            .then(res => res.json())
+            	            .then(exists => {
+            	                mainDot.style.display = exists ? 'block' : 'none';
+            	            });
+            	    } else if (payload.memberId !== myId) {
+            	        // 내가 보낸 게 아닌 새 메시지라면 빨간 점 표시
+            	        mainDot.style.display = 'block';
+            	    }
+            	});
+            }, function(error) {
+                setTimeout(connectNotification, 5000); // 연결 끊기면 5초 후 재시도
+            });
+        }
+        
+        if (myId > 0) connectNotification();
+    });
 </script>
 
 <th:block layout:fragment="script"></th:block>

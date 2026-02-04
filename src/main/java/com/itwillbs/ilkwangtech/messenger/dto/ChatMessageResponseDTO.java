@@ -12,4 +12,9 @@ public class ChatMessageResponseDTO {
     private String content;
     private LocalDateTime createdAt;
     private String msgType;
+    private int unreadCount;
+    private String formattedTime;
+    private String deptName;
+    private String positionName;
+    private Long attachId;
 }

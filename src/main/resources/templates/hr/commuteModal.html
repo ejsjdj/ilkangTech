@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<htm lang="ko" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+    <!-- 문서 상세보기 모달 -->
+    <div th:fragment="commuteModal">
+        <div id="commuteModal" class="modal">
+
+            <div class="modalBody">
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3 style="margin: 0; color: #333; font-size: 1.25rem;">⏰ 시간 수정</h3>
+                    <span class="close-btn" onclick="closeModal()" style="cursor: pointer; font-size: 28px; line-height: 1;">&times;</span>
+                </div>
+
+                <div class="modal-content" style="margin-bottom: 30px;">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                        <p style="margin: 0; font-size: 14px; color: #666;">
+                            선택된 항목 번호: <strong id="modalEmpIdDisplay" style="color: #5c6bc0;">-</strong>
+                        </p>
+                        <input type="hidden" id="attendanceId">
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 13px; color: #888; margin-bottom: 5px;">출근 시간</label>
+                        <input type="text" id="modalInTime" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; color: #888; margin-bottom: 5px;">퇴근 시간</label>
+                        <input type="text" id="modalOutTime" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; color: #888; margin-bottom: 5px;">외근 시간</label>
+                        <input type="text" id="modalGoOutTime" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; color: #888; margin-bottom: 5px;">복귀 시간</label>
+                        <input type="text" id="modalReturnTime" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="text-align: right;">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+                    <button type="button" class="btn-save" onclick="saveTime()">변경사항 저장</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </body>
+</htm>

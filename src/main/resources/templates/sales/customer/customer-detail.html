@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>고객사 상세 정보</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .customer-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-card {
+            transition: transform 0.2s ease-in-out;
+            border-left: 4px solid #007bff;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .contact-item {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            transition: background 0.2s;
+        }
+        
+        .contact-item:hover {
+            background: #e9ecef;
+        }
+        
+        .stats-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 15px;
+            bottom: -15px;
+            width: 2px;
+            background: #e9ecef;
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <!-- 뒤로가기 버튼 -->
+        <div class="mb-3">
+            <a href="/sales/customer/list" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+            </a>
+        </div>
+
+        <!-- 고객사 헤더 정보 -->
+        <div class="customer-header" th:if="${customer}">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <i class="bi bi-building" style="font-size: 3rem;"></i>
+                        </div>
+                        <div>
+                            <h2 class="mb-1" th:text="${customer.customerName}">ABC전자</h2>
+                            <p class="mb-0" th:text="${customer.businessType}">제조업</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h4 th:text="${customer.totalOrders ?: '0'}">0</h4>
+                                <p class="mb-0">총 주문 건수</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h4 th:text="${customer.totalAmount ?: '0'}">0</h4>
+                                <p class="mb-0">총 거래액(만원)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h4 th:text="${customer.avgOrderAmount ?: '0'}">0</h4>
+                                <p class="mb-0">평균 주문액(만원)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h4 th:text="${#temporals.format(customer.createdAt, 'yyyy-MM-dd')}">-</h4>
+                                <p class="mb-0">등록일</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge status-badge" 
+                          th:classappend="'bg-' + ${customer.status == 'ACTIVE' ? 'success' : (customer.status == 'INACTIVE' ? 'secondary' : 'warning')}"
+                          th:text="${customer.status == 'ACTIVE' ? '활성' : (customer.status == 'INACTIVE' ? '비활성' : '검토중')}">
+                        활성
+                    </span>
+                    <div class="mt-3">
+                        <button class="btn btn-light" onclick="editCustomer()">
+                            <i class="bi bi-pencil"></i> 정보 수정
+                        </button>
+                        <button class="btn btn-outline-light" onclick="deleteCustomer()">
+                            <i class="bi bi-trash"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상세 정보 탭 -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <ul class="nav nav-tabs card-header-tabs" id="customerTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
+                            <i class="bi bi-info-circle"></i> 기본 정보
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">
+                            <i class="bi bi-telephone"></i> 연락처
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                            <i class="bi bi-cart"></i> 주문 내역
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="prices-tab" data-bs-toggle="tab" data-bs-target="#prices" type="button" role="tab">
+                            <i class="bi bi-tag"></i> 단가 정보
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                            <i class="bi bi-clock-history"></i> 활동 이력
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="customerTabContent">
+                    <!-- 기본 정보 탭 -->
+                    <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-card card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="bi bi-building"></i> 회사 정보</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td width="30%">고객사명</td>
+                                                <td th:text="${customer.customerName}">ABC전자</td>
+                                            </tr>
+                                            <tr>
+                                                <td>사업자번호</td>
+                                                <td th:text="${customer.businessNumber}">123-45-67890</td>
+                                            </tr>
+                                            <tr>
+                                                <td>대표자명</td>
+                                                <td th:text="${customer.representativeName}">김대표</td>
+                                            </tr>
+                                            <tr>
+                                                <td>업종</td>
+                                                <td th:text="${customer.businessType}">제조업</td>
+                                            </tr>
+                                            <tr>
+                                                <td>주소</td>
+                                                <td th:text="${customer.address}">서울시 강남구 테헤란로 123</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="bi bi-gear"></i> 관리 정보</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td width="30%">상태</td>
+                                                <td>
+                                                    <span class="badge" 
+                                                          th:classappend="'bg-' + ${customer.status == 'ACTIVE' ? 'success' : (customer.status == 'INACTIVE' ? 'secondary' : 'warning')}"
+                                                          th:text="${customer.status == 'ACTIVE' ? '활성' : (customer.status == 'INACTIVE' ? '비활성' : '검토중')}">
+                                                        활성
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>등록일</td>
+                                                <td th:text="${#temporals.format(customer.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</td>
+                                            </tr>
+                                            <tr>
+                                                <td>최종 수정일</td>
+                                                <td th:text="${customer.updatedAt ? #temporals.format(customer.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">2024-01-20 14:15</td>
+                                            </tr>
+                                            <tr>
+                                                <td>등록자</td>
+                                                <td th:text="${customer.createdBy ?: '-'}">김관리</td>
+                                            </tr>
+                                            <tr>
+                                                <td>수정자</td>
+                                                <td th:text="${customer.updatedBy ?: '-'}">이관리</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-card card">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="bi bi-file-text"></i> 비고</h6>
+                                <p th:text="${customer.notes ?: '등록된 비고가 없습니다.'}">특별 요청사항이나 메모 내용</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 연락처 탭 -->
+                    <div class="tab-pane fade" id="contact" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-card card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="bi bi-telephone"></i> 회사 연락처</h6>
+                                        <div class="contact-item">
+                                            <i class="bi bi-telephone-fill text-primary"></i>
+                                            <strong>대표전화:</strong> <span th:text="${customer.phone}">02-1234-5678</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="bi bi-envelope-fill text-primary"></i>
+                                            <strong>이메일:</strong> <span th:text="${customer.email}">info@abc.com</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="bi bi-globe-fill text-primary"></i>
+                                            <strong>웹사이트:</strong> <span th:text="${customer.website ?: '-'}">www.abc.com</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="bi bi-geo-alt-fill text-primary"></i>
+                                            <strong>주소:</strong> <span th:text="${customer.address}">서울시 강남구 테헤란로 123</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="bi bi-person"></i> 담당자 정보</h6>
+                                        <div class="contact-item">
+                                            <i class="bi bi-person-fill text-success"></i>
+                                            <strong>담당자명:</strong> <span th:text="${customer.contactPerson}">이담당자</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="bi bi-telephone-fill text-success"></i>
+                                            <strong>담당자 연락처:</strong> <span th:text="${customer.managerPhone ?: '-'}">010-1234-5678</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="bi bi-envelope-fill text-success"></i>
+                                            <strong>담당자 이메일:</strong> <span th:text="${customer.managerEmail ?: '-'}">manager@abc.com</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <i class="bi bi-telephone-fill text-info"></i>
+                                            <strong>FAX:</strong> <span th:text="${customer.faxNumber ?: '-'}">02-1234-5679</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 주문 내역 탭 -->
+                    <div class="tab-pane fade" id="orders" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">최근 주문 내역</h6>
+                            <button class="btn btn-sm btn-primary" onclick="createNewOrder()">
+                                <i class="bi bi-plus-circle"></i> 신규 주문
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>주문번호</th>
+                                        <th>제품</th>
+                                        <th>수량</th>
+                                        <th>단가</th>
+                                        <th>총액</th>
+                                        <th>상태</th>
+                                        <th>주문일</th>
+                                        <th>납기일</th>
+                                        <th>관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 단가 정보 탭 -->
+                    <div class="tab-pane fade" id="prices" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">고객사별 단가 정보</h6>
+                            <button class="btn btn-sm btn-success" onclick="negotiatePrice()">
+                                <i class="bi bi-handshake"></i> 단가 협상
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>제품명</th>
+                                        <th>현재 단가</th>
+                                        <th>기본 단가</th>
+                                        <th>차이</th>
+                                        <th>적용일</th>
+                                        <th>변경 사유</th>
+                                        <th>관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pricesTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 활동 이력 탭 -->
+                    <div class="tab-pane fade" id="history" role="tabpanel">
+                        <h6 class="mb-3">고객사 활동 이력</h6>
+                        <div id="activityTimeline">
+                            <div class="timeline-item">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="card-title">고객사 등록</h6>
+                                                <p class="card-text text-muted">신규 고객사로 등록되었습니다.</p>
+                                            </div>
+                                            <small class="text-muted" th:text="${#temporals.format(customer.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 고객사 수정 모달 -->
+    <div class="modal fade" id="editCustomerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">고객사 정보 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCustomerForm">
+                        <input type="hidden" id="editCustomerId" th:value="${customer.customerId}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">고객사명 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editCustomerName" th:value="${customer.customerName}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">사업자번호 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editBusinessNumber" th:value="${customer.businessNumber}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">대표자명 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editRepresentativeName" th:value="${customer.representativeName}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">업종</label>
+                                <input type="text" class="form-control" id="editBusinessType" th:value="${customer.businessType}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">연락처 <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="editPhoneNumber" th:value="${customer.phoneNumber}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">이메일</label>
+                                <input type="email" class="form-control" id="editEmail" th:value="${customer.email}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">담당자명</label>
+                                <input type="text" class="form-control" id="editContactPerson" th:value="${customer.contactPerson}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">담당자 연락처</label>
+                                <input type="tel" class="form-control" id="editManagerPhone" th:value="${customer.managerPhone}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">주소</label>
+                                <input type="text" class="form-control" id="editAddress" th:value="${customer.address}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">웹사이트</label>
+                                <input type="url" class="form-control" id="editWebsite" th:value="${customer.website}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">FAX</label>
+                                <input type="tel" class="form-control" id="editFaxNumber" th:value="${customer.faxNumber}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">비고</label>
+                                <textarea class="form-control" id="editNotes" rows="3" th:text="${customer.remark}"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">상태</label>
+                                <select class="form-select" id="editStatus">
+                                    <option value="ACTIVE" th:selected="${customer.status == 'ACTIVE'}">활성</option>
+                                    <option value="INACTIVE" th:selected="${customer.status == 'INACTIVE'}">비활성</option>
+                                    <option value="PENDING" th:selected="${customer.status == 'PENDING'}">검토중</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCustomerChanges()">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let editCustomerModal;
+    const customerId = /*[[${customer.customerId}]]*/ 0;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        editCustomerModal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
+        loadCustomerOrders();
+        loadCustomerPrices();
+        loadActivityHistory();
+    });
+
+    function editCustomer() {
+        editCustomerModal.show();
+    }
+
+    function saveCustomerChanges() {
+        const customerData = {
+            customerId: document.getElementById('editCustomerId').value,
+            customerName: document.getElementById('editCustomerName').value,
+            businessNumber: document.getElementById('editBusinessNumber').value,
+            representativeName: document.getElementById('editRepresentativeName').value,
+            businessType: document.getElementById('editBusinessType').value,
+            phoneNumber: document.getElementById('editPhoneNumber').value,
+            email: document.getElementById('editEmail').value,
+            contactPerson: document.getElementById('editContactPerson').value,
+            managerPhone: document.getElementById('editManagerPhone').value,
+            address: document.getElementById('editAddress').value,
+            website: document.getElementById('editWebsite').value,
+            faxNumber: document.getElementById('editFaxNumber').value,
+            notes: document.getElementById('editNotes').value,
+            status: document.getElementById('editStatus').value
+        };
+
+        fetch(`/sales/customer/api/${customerId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(customerData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            editCustomerModal.hide();
+            location.reload(); // 페이지 새로고침하여 변경사항 반영
+            showNotification('고객사 정보가 수정되었습니다.', 'success');
+        })
+        .catch(error => {
+            console.error('Error updating customer:', error);
+            showNotification('수정 중 오류가 발생했습니다.', 'error');
+        });
+    }
+
+    function deleteCustomer() {
+        if (confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+            fetch(`/sales/customer/api/${customerId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/sales/customer/list';
+                } else {
+                    throw new Error('Delete failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting customer:', error);
+                showNotification('삭제 중 오류가 발생했습니다.', 'error');
+            });
+        }
+    }
+
+    function loadCustomerOrders() {
+        fetch(`/sales/customer/api/${customerId}/orders`)
+            .then(response => response.json())
+            .then(data => {
+                renderOrdersTable(data);
+            })
+            .catch(error => {
+                console.error('Error loading orders:', error);
+            });
+    }
+
+    function loadCustomerPrices() {
+        fetch(`/sales/quotation/customer/${customerId}/prices`)
+            .then(response => response.json())
+            .then(data => {
+                renderPricesTable(data);
+            })
+            .catch(error => {
+                console.error('Error loading prices:', error);
+            });
+    }
+
+    function loadActivityHistory() {
+        fetch(`/sales/customer/api/${customerId}/history`)
+            .then(response => response.json())
+            .then(data => {
+                renderActivityTimeline(data);
+            })
+            .catch(error => {
+                console.error('Error loading history:', error);
+            });
+    }
+
+    function renderOrdersTable(orders) {
+        const tbody = document.getElementById('ordersTableBody');
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = orders.map(order => `
+            <tr>
+                <td>${order.orderNumber}</td>
+                <td>${order.productName}</td>
+                <td>${order.quantity} ${order.unit}</td>
+                <td>${order.unitPrice.toLocaleString()}원</td>
+                <td>${order.totalAmount.toLocaleString()}원</td>
+                <td><span class="badge bg-${getOrderStatusColor(order.status)}">${getOrderStatusText(order.status)}</span></td>
+                <td>${new Date(order.requestDate).toLocaleDateString('ko-KR')}</td>
+                <td>${new Date(order.deliveryDeadline).toLocaleDateString('ko-KR')}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${order.salesOrderId})">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPricesTable(prices) {
+        const tbody = document.getElementById('pricesTableBody');
+        if (prices.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = prices.map(price => {
+            const basePrice = price.basePrice || price.unitPrice;
+            const priceDiff = price.unitPrice - basePrice;
+            const priceDiffPercent = basePrice > 0 ? (priceDiff / basePrice * 100).toFixed(1) : 0;
+            const changeType = priceDiff > 0 ? 'increase' : (priceDiff < 0 ? 'decrease' : '');
+
+            return `
+                <tr>
+                    <td>${price.productName}</td>
+                    <td>${price.unitPrice.toLocaleString()}원</td>
+                    <td>${basePrice.toLocaleString()}원</td>
+                    <td>
+                        <span class="price-change ${changeType}">
+                            ${priceDiff >= 0 ? '+' : ''}${priceDiff.toLocaleString()}원 (${priceDiffPercent}%)
+                        </span>
+                    </td>
+                    <td>${new Date(price.effectiveDate).toLocaleDateString('ko-KR')}</td>
+                    <td>${price.changeReason || '-'}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="viewPriceHistory(${price.itemStockId})">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="negotiateProductPrice(${price.itemStockId})">
+                                <i class="bi bi-handshake"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderActivityTimeline(history) {
+        const timeline = document.getElementById('activityTimeline');
+        if (history.length === 0) {
+            return;
+        }
+
+        const historyItems = history.map(item => `
+            <div class="timeline-item">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title">${item.activityType}</h6>
+                                <p class="card-text text-muted">${item.description}</p>
+                            </div>
+                            <small class="text-muted">${new Date(item.createdAt).toLocaleString('ko-KR')}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        timeline.innerHTML += historyItems;
+    }
+
+    function createNewOrder() {
+        window.location.href = `/sales/sales-order/create?customerId=${customerId}`;
+    }
+
+    function negotiatePrice() {
+        window.location.href = `/sales/quotation/price-management?customerId=${customerId}`;
+    }
+
+    function viewOrder(orderId) {
+        window.location.href = `/sales/sales-order/${orderId}`;
+    }
+
+    function viewPriceHistory(itemStockId) {
+        window.location.href = `/sales/quotation/price-history?customerId=${customerId}&itemStockId=${itemStockId}`;
+    }
+
+    function negotiateProductPrice(itemStockId) {
+        window.location.href = `/sales/quotation/negotiate?customerId=${customerId}&itemStockId=${itemStockId}`;
+    }
+
+    function getOrderStatusColor(status) {
+        switch(status) {
+            case 'REQUESTED': return 'warning';
+            case 'ACCEPTED': return 'info';
+            case 'IN_PROGRESS': return 'primary';
+            case 'COMPLETED': return 'success';
+            case 'CANCELLED': return 'danger';
+            case 'REJECTED': return 'secondary';
+            default: return 'secondary';
+        }
+    }
+
+    function getOrderStatusText(status) {
+        switch(status) {
+            case 'REQUESTED': return '요청됨';
+            case 'ACCEPTED': return '수락됨';
+            case 'IN_PROGRESS': return '진행중';
+            case 'COMPLETED': return '완료됨';
+            case 'CANCELLED': return '취소됨';
+            case 'REJECTED': return '거부됨';
+            default: return status;
+        }
+    }
+
+    function showNotification(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+</script>
+</th:block>
+</body>
+</html>

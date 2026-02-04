@@ -17,5 +17,6 @@ public class ChatBroadcastMessageDTO {
     private String senderName;
     private String content;
     private String formattedTime;
+    private Long attachId;
 
 }

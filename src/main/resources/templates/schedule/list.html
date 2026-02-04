@@ -170,18 +170,19 @@
                         <td th:text="${(schedules.number * schedules.size) + state.count}">1</td>
                         <td class="fw-bold text-dark"><span th:text="${dto.title}">제목</span></td>
                         <td>
-                            <span class="badge rounded-pill" 
-						          th:classappend="${
-						          	  dto.type == 'COMPANY' ? 'badge-company' : 
-                                      (dto.type == 'TEAM' ? 'badge-team' : 
-                                      (dto.type == 'PERSONAL' ? 'badge-personal' : 
-                                      (dto.type == 'LEAVE' ? 'badge-leave' : 
-                                      'badge-specific'))) }"
-						          th:text="${
-						          	  dto.type == 'COMPANY' ? '회사' : 
-                                      (dto.type == 'TEAM' ? '팀' : 
-                                      (dto.type == 'PERSONAL' ? '개인' : 
-                                      (dto.type == 'LEAVE' ? '연차' : '특정'))) }">
+                            <span class="badge rounded-pill"
+						          th:classappend="${(dto.title.contains('[연차]') or dto.title.contains('[반차]')) ? 'badge-leave' : 
+						                          (dto.type == 'COMPANY' ? 'badge-company' : 
+						                          (dto.type == 'TEAM' ? 'badge-team' : 
+						                          (dto.type == 'PERSONAL' ? 'badge-personal' : 
+						                          (dto.type == 'LEAVE' ? 'badge-leave' : 
+						                          'badge-specific'))))}"
+						          th:text="${dto.title.contains('[연차]') ? '연차' : 
+						                   (dto.title.contains('[반차]') ? '반차' : 
+						                   (dto.type == 'COMPANY' ? '회사' : 
+						                   (dto.type == 'TEAM' ? '팀' : 
+						                   (dto.type == 'PERSONAL' ? '개인' : 
+						                   (dto.type == 'LEAVE' ? '연차' : '특정')))))}">
 						    </span>
                         </td>
                         <td th:text="${#temporals.format(dto.startDate, 'yyyy-MM-dd HH:mm')}"></td>
@@ -253,7 +254,7 @@
                                 <div class="col-md-3">
                                     <select class="form-select" id="schedType" name="type">
                                         <option value="PERSONAL" selected>개인</option>
-                                        <option value="LEAVE">연차</option>
+                                        <!-- <option value="LEAVE">연차</option> -->
                                         <option value="COMPANY">회사</option>
                                         <option value="TEAM">팀</option>
                                         <option value="SPECIFIC">특정</option>
@@ -362,7 +363,7 @@
 						                <option value="COMPANY">회사 전체</option>
 						                <option value="TEAM">팀 공유</option>
 						                <option value="SPECIFIC">특정 사원 공유</option>
-						                <option value="LEAVE">연차</option>
+						                <!-- <option value="LEAVE">연차</option> -->
 						            </select>
 	                        	</div>
 	                        	<div class="col-md-9" id="detailShareTargetArea" style="display:none;">

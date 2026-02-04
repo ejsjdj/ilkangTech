@@ -10,6 +10,7 @@
     <!-- Bootstrap CSS (Optional as it might be in layout, but keeping it for safety if layout doesn't have it) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet">
+
     <!-- Bootstrap Icons -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -22,6 +23,7 @@
                 display: flex;
                 flex-direction: column;
                 background-color: #f8fafc;
+                overflow-y: auto; /* 높이가 고정되어야 이 속성이 작동합니다 */
             }
 
             .role-container {
@@ -119,6 +121,58 @@
             .btn-success:hover {
                 background-color: #059669;
                 border-color: #059669;
+            }
+
+            /* 직원 검색 스타일 */
+            .search-container {
+                position: relative;
+            }
+            .search-results {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                max-height: 300px;
+                overflow-y: auto;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                display: none;
+            }
+            .search-item {
+                padding: 10px 15px;
+                cursor: pointer;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .search-item:last-child {
+                border-bottom: none;
+            }
+            .search-item:hover {
+                background-color: #f8fafc;
+            }
+            .search-item .emp-info {
+                display: block;
+                color: #64748b;
+                font-size: 11px;
+            }
+            .selected-member-badge {
+                display: inline-flex;
+                align-items: center;
+                background-color: #e0e7ff;
+                color: #4338ca;
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 600;
+                margin-top: 10px;
+            }
+            .selected-member-badge .remove-btn {
+                margin-left: 8px;
+                cursor: pointer;
+                color: #6366f1;
             }
         </style>
     </th:block>
@@ -238,14 +292,13 @@
 
                     <div class="row g-3 align-items-end">
                         <div class="col-md-5">
-                            <label for="memberSelect" class="form-label" style="font-size: 13px; font-weight: 600; color: #475569;">직원 선택</label>
-                            <select id="memberSelect" class="form-select" style="font-size: 13px; border-radius: 8px;">
-                                <option value="">직원을 선택하세요</option>
-                                <option th:each="m : ${assignableMembers}"
-                                        th:value="${m.id}"
-                                        th:text="${m.name + ' (' + m.employeeNumber + ')'}">
-                                </option>
-                            </select>
+                            <label for="memberSearchInput" class="form-label" style="font-size: 13px; font-weight: 600; color: #475569;">직원 검색</label>
+                            <div class="search-container">
+                                <input type="text" id="memberSearchInput" class="form-control" style="font-size: 13px; border-radius: 8px;" placeholder="이름 또는 사원번호를 입력하세요..." oninput="searchMembers()">
+                                <div id="searchResults" class="search-results"></div>
+                            </div>
+                            <input type="hidden" id="memberSelect" value="">
+                            <div id="selectedMemberInfo"></div>
                         </div>
 
                         <div class="col-md-3">
@@ -264,9 +317,75 @@
 </th:block>
 
 <th:block layout:fragment="script">
-    <script>
+    <script th:inline="javascript">
+        // 서버에서 전달받은 직원 목록
+        const allMembers = /*[[${assignableMembers}]]*/ [];
+        
         let currentSortBy = 'memberId';
         let currentDirection = 'ASC';
+
+        function searchMembers() {
+            const input = document.getElementById('memberSearchInput');
+            const resultsContainer = document.getElementById('searchResults');
+            const keyword = input.value.trim().toLowerCase();
+
+            if (!keyword) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+
+            const filtered = allMembers.filter(m => 
+                m.name.toLowerCase().includes(keyword) || 
+                m.employeeNumber.toLowerCase().includes(keyword)
+            );
+
+            resultsContainer.innerHTML = '';
+            if (filtered.length > 0) {
+                filtered.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'search-item';
+                    div.innerHTML = `
+                        <strong>${m.name}</strong>
+                        <span class="emp-info">${m.employeeNumber}</span>
+                    `;
+                    div.onclick = () => selectMember(m);
+                    resultsContainer.appendChild(div);
+                });
+                resultsContainer.style.display = 'block';
+            } else {
+                const div = document.createElement('div');
+                div.className = 'search-item text-muted';
+                div.textContent = '검색 결과가 없습니다.';
+                resultsContainer.appendChild(div);
+                resultsContainer.style.display = 'block';
+            }
+        }
+
+        function selectMember(member) {
+            document.getElementById('memberSelect').value = member.id;
+            document.getElementById('memberSearchInput').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+
+            const infoContainer = document.getElementById('selectedMemberInfo');
+            infoContainer.innerHTML = `
+                <div class="selected-member-badge">
+                    ${member.name} (${member.employeeNumber})
+                    <span class="remove-btn" onclick="clearSelectedMember()"><i class="bi bi-x-circle-fill"></i></span>
+                </div>
+            `;
+        }
+
+        function clearSelectedMember() {
+            document.getElementById('memberSelect').value = '';
+            document.getElementById('selectedMemberInfo').innerHTML = '';
+        }
+
+        // 문서 클릭 시 검색 결과 닫기
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
 
         function toggleSort(sortBy) {
             if (currentSortBy === sortBy) {
@@ -457,12 +576,12 @@
                 return;
             }
 
-            fetch(`/account/revokeRole?memberId=${memberId}&roleId=${roleId}`, {
+            fetch(`/account/revokeRole`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
-                    // CSRF 토큰이 필요한 경우 여기에 추가해야 함
-                }
+                },
+                body: JSON.stringify({ memberId: memberId, roleId: roleId })
             })
             .then(response => {
                 if (response.ok) {
@@ -495,15 +614,17 @@
                 return;
             }
 
-            fetch(`/account/grantRole?memberId=${memberId}&roleId=${roleId}`, {
+            fetch(`/account/grantRole`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({ memberId: memberId, roleId: roleId })
             })
             .then(response => {
                 if (response.ok) {
                     alert('권한이 성공적으로 부여되었습니다.');
+                    clearSelectedMember(); // 선택된 사원 정보 초기화 추가
                     loadMembersByRole(); // 목록 새로고침
                 } else {
                     alert('권한 부여 중 오류가 발생했습니다.');

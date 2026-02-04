@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+  <title>출퇴근 관리</title>
+  <th:block layout:fragment="style">
+    <link rel="stylesheet" th:href="@{/css/appointmentList.css}">
+    <style>
+      /* 탭 메뉴 스타일 */
+      .tab-container { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; }
+      .tab-item { padding: 10px 5px; cursor: pointer; color: #666; font-weight: 500; position: relative; }
+      .tab-item.active { color: #4f46e5; }
+      .tab-item.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: #4f46e5; }
+
+      /* 출퇴근 전용 상태 뱃지 */
+      .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+      .status-normal { background: #e0f2fe; color: #0369a1; }
+      .status-late { background: #fee2e2; color: #dc2626; }
+
+      /* 모달이 항상 화면 정중앙에 오도록 보정 */
+      .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999; /* 다른 요소보다 위에 오도록 */
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modalBody {
+    background-color: white;
+    margin: 15% auto; /* 화면 중앙 배치 */
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+
+
+                    /* 모달 내 공통 버튼 스타일 */
+.modal-footer button {
+    padding: 8px 20px;
+    border-radius: 20px; /* 제공해주신 원형 버튼 스타일과 맞춤 */
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 저장 버튼 (btn-add-event 스타일 계승) */
+.btn-save {
+    background: #5c6bc0;
+    color: white;
+}
+.btn-save:hover {
+    background: #4b5bb0;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 취소 버튼 */
+.btn-cancel {
+    background: #f1f1f1;
+    color: #666;
+    margin-right: 8px;
+}
+.btn-cancel:hover {
+    background: #e5e5e5;
+    transform: scale(1.05);
+}
+
+/* 닫기(X) 아이콘 애니메이션 */
+.close-btn {
+    transition: transform 0.2s, color 0.2s;
+}
+.close-btn:hover {
+    color: #5c6bc0;
+    transform: rotate(90deg);
+}
+    </style>
+  </th:block>
+</head>
+<body layout:fragment="content">
+
+<div class="content-root">
+  <div class="container-wrapper">
+
+    <div class="page-header">
+      <div class="header-title-area">
+        <div class="header-icon-bar"></div>
+        <div>
+          <h1>출퇴근 현황</h1>
+          <p class="page-subtitle">출퇴근 기록 및 근무 시간 확인</p>
+        </div>
+      </div>
+    </div>
+
+      <div class="tab-container">
+          <div id="tabMy" class="tab-item active" onclick="switchTab('MY')">내 출퇴근 관리</div>
+          <div id="tabAll" class="tab-item" onclick="switchTab('ALL')">전사원 출퇴근 관리</div>
+      </div>
+
+    <div class="scroll-area">
+      <div class="search-filter-area">
+
+          <div class="dropdown" id="deptFilterContainer">
+              <select class="form-select" id="deptFilter" name="department" required>
+                  <option th:each="dept : ${departments}"
+                          th:text="${dept.departmentName}"
+                          th:value="${dept.id}"></option>
+              </select>
+          </div>
+
+          <div class="dropdown">
+              <input type="date" id="dateFilter" class="form-control-sm">
+          </div>
+
+        <div class="search-box" id="memberSearchBox" style="display:none;">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" id="searchInput" placeholder="사원명 또는 부서 검색">
+        </div>
+
+        <!--<button class="btn-search" onclick="loadAttendanceData()">조회</button>-->
+      </div>
+
+      <div id="tableContainer" class="table-wrapper">
+        <table class="custom-table">
+          <thead>
+          <tr id="tableHeader">
+          </tr>
+          </thead>
+          <tbody id="attendanceList">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 100px 0;">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-2">기록을 불러오는 중입니다...</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+        <div id="paginationContainer"></div>
+
+    </div>
+  </div>
+</div>
+
+<div th:replace="~{hr/commuteModal :: commuteModal}"></div>
+<div th:replace="~{hr/commuteRequestModal :: commuteRequestModal}"></div>
+
+<script th:src="@{/js/commute.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

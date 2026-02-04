@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>근무 현황</title>
+
+    <!-- Bootstrap / Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <th:block layout:fragment="style">
+        <link rel="stylesheet" th:href="@{/css/workStatus.css}">
+    </th:block>
+</head>
+<body layout:fragment="content">
+<div class="content-root">
+    <div class="container-wrapper">
+
+        <div class="page-header">
+            <div class="header-title-area">
+                <div class="header-icon-bar"></div>
+                <div>
+                    <h1>근무 현황</h1>
+                    <p class="page-subtitle">사원 근무 상태 수정 및 관리</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="scroll-area">
+            <div class="search-filter-area">
+                <div class="dropdown" id="deptFilterContainer">
+                    <select class="form-select" name="department" required>
+                        <option th:each="dept : ${departments}" th:text="${dept.departmentName}"
+                                th:value="${dept.id}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="workStatusContainer" class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                    <tr id="tableHeader">
+                    </tr>
+                    </thead>
+                    <tbody id="attendanceList">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 100px 0;">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2">기록을 불러오는 중입니다...</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/workStatus.js}"></script>
+</body>
+</html>

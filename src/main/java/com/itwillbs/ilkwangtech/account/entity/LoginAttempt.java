@@ -20,7 +20,6 @@ public class LoginAttempt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "LOGIN_ATTEMPTS_SEQ")
-
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)

@@ -25,7 +25,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     // 부서별 출퇴근/근무 현황 조회
     @Query("SELECT a " +
             "FROM Attendance a JOIN FETCH a.member m " +
-            "WHERE m.department = :dept AND a.workDate = :date")
+            "WHERE m.department = :dept " +
+            "AND a.workDate = :date")
     List<Attendance> findByDepartmentAndDate(@Param("dept") Integer dept, @Param("date") LocalDate date);
 
 }

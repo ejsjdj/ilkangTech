@@ -295,25 +295,25 @@ WHERE C.id = M.department;
 -- 개인 일정 등록
 
 -- 휴가 현황 초기화
-INSERT INTO leave_status (leave_id, common_id, total_leave, used_leave, remain_leave)
+INSERT INTO leave_status (leave_id, member_id, total_leave, used_leave, remain_leave)
 SELECT leave_status_seq.NEXTVAL, M.id, 15, 0, 15 FROM members M;
 
 -- 전자결재 문서 (Draft Documents)
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
-VALUES (draft_document_seq.NEXTVAL, 1, '휴가신청서', '연차 신청합니다.', '개인 사정으로 인한 연차 신청', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-21', 'YYYY-MM-DD'), '승인', 3);
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
-VALUES (draft_document_seq.NEXTVAL, 1, '지출결의서', '비품 구매 건', '사무용품(A4용지 등) 구매', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-17', 'YYYY-MM-DD'), '승인', 3);
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
-VALUES (draft_document_seq.NEXTVAL, 11, '휴가신청서', '동계 휴가 신청', '가족 여행으로 인한 휴가 신청', TO_DATE('2026-02-10', 'YYYY-MM-DD'), TO_DATE('2026-02-13', 'YYYY-MM-DD'), '승인',5);
-INSERT INTO draft_document (draft_id, common_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
-VALUES (draft_document_seq.NEXTVAL, 21, '기안서', '프레스 설비 점검 요청', '노후 설비 정기 점검 및 부품 교체 건', TO_DATE('2026-02-15', 'YYYY-MM-DD'), TO_DATE('2026-02-15', 'YYYY-MM-DD'), '대기',2);
+INSERT INTO draft_document (draft_id, member_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 1, 'PTO', '연차 신청합니다.', '여행으로 인한 연차 신청', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-21', 'YYYY-MM-DD'), '승인', 3);
+INSERT INTO draft_document (draft_id, member_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 1, 'EXP', '비품 구매 건', '사무용품(A4용지 등) 구매', TO_DATE('2026-01-21', 'YYYY-MM-DD'), TO_DATE('2026-06-17', 'YYYY-MM-DD'), '승인', 3);
+INSERT INTO draft_document (draft_id, member_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 11, 'PTO', '동계 휴가 신청', '가족 여행으로 인한 휴가 신청', TO_DATE('2026-02-10', 'YYYY-MM-DD'), TO_DATE('2026-02-13', 'YYYY-MM-DD'), '승인',5);
+INSERT INTO draft_document (draft_id, member_id, draft_type, draft_title, draft_content, draft_start_date, draft_end_date, draft_status, draft_total_date)
+VALUES (draft_document_seq.NEXTVAL, 21, 'BUY', '[수정]프레스 신규 장비 구매 요청', '노후 설비 정기 점검 및 신규 부품 구매 건', TO_DATE('2026-02-15', 'YYYY-MM-DD'), TO_DATE('2026-02-15', 'YYYY-MM-DD'), '대기',2);
 
--- 결재선 (Draft Approval Line) - common_id는 결재자를 의미하며 반드시 members 테이블에 존재해야 함
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 1, 1); -- 휴가
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'HTO', 1, 1); -- 반차
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 1); -- 구매
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'EXP', 1, 1); -- 지출
-INSERT INTO draft_approval_line (line_id, draft_type, common_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'APP', 1, 1); -- 발령
+-- 결재선 (Draft Approval Line) - member_id는 결재자를 의미하며 반드시 members 테이블에 존재해야 함
+INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 1, 1); -- 휴가
+INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'HTO', 1, 1); -- 반차
+INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 1); -- 구매
+INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'EXP', 1, 1); -- 지출
+INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'APP', 1, 1); -- 발령
 
 COMMIT;
 

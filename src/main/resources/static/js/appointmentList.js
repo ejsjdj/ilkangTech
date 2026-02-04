@@ -94,9 +94,10 @@ function renderTable(pageData) {
 
     // 페이지네이션 블록
     let paginationHtml = `
-        <div class="pagination-wrapper" style="display: flex; align-items: center; margin-top: 20px;">
-            <ul class="pagination" style="display: flex; list-style: none; padding: 0;">
-    `;
+            <div class="pagination-wrapper" style="display: flex; align-items: center; margin-top: 20px;">
+                <ul class="pagination" style="display: flex; list-style: none; padding: 0;">
+        `;
+
 
     if (pageData) {
         // [이전] 버튼

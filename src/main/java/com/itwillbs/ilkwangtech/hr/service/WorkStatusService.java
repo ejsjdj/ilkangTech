@@ -27,6 +27,8 @@ public class WorkStatusService {
 
         List<Attendance> workStatus = attendanceRepository.findByDepartmentAndDate(deptCode, workDate);
 
+        System.out.println("근무현황 서비스 : " + workStatus);
+
         // 1. 마스터 정보 Map 생성 (루프 밖에서 한 번만 실행)
         Map<Integer, String> deptMap = departmentRepository.findAll().stream()
                 .collect(Collectors.toMap(Department::getId, Department::getDepartmentName, (e, r) -> e));

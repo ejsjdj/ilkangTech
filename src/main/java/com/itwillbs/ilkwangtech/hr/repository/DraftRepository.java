@@ -5,6 +5,8 @@ import com.itwillbs.ilkwangtech.hr.dto.LeaveByDepartmentDTO;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 
 import com.itwillbs.ilkwangtech.hr.entity.LeaveEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -44,21 +46,62 @@ public interface DraftRepository extends JpaRepository<DraftEntity, Long> {
     );
 
 
-    // 내가 등록한 결재 + 내가 결재자인 문서 등록
-    @Query("""
-    SELECT DISTINCT new com.itwillbs.ilkwangtech.hr.dto.DraftDTO(
+
+    // 내가 작성한 결재 문서 조회 (기안함)
+    @Query(value = """
+         SELECT new com.itwillbs.ilkwangtech.hr.dto.DraftDTO(
+                        d.draftId,
+                        d.draftTitle,
+                        d.draftStartDate,  
+                        d.draftEndDate,    
+                        d.draftStatus      
+                    )
+        FROM DraftEntity d
+        WHERE d.member.id = :userId
+          AND d.draftStartDate BETWEEN :startDate AND :endDate
+          AND d.draftType = :draftType
+    """, countQuery = """
+        SELECT COUNT(d.draftId) FROM DraftEntity d 
+        WHERE d.member.id = :userId 
+          AND d.draftStartDate BETWEEN :startDate AND :endDate
+          AND d.draftType = :draftType
+    """)
+    Page<DraftDTO> findSentDrafts(@Param("userId") Long userId,
+                                  @Param("draftType") String draftType,
+                                  @Param("startDate") LocalDate startDate,
+                                  @Param("endDate") LocalDate endDate,
+                                  Pageable pageable);
+
+    // 내가 결재자인 문서 조회 (결재함)
+    @Query(
+            value = """
+    SELECT new com.itwillbs.ilkwangtech.hr.dto.DraftDTO(
         d.draftId,
         d.draftTitle,
         d.draftStartDate,
         d.draftEndDate,
         d.draftStatus
     )
-    FROM DraftEntity d
-    LEFT JOIN DraftApproveStatusEntity r ON d.draftId = r.draftEntity.draftId
-    WHERE d.member.id = :userId 
-       OR r.member.id = :userId
-    """)
-    List<DraftDTO> findAllMyDrafts(@Param("userId") Long userId);
+    FROM DraftApproveStatusEntity r
+    JOIN r.draftEntity d
+    WHERE r.member.id = :userId
+      AND d.draftStartDate BETWEEN :startDate AND :endDate
+      AND d.draftType = :draftType
+""",
+            countQuery = """
+    SELECT COUNT(DISTINCT d.draftId)
+    FROM DraftApproveStatusEntity r
+    JOIN r.draftEntity d
+    WHERE r.member.id = :userId
+      AND d.draftStartDate BETWEEN :startDate AND :endDate
+      AND d.draftType = :draftType
+"""
+    )
+    Page<DraftDTO> findReceivedDrafts(@Param("userId") Long userId,
+                                      @Param("draftType") String draftType,
+                                      @Param("startDate") LocalDate startDate,
+                                      @Param("endDate") LocalDate endDate,
+                                      Pageable pageable);
 
     // 최종 상태 업데이트
     @Modifying

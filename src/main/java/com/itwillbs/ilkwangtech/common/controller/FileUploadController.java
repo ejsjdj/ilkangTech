@@ -22,7 +22,7 @@ public class FileUploadController {
 
     private final FileMetaRepository fileMetaRepository;
     private final FlieDownloadService fileDownloadService;
-    private final String uploadDir = "D:\\ilkang_uploads";
+    private final String uploadDir = "C:\\ilkang_uploads";
 
     @PostMapping("/file/upload")
     public FileUploadDTO upload(@RequestParam MultipartFile file) throws IOException {

@@ -1,7 +1,22 @@
 // 문서 ID 전역변수
 let currentDraftId = null;
 
-/*모달 열기*/
+/* 상단 네비게이터 전환 */
+function switchTab(tabType) {
+    // 1. 현재 검색 폼을 가져옵니다.
+    const form = document.querySelector('.search-form');
+
+    // 2. 폼 내부의 hidden input (name="type") 값을 클릭한 탭의 값으로 변경합니다.
+    form.querySelector('input[name="type"]').value = tabType;
+
+    // 3. 페이지 번호가 있을 경우, 탭 이동 시에는 1페이지로 초기화하는 것이 좋습니다.
+    // 만약 URL에 page 파라미터가 있다면 제거하거나 0으로 세팅하는 로직을 추가할 수 있습니다.
+
+    // 4. 폼을 제출합니다. (그러면 모든 검색 조건 + 변경된 type이 서버로 전달됩니다.)
+    form.submit();
+}
+
+/* 문서 등록 모달 열기 */
 function openModal() {
     const modal = document.getElementById('draftModal');
     modal.style.display = 'block'
@@ -10,13 +25,13 @@ function openModal() {
     document.getElementById('startDate').value = today;
 }
 
-/*모달 닫기*/
+/* 모달 닫기 */
 function closeModal() {
     const modal = document.getElementById('draftModal');
     modal.style.display = 'none'
 }
 
-/*상세보기 모달 열기*/
+/* 상세보기 모달 열기 */
 function draftDetail(draftId) {
     currentDraftId = draftId;
 
@@ -77,7 +92,7 @@ function draftDetail(draftId) {
         .catch(err => console.error("데이터 로드 중 에러:", err));
 }
 
-/*파일 다운로드*/
+/* 파일 다운로드 */
 async function renderFileList(fileList){
     const fileContainer = document.getElementById('fileListContainer'); // div나 ul 태그
     fileContainer.innerHTML = '';
@@ -101,13 +116,13 @@ async function renderFileList(fileList){
     console.log(fileContainer.innerHTML);
 }
 
-/*모달 닫기*/
+/* 모달 닫기 */
 function closeDetailModal() {
     const modal = document.getElementById('draftDetailModal');
     modal.style.display = 'none'
 }
 
-/*결재라인 불러오기*/
+/* 결재라인 불러오기 */
 function loadApprovalLine(draftType) {
     if (!draftType) return;
 
@@ -140,7 +155,7 @@ function loadApprovalLine(draftType) {
         .catch(error => console.error('결재 라인 로드 실패:', error));
 }
 
-/*결재 승인하기*/
+/* 결재 승인하기 */
 async function decideApprove(decision){
     console.log(decision);
     fetch('/draft/decide', {
@@ -153,7 +168,7 @@ async function decideApprove(decision){
     })
 }
 
-/*결재 등록하기*/
+/* 결재 등록하기 */
 async function postDraft(){
 try {
         let uploadedFile = null;
@@ -208,7 +223,7 @@ try {
     }
 }
 
-/*파일 전송*/
+/* 파일 전송 */
 async function uploadFile(){
     const fileInput = document.getElementById("draftFile");
 
@@ -224,7 +239,7 @@ async function uploadFile(){
 }
 
 
-/*날짜 계산*/
+/* 날짜 계산 */
 function calculateDays() {
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
@@ -254,7 +269,7 @@ function calculateDays() {
 }
 
 
-/*주말 제외*/
+/* 주말 제외 날짜 계산*/
 function getBusinessDays(startDate, endDate) {
     let count = 0;
     let curDate = new Date(startDate);

@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.hr.repository;
 
 import com.itwillbs.ilkwangtech.hr.entity.DraftApprovalLineEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,5 +11,5 @@ import java.util.List;
 @Repository
 public interface DraftApprovalLineRepository extends JpaRepository<DraftApprovalLineEntity, String> {
 
-    List<DraftApprovalLineEntity> findByDraftType(String type);
+    List<DraftApprovalLineEntity> findByDraftType(@Param("type") String type);
 }

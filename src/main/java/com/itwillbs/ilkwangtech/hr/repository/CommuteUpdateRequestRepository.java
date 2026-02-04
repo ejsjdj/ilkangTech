@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CommuteUpdateRequestRepository extends JpaRepository<CommuteUpdateRequestEntity, String> {
+public interface CommuteUpdateRequestRepository extends JpaRepository<CommuteUpdateRequestEntity, Long> {
 
 }

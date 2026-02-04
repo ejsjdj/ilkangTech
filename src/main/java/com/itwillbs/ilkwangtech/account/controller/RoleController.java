@@ -53,6 +53,7 @@ public class RoleController {
      * @param direction 정렬 방향 (ASC/DESC, 기본값 ASC)
      * @return 직원 권한 정보 목록이 담긴 Page 객체
      */
+
     @GetMapping("/findMemberByRole")
     public ResponseEntity<Page<MemberRoleView>> findAccountByRole(
             @RequestParam("roleId") long roleId,
@@ -77,6 +78,7 @@ public class RoleController {
      * @param roleId 회수할 권한 ID
      * @return 성공 시 200 OK
      */
+
     @DeleteMapping("/revokeRole")
     public ResponseEntity<Void> revokeRole(
             @RequestParam(value = "memberId", required = false) Long memberId,

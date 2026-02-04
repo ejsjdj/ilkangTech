@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="stlye">
+        <!-- Toast UI Grid CSS -->
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+        <style>
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <section layout:fragment="content" class="container py-4">
+        <h3 class="text-center mb-3">회원 목록</h3>
+
+        <!-- 페이지 사이즈 셀렉트박스 -->
+        <div class="d-flex justify-content-end mb-2">
+            <select id="selectListPerPage" class="form-select w-auto">
+                <option value="10">10개씩</option>
+                <option value="20">20개씩</option>
+            </select>
+        </div>
+
+        <!-- 여기에 Toast UI Grid 넣을 예정 -->
+        <div id="grid"></div>
+    </section>
+
+    <!-- 개별 페이지의 스크립트 영역 -->
+    <th:block layout:fragment="myScript">
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <!-- Toast UI Grid JS -->
+        <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+        <script>
+            let grid;
+            let currentPage = 1;
+            let pageSize = 10;
+            let sortBy = "memberId";
+            let direction = "ASC";
+
+            $(function() {
+                // Toast UI Grid 생성
+                grid = new tui.Grid({
+                    // 그리드 표시 대상 요소 el 프로퍼티 지정
+                    el: document.getElementById("grid"),
+
+                    // 그리드 표시 옵션
+                    rowHeaders: ["rowNum"],
+                    // 제목 및 데이터가 표시될 컬럼을 columns 프로퍼티로 생성(복수개의 컬럼을 리스트 형식으로 나열)
+
+                    columns: [
+                        { header: "id", name: "memberId", hidden: true },
+                        { header: "사원번호", name: "employeeNumber", sortable: true },
+                        { header: "부서", name: "department", sortable: true },
+                        { header: "직급", name: "position", sortable: true },
+                        { header: "이름", name: "name", sortable: true },
+                        { header: "전화번호", name: "phoneNumber", sortable: true },
+                        { header: "이메일", name: "email", sortable: true },
+                        { header: "잠긴 시간", name: "lockDateTime", sortable: true },
+                        {
+                            header: "상세 정보",
+                            name: "detail",
+
+                            formatter: ({row}) => `<button class="btn btn-sm btn-outline-primary btn-detail">상세 정보</button>`
+                        },
+                        {
+                            header: "관리",
+                            name : "unlock",
+
+                            formatter: ({row}) => `<button class="btn btn-sm btn-outline-primary btn-unlock">잠금 해제</button>`
+                        }
+                    ]
+                }); // tui.Grid 생성자 끝
+
+                // 페이지 로드 시 데이터 가져오기
+                loadPage();
+
+                $("#selectListPerPage").change(function() {
+                    // 셀렉트박스 요소의 value 속성값 가져오기(정수화)
+                    pageSize = parseInt(this.value);
+                    // 페이지 리로드를 위해 loadPage() 함수 호출
+                    loadPage();
+                }); // 페이징 적용 함수 끝
+
+                grid.on("click", ev => {
+
+                    const memberId = grid.getRow(ev.rowKey).memberId;
+
+                    if (ev.columnName === "detail") {
+                        location.href = `/account/detail/${memberId}`;
+                    }
+                    if (ev.columnName === "unlock") {
+                        $.ajax({
+                            url:`/account/unlock/${memberId}`,
+                            type: "POST",
+                            contentType:"application/json",
+                            success: function (res) {
+                                alert("계정 잠금이 해제되었습니다.");
+                                // 리로드
+                                location.reload();
+                            },
+                            error: function (xhr) {
+                                alert("계정 잠금 해제에 실패했습니다. 관리자에게 문의하세요.");
+                                console.error(xhr.responseText);
+                            }
+                        });
+                    }
+                }); // grid 클릭시에 상세정보 조회 요청
+
+
+            }) // jquery toast UI 생성 함수 끝
+
+            function loadPage() {
+                $.getJSON("/account/lockAccountList", {
+                    // 요청 파라미터 기술
+                    page: currentPage,
+                    size: pageSize,
+                    sortBy: sortBy,
+                    direction: direction
+                }, data => {
+                    console.log("data($.getJSON) : ", data);
+                    // 그리드에 JSON 데이터 그대로 전달(리턴받은 객체 내의 content 속성값)
+                    grid.resetData(data.content)
+                })
+            }
+
+
+        </script>
+    </th:block>
+</body>
+
+
+</html>

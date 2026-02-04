@@ -1,11 +1,9 @@
-package com.itwillbs.ilkwangtech.common.Controller;
+package com.itwillbs.ilkwangtech.common.controller;
 
 import com.itwillbs.ilkwangtech.common.dto.FileUploadDTO;
 import com.itwillbs.ilkwangtech.common.entity.FileMeta;
 import com.itwillbs.ilkwangtech.common.repository.FileMetaRepository;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

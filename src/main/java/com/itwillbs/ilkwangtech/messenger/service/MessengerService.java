@@ -62,6 +62,7 @@ public class MessengerService {
 		this.chatAttachmentRepository = chatAttachmentRepository;
     }
 
+    // 1대1 채팅방 존재 여부 확인 후 없으면 상대 이름을 채팅방명으로 지정
     @Transactional
     public Long getOrCreateDirectRoom(Long myMemberId, Long targetMemberId) {
         if (myMemberId == null || targetMemberId == null) {
@@ -83,27 +84,26 @@ public class MessengerService {
                     return chatRoomRepository.save(newRoom);
                 });
 
-        // ★ 수정: 참여 시 서로의 이름을 초기 별명으로 저장합니다.
         String myName = messengerRepository.findById(myMemberId).map(Member::getName).orElse("나");
         String partnerName = messengerRepository.findById(targetMemberId).map(Member::getName).orElse("상대방");
 
-        safeJoin(room.getId(), myMemberId, partnerName); // 나에게는 상대방 이름이 초기 별명
-        safeJoin(room.getId(), targetMemberId, myName);  // 상대방에게는 내 이름이 초기 별명
+        safeJoin(room.getId(), myMemberId, partnerName); 
+        safeJoin(room.getId(), targetMemberId, myName); 
 
         return room.getId();
     }
 
+    // 채팅방 중복 가입 방지
     private void safeJoin(Long roomId, Long memberId, String nickname) {
         ChatRoomMemberId pk = new ChatRoomMemberId(roomId, memberId);
         if (!chatRoomMemberRepository.existsById(pk)) {
-            // ★ 핵심: of() 메서드에 nickname 파라미터를 추가하여 에러를 해결합니다.
             ChatRoomMember m = ChatRoomMember.of(roomId, memberId, nickname); 
             m.setJoinedAt(LocalDateTime.now());
-            // m.setRoomNickname(nickname); -> of() 내부에서 이미 처리하므로 삭제 가능
             chatRoomMemberRepository.save(m);
         }
     }
     
+    // 전체 사원 리스트를 DTO 형태로 변환 후 조회
     public List<MemberDeptRowDTO> getMemberDeptRows() {
 	    List<Object[]> rows = messengerRepository.findMemberDeptRows();
 
@@ -116,13 +116,15 @@ public class MessengerService {
 	        .toList();
 	}
     
+    // 사용자가 메시지를 확인한 가장 최근 시간 기록(읽음 처리 관리)
     @Transactional
     public void updateLastReadAt(Long roomId, Long memberId) {
         ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, memberId))
                 .orElseThrow();
-        membership.setLastReadAt(LocalDateTime.now()); // 현재 시간으로 갱신
+        membership.setLastReadAt(LocalDateTime.now());
     }
     
+    // 메세지 전송 시간을 기준으로 해당 메시지를 읽지 않은 참여자 수 계산
     public int getUnreadCount(Long roomId, LocalDateTime messageTime) {
         List<ChatRoomMember> members = chatRoomMemberRepository.findByRoomId(roomId);
         
@@ -131,10 +133,7 @@ public class MessengerService {
                 .count();
     }
     
- // 1. 과거 채팅 내역 가져오기
- // MessengerService.java
-
- // MessengerService.java 내부의 getChatHistory 함수 내 .map() 부분 확인
+    // 과거 채팅 내역 조회
     @Transactional(readOnly = true)
     public List<ChatMessageResponseDTO> getChatHistory(Long roomId, Long myId) {
         ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, myId)).orElseThrow();
@@ -162,8 +161,8 @@ public class MessengerService {
         }).collect(Collectors.toList());
     }
 
+    // 사용자가 설정한 별명이 있으면 별명으로, 상대 이름이나 기본 방 이름 조회
     public String getRoomDisplayTitle(Long roomId, Long myMemberId) {
-        // 1. 내 개인 닉네임 확인
         ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, myMemberId))
                 .orElse(null);
         
@@ -171,7 +170,7 @@ public class MessengerService {
             return membership.getRoomNickname();
         }
 
-        // 2. 별명이 없을 경우에만 기존 로직 수행 (하방 호환성용)
+        // 별명이 없을 경우에만 기존 로직 수행 
         ChatRoom room = chatRoomRepository.findById(roomId).orElseThrow();
         if ("DIRECT".equals(room.getRoomType())) {
             Long partnerId = room.getDirectEmp1().equals(myMemberId) ? room.getDirectEmp2() : room.getDirectEmp1();
@@ -180,8 +179,7 @@ public class MessengerService {
         return room.getRoomName() != null ? room.getRoomName() : "그룹 채팅방";
     }
     
- // MessengerService.java
-
+    // 내가 참여중인 채팅방 목록 조회
     @Transactional(readOnly = true)
     public List<ChatRoomListResponseDTO> getChatRoomList(Long myId) {
         List<ChatRoomMember> memberships = chatRoomMemberRepository.findByMemberId(myId);
@@ -198,11 +196,11 @@ public class MessengerService {
                            ? m.getRoomNickname() : getRoomDisplayTitle(room.getId(), myId);
             dto.setRoomTitle(title);
 
-            // [추가] 즐겨찾기 상태 조회
+            // 즐겨찾기 상태 조회
             settingRepository.findById(new ChatRoomMemberSettingId(room.getId(), myId))
                 .ifPresent(s -> dto.setIsFavorite(s.getIsFavorite()));
 
-            // 최신 메시지 조회 로직 (기존 유지)
+            // 최신 메시지 조회
             Optional<ChatMessage> latest = chatMessageRepository.findLatest(room.getId(), m.getJoinedAt(), PageRequest.of(0, 1))
                     .stream().findFirst();
             latest.ifPresent(last -> {
@@ -220,7 +218,7 @@ public class MessengerService {
             return dto;
         })
         .filter(Objects::nonNull)
-        // [수정] 즐겨찾기(Y)가 최상단에 오고, 그 다음 최신 메시지 시간순으로 정렬
+        // 즐겨찾기가 최상단에 위치하고, 그 다음 최신 메시지 시간순으로 정렬
         .sorted((a, b) -> {
             if ("Y".equals(a.getIsFavorite()) && !"Y".equals(b.getIsFavorite())) return -1;
             if (!"Y".equals(a.getIsFavorite()) && "Y".equals(b.getIsFavorite())) return 1;
@@ -232,22 +230,20 @@ public class MessengerService {
         .collect(Collectors.toList());
     }
     
-
+    // 그룹 채팅 생성
     @Transactional
     public Long createGroupRoom(String roomName, List<Long> memberIds, Long creatorId) {
         ChatRoom newRoom = new ChatRoom();
         newRoom.setRoomType("GROUP");
-        newRoom.setRoomName(roomName); // 공용 이름은 참고용으로 저장
+        newRoom.setRoomName(roomName); 
         newRoom.setCreatedBy(creatorId);
         newRoom.setCreatedAt(LocalDateTime.now());
         ChatRoom savedRoom = chatRoomRepository.save(newRoom);
 
-        // ★ 초기 그룹 이름 생성 (예: "홍길동, 김철수, 이영희")
         List<String> names = messengerRepository.findAllById(memberIds).stream()
                                 .map(Member::getName).collect(Collectors.toList());
         String defaultName = roomName != null && !roomName.isEmpty() ? roomName : String.join(", ", names);
 
-        // 모든 참여자에게 초기 별명 부여
         safeJoin(savedRoom.getId(), creatorId, defaultName);
         if (memberIds != null) {
             for (Long memberId : memberIds) {
@@ -257,24 +253,25 @@ public class MessengerService {
         return savedRoom.getId();
     }
 
+    // 채팅 나가지(참여 정보 삭제, 퇴장 안내 메세지 생성)
     @Transactional
     public ChatBroadcastMessageDTO leaveChatRoom(Long roomId, Long memberId) {
-        // 1. 나가는 사람의 이름 찾기
+        // 나가는 사람의 이름 찾기
         String memberName = messengerRepository.findById(memberId)
                 .map(Member::getName).orElse("알 수 없는 사용자");
 
-        // 2. 참여자 테이블에서 삭제
+        // 참여자 테이블에서 삭제
         chatRoomMemberRepository.deleteById(new ChatRoomMemberId(roomId, memberId));
 
-        // 3. 시스템 메시지 생성 및 DB 저장
+        // 시스템 메시지 생성 및 DB 저장
         ChatMessage systemMsg = new ChatMessage();
         systemMsg.setRoomId(roomId);
         systemMsg.setMemberId(memberId); // 누가 나갔는지 기록
         systemMsg.setContent(memberName + "님이 퇴장하셨습니다.");
-        systemMsg.setMsgType("SYSTEM"); // ★ 타입을 SYSTEM으로 지정
+        systemMsg.setMsgType("SYSTEM"); // 타입을 SYSTEM으로 지정
         chatMessageRepository.save(systemMsg);
 
-        // 4. 웹소켓 전송을 위한 DTO 반환
+        // 웹소켓 전송 위한 DTO 반환
         ChatBroadcastMessageDTO dto = new ChatBroadcastMessageDTO();
         dto.setRoomId(roomId);
         dto.setContent(systemMsg.getContent());
@@ -283,21 +280,22 @@ public class MessengerService {
         return dto;
     }
 
+    // 채팅방 이름 수정
     @Transactional
     public void updateRoomNickname(Long roomId, Long memberId, String newName) {
-        // 내 참여 정보를 찾아서 이름 수정
         ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, memberId))
                 .orElseThrow(() -> new RuntimeException("참여 정보를 찾을 수 없습니다."));
         
-        membership.setRoomNickname(newName); // Dirty Checking으로 자동 업데이트
+        membership.setRoomNickname(newName); 
     }
 
+    // 특정 채팅방에 대한 즐겨찾기 상태를 DB에 기록
     @Transactional
     public void updateFavoriteStatus(Long roomId, Long memberId, String status) {
-        // 1. 복합 ID 생성
+        // 복합 ID 생성
         ChatRoomMemberSettingId settingId = new ChatRoomMemberSettingId(roomId, memberId);
 
-        // 2. 기존 설정 존재 여부 확인
+        // 기존 설정 존재 여부 확인
         ChatRoomMemberSetting setting = settingRepository.findById(settingId)
                 .orElseGet(() -> {
                     // 데이터가 없으면 새 객체 생성 및 기본값 세팅
@@ -306,7 +304,7 @@ public class MessengerService {
                     return newSetting;
                 });
 
-        // 3. 상태 업데이트 및 날짜 처리
+        // 상태 업데이트 및 날짜 처리
         setting.setIsFavorite(status);
         if ("Y".equals(status)) {
             setting.setFavoritedAt(LocalDateTime.now()); // 즐겨찾기 지정 일시
@@ -314,10 +312,10 @@ public class MessengerService {
             setting.setFavoritedAt(null); // 즐겨찾기 해제 시 날짜 삭제
         }
 
-        // 4. 저장 (JPA Dirty Checking에 의해 생략 가능하나 명시적 호출도 무방)
         settingRepository.save(setting);
     }
     
+    // 사원목록 조회
     public List<MemberDeptRowDTO> getMemberListWithFavorite(Long myId) {
         List<Member> members = memberRepository.findAll();
         
@@ -326,20 +324,20 @@ public class MessengerService {
             dto.setMemberId(m.getId());
             dto.setMemberName(m.getName());
             
-            // 부서 정보 세팅 (기존 로직 유지)
+            // 부서 정보 세팅 
             Integer deptId = m.getDepartment(); 
             String dName = (deptId != null) ? 
                 departmentRepository.findById(deptId).map(Department::getDepartmentName).orElse("소속 없음") 
                 : "소속 없음";
             dto.setDepartmentName(dName);
             
-            // [수정] 실제 1:1 채팅방의 ID를 기반으로 즐겨찾기 여부를 확인합니다.
+            // 채팅방의 ID를 기반으로 즐겨찾기 여부를 확인
             Long emp1 = (myId < m.getId()) ? myId : m.getId();
             Long emp2 = (myId < m.getId()) ? m.getId() : myId;
 
             chatRoomRepository.findByRoomTypeAndDirectEmp1AndDirectEmp2("DIRECT", emp1, emp2)
                 .ifPresent(room -> {
-                    // 방 ID와 내 ID를 조합한 복합키로 설정을 조회합니다.
+                    // 방 ID와 내 ID를 조합한 복합키로 설정 조회
                     settingRepository.findById(new ChatRoomMemberSettingId(room.getId(), myId))
                         .ifPresent(s -> dto.setIsFavorite(s.getIsFavorite()));
                 });
@@ -365,7 +363,7 @@ public class MessengerService {
         for (ChatRoomMember m : memberships) {
             LocalDateTime lastRead = (m.getLastReadAt() != null) ? m.getLastReadAt() : m.getJoinedAt();
             
-            // 내 아이디(myId)가 보낸 메시지는 제외하고 숫자를 셉니다.
+            // 내 아이디(myId)가 보낸 메시지는 제외하고 카운트
             long count = chatMessageRepository.countByRoomIdAndCreatedAtAfterAndMemberIdNot(
                 m.getId().getRoomId(), lastRead, myId
             );

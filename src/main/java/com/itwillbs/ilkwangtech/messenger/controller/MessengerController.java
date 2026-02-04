@@ -75,6 +75,7 @@ public class MessengerController {
 		this.chatAttachmentRepository = chatAttachmentRepository;
 	}
 
+	// 사원 리스트 조회 요청
 	@GetMapping("/memberList")
 	public String memberList(Model model, Authentication auth) {
 	    Long myId = ((AccountLogin)auth.getPrincipal()).getId();
@@ -83,23 +84,23 @@ public class MessengerController {
 	    model.addAttribute("myMemberId", myId);
 	    model.addAttribute("memberList", memberList);
 	    
-	    return "messenger/memberList"; // "/messenger/memberList"에서 앞의 슬래시 제거
+	    return "messenger/memberList"; 
 	}
 	
+	// 채팅 리스트 조회 요청
 	@GetMapping("/chatList")
 	public String chatList(@AuthenticationPrincipal AccountLogin login, Model model) {
 	    
-	    // 1. 현재 로그인한 사용자의 ID로 참여 중인 채팅방 목록 조회
+	    // 현재 로그인한 사용자의 ID로 참여 중인 채팅방 목록 조회
 	    List<ChatRoomListResponseDTO> rooms = messengerService.getChatRoomList(login.getId());
 	    model.addAttribute("rooms", rooms); 
 	    model.addAttribute("memberList", messengerService.getMemberDeptRows());
-	    
 	    model.addAttribute("myMemberId", login.getId());
-	    
 	    
 	    return "messenger/chatList"; 
 	}
 	
+	// 특정 사원과의 1대1 채팅방 존재 여부 조회
 	@GetMapping("/direct")
 	public String openDirect(@RequestParam("memberId") Long targetMemberId,
 	                         @AuthenticationPrincipal AccountLogin login,
@@ -113,14 +114,15 @@ public class MessengerController {
 	        return "redirect:/messenger/chatroom/" + roomId;
 
 	    } catch (IllegalArgumentException e) {
-	        // 자기 자신과의 채팅 시도 등 예외 발생 시 처리
+	        
 	        // 자바스크립트로 알림을 띄우고 뒤로가기(또는 목록 이동) 처리
-	        model.addAttribute("msg", e.getMessage()); // "자기 자신과의 1:1 채팅은..."
-	        model.addAttribute("url", "/messenger/memberList"); // 이동할 경로
-	        return "common/messageRedirect"; // 공통 알림 페이지(없다면 새로 만들어야 함)
+	        model.addAttribute("msg", e.getMessage()); 
+	        model.addAttribute("url", "/messenger/memberList"); 
+	        return "common/messageRedirect"; 
 	    }
 	}
 	
+	// 
 	@GetMapping("/direct/{targetId}")
 	public String openDirect(@PathVariable("targetId") Long targetId, 
 	                         @AuthenticationPrincipal AccountLogin login) {
@@ -128,10 +130,9 @@ public class MessengerController {
 	    Long roomId = messengerService.getOrCreateDirectRoom(login.getId(), targetId);
 	    
 	    return "redirect:/messenger/chatroom/" + roomId;
-	    // 임시
 	}
 
-
+	// 해당 채팅방의 상세 페이지 호출
 	@GetMapping("/chatroom/{roomId}")
 	public String chatroom(@PathVariable("roomId") Long roomId, 
 	                       @AuthenticationPrincipal AccountLogin login, 
@@ -150,7 +151,7 @@ public class MessengerController {
 	    return "messenger/chatroom";
 	}
 	
-	// [추가] 특정 방의 채팅 내역을 JSON으로 반환하는 API
+	// 특정 방의 채팅 내역을 JSON으로 반환하는 API
 	@GetMapping("/api/chat/{roomId}")
 	@ResponseBody
 	public List<ChatMessageResponseDTO> getChatHistoryApi(@PathVariable("roomId") Long roomId,
@@ -158,6 +159,7 @@ public class MessengerController {
 	    return messengerService.getChatHistory(roomId, login.getId()); 
 	}
 
+	// 그룹 채팅방 생성
 	@PostMapping("/createGroup")
 	@ResponseBody
 	public Long createGroup(@RequestBody Map<String, Object> params, 
@@ -170,7 +172,7 @@ public class MessengerController {
 	    return messengerService.createGroupRoom(roomName, memberIds, login.getId());
 	}
     
-    
+    // 채팅방 퇴장 처리
     @PostMapping("/api/leave/{roomId}")
     @ResponseBody
     public String leaveRoomApi(@PathVariable("roomId") Long roomId, 
@@ -188,21 +190,21 @@ public class MessengerController {
         return "success";
     }
     
+    // 채팅방 이름 수정
     @PostMapping("/api/rename")
     @ResponseBody
     public String renameRoom(@RequestBody Map<String, Object> params, 
                              @AuthenticationPrincipal AccountLogin login) {
-        // 1. 파라미터 추출 (roomId는 숫자형으로, newName은 문자열로 변환)
+    	
         Long roomId = Long.valueOf(params.get("roomId").toString());
         String newName = params.get("newName").toString();
         
-        // 2. 서비스 호출: ChatRoom이 아닌 내 참여 정보(ChatRoomMember)의 별명을 수정
         messengerService.updateRoomNickname(roomId, login.getId(), newName);
         
         return "success";
     }
 
-    
+    // 채팅 읽음 처리
     @PostMapping("/api/read/{roomId}")
     @ResponseBody
     public String readMessages(@PathVariable("roomId") Long roomId, @AuthenticationPrincipal AccountLogin login) {
@@ -216,7 +218,6 @@ public class MessengerController {
         readSignal.setMemberId(myId);
         simpMessagingTemplate.convertAndSend("/topic/chatroom/" + roomId, readSignal);
         
-        // 
         List<ChatRoomMember> members = chatRoomMemberRepository.findByRoomId(roomId);
         for (ChatRoomMember m : members) {
             simpMessagingTemplate.convertAndSend("/topic/user/" + m.getId().getMemberId() + "/list", readSignal);
@@ -225,6 +226,7 @@ public class MessengerController {
         return "success";
     }
     
+    // 현재 채팅방에 속해있는 사원들 정보 조회
     @GetMapping("/api/members/{roomId}")
     @ResponseBody
     public List<ChatMessageResponseDTO> getChatParticipants(@PathVariable("roomId") Long roomId) {
@@ -259,6 +261,7 @@ public class MessengerController {
         }).collect(Collectors.toList());
     }
     
+    // 채팅창에 대한 즐겨찾기 설정
     @PostMapping("/api/favorite")
     @ResponseBody
     public ResponseEntity<String> toggleFavorite(@RequestBody Map<String, Object> params) {
@@ -279,10 +282,10 @@ public class MessengerController {
         Long targetId = Long.valueOf(params.get("targetMemberId").toString());
         String status = params.get("status").toString();
 
-        // 1. 나와 상대방의 1:1 채팅방 ID를 가져옵니다. (없으면 생성됨)
+        // 나와 상대방의 1:1 채팅방 ID 가져오기
         Long roomId = messengerService.getOrCreateDirectRoom(myId, targetId);
 
-        // 2. 해당 방에 대한 즐겨찾기 설정을 업데이트합니다.
+        // 해당 방에 대한 즐겨찾기 설정을 업데이트
         messengerService.updateFavoriteStatus(roomId, myId, status);
         
         return ResponseEntity.ok("success");
@@ -301,7 +304,6 @@ public class MessengerController {
     }
 
     // 파일 다운로드 API
- // MessengerController.java 내부의 downloadFile 함수 전체
     @GetMapping("/download/{attachId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable("attachId") Long attachId) throws IOException {
         ChatAttachment attach = chatAttachmentRepository.findById(attachId)
@@ -315,7 +317,6 @@ public class MessengerController {
         String contentType = Files.probeContentType(path);
         if(contentType == null) contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
-        // [수정] 이미지면 inline(화면표시), 아니면 attachment(다운로드)
         String dispositionType = (contentType.startsWith("image")) ? "inline" : "attachment";
 
         ContentDisposition contentDisposition = ContentDisposition.builder(dispositionType)
@@ -328,6 +329,7 @@ public class MessengerController {
                 .body(resource);
     }
     
+    // 읽지 않은 메시지 있는지 확인
     @GetMapping("/api/unread-exists")
     @ResponseBody
     public boolean unreadExists(@AuthenticationPrincipal AccountLogin login) {

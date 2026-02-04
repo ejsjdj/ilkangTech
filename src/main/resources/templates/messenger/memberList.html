@@ -117,12 +117,12 @@
 			     ondblclick="goChat(this)">
 			
 			    <button th:if="${member.memberId != myMemberId}" 
-			            type="button" 
-			            class="starBtn" 
-			            th:classappend="${member.isFavorite == 'Y'} ? 'starOn' : 'starOff'"
-			            th:onclick="'toggleFavoriteMember(' + ${member.memberId} + ', this)'">
-			        ★
-			    </button>
+				        type="button" 
+				        class="starBtn" 
+				        th:classappend="${member.isFavorite == 'Y'} ? 'starOn' : 'starOff'"
+				        th:onclick="'toggleFavoriteMember(' + ${member.memberId} + ', this)'"
+				        ondblclick="event.stopPropagation();"> ★
+				</button>
 			    
 			    <div th:if="${member.memberId == myMemberId}" class="starBtn"></div>
 			    
@@ -146,16 +146,11 @@
 function goChat(el) {
 	  var memberId = el.dataset.id;
 	  var myId = document.getElementById("myMemberId").value;
-
-	  // [추가] 클릭한 대상이 나 자신이면 채팅창을 열지 않음
-	  if (memberId == myId) {
-	      console.log("나 자신과는 채팅할 수 없습니다.");
-	      return;
-	  }
+	  const target = event.target;
 
 	  var w = 420;
 	  var h = 720;
-	  var left = Math.max(0, (screen.width - w) / 2);
+	  var left = Math.max(0, screen.width / 2);
 	  var top = Math.max(0, (screen.height - h) / 2);
 
 	  var url = "/messenger/direct?memberId=" + memberId;
@@ -205,7 +200,12 @@ function applySearch() {
 })();
 
 function toggleFavoriteMember(targetId, btn) {
-    event.stopPropagation(); // 행 클릭 이벤트(채팅방 이동) 방지
+	
+	if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+	
     const isAdding = btn.classList.contains('starOff');
     const status = isAdding ? 'Y' : 'N';
     const myId = document.getElementById("myMemberId").value;
@@ -217,16 +217,25 @@ function toggleFavoriteMember(targetId, btn) {
     })
     .then(res => {
         if(res.ok) {
+            // 별 아이콘 상태 변경
             btn.classList.toggle('starOn');
             btn.classList.toggle('starOff');
+            
             const row = btn.closest('.memberRow');
+            const listContainer = document.querySelector(".memberList");
+
             if (status === 'Y') {
-                document.querySelector(".memberList").prepend(row); // 상단 고정
+                // 즐겨찾기 등록: 리스트 맨 위로 이동
+                listContainer.prepend(row);
             } else {
-                location.reload(); // 정렬을 위해 새로고침 (혹은 원래 위치로 이동 로직)
+                // 즐겨찾기 해제: 새로고침 대신 화면에서 위치만 적절히 조정하거나 
+                // 정렬이 중요하다면 reload를 하되, 이벤트를 완전히 종료 후 실행
+                setTimeout(() => {
+                    location.reload(); 
+                }, 100);
             }
         }
-    });
+    })
 }
 </script>
 

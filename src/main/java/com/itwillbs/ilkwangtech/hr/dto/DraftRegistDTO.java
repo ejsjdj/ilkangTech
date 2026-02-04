@@ -1,6 +1,8 @@
 package com.itwillbs.ilkwangtech.hr.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,12 +29,12 @@ public class DraftRegistDTO {
     private LocalDate draftEndDate;
     private List<String> draftApprover;
     private Long draftTotalDate;
-    private String draftFile;
+    private List<AttachmentDTO> draftFile;
 
-
+    private AppointmentRegistDTO appointmentRegistDTO;
 
     @Builder
-    public DraftRegistDTO(String draftType, String draftTitle, String draftContent, LocalDate draftStartDate, LocalDate draftEndDate, List<String> draftApprover, String draftFile, Long draftTotalDate, String draftStatus){
+    public DraftRegistDTO(String draftType, String draftTitle, String draftContent, LocalDate draftStartDate, LocalDate draftEndDate, List<String> draftApprover, List<AttachmentDTO> draftFile, Long draftTotalDate, String draftStatus){
         super();
         this.draftType = draftType;
         this.draftTitle = draftTitle;

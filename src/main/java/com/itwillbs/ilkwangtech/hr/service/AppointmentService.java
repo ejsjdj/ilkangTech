@@ -48,7 +48,6 @@ public class AppointmentService {
             return AppointmentDTO.builder()
                     .appointmentId(appointmentEntity.getAppointmentId())
                     .memberId(appointmentEntity.getMemberId().getName())
-                    .approverId(appointmentEntity.getApproverId() != null ? appointmentEntity.getApproverId().getName() : "승인 대기")
                     .preDept(preDeptName)
                     .currentDept(currDeptName)
                     .preRank(preRankName)

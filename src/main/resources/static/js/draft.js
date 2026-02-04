@@ -95,52 +95,73 @@ function decideApprove(decision){
 
 /*결재 등록하기*/
 async function postDraft(){
+try {
+        let uploadedFile = null;
 
-    const draftData = {
-        draftTitle: document.getElementById('draftTitle').value,
-        draftContent: document.getElementById('draftContent').value,
-        draftType: document.getElementById('draftType').value,
-        draftFile: document.getElementById('draftFile').value,
-        draftStartDate: document.getElementById('startDate').value,
-        draftEndDate: document.getElementById('endDate').value,
-        draftTotalDate: calculateDays(),
-        draftStatus: "대기",
-    }
+        const fileInput = document.getElementById("draftFile");
 
-    const draftApprover = [
-        document.getElementById('approver1').value,
-        document.getElementById('approver2').value,
-        document.getElementById('approver3').value
-    ];
+        // 파일 업로드 (있을 때만)
+        if (fileInput.files.length > 0) {
+            uploadedFile = await uploadFile();
+        }
 
-    draftData.draftApprover = draftApprover;
+        // 결재 데이터 구성 (JSON)
+        const draftData = {
+            draftTitle: document.getElementById('draftTitle').value,
+            draftContent: document.getElementById('draftContent').value,
+            draftType: document.getElementById('draftType').value,
 
-    console.log(draftData);
+            // file 객체 → fileId만
+            draftFile: [{ fileId: uploadedFile.fileId }],
 
-    // 전송
-    try {
+            draftStartDate: document.getElementById('startDate').value,
+            draftEndDate: document.getElementById('endDate').value,
+            draftTotalDate: calculateDays(),
+            draftStatus: "대기",
+
+            draftApprover: [
+                document.getElementById('approver1').value,
+                document.getElementById('approver2').value,
+                document.getElementById('approver3').value
+            ]
+        };
+
+        console.log(draftData);
+
+        // 결재 등록
         const response = await fetch('/draft/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(draftData)
         });
 
-        // 3. 응답 처리
-        if (response.ok) {
-            alert('결재 등록이 완료되었습니다.');
-        } else {
-            const errorText = await response.text();
-            console.error('Error:', errorText);
-            alert('등록에 실패했습니다.');
+        if (!response.ok) {
+            throw new Error(await response.text());
         }
 
+        alert('결재 등록이 완료되었습니다.');
+
     } catch (error) {
-        console.error('Fetch error:', error);
-        alert('서버와 통신 중 오류가 발생했습니다.');
+        console.error(error);
+        alert('등록 중 오류가 발생했습니다.');
     }
 }
+
+/*파일 전송*/
+async function uploadFile(){
+    const fileInput = document.getElementById("draftFile");
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    const res = await fetch("/file/upload", {
+         method: "POST",
+         body: formData
+    });
+
+        return await res.json();
+}
+
 
 /*날짜 계산*/
 function calculateDays() {

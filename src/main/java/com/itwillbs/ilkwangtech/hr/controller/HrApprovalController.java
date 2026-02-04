@@ -1,9 +1,6 @@
 package com.itwillbs.ilkwangtech.hr.controller;
 
-import com.itwillbs.ilkwangtech.hr.dto.DraftApprovalLineDTO;
-import com.itwillbs.ilkwangtech.hr.dto.DraftDTO;
-import com.itwillbs.ilkwangtech.hr.dto.DraftDetailDTO;
-import com.itwillbs.ilkwangtech.hr.dto.DraftRegistDTO;
+import com.itwillbs.ilkwangtech.hr.dto.*;
 import com.itwillbs.ilkwangtech.hr.repository.DraftRepository;
 import com.itwillbs.ilkwangtech.hr.service.*;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
@@ -63,10 +60,11 @@ public class HrApprovalController {
     // 결재 문서 테이블에 정보 저장
     @PostMapping("/register")
     @ResponseBody
-    public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO, @AuthenticationPrincipal AccountLogin accountLogin){
-        Long userId = accountLogin.getId();
+    public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO,
+                               @AuthenticationPrincipal AccountLogin accountLogin){
 
-        draftRegistService.putDraft(draftRegistDTO, userId);
+        draftRegistService.putDraft(draftRegistDTO, accountLogin.getId());
+
     }
 
     // 결재 승인/반려

@@ -1,11 +1,13 @@
 package com.itwillbs.ilkwangtech.hr.entity;
 
+import com.itwillbs.ilkwangtech.hr.dto.AttachmentDTO;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
@@ -35,8 +37,8 @@ public class DraftEntity {
     @Column(nullable = true)
     private String draftContent;
 
-    @Column(nullable = true)
-    private String draftFile;
+    @OneToMany(mappedBy = "draft", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DraftAttachmentEntity> draftFile;
 
     @Column(nullable = true)
     private LocalDate draftStartDate;

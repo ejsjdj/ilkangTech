@@ -26,6 +26,7 @@ import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberId;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberSetting;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberSettingId;
+import com.itwillbs.ilkwangtech.messenger.repository.ChatAttachmentRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatMessageRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomRepository;
@@ -42,6 +43,7 @@ public class MessengerService {
     private final ChatRoomSettingRepository settingRepository;
     private final MemberRepository memberRepository;
     private final DepartmentRepository departmentRepository;
+    private final ChatAttachmentRepository chatAttachmentRepository;
 
     public MessengerService(ChatRoomRepository chatRoomRepository,
                             ChatRoomMemberRepository chatRoomMemberRepository, 
@@ -49,7 +51,7 @@ public class MessengerService {
                             ChatMessageRepository chatMessageRepository, 
                             ChatRoomSettingRepository settingRepository,
                             MemberRepository memeberRepository,
-                            DepartmentRepository departmentRepository) {
+                            DepartmentRepository departmentRepository, ChatAttachmentRepository chatAttachmentRepository) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatRoomMemberRepository = chatRoomMemberRepository;
 		this.chatMessageRepository = chatMessageRepository;
@@ -57,6 +59,7 @@ public class MessengerService {
 		this.settingRepository = settingRepository;
 		this.memberRepository = memeberRepository;
 		this.departmentRepository = departmentRepository;
+		this.chatAttachmentRepository = chatAttachmentRepository;
     }
 
     @Transactional
@@ -131,6 +134,7 @@ public class MessengerService {
  // 1. 과거 채팅 내역 가져오기
  // MessengerService.java
 
+ // MessengerService.java 내부의 getChatHistory 함수 내 .map() 부분 확인
     @Transactional(readOnly = true)
     public List<ChatMessageResponseDTO> getChatHistory(Long roomId, Long myId) {
         ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, myId)).orElseThrow();
@@ -138,22 +142,20 @@ public class MessengerService {
 
         return messages.stream().map(msg -> {
             ChatMessageResponseDTO dto = new ChatMessageResponseDTO();
-            
-            // ★ 이 부분들이 채워져야 화면에 글자와 이름이 나옵니다!
             dto.setMemberId(msg.getMemberId());
             dto.setContent(msg.getContent());
             dto.setCreatedAt(msg.getCreatedAt());
             dto.setMsgType(msg.getMsgType());
             
-            // 발신자 이름 조회
-            String senderName = messengerRepository.findById(msg.getMemberId())
-                    .map(Member::getName).orElse("알 수 없는 사용자");
+            // [중요] DB에서 해당 메시지의 첨부파일 ID를 찾아 DTO에 담습니다.
+            chatAttachmentRepository.findByMessageId(msg.getId()).ifPresent(attach -> {
+                dto.setAttachId(attach.getId());
+            });
+
+            // 발신자 이름 및 시간 세팅
+            String senderName = memberRepository.findById(msg.getMemberId()).map(Member::getName).orElse("사용자");
             dto.setMemberName(senderName);
-            
-            // 시간 포맷 (오전 9:00 같은 형식)
             dto.setFormattedTime(msg.getCreatedAt().format(DateTimeFormatter.ofPattern("a h:mm")));
-            
-            // 안 읽은 수 계산 (추가된 기능)
             dto.setUnreadCount(getUnreadCount(roomId, msg.getCreatedAt())); 
             
             return dto;

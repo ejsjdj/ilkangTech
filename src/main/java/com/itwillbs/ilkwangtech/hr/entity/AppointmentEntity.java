@@ -53,18 +53,16 @@ public class AppointmentEntity {
     private String approveStatus; // 승인 상태
 
     @Column(name = "appointment_date", nullable = true)
-    private LocalDate appointmentDate; // 승인일
+    private LocalDate approveDate; // 승인일
 
     // 부서 변경 (현재 부서 -> 이전 부서)
     public void changeDept(int currentDept){
         this.preDept = currentDept;
-        this.appointmentDate = LocalDate.now();
     }
 
     // 직급 변경 (현재 직급 -> 이전 직급)
     public void changeRank(int currentRank){
         this.preRank = currentRank;
-        this.appointmentDate = LocalDate.now();
     }
 
     // 근무상태 변경
@@ -75,13 +73,11 @@ public class AppointmentEntity {
     // 새로운 부서 등록
     public void newDept(int newDept){
         this.currentDept = newDept;
-        this.appointmentDate = LocalDate.now();
     }
 
     // 새로운 직급 등록
     public void newRank(int newRank){
         this.currentRank = newRank;
-        this.appointmentDate = LocalDate.now();
     }
 
     // 문서 정보 등록
@@ -90,12 +86,12 @@ public class AppointmentEntity {
     }
 
     // 승인 날짜 등록
-    /*public void newDate(LocalDate newDate){
-        this.appointmentDate = LocalDate.now();
-    }*/
+    public void newDate(LocalDate newDate){
+        this.approveDate = LocalDate.now();
+    }
 
-    // 승인자 등록
-    /*public void newApprover(Member approver){
-        this.approverId = approver;
-    }*/
+    // 승인 상태 갱신
+    public void updateStatus(String Status){
+        this.approveStatus = Status;
+    }
 }

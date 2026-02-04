@@ -32,6 +32,7 @@ function draftDetail(draftId) {
             const contentView = document.getElementById('detailContent_view');
             const startView = document.getElementById('detailStartDate_view');
             const endView = document.getElementById('detailEndDate_view');
+            const fileView = document.getElementById('fileListContainer');
 
             if (titleView) titleView.value = data.detailTitle || "";
             if (contentView) contentView.value = data.detailContent || "";
@@ -42,7 +43,39 @@ function draftDetail(draftId) {
             if (endView && data.detailEndDate) {
                 endView.value = data.detailEndDate.substring(0, 10);
             }
+
+            if (data.detailFile && data.detailFile.length > 0) {
+                fileView.value = data.detailFile[0].fileName;
+                renderFileList(data.detailFile);
+            } else {
+                fileView.value = "첨부파일 없음";
+                renderFileList([]);
+            }
         });
+}
+
+/*파일 다운로드*/
+async function renderFileList(fileList){
+    const fileContainer = document.getElementById('fileListContainer'); // div나 ul 태그
+    fileContainer.innerHTML = '';
+
+    if (fileList && fileList.length > 0) {
+        fileList.forEach(file => {
+            const link = document.createElement('a');
+            link.href = `/file/download/${file.fileId}`;
+            link.innerText = `📎 파일 다운로드 (ID: ${file.fileId})`;
+            link.style.display = 'block';
+            link.style.color = 'black';
+            link.style.marginBottom = '4px';
+            link.className = 'download-link';
+
+            fileContainer.appendChild(link);
+        });
+    } else {
+        fileContainer.innerText = "첨부된 파일이 없습니다.";
+    }
+
+    console.log(fileContainer.innerHTML);
 }
 
 /*모달 닫기*/

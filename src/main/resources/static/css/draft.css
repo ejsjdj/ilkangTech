@@ -36,6 +36,24 @@ th {
     overflow-y: auto;     /* 내용이 길어지면 박스 내부 스크롤 */
 }
 
+.file-list-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 40px;
+    background-color: #f9f9f9;
+    margin-top: 5px;
+    border-radius: 4px;
+}
+.download-link {
+    display: block;
+    color: #007bff;
+    text-decoration: none;
+    margin-bottom: 5px;
+}
+.download-link:hover {
+    text-decoration: underline;
+}
+
 /* 폼 그룹 간격 */
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }

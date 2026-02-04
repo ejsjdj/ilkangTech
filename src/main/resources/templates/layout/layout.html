@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 <meta charset="UTF-8">
 <title>ERP Dashboard</title>
@@ -97,7 +98,7 @@
 		            <span class="nav-menu">공지사항</span>
 		        </a>
 		    </div>
-		
+
 		    <div class="menu-category">ERP</div>
             <div class="nav-group">
                 <button type="button" class="nav-parent" data-target="menu-hr" aria-expanded="false">
@@ -105,7 +106,7 @@
                 </button>
                 <ul class="nav-children" id="menu-hr">
                     <li><a class="nav-child" th:href="@{/account/list}">사원목록</a></li>
-                    <li><a class="nav-child" th:href="@{/hr/appointment}">발령 관리</a></li>
+                    <li sec:authorize="hasAnyAuthority('CEO','HR')"><a class="nav-child" th:href="@{/hr/appointment}">발령 관리</a></li>
                     <li><a class="nav-child" th:href="@{/account/orgChart}">조직도</a></li>
                     <li><a class="nav-child" th:href="@{/account/role}">권한 관리</a></li>
                 </ul>
@@ -116,7 +117,7 @@
                 </button>
                 <ul class="nav-children" id="menu-att">
                     <li><a class="nav-child" th:href="@{/attendance/commute}">출퇴근 현황</a></li>
-                    <li><a class="nav-child" th:href="@{/attendance/work}">근무 현황</a></li>
+                    <li sec:authorize="hasAnyAuthority('CEO','HR')"><a class="nav-child" th:href="@{/attendance/work}">근무 현황</a></li>
                     <li><a class="nav-child" th:href="@{/attendance/vacation}">휴가 관리</a></li>
                 </ul>
             </div>

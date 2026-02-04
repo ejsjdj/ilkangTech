@@ -61,12 +61,12 @@ function renderTable(pageData) {
                 <thead>
                     <tr>
                         <th>발령대상자</th>
-                        <th>승인자</th>
                         <th>이전 부서</th>
                         <th>현재 부서</th>
                         <th>이전 직급</th>
                         <th>현재 직급</th>
                         <th>근무 상태</th>
+                        <th>상태</th>
                         <th>승인일</th>
                     </tr>
                 </thead>
@@ -77,13 +77,13 @@ function renderTable(pageData) {
         pageData.content.forEach(item => {
             html += `<tr>
                 <td>${item.memberId || '-'}</td>
-                <td>${item.approverId || '-'}</td>
                 <td>${item.preDept || '-'}</td>
                 <td>${item.currentDept || '-'}</td>
                 <td>${item.preRank || '-'}</td>
                 <td>${item.currentRank || '-'}</td>
                 <td>${item.workStatus || '-'}</td>
-                <td>${item.appointmentDate || '-'}</td>
+                <td>${item.apprveStatus || '-'}</td>
+                <td>${item.approveDate || '-'}</td>
             </tr>`;
         });
     } else {

@@ -4,10 +4,8 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.entity.Bank;
 import com.itwillbs.ilkwangtech.account.entity.Department;
 import com.itwillbs.ilkwangtech.account.entity.Position;
-import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
-import com.itwillbs.ilkwangtech.account.repository.BankRepository;
-import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
-import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
+import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
+import com.itwillbs.ilkwangtech.account.repository.*;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -29,6 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
 	private final BankRepository bankRepository;
+	private final ProfileImgRepository profileImgRepository;
 	
 	@Override
 	public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
@@ -80,6 +79,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 				accountLogin.setBank(bank.getBankName());
 			}
 		}
+
+		// 프로필 이미지 경로 설정
+		profileImgRepository.findByMemberIdAndRepImgYn(member.getId(), "Y")
+				.ifPresent(img -> {
+					String url = "/upload/" + img.getImgLocation() + "/" + img.getImgName();
+					accountLogin.setProfileImgUrl(url);
+				});
 
 		return accountLogin;
 	}

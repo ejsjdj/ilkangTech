@@ -39,6 +39,7 @@ public class AccountLogin implements UserDetails {
 	private String position;        	// 직급명
 	private String bank;            	// 은행명
 	private String accountNumber;   	// 계좌번호
+	private String profileImgUrl;   	// 프로필 이미지 URL
 	private LocalDateTime lastLogin;	// 마지막 로그인 시간
 
 	private List<MemberRole> roles; 	// 사용자가 보유한 권한 목록

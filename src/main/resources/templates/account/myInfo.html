@@ -131,6 +131,13 @@
             font-weight: 800;
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
             border: 4px solid #ffffff;
+            overflow: hidden;
+        }
+
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .profile-name {
@@ -352,7 +359,10 @@
             <div class="form-column">
                 <div class="form-card profile-summary" style="padding-bottom: 24px;">
                     <div class="profile-photo-wrapper">
-                        <div class="profile-photo" th:text="${#strings.substring(user.name, 0, 1)}">홍</div>
+                        <div class="profile-photo">
+                            <img th:if="${user.profileImgUrl}" th:src="${user.profileImgUrl}" alt="urlError">
+                            <span th:unless="${user.profileImgUrl}" th:text="${#strings.substring(user.name, 0, 1)}">홍</span>
+                        </div>
                     </div>
                     <h2 class="profile-name" th:text="${user.name}">홍길동</h2>
                     <div class="profile-info-badges">
@@ -389,7 +399,12 @@
                         <label for="profilePhoto" class="photo-upload-label" style="margin-top: 0; justify-content: center; width: 100%;">
                             <i class="bi bi-camera-fill"></i> 사진 변경
                         </label>
-                        <input type="file" id="profilePhoto" style="display: none;">
+                        <form id="profileImgForm" th:action="@{/account/update/profileImgFile}" method="post" enctype="multipart/form-data" style="display: none;">
+                            <input type="file"
+                                   id="profilePhoto"
+                                   name="profileImgFile"
+                                   accept="image/*">
+                        </form>
                         <a href="/" class="btn-cancel" style="width: 92%;">메인으로 돌아가기</a>
                     </div>
                 </div>
@@ -465,6 +480,35 @@
             </div>
         </div>
     </div>
+
+    <th:block layout:fragment="myScript">
+        <script>
+            console.log("프로필 이미지 URL:", profileImgUrl);
+            console.log("프로필 이미지 URL:", user.profileImgUrl);
+            $(document).ready(function() {
+                $("#profilePhoto").change(function() {
+                    if (this.files && this.files[0]) {
+                        Swal.fire({
+                            title: '프로필 이미지 변경',
+                            text: "선택한 이미지로 변경하시겠습니까?",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#4f46e5',
+                            cancelButtonColor: '#64748b',
+                            confirmButtonText: '변경',
+                            cancelButtonText: '취소'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $("#profileImgForm").submit();
+                            } else {
+                                $(this).val('');
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    </th:block>
 
     <!-- 스크립트: 성공/실패 메시지 및 유효성 검사 -->
     <script th:inline="javascript">

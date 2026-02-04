@@ -9,4 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AttachmentDTO {
     private Long fileId;
+    private String fileName;
 }

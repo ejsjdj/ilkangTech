@@ -363,7 +363,7 @@ public class MessengerService {
         for (ChatRoomMember m : memberships) {
             LocalDateTime lastRead = (m.getLastReadAt() != null) ? m.getLastReadAt() : m.getJoinedAt();
             
-            // 내 아이디(myId)가 보낸 메시지는 제외하고 카운트
+            // 내가 보낸 메시지는 제외하고 카운트
             long count = chatMessageRepository.countByRoomIdAndCreatedAtAfterAndMemberIdNot(
                 m.getId().getRoomId(), lastRead, myId
             );

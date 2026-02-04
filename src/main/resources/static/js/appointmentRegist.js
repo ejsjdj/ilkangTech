@@ -128,38 +128,42 @@ function registAppointment() {
 /* 결재 문서 등록 */
 async function postDraft(generatedTitle, generatedContent){
 
+
+    let uploadedFile = null;
+    const fileInput = document.getElementById("draftFile");
+
+    // 파일 업로드 (있을 때만)
+    if (fileInput.files.length > 0) {
+        uploadedFile = await uploadFile();
+    } else {
+        alert("첨부파일을 등록하세요.")
+    }
+
     const baseDate = document.getElementById('selectedDate').value;
     const startDate = today();
-    const endDate = plusDays(startDate, 3);
+    const endDate = plusDays(startDate, 90);
 
 
-    // 전자결재 등록
+    // 발령 등록
     const appointmentRegistDTO = {
         memberId: document.getElementById('selectedMemberId').value,
         newDept: document.querySelector('select[name="department"]').value,
         newRank: document.querySelector('select[name="position"]').value,
-        workStatus: document.querySelector('select[name="bank"]').value, // select의 name
+        workStatus: document.querySelector('select[name="bank"]').value,
         approveStatus: "대기"
     };
 
-    // 2. 통합 데이터 생성
+    // 전자결재 등록
     const draftData = {
         draftTitle: generatedTitle,
         draftContent: generatedContent,
         draftType: 'APP',
+        draftFile: [{ fileId: uploadedFile.fileId }],
         draftStartDate: startDate,
         draftEndDate: endDate,
         draftStatus: "대기",
-        // [중요] 상세 정보를 객체 형태로 포함
         appointmentRegistDTO: appointmentRegistDTO
     };
-
-
-
-    // 3. appointment 등록
-    // userId, newDept, newRank, workStatus`;
-
-    console.log("발령 데이터 : ", draftData);
 
     // 전송
     try {
@@ -186,6 +190,20 @@ async function postDraft(generatedTitle, generatedContent){
     }
 }
 
+/*파일 전송*/
+async function uploadFile(){
+    const fileInput = document.getElementById("draftFile");
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    const res = await fetch("/file/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    return await res.json();
+}
 
 /* 날짜 계산 */
 function plusDays(dateStr, days) {

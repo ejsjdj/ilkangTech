@@ -2,6 +2,7 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout/layout}">
 <head>
   <title>출퇴근 관리</title>
@@ -101,7 +102,7 @@
 
       <div class="tab-container">
           <div id="tabMy" class="tab-item active" onclick="switchTab('MY')">내 출퇴근 관리</div>
-          <div id="tabAll" class="tab-item" onclick="switchTab('ALL')">전사원 출퇴근 관리</div>
+          <li sec:authorize="hasAnyAuthority('CEO','HR')"><div id="tabAll" class="tab-item" onclick="switchTab('ALL')">전사원 출퇴근 관리</div></li>
       </div>
 
     <div class="scroll-area">

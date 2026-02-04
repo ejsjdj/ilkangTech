@@ -15,7 +15,6 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatBroadcastMessageDTO;
 import com.itwillbs.ilkwangtech.messenger.dto.ChatSendRequestDTO;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatMessage;
-import com.itwillbs.ilkwangtech.messenger.entity.ChatRoom;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomRepository;
@@ -27,14 +26,12 @@ public class ChatSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
-    private final MessengerService messengerService;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
 
     public ChatSocketController(SimpMessagingTemplate messagingTemplate,
                                 ChatMessageService chatMessageService, ChatRoomRepository chatRoomRepository, ChatRoomMemberRepository chatRoomMemberRepository, MessengerService messengerService) {
         this.messagingTemplate = messagingTemplate;
         this.chatMessageService = chatMessageService;
-		this.messengerService = messengerService;
 		this.chatRoomMemberRepository = chatRoomMemberRepository;
     }
 

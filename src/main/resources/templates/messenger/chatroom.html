@@ -46,7 +46,6 @@
 	    border-radius: 12px; 
 	    height: auto;
 	    word-break: break-all; /* 영문/숫자도 박스 내 줄바꿈 */
-	    white-space: pre-wrap; /* 줄바꿈 유지 */
 	}
 	.msg { margin-bottom: 0 !important; } /* 기존 여백 제거 */
     .mine { align-self: flex-end;}
@@ -565,8 +564,17 @@ function leaveAndClose() {
 
 function markAsRead() {
     var roomId = document.getElementById("roomId").value;
-    fetch('/messenger/api/read/' + roomId, { method: 'POST' });
+    // fetch 뒤에 .then()을 추가하여 처리가 끝나면 화면을 다시 그리게 합니다.
+    fetch('/messenger/api/read/' + roomId, { method: 'POST' })
+        .then(res => {
+            if (res.ok) {
+                // [핵심] 서버에서 읽음 처리가 완료되면 내 화면의 숫자들을 즉시 새로고침합니다.
+                refreshUnreadCounts(); 
+            }
+        })
+        .catch(err => console.error("읽음 처리 중 오류:", err));
 }
+
 document.addEventListener("DOMContentLoaded", markAsRead);
 
 //1. 참여자 목록 열기

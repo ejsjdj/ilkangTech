@@ -3,10 +3,11 @@ package com.itwillbs.ilkwangtech.common.controller;
 import com.itwillbs.ilkwangtech.common.dto.FileUploadDTO;
 import com.itwillbs.ilkwangtech.common.entity.FileMeta;
 import com.itwillbs.ilkwangtech.common.repository.FileMetaRepository;
+import com.itwillbs.ilkwangtech.common.service.FlieDownloadService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,7 +21,8 @@ import java.util.UUID;
 public class FileUploadController {
 
     private final FileMetaRepository fileMetaRepository;
-    private final String uploadDir = "C:\\uploadFiles";
+    private final FlieDownloadService fileDownloadService;
+    private final String uploadDir = "D:\\ilkang_uploads";
 
     @PostMapping("/file/upload")
     public FileUploadDTO upload(@RequestParam MultipartFile file) throws IOException {
@@ -38,5 +40,12 @@ public class FileUploadController {
 
         // 3. fileId 반환
         return new FileUploadDTO(meta.getId());
+    }
+
+    // 파일 다운로드
+    @GetMapping("/file/download/{fileId}")
+    public ResponseEntity<Resource> download(@PathVariable Long fileId) throws IOException {
+
+        return fileDownloadService.fileDownload(fileId);
     }
 }

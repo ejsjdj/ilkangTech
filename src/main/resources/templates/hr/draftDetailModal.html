@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<htm lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      >
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -39,7 +41,7 @@
         <!-- 첨부파일 -->
         <div class="form-group">
             <label>첨부파일</label>
-            <textarea id="detailContent_file" rows="5" readonly></textarea>
+            <div id="fileListContainer" class="file-list-box"></div>
         </div>
 
       <!-- 날짜 -->
@@ -53,14 +55,17 @@
       </div>
 
       <!-- 버튼 -->
-      <div class="modal-footer">
+      <div class="form-group">
         <button type="button" class="btn-cancel" onclick="closeDetailModal()">닫기</button>
-        <button type="button" class="btn-cancel" th:onclick="|decideApprove('승인')|">승인</button>
-        <button type="button" class="btn-cancel" th:onclick="|decideApprove('반려')|">반려</button>
+      </div>
+
+      <div id="detail_Button_Group" class="detail_Button_Group" style="display: none;">
+        <button type="button" class="btn-approve" onclick="decideApprove('승인')">승인</button>
+        <button type="button" class="btn-reject" onclick="decideApprove('반려')">반려</button>
       </div>
 
     </div>
   </div>
 </div>
 </body>
-</htm>
+</html>

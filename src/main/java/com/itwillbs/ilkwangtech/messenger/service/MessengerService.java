@@ -209,6 +209,13 @@ public class MessengerService {
                 dto.setLastMessage(last.getContent());
                 dto.setLastTime(last.getCreatedAt().format(DateTimeFormatter.ofPattern("a h:mm")));
             });
+            
+            LocalDateTime lastRead = (m.getLastReadAt() != null) ? m.getLastReadAt() : m.getJoinedAt();
+            int count = (int) chatMessageRepository.findByRoomId(room.getId()).stream()
+                .filter(msg -> msg.getCreatedAt().isAfter(lastRead))
+                .filter(msg -> !msg.getMemberId().equals(myId))
+                .count();
+            dto.setUnreadCount(count);
 
             return dto;
         })
@@ -353,13 +360,16 @@ public class MessengerService {
     // 새로운 메세지 표시 로직
     @Transactional(readOnly = true)
     public boolean hasAnyUnread(Long myId) {
-        // 1. 내가 참여 중인 모든 방 정보를 가져옵니다.
         List<ChatRoomMember> memberships = chatRoomMemberRepository.findByMemberId(myId);
         
         for (ChatRoomMember m : memberships) {
-            // 각 방에서 내가 마지막으로 읽은 시간 이후의 메시지가 있는지 확인
-        	LocalDateTime lastRead = (m.getLastReadAt() != null) ? m.getLastReadAt() : m.getJoinedAt();
-        	long count = chatMessageRepository.countByRoomIdAndCreatedAtAfter(m.getId().getRoomId(), lastRead);
+            LocalDateTime lastRead = (m.getLastReadAt() != null) ? m.getLastReadAt() : m.getJoinedAt();
+            
+            // 내 아이디(myId)가 보낸 메시지는 제외하고 숫자를 셉니다.
+            long count = chatMessageRepository.countByRoomIdAndCreatedAtAfterAndMemberIdNot(
+                m.getId().getRoomId(), lastRead, myId
+            );
+            
             if (count > 0) return true;
         }
         return false;

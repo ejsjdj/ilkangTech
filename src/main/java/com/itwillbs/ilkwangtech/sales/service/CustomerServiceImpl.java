@@ -93,15 +93,6 @@ public class CustomerServiceImpl implements CustomerService {
         dto.setContactPerson(customer.getContactPerson());
         dto.setRemark(customer.getRemark());
 
-        dto.setBusinessType(customer.getBusinessType());
-        dto.setStatus(customer.getStatus());
-        dto.setManagerPhone(customer.getManagerPhone());
-        dto.setManagerEmail(customer.getManagerEmail());
-        dto.setWebsite(customer.getWebsite());
-        dto.setCreatedAt(customer.getCreatedAt());
-        dto.setUpdatedAt(customer.getUpdatedAt());
-        dto.setCreatedBy(customer.getCreatedBy());
-        dto.setUpdatedBy(customer.getUpdatedBy());
         
         return dto;
     }
@@ -118,13 +109,6 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setEmail(dto.getEmail());
         customer.setContactPerson(dto.getContactPerson());
         customer.setRemark(dto.getRemark());
-        customer.setBusinessType(dto.getBusinessType());
-        customer.setStatus(dto.getStatus());
-        customer.setManagerPhone(dto.getManagerPhone());
-        customer.setManagerEmail(dto.getManagerEmail());
-        customer.setWebsite(dto.getWebsite());
-        customer.setCreatedBy(dto.getCreatedBy());
-        customer.setUpdatedBy(dto.getUpdatedBy());
         return customer;
     }
 
@@ -138,11 +122,5 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setEmail(dto.getEmail());
         customer.setContactPerson(dto.getContactPerson());
         customer.setRemark(dto.getRemark());
-        customer.setBusinessType(dto.getBusinessType());
-        customer.setStatus(dto.getStatus());
-        customer.setManagerPhone(dto.getManagerPhone());
-        customer.setManagerEmail(dto.getManagerEmail());
-        customer.setWebsite(dto.getWebsite());
-        customer.setUpdatedBy(dto.getUpdatedBy());
     }
 }

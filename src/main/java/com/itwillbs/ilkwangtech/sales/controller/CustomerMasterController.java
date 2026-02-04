@@ -23,19 +23,19 @@ public class CustomerMasterController {
     public String customerList(Model model) {
         List<CustomerDTO> customers = customerService.getAllCustomers();
         
-        // 통계 데이터 계산
-        long totalCustomers = customers.size();
-        long activeCustomers = customers.stream().filter(c -> "ACTIVE".equals(c.getStatus())).count();
-        long newCustomers = customers.stream().filter(c -> {
-            return c.getCreatedAt() != null && 
-                   c.getCreatedAt().getMonthValue() == java.time.LocalDateTime.now().getMonthValue();
-        }).count();
+//        // 통계 데이터 계산
+//        long totalCustomers = customers.size();
+//        long activeCustomers = customers.stream().filter(c -> "ACTIVE".equals(c.getStatus())).count();
+//        long newCustomers = customers.stream().filter(c -> {
+//            return c.getCreatedAt() != null &&
+//                   c.getCreatedAt().getMonthValue() == java.time.LocalDateTime.now().getMonthValue();
+//        }).count();
         
-        model.addAttribute("customers", customers);
-        model.addAttribute("totalCustomers", totalCustomers);
-        model.addAttribute("activeCustomers", activeCustomers);
-        model.addAttribute("newCustomers", newCustomers);
-        model.addAttribute("totalOrders", 0); // TODO: 실제 주문 데이터로 계산
+//        model.addAttribute("customers", customers);
+//        model.addAttribute("totalCustomers", totalCustomers);
+//        model.addAttribute("activeCustomers", activeCustomers);
+//        model.addAttribute("newCustomers", newCustomers);
+//        model.addAttribute("totalOrders", 0); // TODO: 실제 주문 데이터로 계산
         
         return "sales/customer/customer-list";
     }

@@ -25,7 +25,7 @@ public class DraftEntity {
     private long draftId;
 
     @ManyToOne
-    @JoinColumn(name = "common_id")
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @Column(nullable = true)

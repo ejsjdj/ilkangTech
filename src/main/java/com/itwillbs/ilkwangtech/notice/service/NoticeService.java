@@ -36,7 +36,7 @@ public class NoticeService {
 	private final NoticeRepository noticeRepository;
 	private final NoticeFileRepository noticeFileRepository; // 추가 필요
 	
-	// 파일 저장 경로 (실제 존재하는 폴더여야 함)
+	// 파일 저장 경로
     private final String UPLOAD_DIR = "C:/upload/";
 
     public List<NoticeListDTO> getPinnedNotices() {
@@ -47,7 +47,7 @@ public class NoticeService {
                 .collect(Collectors.toList());
     }
 
- // [수정] 검색 조건을 포함한 리스트 조회
+    // 검색 조건을 포함한 리스트 조회
     public Page<NoticeListDTO> getNoticeList(int page, NoticeSearchDTO searchDTO) {
         Pageable pageable = PageRequest.of(page, 10);
         
@@ -75,7 +75,7 @@ public class NoticeService {
                 n.getViewCount(), n.isPinned(), n.isHasAttachment()));
     }
     
-    // 1-6. 현재 고정 게시글 개수 확인
+    // 현재 고정 게시글 개수 확인
     public boolean checkPinnedLimit() {
         return noticeRepository.countByIsPinnedTrue() >= 3;
     }
@@ -148,7 +148,7 @@ public class NoticeService {
         noticeFileRepository.save(noticeFile); // DB에 저장
     }
 
-    // 2. 상세 조회 (DTO 변환)
+    // 2. 상세 조회
     @Transactional
     public NoticeDetailDTO getNoticeDetail(Long id) {
     	Notice notice = noticeRepository.findById(id)
@@ -173,10 +173,10 @@ public class NoticeService {
             );
 
             if (file.isImage()) {
-                // 이미지라면 imageList에 담기 -> <img> 태그로 보여짐
+                // 이미지라면 imageList에 담기
                 imageList.add(fileDTO);
             } else {
-                // 일반 파일이라면 fileList에 담기 -> 다운로드 링크로 보여짐
+                // 일반 파일이라면 fileList에 담기
                 fileList.add(fileDTO);
             }
         }
@@ -200,7 +200,7 @@ public class NoticeService {
         return dto;
     }
     
-    // [추가] 게시글 삭제 (파일 포함)
+    // 게시글 삭제 (파일 포함)
     @Transactional
     public void deleteNotice(Long id) {
         // 1. 파일 삭제 (디스크 + DB)
@@ -217,7 +217,7 @@ public class NoticeService {
         noticeRepository.deleteById(id);
     }
 
-    // [추가] 게시글 수정
+    // 게시글 수정
     @Transactional
     public void updateNotice(NoticeWriteDTO dto, AccountLogin loginMember) throws IOException {
         Notice notice = noticeRepository.findById(dto.getId())
@@ -227,8 +227,6 @@ public class NoticeService {
         notice.setTitle(dto.getTitle());
         notice.setContent(dto.getContent());
         notice.setPinned(dto.isPinned());
-        // 수정자 정보 업데이트 (선택 사항: 보통 작성자는 유지하고 수정일만 갱신됨)
-        // notice.setModDate(LocalDateTime.now()); // @UpdateTimestamp가 있어 자동 처리됨
 
         // 2. 삭제 요청된 기존 파일 삭제
         if (dto.getDeleteFileIds() != null) {
@@ -283,7 +281,7 @@ public class NoticeService {
         }
     }
     
-    // [추가] 수정 폼용 데이터 조회 (DetailDTO 재활용)
+    // 수정 폼용 데이터 조회
     public NoticeDetailDTO getNoticeForEdit(Long id) {
         return getNoticeDetail(id); // 기존 상세 조회 로직 활용 (조회수 증가 로직이 포함되어 있다면 분리 고려)
     }

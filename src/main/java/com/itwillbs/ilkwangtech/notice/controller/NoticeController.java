@@ -8,6 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.util.UriUtils;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeDetailDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeSearchDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeWriteDTO;
@@ -41,6 +44,8 @@ public class NoticeController {
 	private final NoticeService noticeService;
 	private final NoticeFileRepository noticeFileRepository;
 	
+	private final MemberRepository memberRepository;
+	
 	@GetMapping("/list")
 	public String list(@RequestParam(value = "page", defaultValue = "0") int page, Model model, 
 	                   @AuthenticationPrincipal AccountLogin loginMember,
@@ -51,29 +56,37 @@ public class NoticeController {
         model.addAttribute("noticeList", noticeService.getNoticeList(page, searchDTO));
         model.addAttribute("searchDTO", searchDTO);
 
-	    // 1-4. 권한 체크: 전산관리부 혹은 관리부 계정 확인
-	    boolean canWrite = false;
-	    
-	    if (loginMember != null) {
-	        // AccountLogin 객체의 department 필드를 직접 참조
-	        String dept = loginMember.getDepartment(); 
-	        
-	        if ("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept)) {
-	            canWrite = true;
-	        }
-	        
-	        log.info("접속 사원: {}, 부서: {}, 쓰기권한: {}", loginMember.getName(), dept, canWrite);
-	    }
+	    // 권한 체크: 전산관리부 혹은 관리부 계정 확인
+        boolean canWrite = false;
+        
+        if (loginMember != null) {
+            // 1. 현재 접속한 사용자의 최신 정보를 DB에서 다시 가져옴 (새로고침 효과)
+            Member freshMember = memberRepository.findById(loginMember.getId()).orElse(null);
+        
+            if (freshMember != null && freshMember.getRoles() != null) {
+                // 2. 방금 가져온 정보(freshMember)로 권한 체크
+                canWrite = freshMember.getRoles().stream()
+                        .anyMatch(memberRole -> {
+                            Long roleId = memberRole.getRole().getId();
+                            return roleId == 6L || roleId == 0L || roleId == 2L;
+                        });
+                
+                log.info("실시간 권한 체크 - 사원: {}, 결과: {}", freshMember.getName(), canWrite);
+            }
+        }
 	    model.addAttribute("canWrite", canWrite);
 
 	    return "notice/list";
 	}
 	
-	// 1-1. 공지사항 작성 페이지 이동
+	// 공지사항 작성 페이지 이동
     @GetMapping("/write")
     public String writeForm(@AuthenticationPrincipal AccountLogin loginMember, Model model) {
-        // 1-7. 권한 체크 (URL 직접 접근 방지)
-        if (loginMember == null) return "redirect:/login";
+        // 권한 체크 (URL 직접 접근 방지)
+        if (loginMember == null) {
+        	return "redirect:/login";
+        }
+        
         String dept = loginMember.getDepartment();
         if (!("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept))) {
             return "redirect:/notice/list"; // 권한 없으면 리스트로 튕겨내기
@@ -84,7 +97,7 @@ public class NoticeController {
         return "notice/write";
     }
 
-    // 1-6. 고정 게시글 개수 체크 API (AJAX용)
+    // 고정 게시글 개수 체크 API
     @GetMapping("/api/check-pinned")
     @ResponseBody
     public boolean checkPinnedCount() {
@@ -99,13 +112,13 @@ public class NoticeController {
         return "redirect:/notice/list";
     }
     
-    // 1-2. 상세 페이지 이동
+    // 상세 페이지 이동
     @GetMapping("/detail/{id}")
     public String detail(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal AccountLogin loginMember) {
         NoticeDetailDTO notice = noticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
         
-        // 3. 권한 체크 (수정/삭제 버튼 노출용)
+        // 권한 체크 (수정/삭제 버튼 노출용)
         boolean canEdit = false;
         if (loginMember != null) {
             String dept = loginMember.getDepartment();
@@ -118,7 +131,7 @@ public class NoticeController {
         return "notice/detail";
     }
     
-    // [추가] 1. 수정 페이지 이동 (기존 내용 불러오기)
+    // 수정 페이지 이동
     @GetMapping("/modify/{id}")
     public String modifyForm(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal AccountLogin loginMember) {
         // 권한 체크
@@ -133,7 +146,7 @@ public class NoticeController {
         return "notice/modify";
     }
 
-    // [추가] 2. 수정 처리
+    // 수정 처리
     @PostMapping("/modify")
     public String modify(NoticeWriteDTO dto, @AuthenticationPrincipal AccountLogin loginMember) throws IOException {
         if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
@@ -143,7 +156,7 @@ public class NoticeController {
         return "redirect:/notice/detail/" + dto.getId();
     }
 
-    // [추가] 3. 삭제 처리
+    // 삭제 처리
     @PostMapping("/delete")
     public String delete(@RequestParam("id") Long id, @AuthenticationPrincipal AccountLogin loginMember) {
         if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {

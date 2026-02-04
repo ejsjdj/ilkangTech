@@ -33,6 +33,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             loginAttemptRepository.save(loginAttempt);
         });
 
-        response.sendRedirect("/schedule/calendar");
+        response.sendRedirect("/");
     }
 }

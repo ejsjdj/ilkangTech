@@ -30,28 +30,28 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public OrgChartDTO getOrgChartData() {
+        // 우선 모든 부서와 모든 직급을 가져옴
         List<Department> allDepts = departmentRepository.findAll();
         List<Position> allPositions = positionRepository.findAll();
+        // Member 에는 직급이 정수로 되어있는데 이것을 맵핑된 직급으로 바꿔 줄수 있게 posMap 에 정수와 직급을 대응시킴
         Map<Integer, String> posMap = allPositions.stream()
                 .collect(Collectors.toMap(Position::getId, Position::getPositionName, (existing, replacement) -> existing));
 
         // 대표이사 찾기 (부서 0 소속 중 가장 높은 직급)
+        // 모든 Member를 가져와서 부서번호가 0번인 사람을 찾음 0번인 사람은 대표이사
         List<Member> allMembers = memberRepository.findAll();
         List<Member> ceos = allMembers.stream()
                 .filter(m -> m.getDepartment() != null && m.getDepartment().equals(0))
-                .sorted((m1, m2) -> {
-                    if (m1.getPosition() == null) return 1;
-                    if (m2.getPosition() == null) return -1;
-                    return m1.getPosition().compareTo(m2.getPosition());
-                })
-                .collect(Collectors.toList());
-        
+                .toList();
+
         String ceoName = "미지정";
         String ceoTitle = "대표이사";
         if (!ceos.isEmpty()) {
+            // 찾은 ceo 의 이름과 직급을 저장
             ceoName = ceos.get(0).getName();
             ceoTitle = posMap.getOrDefault(ceos.get(0).getPosition(), "대표이사");
         }
+
         OrgChartDTO.CeoDTO ceoDTO = OrgChartDTO.CeoDTO.builder()
                 .name(ceoName)
                 .title(ceoTitle)
@@ -61,15 +61,15 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // 상위 부서들 (parent_department가 0이거나 null인 부서들 중 0을 제외)
         List<Department> mainDepts = allDepts.stream()
-                .filter(d -> d.getId() != 0 && (Integer.valueOf(0).equals(d.getParentDepartment()) || d.getParentDepartment() == null))
+                .filter(d -> d.getId() != 0 && d.getParentDepartment() == 0)
                 .filter(Department::isActive)
                 .sorted((d1, d2) -> d1.getId().compareTo(d2.getId())) // 상위 부서 ID 순 정렬 추가
-                .collect(Collectors.toList());
+                .toList();
 
         for (Department dept : mainDepts) {
             String theme = dept.getId() >= 100 ? "green" : "blue";
-            String stringId = "dept_" + dept.getId();
-            
+            String stringId = "";
+
             // 특정 ID에 대한 예외 처리 (하위 호환성 및 CSS 적용용)
             if (dept.getId() == 1) stringId = "admin";
             else if (dept.getId() == 100) stringId = "production";
@@ -95,8 +95,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                     if (m2.getPosition() == null) return -1;
                     return m1.getPosition().compareTo(m2.getPosition());
                 })
-                .collect(Collectors.toList());
-        
+                .toList();
+
         String headName = "미지정";
         String headTitle = "";
         if (!divMembers.isEmpty()) {
@@ -130,7 +130,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                                     .collect(Collectors.toList()))
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return OrgChartDTO.DivisionDTO.builder()
                 .id(stringId)

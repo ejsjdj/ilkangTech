@@ -18,7 +18,7 @@ public class LeaveEntity {
 
     // 부서별, 전직원
     @OneToOne
-    @JoinColumn(name = "common_id")
+    @JoinColumn(name = "member_id")
     private Member member;
 
     // 총 휴가

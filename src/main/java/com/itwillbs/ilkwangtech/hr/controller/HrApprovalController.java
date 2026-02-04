@@ -7,12 +7,17 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,11 +37,29 @@ public class HrApprovalController {
 
     // 결재문서 리스트
     @GetMapping("/list")
-    public String getApprovalList(@AuthenticationPrincipal AccountLogin accountLogin,Model model){
-        Long userId = accountLogin.getId();
-        List<DraftDTO> draftList = draftService.getDraftById(userId);
+    public String getApprovalList(@AuthenticationPrincipal AccountLogin accountLogin,
+                                  @PageableDefault(size = 10) Pageable pageable,
+                                  @RequestParam(value = "type", required = false) String type,
+                                  @RequestParam(value = "draftType", defaultValue = "PTO") String draftType,
+                                  @RequestParam(value = "startDate", required = false) LocalDate startDate,
+                                  @RequestParam(value = "endDate", required = false) LocalDate endDate,
+                                  Model model){
 
+
+        System.out.println("로그인 ID : " + accountLogin.getId() + ", 검색 필터 : " + type + ", 문서 종류 : " +  draftType + ", 시작날짜 : " + startDate + ", 종료날짜 : " + endDate);
+
+        Page<DraftDTO> draftList = draftService.getDraftById((AccountLogin) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal(), accountLogin.getId(), pageable, type, draftType, startDate, endDate);
+
+        System.out.println("조회한 데이터 : " + draftList);
+
+        // 3. 모델 담기 (검색 조건 유지용)
         model.addAttribute("draftList", draftList);
+        model.addAttribute("type", type);
+        model.addAttribute("draftType", draftType);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+
         return "/hr/draft";
     }
 

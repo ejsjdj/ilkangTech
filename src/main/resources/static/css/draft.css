@@ -98,6 +98,224 @@ th {
     font-size: 1.2rem;
 }
 
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+}
+
+.pagination li {
+    margin: 0 5px;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: #333;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.pagination li.active a {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.pagination li.disabled a {
+    color: #ccc;
+    pointer-events: none;
+    background-color: #f9f9f9;
+}
+
+.pagination a:hover:not(.disabled) {
+    background-color: #f0f0f0;
+}
+
+/* 전체 컨테이너 여백 */
+[layout:fragment="content"] {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 헤더 영역 (제목 + 등록버튼 가로 배치) */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 24px;
+    color: #333;
+    margin: 0;
+}
+
+/* 결재 등록 버튼 (오른쪽 배치 및 포인트 컬러) */
+.btn-register {
+    background-color: #4e73df;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(78, 115, 223, 0.2);
+}
+
+.btn-register:hover {
+    background-color: #2e59d9;
+    transform: translateY(-1px);
+}
+
+/* 탭 네비게이터 스타일 */
+.tab-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: -1px; /* 테이블 테두리와 겹치게 하여 연결된 느낌 */
+}
+
+.tab-container button {
+    padding: 12px 24px;
+    border: 1px solid #e3e6f0;
+    border-bottom: none;
+    background-color: #f8f9fc;
+    color: #858796;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.tab-container button.active {
+    background-color: white;
+    color: #4e73df;
+    border-color: #e3e6f0;
+    border-bottom: 2px solid white; /* 아래쪽을 비워서 테이블과 연결 */
+    position: relative;
+    z-index: 1;
+}
+
+.tab-container button:hover:not(.active) {
+    background-color: #eaecf4;
+}
+
+/* 테이블 기본 스타일 보정 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #e3e6f0;
+    border-radius: 0 10px 10px 10px;
+    overflow: hidden;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+}
+
+table thead {
+    background-color: #f8f9fc;
+}
+
+table th {
+    padding: 15px;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: #4e73df;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+table td {
+    padding: 15px;
+    border-bottom: 1px solid #e3e6f0;
+    color: #5a5c69;
+    text-align: center;
+}
+
+/* 드롭다운 공통 스타일 */
+.search-select {
+    padding: 8px 30px 8px 12px;
+    border: 1px solid #d1d3e2;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #4e73df; /* 텍스트 포인트 컬러 */
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    /* 기본 화살표 제거 및 커스텀 (브라우저별 대응) */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234e73df' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+
+.search-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.1);
+}
+
+/* 문서 타입 드롭다운 강조 */
+.custom-dropdown {
+    min-width: 120px;
+    border-left: 4px solid #4e73df; /* 왼쪽에 포인트 선 추가 */
+}
+
+
+/* 날짜 검색 그룹 */
+.date-range-group {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #d1d3e2;
+    border-radius: 6px;
+    padding: 2px 8px;
+    transition: border-color 0.2s;
+}
+
+.date-range-group:focus-within {
+    border-color: #4e73df;
+}
+
+.date-input {
+    border: none;
+    padding: 6px 10px;
+    color: #6e707e;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.date-separator {
+    color: #858796;
+    margin: 0 5px;
+    font-weight: bold;
+}
+
+/* 조회 버튼 스타일 살짝 보정 */
+.btn-search {
+    background-color: #4e73df;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    height: 38px; /* 입력창들과 높이 맞춤 */
+}
+
 /* 폼 그룹 간격 */
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }

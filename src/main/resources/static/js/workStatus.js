@@ -1,25 +1,19 @@
 $(document).ready(function() {
-    // 1. 드롭다운 선택 상자 가져오기
     const $deptSelect = $('#deptFilterContainer select');
 
-    // 2. 오늘 날짜 구하기
-    const today = new Date().toISOString().split('T')[0];
+    // 한국 시간 기준으로 yyyy-mm-dd 구하기
+    const offset = new Date().getTimezoneOffset() * 60000;
+    const today = new Date(Date.now() - offset).toISOString().split('T')[0];
 
-    // 3. 데이터를 가져오는 공통 함수
+    console.log("전송할 날짜:", today); // 콘솔에서 2026-02-05가 나오는지 꼭 확인하세요!
+
     function fetchData() {
         const deptCode = $deptSelect.val();
-        const date = today;
-
-        loadAttendanceData(deptCode, date);
-
+        loadAttendanceData(deptCode, today);
     }
 
-    // 4. 초기 실행
     fetchData();
-
-    // 5. 부서 변경
     $deptSelect.on('change', fetchData);
-
 });
 
 // 부서별 근무 현황 조회
@@ -29,6 +23,7 @@ function loadAttendanceData(deptCode, date) {
         type: 'GET',
         data: { deptCode: deptCode, workDate: date},
         success: function(response) {
+            console.log(response);
             renderWorkStatus(response);
         }
     });

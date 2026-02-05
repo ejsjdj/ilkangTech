@@ -35,7 +35,6 @@ public class ChatSocketController {
 		this.chatRoomMemberRepository = chatRoomMemberRepository;
     }
 
- // ChatSocketController.java 내부의 send 함수 전체
     @MessageMapping("/chat.send")
     public void send(ChatSendRequestDTO req, Principal principal) {
         if (principal == null) return;

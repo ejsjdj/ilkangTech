@@ -136,8 +136,8 @@ public class HrAttendanceController {
     public List<WorkStatusDTO> getWorkList(@RequestParam(name = "deptCode") Integer deptCode,
                                            @RequestParam(name = "workDate") LocalDate workDate){
 
-        System.out.println(deptCode);
-        System.out.println(workDate);
+        System.out.println("근무현황 부서 코드 : " + deptCode);
+        System.out.println("근무현황 일자 : " + workDate);
 
         return workStatusService.getWorkStatus(deptCode, workDate);
     }

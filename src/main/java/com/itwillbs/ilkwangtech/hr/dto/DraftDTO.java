@@ -31,16 +31,16 @@ public class DraftDTO {
         this.draft_status = draft_status;
     }
 
-    public DraftDTO(Long draft_id,
-                    String draft_title,
-                    LocalDate draft_startTime,
-                    LocalDate draft_endDate,
-                    String draft_status) {
-        this.draft_id = draft_id;
-        this.draft_title = draft_title;
-        this.draft_startTime = draft_startTime;
-        this.draft_endDate = draft_endDate;
-        this.draft_status = draft_status;
+    public DraftDTO(Long draftId,
+                    String draftTitle,
+                    LocalDate draftStartDate, // draft_startTime 대신 엔티티와 이름 맞춤
+                    LocalDate draftEndDate,
+                    String draftStatus) {
+        this.draft_id = draftId;
+        this.draft_title = draftTitle;
+        this.draft_startTime = draftStartDate; // 필드명은 유지하되 값은 제대로 매핑
+        this.draft_endDate = draftEndDate;
+        this.draft_status = draftStatus;
     }
 
 }

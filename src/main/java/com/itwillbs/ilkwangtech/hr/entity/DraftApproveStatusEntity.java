@@ -24,7 +24,7 @@ public class DraftApproveStatusEntity {
 
     // 누가 결재하는가?
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "common_id")
+    @JoinColumn(name = "member_id")
     private Member member;
 
     // 이 사람의 결재 순서는?

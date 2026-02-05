@@ -7,7 +7,7 @@ $(document).ready(function() {
  */
 function initPage() {
     // 오늘 날짜 세팅
-    const today = new Date().toISOString().split('T')[0];
+    const today = getKSTDate('date');
     const dateFilter = document.getElementById('dateFilter');
     if (dateFilter) dateFilter.value = today;
 
@@ -28,29 +28,36 @@ function initPage() {
     switchTab('MY'); // 초기 진입 시 내 출퇴근 로드
 }
 
+
+function getKSTDate(format = 'date') {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const kstDate = new Date(now.getTime() - offset);
+
+    if (format === 'month') {
+        return kstDate.toISOString().substring(0, 7); // "2026-02"
+    }
+    return kstDate.toISOString().split('T')[0]; // "2026-02-05"
+}
+
 /**
  * 2. 탭 전환 로직
  */
 function switchTab(tabType) {
     $('.tab-item').removeClass('active');
     const dateInput = document.getElementById('dateFilter');
-    const now = new Date();
-    
+
     if (tabType === 'MY') {
         $('#tabMy').addClass('active');
         $('#deptFilterContainer').hide();
-
         dateInput.type = 'month';
-        dateInput.value = now.toISOString().substring(0, 7); // "2026-02"
-
+        dateInput.value = getKSTDate('month'); // 수정
         loadCommuteList();
     } else {
         $('#tabAll').addClass('active');
         $('#deptFilterContainer').show();
-
         dateInput.type = 'date';
-        dateInput.value = now.toISOString().split('T')[0]; // "2026-02-01"
-
+        dateInput.value = getKSTDate('date'); // 수정
         loadCommuteAllList();
     }
 }
@@ -101,7 +108,7 @@ function renderListTable(response) {
             <table class="table emp-table">
                 <thead>
                     <tr>
-                        <th>날짜</th><th>출근</th><th>퇴근</th><th>외근</th><th>복귀</th><th>관리</th>
+                        <th>ID</th><th>출근</th><th>퇴근</th><th>외근</th><th>복귀</th><th>관리</th>
                     </tr>
                 </thead>
                 <tbody>

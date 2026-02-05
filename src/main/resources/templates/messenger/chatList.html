@@ -417,6 +417,12 @@ function toggleFavoriteRoom(roomId, btn) {
         if(res.ok) {
             location.reload(); // 즐겨찾기 순서 정렬을 위해 새로고침 권장
         }
+        
+        // 바로 적용을 위해 채팅방 새로고침
+        var chatWin = window.open('', 'chatWindow_' + roomId);
+        if (chatWin && !chatWin.closed && chatWin.location.href !== 'about:blank') {
+            chatWin.location.reload();
+        }
     });
 }
 

@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ContentDisposition;
@@ -277,18 +279,20 @@ public class MessengerController {
     
     @PostMapping("/api/favorite/member")
     @ResponseBody
-    public ResponseEntity<String> toggleMemberFavorite(@RequestBody Map<String, Object> params) {
+    public ResponseEntity<Map<String, Object>> toggleMemberFavorite(@RequestBody Map<String, Object> params) {
         Long myId = Long.valueOf(params.get("myMemberId").toString());
         Long targetId = Long.valueOf(params.get("targetMemberId").toString());
         String status = params.get("status").toString();
 
-        // 나와 상대방의 1:1 채팅방 ID 가져오기
-        Long roomId = messengerService.getOrCreateDirectRoom(myId, targetId);
-
-        // 해당 방에 대한 즐겨찾기 설정을 업데이트
-        messengerService.updateFavoriteStatus(roomId, myId, status);
+        messengerService.toggleMemberFavorite(myId, targetId, status);
         
-        return ResponseEntity.ok("success");
+        Optional<Long> roomIdOpt = messengerService.findDirectRoomId(myId, targetId);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("result", "success");
+        roomIdOpt.ifPresent(id -> response.put("roomId", id)); 
+        
+        return ResponseEntity.ok(response);
     }
     
  // 파일 업로드 API

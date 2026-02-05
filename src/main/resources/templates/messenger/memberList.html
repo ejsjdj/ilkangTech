@@ -200,12 +200,11 @@ function applySearch() {
 })();
 
 function toggleFavoriteMember(targetId, btn) {
-	
-	if (event) {
+    if (event) {
         event.stopPropagation();
         event.preventDefault();
     }
-	
+    
     const isAdding = btn.classList.contains('starOff');
     const status = isAdding ? 'Y' : 'N';
     const myId = document.getElementById("myMemberId").value;
@@ -215,27 +214,40 @@ function toggleFavoriteMember(targetId, btn) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetMemberId: targetId, myMemberId: myId, status: status })
     })
-    .then(res => {
-        if(res.ok) {
-            // 별 아이콘 상태 변경
-            btn.classList.toggle('starOn');
-            btn.classList.toggle('starOff');
-            
-            const row = btn.closest('.memberRow');
-            const listContainer = document.querySelector(".memberList");
+    .then(res => res.json())
+    .then(data => {
+        // 1. 별 아이콘 UI 즉시 변경
+        btn.classList.toggle('starOn');
+        btn.classList.toggle('starOff');
+        
+        const row = btn.closest('.memberRow');
+        const listContainer = document.querySelector(".memberList");
 
-            if (status === 'Y') {
-                // 즐겨찾기 등록: 리스트 맨 위로 이동
-                listContainer.prepend(row);
-            } else {
-                // 즐겨찾기 해제: 새로고침 대신 화면에서 위치만 적절히 조정하거나 
-                // 정렬이 중요하다면 reload를 하되, 이벤트를 완전히 종료 후 실행
-                setTimeout(() => {
-                    location.reload(); 
-                }, 100);
-            }
+        // 2. 리스트 순서 조정
+        if (status === 'Y') {
+            listContainer.prepend(row);
+        } else {
+        	location.reload();
         }
+
+        // 3. [핵심 수정] 새 탭 방지 로직 추가
+        if (data.roomId) {
+		    const winName = 'chatWindow_' + data.roomId;
+		    
+		    if (data && data.roomId) {
+		        if ('BroadcastChannel' in window) {
+		            var bc = new BroadcastChannel('messenger_sync');
+		            bc.postMessage({
+		                type: 'ROOM_FAVORITE_CHANGED',
+		                roomId: Number(data.roomId),
+		                status: status // 'Y' or 'N'
+		            });
+		            bc.close();
+		        }
+		    }
+		}
     })
+    .catch(err => console.error("즐겨찾기 요청 실패:", err));
 }
 </script>
 

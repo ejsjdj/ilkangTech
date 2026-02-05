@@ -45,15 +45,9 @@ public class HrApprovalController {
                                   @RequestParam(value = "endDate", required = false) LocalDate endDate,
                                   Model model){
 
-
-        System.out.println("로그인 ID : " + accountLogin.getId() + ", 검색 필터 : " + type + ", 문서 종류 : " +  draftType + ", 시작날짜 : " + startDate + ", 종료날짜 : " + endDate);
-
         Page<DraftDTO> draftList = draftService.getDraftById((AccountLogin) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal(), accountLogin.getId(), pageable, type, draftType, startDate, endDate);
 
-        System.out.println("조회한 데이터 : " + draftList);
-
-        // 3. 모델 담기 (검색 조건 유지용)
         model.addAttribute("draftList", draftList);
         model.addAttribute("type", type);
         model.addAttribute("draftType", draftType);
@@ -76,7 +70,6 @@ public class HrApprovalController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-
         return draftDetailService.getDraftDetail(userId, draftId, roleList);
     }
 
@@ -90,7 +83,6 @@ public class HrApprovalController {
     }
 
     // 결재 등록
-    // 결재 문서 테이블에 정보 저장
     @PostMapping("/register")
     @ResponseBody
     public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO,

@@ -24,8 +24,22 @@ public class DraftDetailDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate detailEndDate;
 
+    // 결재 상황
+    private List<ApprovalInfo> approvalLine;
+
+    @Getter
+    @Setter
     @Builder
-    public DraftDetailDTO(Long userId, Long detailWriterId, List<String> detailRoles, String detailTitle, String detailContent, List<AttachmentDTO> detailFile, LocalDate detailStartDate, LocalDate detailEndDate){
+    public static class ApprovalInfo {
+        private String name;
+        private String department;
+        private String position;
+        private String status;
+        private Long sequence;
+    }
+
+    @Builder
+    public DraftDetailDTO(Long userId, Long detailWriterId, List<String> detailRoles, String detailTitle, String detailContent, List<AttachmentDTO> detailFile, LocalDate detailStartDate, LocalDate detailEndDate, List<ApprovalInfo> approvalLine){
         this.userId = userId;
         this.detailWriterId = detailWriterId;
         this.detailRoles = detailRoles;
@@ -34,5 +48,6 @@ public class DraftDetailDTO {
         this.detailFile = detailFile;
         this.detailStartDate = detailStartDate;
         this.detailEndDate = detailEndDate;
+        this.approvalLine = approvalLine;
     }
 }

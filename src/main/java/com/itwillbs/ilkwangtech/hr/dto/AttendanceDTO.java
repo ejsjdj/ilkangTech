@@ -31,7 +31,6 @@ private Long id;
     private AttendanceStatus status; // 화면에서 'OUT_WORK' 또는 'LEAVE'를 여기로 바로 받음
     private String statusKor;
     
-    // [수정] category 삭제됨
     private String memo; // 사유는 여기에 작성
     
     private String message; 

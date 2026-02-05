@@ -12,28 +12,28 @@ th {
     background: #f9fafb;
     font-weight: 700;
 }
-/* 1. 모달 전체 배경 (어둡게 처리) */
+/* 모달 전체 배경 */
 .modal {
-    display: none;        /* 초기 상태: 숨김 (가장 중요!) */
-    position: fixed;      /* 화면에 고정 */
-    z-index: 1000;        /* 페이지의 다른 요소들보다 위로 */
+    display: none;
+    position: fixed;
+    z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%;          /* 화면 꽉 채우기 */
+    width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* 반투명한 검은색 배경 */
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* 2. 모달 하얀색 박스 (작성 양식) */
+/* 2. 모달 하얀색 박스 */
 .modalBody {
     background-color: #fff;
-    margin: 5% auto;      /* 위에서 5% 띄우고 가로 중앙 정렬 */
+    margin: 5% auto;
     padding: 20px;
-    width: 50%;           /* 너비 설정 */
+    width: 50%;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    max-height: 80vh;     /* 높이 제한 */
-    overflow-y: auto;     /* 내용이 길어지면 박스 내부 스크롤 */
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .file-list-box {
@@ -58,17 +58,21 @@ th {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
     border: 1px solid #ddd;
+    margin-top: 10px;
 }
 
 .approval-card {
     flex: 1;
-    background: white;
+    min-width: 120px;
+    background: #fff;
     border: 1px solid #e0e0e0;
-    border-radius: 6px;
+    border-radius: 8px;
+    padding: 10px;
     text-align: center;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
 }
@@ -146,7 +150,7 @@ th {
     margin: 0 auto;
 }
 
-/* 헤더 영역 (제목 + 등록버튼 가로 배치) */
+/* 헤더 영역 */
 .header-container {
     display: flex;
     justify-content: space-between;
@@ -177,12 +181,71 @@ h1 {
     background-color: #2e59d9;
     transform: translateY(-1px);
 }
+/* 검색 영역 컨테이너 */
+.search-container {
+    background-color: #f8f9fc;
+    padding: 15px 20px;
+    border: 1px solid #e3e6f0;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+/* 요소들을 일렬로 배치하는 핵심 로직 */
+.search-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: nowrap;
+}
+
+/* 드롭다운 높이 및 너비 최적화 */
+.search-select.custom-dropdown {
+    height: 38px;
+    min-width: 140px;
+    margin: 0;
+}
+
+/* 날짜 그룹을 감싸는 컨테이너 */
+.date-range-group {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #d1d3e2;
+    border-radius: 6px;
+    padding: 0 10px;
+    height: 38px;
+}
+
+/* 날짜 입력창 내부 보정 */
+.date-input {
+    border: none !important;
+    height: 100%;
+    padding: 0 5px;
+}
+
+/* 조회 버튼 */
+.btn-search-submit {
+    background-color: #4e73df;
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 6px;
+    height: 38px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+.btn-search-submit:hover {
+    background-color: #2e59d9;
+}
 
 /* 탭 네비게이터 스타일 */
 .tab-container {
     display: flex;
     gap: 10px;
-    margin-bottom: -1px; /* 테이블 테두리와 겹치게 하여 연결된 느낌 */
+    margin-bottom: -1px;
 }
 
 .tab-container button {
@@ -201,7 +264,7 @@ h1 {
     background-color: white;
     color: #4e73df;
     border-color: #e3e6f0;
-    border-bottom: 2px solid white; /* 아래쪽을 비워서 테이블과 연결 */
+    border-bottom: 2px solid white;
     position: relative;
     z-index: 1;
 }
@@ -269,7 +332,7 @@ table td {
 /* 문서 타입 드롭다운 강조 */
 .custom-dropdown {
     min-width: 120px;
-    border-left: 4px solid #4e73df; /* 왼쪽에 포인트 선 추가 */
+    border-left: 4px solid #4e73df;
 }
 
 
@@ -303,7 +366,7 @@ table td {
     font-weight: bold;
 }
 
-/* 조회 버튼 스타일 살짝 보정 */
+/* 조회 버튼 스타일 보정 */
 .btn-search {
     background-color: #4e73df;
     color: white;
@@ -313,8 +376,15 @@ table td {
     cursor: pointer;
     font-weight: 600;
     transition: background-color 0.2s;
-    height: 38px; /* 입력창들과 높이 맞춤 */
+    height: 38px;
 }
+
+
+
+.modalBody {
+    overflow-y: auto;
+}
+
 
 /* 폼 그룹 간격 */
 .form-group { margin-bottom: 15px; }

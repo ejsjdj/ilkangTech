@@ -232,6 +232,12 @@ body {
     text-overflow: ellipsis;
 }
 
+.emp-table th,
+.emp-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
 /* 컬럼별 너비 지정 (조화로운 배치) */
 .col-empno { width: 110px; font-weight: 700; color: #4f46e5; }
 .col-name { width: 100px; }
@@ -247,16 +253,6 @@ body {
 }
 
 /* 상태 배지 개선 */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    gap: 4px;
-}
 
 .status-active {
     background-color: #dcfce7;
@@ -368,6 +364,119 @@ body {
     cursor: not-allowed;
     border-color: #e2e8f0;
 }
+
+/* 공통 뱃지 스타일 */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+}
+
+/* 관리 열 버튼 공통 스타일 */
+.btn-action {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+}
+
+/* 퇴근 버튼: 경고와 종료를 의미하는 빨간색 */
+.btn-off {
+    background-color: #ff4d4f;
+    color: white;
+    border: 1px solid #ff4d4f;
+}
+
+.btn-off:hover {
+    background-color: #ff7875;
+    border-color: #ff7875;
+    box-shadow: 0 2px 4px rgba(255, 77, 79, 0.2);
+}
+
+/* 복귀 버튼: 신뢰와 재개를 의미하는 파란색 */
+.btn-return {
+    background-color: #1890ff;
+    color: white;
+    border: 1px solid #1890ff;
+}
+
+.btn-return:hover {
+    background-color: #40a9ff;
+    border-color: #40a9ff;
+    box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+/* 버튼 클릭 시 눌리는 효과 */
+.btn-action:active {
+    transform: translateY(1px);
+    filter: brightness(0.9);
+}
+
+/* 상세 버튼 등 기타 텍스트 링크 스타일 */
+.action-view {
+    color: #8c8c8c;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.action-view:hover {
+    color: #595959;
+}
+
+/* 출근: 초록색 */
+.status-on {
+    background-color: #28a745;
+}
+
+/* 외근: 노란색 */
+.status-out {
+    background-color: #ffc107;
+    color: #333;
+}
+
+/* 퇴근: 빨간색 */
+.status-off {
+    background-color: #dc3545;
+}
+
+/* 기본/기타 */
+.status-default {
+    background-color: #6c757d;
+}
+
+/* workStatus.css 에 추가 */
+
+/* 1. 뱃지 기본 디자인 */
+
+
+/* 2. 상태별 배경색 (!important를 사용하여 우선순위 확보) */
+.status-on {
+    background-color: #28a745 !important; /* 출근: 초록색 */
+}
+
+.status-out {
+    background-color: #ffc107 !important; /* 외근: 노란색 */
+    color: #212529 !important; /* 노란색 배경엔 검은 글씨 */
+}
+
+.status-off {
+    background-color: #dc3545 !important; /* 퇴근: 빨간색 */
+}
+
+.status-default {
+    background-color: #6c757d !important; /* 기본: 회색 */
+}
+
 
 /* 반응형 */
 @media (max-width: 768px) {

@@ -50,7 +50,7 @@ public class HrController {
     @GetMapping("/appointment/list")
     @ResponseBody
     public Page<AppointmentDTO> getAppointmentList(Pageable pageable,
-                                                   @RequestParam(name = "searchField") String searchField){
+                                                   @RequestParam(name = "searchField", required = false) String searchField){
 
         return appointmentService.hrAppointmentService(pageable, searchField);
     }

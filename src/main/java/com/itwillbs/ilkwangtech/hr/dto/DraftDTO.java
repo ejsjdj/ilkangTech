@@ -33,12 +33,12 @@ public class DraftDTO {
 
     public DraftDTO(Long draftId,
                     String draftTitle,
-                    LocalDate draftStartDate, // draft_startTime 대신 엔티티와 이름 맞춤
+                    LocalDate draftStartDate,
                     LocalDate draftEndDate,
                     String draftStatus) {
         this.draft_id = draftId;
         this.draft_title = draftTitle;
-        this.draft_startTime = draftStartDate; // 필드명은 유지하되 값은 제대로 매핑
+        this.draft_startTime = draftStartDate;
         this.draft_endDate = draftEndDate;
         this.draft_status = draftStatus;
     }

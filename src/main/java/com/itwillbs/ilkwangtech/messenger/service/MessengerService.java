@@ -26,11 +26,13 @@ import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMember;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberId;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberSetting;
 import com.itwillbs.ilkwangtech.messenger.entity.ChatRoomMemberSettingId;
+import com.itwillbs.ilkwangtech.messenger.entity.MemberFavorite;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatAttachmentRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatMessageRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomMemberRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.ChatRoomSettingRepository;
+import com.itwillbs.ilkwangtech.messenger.repository.MemberFavoriteRepository;
 import com.itwillbs.ilkwangtech.messenger.repository.MessengerRepository;
 
 @Service
@@ -44,6 +46,7 @@ public class MessengerService {
     private final MemberRepository memberRepository;
     private final DepartmentRepository departmentRepository;
     private final ChatAttachmentRepository chatAttachmentRepository;
+    private final MemberFavoriteRepository memberFavoriteRepository;
 
     public MessengerService(ChatRoomRepository chatRoomRepository,
                             ChatRoomMemberRepository chatRoomMemberRepository, 
@@ -51,7 +54,7 @@ public class MessengerService {
                             ChatMessageRepository chatMessageRepository, 
                             ChatRoomSettingRepository settingRepository,
                             MemberRepository memeberRepository,
-                            DepartmentRepository departmentRepository, ChatAttachmentRepository chatAttachmentRepository) {
+                            DepartmentRepository departmentRepository, ChatAttachmentRepository chatAttachmentRepository, MemberFavoriteRepository memberFavoriteRepository) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatRoomMemberRepository = chatRoomMemberRepository;
 		this.chatMessageRepository = chatMessageRepository;
@@ -60,6 +63,7 @@ public class MessengerService {
 		this.memberRepository = memeberRepository;
 		this.departmentRepository = departmentRepository;
 		this.chatAttachmentRepository = chatAttachmentRepository;
+		this.memberFavoriteRepository = memberFavoriteRepository;
     }
 
     // 1대1 채팅방 존재 여부 확인 후 없으면 상대 이름을 채팅방명으로 지정
@@ -90,7 +94,14 @@ public class MessengerService {
         safeJoin(room.getId(), myMemberId, partnerName); 
         safeJoin(room.getId(), targetMemberId, myName); 
 
-        return room.getId();
+        Long roomId = room.getId();
+
+        // 방이 처음 생성되거나 입장할 때 사원 즐겨찾기 여부 확인
+        if (memberFavoriteRepository.existsByMemberIdAndTargetId(myMemberId, targetMemberId)) {
+            syncChatRoomFavorite(roomId, myMemberId, "Y");
+        }
+
+        return roomId;
     }
 
     // 채팅방 중복 가입 방지
@@ -312,12 +323,40 @@ public class MessengerService {
             setting.setFavoritedAt(null); // 즐겨찾기 해제 시 날짜 삭제
         }
 
-        settingRepository.save(setting);
+        chatRoomRepository.findById(roomId).ifPresent(room -> {
+            if ("DIRECT".equals(room.getRoomType())) {
+                Long targetId = room.getDirectEmp1().equals(memberId) ? room.getDirectEmp2() : room.getDirectEmp1();
+                
+                if ("N".equals(status)) {
+                    // 어느 한 곳이라도 해제하면 사원 즐겨찾기도 삭제
+                    memberFavoriteRepository.deleteByMemberIdAndTargetId(memberId, targetId);
+                } else if ("Y".equals(status)) {
+                    // 채팅방에서 별을 켜면 사원 리스트 별도 켜기
+                    if (!memberFavoriteRepository.existsByMemberIdAndTargetId(memberId, targetId)) {
+                        memberFavoriteRepository.save(new MemberFavorite(memberId, targetId));
+                    }
+                }
+            }
+        });
+    }
+    
+    private void syncChatRoomFavorite(Long roomId, Long memberId, String status) {
+        ChatRoomMemberSettingId id = new ChatRoomMemberSettingId(roomId, memberId);
+        ChatRoomMemberSetting s = settingRepository.findById(id).orElse(new ChatRoomMemberSetting());
+        s.setId(id);
+        s.setIsFavorite(status);
+        s.setFavoritedAt("Y".equals(status) ? LocalDateTime.now() : null);
+        settingRepository.save(s);
     }
     
     // 사원목록 조회
     public List<MemberDeptRowDTO> getMemberListWithFavorite(Long myId) {
         List<Member> members = memberRepository.findAll();
+        
+        List<Long> favoriteTargetIds = memberFavoriteRepository.findByMemberId(myId)
+                .stream()
+                .map(MemberFavorite::getTargetId)
+                .collect(Collectors.toList());
         
         return members.stream().map(m -> {
             MemberDeptRowDTO dto = new MemberDeptRowDTO();
@@ -331,17 +370,7 @@ public class MessengerService {
                 : "소속 없음";
             dto.setDepartmentName(dName);
             
-            // 채팅방의 ID를 기반으로 즐겨찾기 여부를 확인
-            Long emp1 = (myId < m.getId()) ? myId : m.getId();
-            Long emp2 = (myId < m.getId()) ? m.getId() : myId;
-
-            chatRoomRepository.findByRoomTypeAndDirectEmp1AndDirectEmp2("DIRECT", emp1, emp2)
-                .ifPresent(room -> {
-                    // 방 ID와 내 ID를 조합한 복합키로 설정 조회
-                    settingRepository.findById(new ChatRoomMemberSettingId(room.getId(), myId))
-                        .ifPresent(s -> dto.setIsFavorite(s.getIsFavorite()));
-                });
-            
+            dto.setIsFavorite(favoriteTargetIds.contains(m.getId()) ? "Y" : "N");
             return dto;
         })
         .sorted(Comparator.comparing(MemberDeptRowDTO::getIsFavorite).reversed()
@@ -372,4 +401,39 @@ public class MessengerService {
         }
         return false;
     }
+    
+    // 사원 리스트 - 즐겨찾기 등록
+    @Transactional
+    public void toggleMemberFavorite(Long myId, Long targetId, String status) {
+        if ("Y".equals(status)) {
+            // 사원 즐겨찾기 테이블에 저장 (채팅방 생성 x)
+            MemberFavorite fav = new MemberFavorite(myId, targetId);
+            memberFavoriteRepository.save(fav);
+            
+            // 만약 이미 채팅방이 존재한다면, 채팅방 목록/방 내부 즐겨찾기도 'Y'로 동기화
+            findDirectRoomId(myId, targetId).ifPresent(roomId -> 
+                updateFavoriteStatus(roomId, myId, "Y")
+            );
+        } else {
+            // 사원 즐겨찾기 테이블에서 삭제
+            memberFavoriteRepository.deleteByMemberIdAndTargetId(myId, targetId);
+            
+            // 연결된 채팅방의 즐겨찾기도 함께 해제 ('N'으로 변경)
+            findDirectRoomId(myId, targetId).ifPresent(roomId -> 
+                updateFavoriteStatus(roomId, myId, "N")
+            );
+        }
+    }
+    
+    // 방을 새로 생성하지 않고 기존에 존재하는 1:1 채팅방 ID 조회
+    public Optional<Long> findDirectRoomId(Long myId, Long targetId) {
+        // 1:1 채팅방은 ID가 작은 사람이 emp1, 큰 사람이 emp2로 저장되어 있음
+        Long emp1 = Math.min(myId, targetId);
+        Long emp2 = Math.max(myId, targetId);
+        
+        return chatRoomRepository.findByRoomTypeAndDirectEmp1AndDirectEmp2("DIRECT", emp1, emp2)
+                                 .map(ChatRoom::getId);
+    }
+    
+    
 }

@@ -7,6 +7,8 @@
 
 <head>
     <title>전자결재</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <th:block layout:fragment="style">
         <link rel="stylesheet" th:href="@{/css/draft.css}">
     </th:block>
@@ -35,7 +37,7 @@
 
             <div class="search-row">
                 <select name="draftType" class="search-select custom-dropdown">
-                    <option value="ALL">선택하세요</option>
+                    <option value="ALL" th:selected="${draftType == null || draftType == 'ALL'}" hidden disabled>선택하세요</option>
                     <option value="PTO" th:selected="${draftType == 'PTO'}">휴가 신청서</option>
                     <option value="EXP" th:selected="${draftType == 'EXP'}">지출 결의서</option>
                     <option value="BUY" th:selected="${draftType == 'BUY'}">구매 품의서</option>
@@ -91,20 +93,20 @@
         </tbody>
     </table>
 
-    <div class="pagination-container">
+    <div class="pagination-container" th:if="${draftList.totalPages > 0}">
         <ul class="pagination">
             <li th:classappend="${draftList.first} ? 'disabled'">
-                <a th:href="@{/hr/draft(page=${draftList.number - 1}, type=${param.type}, draftType=${param.draftType}, startDate=${param.startDate}, endDate=${param.endDate})}">&laquo;</a>
+                <a th:href="@{/draft/list(page=${draftList.number - 1}, type=${type}, draftType=${draftType}, startDate=${startDate}, endDate=${endDate})}">&laquo;</a>
             </li>
 
             <li th:each="i : ${#numbers.sequence(0, draftList.totalPages - 1)}"
                 th:classappend="${i == draftList.number} ? 'active'">
-                <a th:href="@{/hr/draft(page=${i}, type=${param.type}, draftType=${param.draftType}, startDate=${param.startDate}, endDate=${param.endDate})}"
+                <a th:href="@{/draft/list(page=${i}, type=${type}, draftType=${draftType}, startDate=${startDate}, endDate=${endDate})}"
                    th:text="${i + 1}"></a>
             </li>
 
             <li th:classappend="${draftList.last} ? 'disabled'">
-                <a th:href="@{/hr/draft(page=${draftList.number + 1}, type=${param.type}, draftType=${param.draftType}, startDate=${param.startDate}, endDate=${param.endDate})}">&raquo;</a>
+                <a th:href="@{/draft/list(page=${draftList.number + 1}, type=${type}, draftType=${draftType}, startDate=${startDate}, endDate=${endDate})}">&raquo;</a>
             </li>
         </ul>
     </div>

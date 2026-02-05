@@ -35,10 +35,10 @@ public class DraftService {
     public Page<DraftDTO> getDraftById(AccountLogin loginUser, Long userId, Pageable pageable, String docType, String draftType, LocalDate startDate, LocalDate endDate) {
 
 
-        // 🔍 1. 로그인 사용자 정보 로그
+        // 1. 로그인 사용자 정보 로그
         log.info("login employeeNumber = {}", loginUser.getEmployeeNumber());
 
-        // 🔍 2. employeeNumber → Member 조회
+        // 2. employeeNumber → Member 조회
         Member member = memberRepository.findByEmployeeNumber(
                 loginUser.getEmployeeNumber()
         ).orElseThrow(() -> new IllegalStateException(
@@ -46,13 +46,14 @@ public class DraftService {
         ));
 
         Long memberId = member.getId();
+
         log.info("resolved member.id = {}", memberId);
 
-        if ("inbox".equals(docType)) { // 결재할 문서
+        if ("inbox".equals(docType)) { // 3. 결재할 문서
             return draftRepository.findReceivedDrafts(
                     memberId, draftType, startDate, endDate, pageable
             );
-        } else { // 내가 올린 문서
+        } else { // 4. 내가 올린 문서
             return draftRepository.findSentDrafts(
                     memberId, draftType, startDate, endDate, pageable
             );

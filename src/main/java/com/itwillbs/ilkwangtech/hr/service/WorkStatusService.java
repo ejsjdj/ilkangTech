@@ -42,6 +42,7 @@ public class WorkStatusService {
                     var member = attendance.getMember();
 
                     return WorkStatusDTO.builder()
+                            .memberId(member.getId())
                             .name(member.getName())
                             .department(deptMap.getOrDefault(member.getDepartment(), "소속없음"))
                             .position(positionMap.getOrDefault(member.getPosition(), "직급없음"))

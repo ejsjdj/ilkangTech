@@ -20,11 +20,11 @@
       .status-normal { background: #e0f2fe; color: #0369a1; }
       .status-late { background: #fee2e2; color: #dc2626; }
 
-      /* 모달이 항상 화면 정중앙에 오도록 보정 */
+      /* 모달이 중앙 배치 */
       .modal {
     display: none;
     position: fixed;
-    z-index: 9999; /* 다른 요소보다 위에 오도록 */
+    z-index: 9999;
     left: 0; top: 0;
     width: 100%; height: 100%;
     background-color: rgba(0,0,0,0.5);
@@ -32,19 +32,31 @@
 
 .modalBody {
     background-color: white;
-    margin: 15% auto; /* 화면 중앙 배치 */
-    padding: 20px;
-    border-radius: 8px;
-    width: 400px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 12px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-sizing: border-box;
 }
 
+.emp-table {
+    table-layout: fixed;
+    width: 100%;
+}
 
+.emp-table th,
+.emp-table td {
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
 
-                    /* 모달 내 공통 버튼 스타일 */
+/* 모달 버튼 스타일 */
 .modal-footer button {
     padding: 8px 20px;
-    border-radius: 20px; /* 제공해주신 원형 버튼 스타일과 맞춤 */
+    border-radius: 20px;
     border: none;
     font-weight: 500;
     cursor: pointer;
@@ -52,7 +64,30 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* 저장 버튼 (btn-add-event 스타일 계승) */
+/* placeholder 색상을 연하게 */
+.form-control::placeholder {
+    color: #ccc;
+    font-weight: 300;
+    opacity: 1;
+}
+
+
+.form-control {
+    width: 100% !important;
+    box-sizing: border-box;
+    display: block;
+    outline: none;
+}
+.form-control:-ms-input-placeholder { color: #ccc; }
+.form-control::-ms-input-placeholder { color: #ccc; }
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* 저장 버튼*/
 .btn-save {
     background: #5c6bc0;
     color: white;
@@ -74,7 +109,7 @@
     transform: scale(1.05);
 }
 
-/* 닫기(X) 아이콘 애니메이션 */
+/* 닫기 아이콘 애니메이션 */
 .close-btn {
     transition: transform 0.2s, color 0.2s;
 }
@@ -102,7 +137,7 @@
 
       <div class="tab-container">
           <div id="tabMy" class="tab-item active" onclick="switchTab('MY')">내 출퇴근 관리</div>
-          <li sec:authorize="hasAnyAuthority('CEO','HR')"><div id="tabAll" class="tab-item" onclick="switchTab('ALL')">전사원 출퇴근 관리</div></li>
+          <li sec:authorize="hasAnyAuthority('CEO','HR')"><div id="tabAll" class="tab-item" onclick="switchTab('ALL')">부서별 출퇴근 관리</div></li>
       </div>
 
     <div class="scroll-area">

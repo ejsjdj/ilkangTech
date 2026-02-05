@@ -4,7 +4,6 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.entity.Bank;
 import com.itwillbs.ilkwangtech.account.entity.Department;
 import com.itwillbs.ilkwangtech.account.entity.Position;
-import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import com.itwillbs.ilkwangtech.account.repository.*;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 	private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
 	private final BankRepository bankRepository;
-	private final ProfileImgRepository profileImgRepository;
 	
 	@Override
 	public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
@@ -70,23 +68,22 @@ public class CustomUserDetailsService implements UserDetailsService {
             }
         }
 
-		// 은행 이름 변환
-		if (member.getBank() != null && member.getBank() > 0) {
-			Bank bank = bankRepository.findById(member.getBank()).orElse(null);
+        // 은행 이름 변환
+        if (member.getBank() != null && member.getBank() > 0) {
+            Bank bank = bankRepository.findById(member.getBank()).orElse(null);
 
-			if (bank != null) {
-				// 로그인 후 AccountLogin 에서 문자로 변환
-				accountLogin.setBank(bank.getBankName());
-			}
-		}
+            if (bank != null) {
+                // 로그인 후 AccountLogin 에서 문자로 변환
+                accountLogin.setBank(bank.getBankName());
+            }
+        }
 
-		// 프로필 이미지 경로 설정
-		profileImgRepository.findByMemberIdAndRepImgYn(member.getId(), "Y")
-				.ifPresent(img -> {
-					String url = "/upload/" + img.getImgLocation() + "/" + img.getImgName();
-					accountLogin.setProfileImgUrl(url);
-				});
+        // 프로필 이미지 URL 설정
+        if (member.getProfileImg() != null) {
+            String url = member.getProfileImg().getImgLocation() + "/" + member.getProfileImg().getImgName();
+            accountLogin.setProfileImgUrl(url);
+        }
 
-		return accountLogin;
-	}
+        return accountLogin;
+    }
 }

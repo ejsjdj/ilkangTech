@@ -413,8 +413,7 @@
             <!-- 오른쪽: 상세 정보 수정 폼 -->
             <div class="form-column">
                 <form th:action="@{/account/update}" method="post" th:object="${user}" id="updateForm" style="height: 100%;">
-                    <!-- CSRF protection -->
-                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" th:field="*{id}" class="form-control" readonly>
                     <div class="form-card">
                         <div class="section-header">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -483,11 +482,38 @@
 
     <th:block layout:fragment="myScript">
         <script>
-            console.log("프로필 이미지 URL:", profileImgUrl);
-            console.log("프로필 이미지 URL:", user.profileImgUrl);
             $(document).ready(function() {
-                $("#profilePhoto").change(function() {
-                    if (this.files && this.files[0]) {
+                // 프로필 사진 입력(input) 요소의 변경 이벤트 처리
+                // label과 id가 중복되어 있으므로 input 태그를 명확히 지정
+                $("input[type=file]#profilePhoto").change(function(event) {
+                    const files = event.target.files;
+                    if (!files || !files[0]) return;
+
+                    const file = files[0];
+                    
+                    // 이미지 파일인지 확인
+                    if (!file.type.startsWith("image/")) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '파일 형식 오류',
+                            text: '이미지 파일만 선택 가능합니다.',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                        $(this).val('');
+                        return;
+                    }
+
+                    // 미리보기 로직
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        // 기존 프로필 이미지 영역을 미리보기로 교체
+                        const previewSrc = e.target.result;
+                        const $profilePhotoArea = $(".profile-photo");
+                        
+                        // 기존 내용(이미지 혹은 텍스트)을 지우고 새 이미지 삽입
+                        $profilePhotoArea.html(`<img src="${previewSrc}" alt="미리보기">`);
+
+                        // 미리보기 후 변경 확인창 띄우기 (기존 로직 유지)
                         Swal.fire({
                             title: '프로필 이미지 변경',
                             text: "선택한 이미지로 변경하시겠습니까?",
@@ -501,10 +527,12 @@
                             if (result.isConfirmed) {
                                 $("#profileImgForm").submit();
                             } else {
-                                $(this).val('');
+                                // 취소 시 원래 이미지로 복구하거나 새로고침
+                                location.reload(); 
                             }
                         });
-                    }
+                    };
+                    reader.readAsDataURL(file);
                 });
             });
         </script>

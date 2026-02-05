@@ -197,7 +197,9 @@ public class AccountServiceImpl implements AccountService {
 		profileImg.setImgLocation(profileImageLocation + "/" + subDir);
 		profileImg.setRepImgYn("Y");
 
+		member.setProfileImg(profileImg);
 		profileImgRepository.save(profileImg);
+		accountRepository.save(member);
 
 		// 세션 정보 갱신을 위해 URL 설정
 		String url = profileImageLocation + "/" + subDir + "/" + fileName;

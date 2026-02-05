@@ -109,6 +109,7 @@ public class AccountController {
      */
     @GetMapping("/myInfo")
     public String update(@AuthenticationPrincipal AccountLogin user, Model model) {
+        // user 에 profileImgUrl 에 알맞은 값이 들어 있다.
         model.addAttribute("user", user);
         return "/account/myInfo";
     }
@@ -117,7 +118,6 @@ public class AccountController {
     public String updateProfileImgFile(@AuthenticationPrincipal AccountLogin user,
                                        @RequestParam("profileImgFile") MultipartFile profileImgFile,
                                        RedirectAttributes rttr) throws IOException {
-
         int row = accountService.updateProfileImage(profileImgFile, user);
 
         rttr.addFlashAttribute(row > 0 ? "successMessage" : "errorMessage", 

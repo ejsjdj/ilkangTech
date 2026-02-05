@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NoticeDetailDTO {
+	// 
     private Long id;
     private String title;
     private String content;

@@ -10,11 +10,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "draft_apprval_status")
+@SequenceGenerator(
+        name = "draft_status_seq_gen",
+        sequenceName = "draft_status_seq",
+        initialValue = 1,
+        allocationSize = 1
+)
 public class DraftApproveStatusEntity {
 
     // 결재 상태 ID
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "draft_status_seq_gen")
     private long statusId;
 
     // 어떤 문서를 결재하는가?

@@ -13,7 +13,12 @@ import lombok.Setter;
 public class LeaveEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "leave_status_seq_gen")
+    @SequenceGenerator(
+        name = "leave_status_seq_gen", 
+        sequenceName = "leave_status_seq", // DB에 있는 실제 시퀀스 이름 (로그에 뜬 이름)
+        allocationSize = 1 // ★ 핵심: DB의 증가값인 1과 일치시켜야 함 (기본값 50 -> 1)
+    )
     private long leaveId;
 
     // 부서별, 전직원

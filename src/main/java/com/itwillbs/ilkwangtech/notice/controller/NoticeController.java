@@ -46,6 +46,25 @@ public class NoticeController {
 	
 	private final MemberRepository memberRepository;
 	
+	// [헬퍼 메서드] 권한 체크 로직 (Role ID 기반)
+    private boolean checkAdminPermission(Long memberId) {
+        if (memberId == null) return false;
+
+        // 1. 최신 회원 정보 조회 (DB)
+        Member freshMember = memberRepository.findById(memberId).orElse(null);
+
+        // 2. 권한 확인 (Role ID가 0, 2, 6 중 하나인지)
+        if (freshMember != null && freshMember.getRoles() != null) {
+            return freshMember.getRoles().stream()
+                    .anyMatch(memberRole -> {
+                        Long roleId = memberRole.getRole().getId();
+                        // 0: 시스템관리자, 2: 관리자, 6: 인사관리자 (예시)
+                        return roleId == 6L || roleId == 0L || roleId == 2L;
+                    });
+        }
+        return false;
+    }
+	
 	@GetMapping("/list")
 	public String list(@RequestParam(value = "page", defaultValue = "0") int page, Model model, 
 	                   @AuthenticationPrincipal AccountLogin loginMember,
@@ -80,20 +99,22 @@ public class NoticeController {
 	}
 	
 	// 공지사항 작성 페이지 이동
-    @GetMapping("/write")
+	@GetMapping("/write")
     public String writeForm(@AuthenticationPrincipal AccountLogin loginMember, Model model) {
-        // 권한 체크 (URL 직접 접근 방지)
+        // 비로그인 체크
         if (loginMember == null) {
-        	return "redirect:/login";
+            return "redirect:/login";
         }
         
-        String dept = loginMember.getDepartment();
-        if (!("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept))) {
-            return "redirect:/notice/list"; // 권한 없으면 리스트로 튕겨내기
+        // [변경] Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("작성 권한 없음: 사용자 ID {}", loginMember.getId());
+            return "redirect:/notice/list"; // 권한 없으면 리스트로
         }
         
         model.addAttribute("writerName", loginMember.getName());
-        model.addAttribute("writerDept", dept);
+        // 필요하다면 DB에서 가져온 freshMember의 부서 정보를 넣을 수도 있음
+        model.addAttribute("writerDept", loginMember.getDepartment()); 
         return "notice/write";
     }
 
@@ -118,24 +139,28 @@ public class NoticeController {
         NoticeDetailDTO notice = noticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
         
-        // 권한 체크 (수정/삭제 버튼 노출용)
+        // [변경] Role ID 기반 권한 체크 (수정/삭제 버튼 노출 여부 결정)
         boolean canEdit = false;
         if (loginMember != null) {
-            String dept = loginMember.getDepartment();
-            if ("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept)) {
-                canEdit = true;
-            }
+            canEdit = checkAdminPermission(loginMember.getId());
         }
+        
         model.addAttribute("canEdit", canEdit);
         
         return "notice/detail";
     }
     
-    // 수정 페이지 이동
+    // 4. 수정 페이지 이동
     @GetMapping("/modify/{id}")
     public String modifyForm(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal AccountLogin loginMember) {
-        // 권한 체크
-        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+        // 비로그인 체크
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        // [변경] Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("수정 페이지 접근 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
         }
 
@@ -146,12 +171,20 @@ public class NoticeController {
         return "notice/modify";
     }
 
-    // 수정 처리
+    // 5. 수정 처리
     @PostMapping("/modify")
     public String modify(NoticeWriteDTO dto, @AuthenticationPrincipal AccountLogin loginMember) throws IOException {
-        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+        // 비로그인 체크
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        // [변경] Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("수정 처리 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
         }
+
         noticeService.updateNotice(dto, loginMember);
         return "redirect:/notice/detail/" + dto.getId();
     }
@@ -159,9 +192,17 @@ public class NoticeController {
     // 삭제 처리
     @PostMapping("/delete")
     public String delete(@RequestParam("id") Long id, @AuthenticationPrincipal AccountLogin loginMember) {
-        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+        // 비로그인 체크
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        // [변경] Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("삭제 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
         }
+        
         noticeService.deleteNotice(id);
         return "redirect:/notice/list";
     }

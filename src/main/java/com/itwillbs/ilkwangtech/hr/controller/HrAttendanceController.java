@@ -146,6 +146,7 @@ public class HrAttendanceController {
     @PostMapping("/work/updateGoOut")
     @ResponseBody
     public AttendanceDTO updateGoOut(@RequestParam("userId") long userId){
+        System.out.println("퇴근처리 사원 ID : " + userId);
         return updateWorkStatusService.updateGoOutService(userId);
     }
 

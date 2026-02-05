@@ -1,7 +1,12 @@
 package com.itwillbs.ilkwangtech.account.service;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * 계정 관리 비즈니스 로직을 정의한 서비스 인터페이스
@@ -36,5 +41,7 @@ public interface AccountService {
      * @return 본인 여부
      */
     boolean isSelf(Long id, String employeeNumber);
+
+    int updateProfileImage(MultipartFile upload, @AuthenticationPrincipal AccountLogin login) throws IOException;
 
 }

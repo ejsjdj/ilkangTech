@@ -2,11 +2,13 @@ package com.itwillbs.ilkwangtech.account.controller;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountDetail;
 import com.itwillbs.ilkwangtech.account.dto.AccountDetailResponse;
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.service.ListService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,8 +50,11 @@ public class ListController {
      */
     @GetMapping("/account/detail/{id}")
     public String accountDetail(@PathVariable("id") Long id, Model model) {
+
         AccountDetailResponse detail = listService.getAccountDetail(id);
+
         model.addAttribute("employee", detail);
+
         return "/account/detail";
     }
 

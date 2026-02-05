@@ -2,14 +2,19 @@ package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountDetail;
 import com.itwillbs.ilkwangtech.account.dto.AccountDetailResponse;
+import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import com.itwillbs.ilkwangtech.account.repository.*;
 import com.itwillbs.ilkwangtech.common.exception.MemberNotFoundException;
 import com.itwillbs.ilkwangtech.member.entity.Member;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +30,11 @@ public class ListServiceImpl implements ListService {
     private final AccountRepository accountRepository;
     private final BankRepository bankRepository;
 
+    @Value("${file.uploadBaseLocation}")
+    private String uploadBaseLocation;
+
+    @Value("${file.profileImgLocation}")
+    private String profileImageLocation;
 
     public ListServiceImpl(ListRepository listRepository, BankRepository bankRepository, DepartmentRepository departmentRepository, PositionRepository positionRepository, AccountRepository accountRepository) {
         this.listRepository = listRepository;
@@ -77,7 +87,36 @@ public class ListServiceImpl implements ListService {
         String bankName = member.getBank() != null ?
                 bankRepository.findById(member.getBank()).map(b -> b.getBankName()).orElse(null) : null;
 
-        // 3. Response DTO 구성 및 반환
+        if (member.getProfileImg() != null && member.getProfileImg().getImgLocation() != null) {
+
+            ProfileImg profileImg = member.getProfileImg();
+
+            String fileName = profileImg.getImgName();
+            String imgLocation = profileImg.getImgLocation();
+
+            // 세션 정보 갱신을 위해 URL 설정
+            String url = imgLocation + "/" + fileName;
+
+            return AccountDetailResponse.builder()
+                    .id(member.getId())
+                    .employeeNumber(member.getEmployeeNumber())
+                    .name(member.getName())
+                    .gender(member.getGender())
+                    .hireDate(member.getHireDate())
+                    .residentNumber(member.getResidentNumber())
+                    .email(member.getEmail())
+                    .phoneNumber(member.getPhoneNumber())
+                    .department(deptName)
+                    .position(posName)
+                    .bank(bankName)
+                    .accountNumber(member.getAccountNumber())
+                    .profileImgUrl(url)
+                    .roles(member.getRoles().stream()
+                            .map(role -> role.getRole().getCommonCodeName())
+                            .collect(Collectors.toList()))
+                    .status("재직") // 상태 관리 로직 미구현으로 임시 "재직" 처리
+                    .build();
+        }
         return AccountDetailResponse.builder()
                 .id(member.getId())
                 .employeeNumber(member.getEmployeeNumber())
@@ -91,7 +130,6 @@ public class ListServiceImpl implements ListService {
                 .position(posName)
                 .bank(bankName)
                 .accountNumber(member.getAccountNumber())
-                .profilePhotoLink(member.getProfilePhotoLink())
                 .roles(member.getRoles().stream()
                         .map(role -> role.getRole().getCommonCodeName())
                         .collect(Collectors.toList()))

@@ -12,18 +12,7 @@
   <div id="draftDetailModal" class="modal">
     <div class="modalBody">
 
-      <h3>결재 문서 상세보기</h3>
-
-      <!-- 결재 문서 양식 -->
-      <div class="form-group">
-        <label>결재양식</label>
-        <select id="detailDraftType">
-          <option value="PTO">휴가</option>
-          <option value="HDF">반차</option>
-          <option value="BUY">구매</option>
-          <option value="APP">발령</option>
-        </select>
-      </div>
+      <h3>상세보기</h3>
 
       <!-- 제목 -->
       <div class="form-group">
@@ -51,6 +40,38 @@
           <input type="date" id="detailStartDate_view" readonly>
           <span>~</span>
           <input type="date" id="detailEndDate_view" readonly>
+        </div>
+      </div>
+
+      <!-- 결재자 라인 -->
+      <div class="form-group">
+        <label>결재 라인</label>
+
+        <div class="approval-line-container">
+
+          <div class="approval-card">
+            <div class="card-header">1차 결재자</div>
+            <div class="card-body" id="detail_display_approver1">대기 중</div>
+          </div>
+
+          <div class="approval-arrow">
+            <i class="bi bi-arrow-right"></i>
+          </div>
+
+          <div class="approval-card">
+            <div class="card-header">2차 결재자</div>
+            <div class="card-body" id="detail_display_approver2">대기 중</div>
+          </div>
+
+          <div class="approval-arrow">
+            <i class="bi bi-arrow-right"></i>
+          </div>
+
+          <div class="approval-card">
+            <div class="card-header">3차 결재자</div>
+            <div class="card-body" id="detail_display_approver3">대기 중</div>
+          </div>
+
         </div>
       </div>
 

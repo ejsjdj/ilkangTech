@@ -34,7 +34,6 @@ function closeModal() {
 /* 상세보기 모달 열기 */
 function draftDetail(draftId) {
     currentDraftId = draftId;
-
     const modal = document.getElementById("draftDetailModal");
     modal.style.display = 'block';
 
@@ -47,6 +46,7 @@ function draftDetail(draftId) {
             const loginId = String(data.userId);
             const writerId = String(data.detailWriterId);
             const roles = data.detailRoles || [];
+            console.log("상세보기 모달 오픈 : ", data)
             console.log("로그인 유저 ID:", loginId);
             console.log("작성자 ID:", writerId);
             console.log("유저 권한:", roles);
@@ -88,6 +88,8 @@ function draftDetail(draftId) {
                     buttonGroup.style.display = 'none';
                 }
             }
+            renderApprovalLine(data.approvalLine);
+
         })
         .catch(err => console.error("데이터 로드 중 에러:", err));
 }
@@ -114,6 +116,37 @@ async function renderFileList(fileList){
     }
 
     console.log(fileContainer.innerHTML);
+}
+
+function renderApprovalLine(approvalLine) {
+
+    for (let i = 1; i <= 3; i++) {
+        const displayDiv = document.getElementById(`detail_display_approver${i}`);
+        if (displayDiv) {
+            displayDiv.innerHTML = '<span style="color:#ccc">대기 중</span>';
+        }
+    }
+
+    if (!approvalLine || approvalLine.length === 0) return;
+
+    approvalLine.forEach(item => {
+        const seq = item.sequence;
+        const displayDiv = document.getElementById(`detail_display_approver${seq}`);
+
+        if (displayDiv) {
+            let statusColor = "#888";
+            if (item.status === "승인") statusColor = "#28a745";
+            if (item.status === "반려") statusColor = "#dc3545";
+            if (item.status === "진행") statusColor = "#007bff";
+
+            displayDiv.innerHTML = `
+                <div style="font-weight:bold">${item.name} ${item.position}</div>
+                <div style="font-size:0.85em;color:${statusColor}">
+                    [${item.status}]
+                </div>
+            `;
+        }
+    });
 }
 
 /* 모달 닫기 */

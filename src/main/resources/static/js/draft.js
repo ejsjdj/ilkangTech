@@ -99,7 +99,7 @@ async function renderFileList(fileList){
     const fileContainer = document.getElementById('fileListContainer'); // div나 ul 태그
     fileContainer.innerHTML = '';
 
-    if (fileList && fileList.length > 0) {
+
         fileList.forEach(file => {
             const link = document.createElement('a');
             link.href = `/file/download/${file.fileId}`;
@@ -111,9 +111,7 @@ async function renderFileList(fileList){
 
             fileContainer.appendChild(link);
         });
-    } else {
-        fileContainer.innerText = "첨부된 파일이 없습니다.";
-    }
+
 
     console.log(fileContainer.innerHTML);
 }
@@ -204,26 +202,23 @@ async function decideApprove(decision){
 /* 결재 등록하기 */
 async function postDraft(){
 try {
-        let uploadedFile = null;
-
         const fileInput = document.getElementById("draftFile");
 
-        // 파일 업로드 (있을 때만)
+
+        let draftFileArray = [];
+
+        // 파일이 선택되었을 때만 업로드
         if (fileInput.files.length > 0) {
-            uploadedFile = await uploadFile();
-        } else {
-            alert("첨부파일을 등록하세요.")
+            const result = await uploadFile(); // 업로드 결과 (객체)
+            draftFileArray.push({ fileId: result.fileId });
         }
 
-        // 결재 데이터 구성 (JSON)
+        // 결재 등록 데이터
         const draftData = {
             draftTitle: document.getElementById('draftTitle').value,
             draftContent: document.getElementById('draftContent').value,
             draftType: document.getElementById('draftType').value,
-
-            // file 객체 → fileId만
-            draftFile: [{ fileId: uploadedFile.fileId }],
-
+            draftFile: draftFileArray,
             draftStartDate: document.getElementById('startDate').value,
             draftEndDate: document.getElementById('endDate').value,
             draftTotalDate: calculateDays(),
@@ -252,6 +247,7 @@ try {
         alert('결재 등록이 완료되었습니다.');
 
     } catch (error) {
+        console.error(error);
         alert('등록 중 오류가 발생했습니다.');
     }
 }

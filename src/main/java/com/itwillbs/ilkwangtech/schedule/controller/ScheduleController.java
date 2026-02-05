@@ -165,7 +165,7 @@ public class ScheduleController {
         }
     }
     
- // [추가] 캘린더용 일정 데이터 조회 (JSON 반환)
+    // [추가] 캘린더용 일정 데이터 조회 (JSON 반환)
     @GetMapping("/api/events")
     @ResponseBody
     public ResponseEntity<List<ScheduleDTO>> getCalendarEvents(

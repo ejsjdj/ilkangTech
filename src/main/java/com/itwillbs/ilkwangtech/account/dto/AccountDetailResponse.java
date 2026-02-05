@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.account.dto;
 
+import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class AccountDetailResponse {
     private String position;        // 직급명
     private String bank;            // 은행명
     private String accountNumber;   // 계좌번호
-    private String profilePhotoLink; // 프로필 사진 경로
+    private String profileImgUrl; // 프로필 사진 경로
     private List<String> roles;     // 보유 권한 목록 (권한명 리스트)
     private String status;          // 재직 상태
 }

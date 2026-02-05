@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
+import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,7 +49,9 @@ public class Member {
     @Column(length = 20)
     private String residentNumber; // 주민등록번호
 
-    private String profilePhotoLink; // 프로필 사진 경로
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "profile_img_id")
+    private ProfileImg profileImg;
 
     @Column(length = 100, nullable = false, unique = true)
     private String email; // 이메일

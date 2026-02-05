@@ -99,26 +99,33 @@
         .profile-photo-wrapper {
             margin-bottom: 20px;
             display: inline-block;
+            position: relative;
         }
 
         .profile-photo {
-            width: 120px;
-            height: 120px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             background: linear-gradient(135deg, #4f46e5, #818cf8);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
-            font-size: 48px;
+            font-size: 40px;
             font-weight: 800;
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
             border: 4px solid #ffffff;
+            overflow: hidden;
+        }
+
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
         .profile-name {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
             color: #1e293b;
             margin-bottom: 4px;
@@ -270,8 +277,10 @@
             <!-- 왼쪽: 프로필 요약 -->
             <div class="form-card profile-summary">
                 <div class="profile-photo-wrapper">
-                    <img th:if="${employee.profilePhotoLink}" th:src="${employee.profilePhotoLink}" class="profile-photo" alt="Profile">
-                    <div th:unless="${employee.profilePhotoLink}" class="profile-photo" th:text="${#strings.substring(employee.name, 0, 1)}">홍</div>
+                    <div class="profile-photo">
+                        <img th:if="${employee.profileImgUrl}" th:src="${employee.profileImgUrl}" alt="urlError">
+                        <span th:unless="${employee.profileImgUrl}" th:text="${#strings.substring(employee.name, 0, 1)}">홍</span>
+                    </div>
                 </div>
                 <h2 class="profile-name" th:text="${employee.name}">홍길동</h2>
                 <div class="profile-info-badges">

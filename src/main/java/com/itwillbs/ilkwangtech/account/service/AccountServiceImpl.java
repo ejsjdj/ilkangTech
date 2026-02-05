@@ -1,15 +1,29 @@
 package com.itwillbs.ilkwangtech.account.service;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
+import com.itwillbs.ilkwangtech.account.repository.ProfileImgRepository;
 import com.itwillbs.ilkwangtech.common.exception.MemberNotFoundException;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 /**
  * AccountService 인터페이스의 구현체
@@ -21,9 +35,16 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
 
 	private final AccountRepository accountRepository;
+	private final ProfileImgRepository profileImgRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
 	private final RoleService roleService;
+
+	@Value("${file.uploadBaseLocation}")
+	private String uploadBaseLocation;
+
+	@Value("${file.profileImgLocation}")
+	private String profileImageLocation;
 
 	/**
 	 * 회원가입(사원 등록) 로직을 수행합니다.
@@ -139,5 +160,53 @@ public class AccountServiceImpl implements AccountService {
 		}
 		return null;
 	}
+
+	public int updateProfileImage(MultipartFile upload, @AuthenticationPrincipal AccountLogin login) throws IOException {
+
+		if (login == null || upload == null || upload.isEmpty()) return 0;
+
+		// 기존 대표 이미지 해제
+		profileImgRepository.findByMemberIdAndRepImgYn(login.getId(), "Y")
+				.ifPresent(existingImg -> {
+					existingImg.setRepImgYn("N");
+					profileImgRepository.save(existingImg);
+				});
+
+		ProfileImg profileImg = new ProfileImg();
+
+		LocalDate today = LocalDate.now();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+		String subDir = today.format(dtf);
+
+		Path uploadDir = Paths.get(uploadBaseLocation, subDir).toAbsolutePath().normalize();
+
+		if(!Files.exists(uploadDir)) {
+			Files.createDirectories(uploadDir);
+		}
+
+		String originalFileName = upload.getOriginalFilename();
+		String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
+		Path uploadPath = uploadDir.resolve(fileName);
+		upload.transferTo(uploadPath);
+
+		Member member = accountRepository.findById(login.getId()).orElseThrow();
+
+		profileImg.setMember(member);
+		profileImg.setImgName(fileName);
+		profileImg.setOriginalImgName(originalFileName);
+		profileImg.setImgLocation(profileImageLocation + "/" + subDir);
+		profileImg.setRepImgYn("Y");
+
+		member.setProfileImg(profileImg);
+		profileImgRepository.save(profileImg);
+		accountRepository.save(member);
+
+		// 세션 정보 갱신을 위해 URL 설정
+		String url = profileImageLocation + "/" + subDir + "/" + fileName;
+		login.setProfileImgUrl(url);
+
+		return 1;
+	}
+
 
 }

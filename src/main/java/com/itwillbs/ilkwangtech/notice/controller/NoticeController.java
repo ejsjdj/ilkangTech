@@ -46,14 +46,14 @@ public class NoticeController {
 	
 	private final MemberRepository memberRepository;
 	
-	// [헬퍼 메서드] 권한 체크 로직 (Role ID 기반)
+	// 권한 체크 로직
     private boolean checkAdminPermission(Long memberId) {
         if (memberId == null) return false;
 
         // 1. 최신 회원 정보 조회 (DB)
         Member freshMember = memberRepository.findById(memberId).orElse(null);
 
-        // 2. 권한 확인 (Role ID가 0, 2, 6 중 하나인지)
+        // 2. 권한 확인
         if (freshMember != null && freshMember.getRoles() != null) {
             return freshMember.getRoles().stream()
                     .anyMatch(memberRole -> {
@@ -106,14 +106,13 @@ public class NoticeController {
             return "redirect:/login";
         }
         
-        // [변경] Role ID 기반 권한 체크
+        // Role ID 기반 권한 체크
         if (!checkAdminPermission(loginMember.getId())) {
             log.warn("작성 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list"; // 권한 없으면 리스트로
         }
         
         model.addAttribute("writerName", loginMember.getName());
-        // 필요하다면 DB에서 가져온 freshMember의 부서 정보를 넣을 수도 있음
         model.addAttribute("writerDept", loginMember.getDepartment()); 
         return "notice/write";
     }
@@ -139,7 +138,7 @@ public class NoticeController {
         NoticeDetailDTO notice = noticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
         
-        // [변경] Role ID 기반 권한 체크 (수정/삭제 버튼 노출 여부 결정)
+        // Role ID 기반 권한 체크
         boolean canEdit = false;
         if (loginMember != null) {
             canEdit = checkAdminPermission(loginMember.getId());
@@ -158,7 +157,7 @@ public class NoticeController {
             return "redirect:/login";
         }
 
-        // [변경] Role ID 기반 권한 체크
+        // Role ID 기반 권한 체크
         if (!checkAdminPermission(loginMember.getId())) {
             log.warn("수정 페이지 접근 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
@@ -179,7 +178,7 @@ public class NoticeController {
             return "redirect:/login";
         }
 
-        // [변경] Role ID 기반 권한 체크
+        // Role ID 기반 권한 체크
         if (!checkAdminPermission(loginMember.getId())) {
             log.warn("수정 처리 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
@@ -197,7 +196,7 @@ public class NoticeController {
             return "redirect:/login";
         }
 
-        // [변경] Role ID 기반 권한 체크
+        // Role ID 기반 권한 체크
         if (!checkAdminPermission(loginMember.getId())) {
             log.warn("삭제 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";

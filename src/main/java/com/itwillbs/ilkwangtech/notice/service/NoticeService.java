@@ -265,7 +265,7 @@ public class NoticeService {
             }
         }
 
-        // 4. 첨부파일 여부(hasAttachment) 갱신
+        // 4. 첨부파일 여부 갱신
         // 기존 파일이 남아있거나, 새로 추가된 파일이 있으면 true
         List<NoticeFile> remainingFiles = noticeFileRepository.findByNoticeId(notice.getId());
         notice.setHasAttachment(!remainingFiles.isEmpty());

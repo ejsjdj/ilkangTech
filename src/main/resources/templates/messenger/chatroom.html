@@ -208,10 +208,38 @@
 	    background: #f8f9fa;
 	    border-radius: 8px;
 	}
+	.unread-divider {
+	    display: flex;
+	    align-items: center;
+	    justify-content: center;
+	    margin: 30px 0 !important;
+	    position: relative;
+	}
+	.unread-divider::before {
+	    content: "";
+	    position: absolute;
+	    left: 0;
+	    top: 50%;
+	    width: 100%;
+	    height: 1px;
+	    background-color: #ffd600;
+	    z-index: 1;
+	}
+	.unread-divider span {
+	    position: relative;
+	    z-index: 2;
+	    background-color: #fff9c4 !important;
+	    color: #f57f17 !important;
+	    padding: 4px 15px;
+	    border-radius: 20px;
+	    font-size: 12px;
+	    border: 1px solid #ffd600 !important;
+	}
   </style>
 </head>
 <body>
 <div class="wrap">
+	<!-- 채팅방 상단 채팅방명, 여러 버튼들 -->
 	<div class="header">
 	    <strong th:text="${displayTitle}"></strong>
 	    
@@ -234,14 +262,23 @@
 	    </div>
 	</div>
 
-
+	<!-- 채팅 올라오는 영역 -->
 	<div id="messages" class="messages">
 	    <div th:each="msg : ${chatHistory}">
+	    
+		    <div th:if="${msg.isFirstUnread and msg.memberId != myMemberId}" class="unread-divider">
+	            <span>여기까지 읽으셨습니다</span>
+	        </div>
+	    
 	        <div th:if="${msg.msgType == 'SYSTEM'}" class="system-msg">
 	            <span th:text="${msg.content}"></span>
 	        </div>
 	
-	        <div th:unless="${msg.msgType == 'SYSTEM'}" class="msgWrap" th:classappend="${msg.memberId == myMemberId} ? 'mine' : ''">
+	        <div th:unless="${msg.msgType == 'SYSTEM'}" 
+		         class="msgWrap" 
+		         th:classappend="|${msg.memberId == myMemberId ? 'mine' : ''} ${msg.isFirstUnread ? 'first-unread' : ''}|"
+		         th:attr="data-timestamp=${msg.createdAt}">
+		         
 	            <div class="msg-container">
 	                <div class="sender-name" th:text="${msg.memberName}"></div>
 	                <div class="msg-row">
@@ -250,6 +287,7 @@
 					    <span class="unread-count" th:if="${msg.unreadCount > 0}" th:text="${msg.unreadCount}"></span>
 					</div>
 	            </div>
+	            
 	        </div>
 	    </div>
 	</div>
@@ -281,6 +319,7 @@
 
 <script>
 var stompClient = null;
+var isFirstLoad = true;
 
 // 서버와의 연결 관리 함수
 function connect() {
@@ -295,11 +334,15 @@ function connect() {
         var payload = JSON.parse(message.body);
 
         if (payload.msgType === 'READ') {
+            // 읽음 신호가 오면 숫자만 업데이트
             refreshUnreadCounts(); 
         } else {
+            // 새 메시지가 오면 즉시 화면에 추가
             appendMessage(payload);
+            // 이때 스크롤을 하단으로 내려줌
+            scrollToBottom();
         }
-    });
+    })
     
     // 연결 상태 모니터링
     stompClient.debug = function(str) {
@@ -336,129 +379,162 @@ function sendMsg() {
 	  console.log("메시지 전송:", body);
 	  stompClient.send("/app/chat.send", {}, JSON.stringify(body));
 	  textEl.value = "";
+	  
+	  setTimeout(scrollToBottom, 100);
 	}
 
-// 받은 메시지를 채팅창 화면에 나타내는 함수
 function appendMessage(msg) {
-	var box = document.getElementById("messages");
-	if (msg.msgType === 'SYSTEM') {
+    var box = document.getElementById("messages");
+    
+    // 1. 중복 방지 (이미 화면에 있는 메시지인지 ID 등으로 체크하면 좋음. 여기선 생략)
+    if (msg.msgType === 'SYSTEM') {
         var sysDiv = document.createElement("div");
         sysDiv.className = "system-msg";
         sysDiv.innerHTML = "<span>" + msg.content + "</span>";
         box.appendChild(sysDiv);
-        box.scrollTop = box.scrollHeight;
+        scrollToBottom();
         return;
     }
-	
-	var myMemberId = Number(document.getElementById("myMemberId").value);
-	var isMine = (msg.memberId === myMemberId);
-	
-	var wrap = document.createElement("div");
-	wrap.className = "msgWrap" + (isMine ? " mine" : "");
-	
-	var container = document.createElement("div");
-	container.className = "msg-container";
-	
-	var nameDiv = document.createElement("div");
-	nameDiv.className = "sender-name";
-	nameDiv.textContent = msg.memberName; 
-	container.appendChild(nameDiv);
-	
-	var row = document.createElement("div");
-	row.className = "msg-row";
-	
-	// 요소들 생성
-	var contentDiv = document.createElement("div");
-	contentDiv.className = "msg";
-	contentDiv.textContent = msg.content;
-	
-	var timeSpan = document.createElement("span");
-	timeSpan.className = "time";
-	timeSpan.textContent = msg.formattedTime;
-	
-	var countSpan = null;
-	if (msg.unreadCount > 0) {
-	    countSpan = document.createElement("span");
-	    countSpan.className = "unread-count";
-	    countSpan.textContent = msg.unreadCount;
-	}
-	
-	// 직접 순서 정하기
-	if (isMine) {
-	    // 내가 보낸 경우: 숫자 -> 시간 -> 말풍선
-	    if (countSpan) row.appendChild(countSpan);
-	    row.appendChild(timeSpan);
-	    row.appendChild(contentDiv);
-	} else {
-	    // 남이 보낸 경우: 말풍선 -> 시간 -> 숫자
-	    row.appendChild(contentDiv);
-	    row.appendChild(timeSpan);
-	    if (countSpan) row.appendChild(countSpan);
-	}
-	
-	contentDiv.innerHTML = formatMessage(msg);
-	container.appendChild(row);
-	wrap.appendChild(container);
-	box.appendChild(wrap);
-	scrollToBottom();
-	markAsRead();
+
+    var myMemberId = Number(document.getElementById("myMemberId").value);
+    var isMine = (msg.memberId === myMemberId);
+
+    // 2. 메시지 감싸는 wrap 생성
+    var wrap = document.createElement("div");
+    wrap.className = "msgWrap" + (isMine ? " mine" : "");
+
+    // 3. 내부 컨텐츠 생성 (formatMessage 활용)
+    var innerContent = formatMessage(msg);
+    
+    var container = document.createElement("div");
+    container.className = "msg-container";
+
+    // 이름 표시 (상대방일 때만)
+    if (!isMine) {
+        var nameDiv = document.createElement("div");
+        nameDiv.className = "sender-name";
+        nameDiv.textContent = msg.memberName;
+        container.appendChild(nameDiv);
+    }
+
+    // 메시지 로우 (말풍선 + 시간 + 숫자)
+    var row = document.createElement("div");
+    row.className = "msg-row";
+
+    var contentDiv = document.createElement("div");
+    contentDiv.className = "msg";
+    contentDiv.innerHTML = innerContent;
+
+    var timeSpan = document.createElement("span");
+    timeSpan.className = "time";
+    timeSpan.textContent = msg.formattedTime || new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+    // 배치 순서 결정
+    if (isMine) {
+        // 내가 보낸 경우: [안읽음숫자] [시간] [말풍선]
+        if (msg.unreadCount > 0) {
+            var countSpan = document.createElement("span");
+            countSpan.className = "unread-count";
+            countSpan.textContent = msg.unreadCount;
+            row.appendChild(countSpan);
+        }
+        row.appendChild(timeSpan);
+        row.appendChild(contentDiv);
+    } else {
+        // 남이 보낸 경우: [말풍선] [시간] [안읽음숫자]
+        row.appendChild(contentDiv);
+        row.appendChild(timeSpan);
+        if (msg.unreadCount > 0) {
+            var countSpan = document.createElement("span");
+            countSpan.className = "unread-count";
+            countSpan.textContent = msg.unreadCount;
+            row.appendChild(countSpan);
+        }
+    }
+
+    container.appendChild(row);
+    wrap.appendChild(container);
+    box.appendChild(wrap);
+
+    // 4. 추가 후 즉시 하단 스크롤
+    scrollToBottom();
+    
+    // 5. 내가 받은 메시지라면 '읽음' 처리 실행
+    if (!isMine) {
+        readObserver.observe(wrap); 
+    }
 }
 
-// 엔터키 클릭이벤트(엔터키 클릭 시 채팅이 바로 전송되도록)
+// 페이지 로드 시 실행되는 함수
 document.addEventListener("DOMContentLoaded", function() {
-    var textInput = document.getElementById("text");
+    // 1. 엔터키 메시지 전송 이벤트 등록(엔터키 입력 시 채팅이 전송되도록)
+    const textInput = document.getElementById("text");
+    if (textInput) {
+        textInput.addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMsg();
+            }
+        });
+    }
 
-    // 입력창에서 키를 눌렀을 때 실행
-    textInput.addEventListener("keyup", function(event) {
-        // 눌린 키가 'Enter'인지 확인
-        if (event.key === "Enter") {
-            event.preventDefault(); // 기본 동작 방지
-            sendMsg(); // 메시지 전송 함수 호출
-        }
-    });
+    // 스크롤 위치 제어(안 읽은 메시지가 존재할 때에만 가장 하단으로)
+    const firstUnread = document.querySelector('.first-unread');
+    if (firstUnread) {
+        firstUnread.scrollIntoView({ behavior: 'auto', block: 'center' });
+    } else {
+        scrollToBottom();
+    }
+
+    // 읽음 처리 및 가시성 감시
+    setTimeout(() => {
+        observeMessages();
+        forceMarkAsRead();
+    }, 500);
 });
 
 // 마지막으로 불러온 메시지의 개수를 저장
 var lastMsgCount = 0; 
 
-function pollingMessages(forceRender = false) {
-    var roomId = document.getElementById("roomId").value;
-    
-    fetch('/messenger/api/chat/' + roomId)
-        .then(response => response.json())
-        .then(data => {
-            // 강제 갱신(forceRender)이거나 메시지 개수가 변했을 때만 갱신
-            if (forceRender || data.length !== lastMsgCount) {
-                console.log("화면 업데이트 수행 (사유: " + (forceRender ? "읽음 신호" : "새 메시지") + ")");
-                renderMessages(data);
-                lastMsgCount = data.length;
-            }
-        })
-        .catch(err => console.error("Polling Error:", err));
-}
 // 화면을 싹 지우고 다시 그리는 함수
 function renderMessages(chatList) {
     var box = document.getElementById("messages");
     var myMemberId = Number(document.getElementById("myMemberId").value);
+    var isAtBottom = (box.scrollHeight - box.scrollTop <= box.clientHeight + 100);
     box.innerHTML = ""; 
 
     chatList.forEach(msg => {
-    	if (msg.msgType === 'SYSTEM') {
+        // [구분선 로직] 안 읽은 첫 메시지 지점에 구분선 생성
+        if (msg.isFirstUnread && msg.memberId !== myMemberId) {
+            var divider = document.createElement("div");
+            divider.className = "system-msg unread-divider scroll-target"; 
+            divider.innerHTML = "<span style='background-color: #ffeb3b; color: #333; font-weight: bold;'>여기까지 읽었습니다</span>";
+            box.appendChild(divider);
+        }
+
+        // 시스템 메시지 처리
+        if (msg.msgType === 'SYSTEM') {
             var sysDiv = document.createElement("div");
             sysDiv.className = "system-msg";
             sysDiv.innerHTML = "<span>" + msg.content + "</span>";
             box.appendChild(sysDiv);
-            return; // 시스템 메시지면 아래 일반 메시지 로직은 건너뜀
+            return; 
         }
-    	var innerContent = formatMessage(msg);
-        
+
+        // 일반 메시지 생성
         var isMine = (msg.memberId === myMemberId);
         var wrap = document.createElement("div");
         wrap.className = "msgWrap" + (isMine ? " mine" : "");
         
+        if (msg.isFirstUnread) {
+            wrap.classList.add('first-unread');
+        }
+        
+        var innerContent = formatMessage(msg);
         var container = document.createElement("div");
         container.className = "msg-container";
 
+        // ... (이름 및 메시지 행 생성 로직은 기존과 동일) ...
         var nameDiv = document.createElement("div");
         nameDiv.className = "sender-name";
         nameDiv.textContent = msg.memberName; 
@@ -466,7 +542,6 @@ function renderMessages(chatList) {
 
         var row = document.createElement("div");
         row.className = "msg-row";
-
         var contentDiv = document.createElement("div");
         contentDiv.className = "msg";
         contentDiv.innerHTML = innerContent;
@@ -498,17 +573,21 @@ function renderMessages(chatList) {
         container.appendChild(row);
         wrap.appendChild(container);
         box.appendChild(wrap);
-    });
-    scrollToBottom();
+    }); 
+    // 읽은 메시지가 없을 때에만 바닥으로 스크롤 위치 조정
+    if (isFirstLoad) {
+        const target = box.querySelector('.scroll-target');
+        if (target) {
+            // "여기까지 읽었습니다" 구분선 위치로 부드럽게 이동
+            target.scrollIntoView({ behavior: 'auto', block: 'center' });
+        } else {
+            scrollToBottom();
+        }
+        isFirstLoad = false;
+    } else if (isAtBottom) {
+        scrollToBottom();
+    }
 }
-
-// (핵심) 1초(1000ms)마다 pollingMessages 실행
-setInterval(pollingMessages, 1000);
-
-// 페이지 로드 시 1번 즉시 실행
-document.addEventListener("DOMContentLoaded", function() {
-    pollingMessages();
-});
 
 // 채팅방 이름 변경 함수
 function renameRoom() {
@@ -567,13 +646,12 @@ function markAsRead() {
         .then(res => {
             if (res.ok) {
                 // [핵심] 서버에서 읽음 처리가 완료되면 내 화면의 숫자들을 즉시 새로고침합니다.
+                console.log("읽음 처리")
                 refreshUnreadCounts(); 
             }
         })
         .catch(err => console.error("읽음 처리 중 오류:", err));
 }
-
-document.addEventListener("DOMContentLoaded", markAsRead);
 
 // 참여자 목록 열기
 function openChatParticipants() {
@@ -845,7 +923,19 @@ function refreshUnreadCounts() {
     fetch('/messenger/api/chat/' + roomId)
         .then(res => res.json())
         .then(data => {
-            renderMessages(data); 
+            // 전체를 다시 그리지 말고, 숫자만 업데이트합니다.
+            const messageElements = document.querySelectorAll('.msgWrap');
+            data.forEach((msg, index) => {
+                // 각 메시지 요소에서 unread-count span을 찾음
+                const unreadSpan = messageElements[index]?.querySelector('.unread-count');
+                if (unreadSpan) {
+                    if (msg.unreadCount > 0) {
+                        unreadSpan.textContent = msg.unreadCount;
+                    } else {
+                        unreadSpan.remove(); // 0이 되면 숫자 제거
+                    }
+                }
+            });
         });
 }
 
@@ -878,6 +968,47 @@ function scrollToBottom() {
         }
     };
 })();
+
+// 실제로 화면상에 보인 채팅만 읽음 처리
+const readObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        // 메시지가 화면에 50% 이상 노출되었을 때
+        if (entry.isIntersecting) {
+            const msgElement = entry.target;
+            const roomId = document.getElementById("roomId").value;
+            
+            // 서버에 읽음 처리 요청 (기존 markAsRead 로직 활용)
+            // 실제 카톡처럼 하려면 여기서 메시지 ID를 같이 보냅니다.
+            fetch('/messenger/api/read/' + roomId, { method: 'POST' })
+                .then(res => {
+                    if (res.ok) {
+                        // 한 번 읽은 메시지는 더 이상 감시하지 않음
+                        observer.unobserve(msgElement);
+                    }
+                });
+        }
+    });
+}, { threshold: 0.5 }); // 요소의 50%가 보일 때 실행
+
+// 메시지 감시 시작 함수
+function observeMessages() {
+    // 내가 보낸 메시지를 제외하고 상대방 메시지들만 감시
+    const messages = document.querySelectorAll('.msgWrap:not(.mine)');
+    messages.forEach(msg => readObserver.observe(msg));
+}
+
+function forceMarkAsRead() {
+    var roomId = document.getElementById("roomId").value;
+    fetch('/messenger/api/read/' + roomId, { method: 'POST' })
+        .then(res => {
+            if (res.ok) {
+                // 내 화면에서 '남이 보낸 메시지'의 모든 숫자 1을 즉시 제거
+                const unreadSpans = document.querySelectorAll('.msgWrap:not(.mine) .unread-count');
+                unreadSpans.forEach(span => span.remove());
+                console.log("입장 즉시 모든 메시지 읽음 처리 완료");
+            }
+        });
+}
 
 </script>
 </body>

@@ -1,8 +1,8 @@
 package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequestDTO;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponseDTO;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +20,7 @@ public interface AccountService {
      * @param request 회원가입 정보가 담긴 DTO
      * @return 등록 성공 여부 및 사원번호 등이 포함된 응답 DTO
      */
-    AccountRegisterResponse register(AccountRegisterRequest request);
+    AccountRegisterResponseDTO register(AccountRegisterRequestDTO request);
 
     /**
      * 사원의 개인 정보를 수정합니다. (이메일, 전화번호)
@@ -42,6 +42,6 @@ public interface AccountService {
      */
     boolean isSelf(Long id, String employeeNumber);
 
-    int updateProfileImage(MultipartFile upload, @AuthenticationPrincipal AccountLogin login) throws IOException;
+    int updateProfileImage(@AuthenticationPrincipal AccountLogin login, MultipartFile upload) throws IOException;
 
 }

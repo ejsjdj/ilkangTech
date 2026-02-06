@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class CommonCode {
+public class CommonCodeDTO {
     private Long id;                // 코드 고유 ID
     private String commonCodeName;  // 코드명 (예: 전체 관리자 권한)
 }

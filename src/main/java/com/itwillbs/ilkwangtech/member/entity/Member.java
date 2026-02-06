@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.itwillbs.ilkwangtech.account.constant.MemberStatus;
 import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
 import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import jakarta.persistence.*;
@@ -26,7 +27,7 @@ import java.util.List;
 @SequenceGenerator(
         name = "MEMBERS_SEQ_GENERATOR", 
         sequenceName = "MEMBERS_SEQ",   
-        initialValue = 200,				
+        initialValue = 1000,
         allocationSize = 1				
 )
 public class Member {
@@ -49,9 +50,8 @@ public class Member {
     @Column(length = 20)
     private String residentNumber; // 주민등록번호
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "profile_img_id")
-    private ProfileImg profileImg;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, mappedBy = "member")
+    private List<ProfileImg> profileImg;
 
     @Column(length = 100, nullable = false, unique = true)
     private String email; // 이메일
@@ -81,6 +81,13 @@ public class Member {
 
     @LastModifiedDate
     private LocalDateTime updatedAt; // 정보 수정 일시
+
+    @Column(length = 20, nullable = true)
+    private MemberStatus status;
+
+    public void changeStatus(MemberStatus status) {
+        this.status = status;
+    }
 
     /**
      * 사원이 보유한 권한 목록 (1:N 관계)

@@ -1,8 +1,8 @@
 package com.itwillbs.ilkwangtech.account.service;
 
-import com.itwillbs.ilkwangtech.account.dto.CommonCode;
-import com.itwillbs.ilkwangtech.account.dto.MemberRoleView;
-import com.itwillbs.ilkwangtech.account.dto.MemberSummary;
+import com.itwillbs.ilkwangtech.account.dto.CommonCodeDTO;
+import com.itwillbs.ilkwangtech.account.dto.MemberRoleViewDTO;
+import com.itwillbs.ilkwangtech.account.dto.MemberSummaryDTO;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.account.repository.CommonCodeRepository;
 import com.itwillbs.ilkwangtech.account.repository.MemberRoleRepository;
@@ -41,11 +41,11 @@ public class RoleServiceImpl implements RoleService {
      *
      * @return 권한(CommonCode) DTO 리스트
      */
-    public List<CommonCode> getRoles() {
+    public List<CommonCodeDTO> getRoles() {
 
         return commonCodeRepository.findAll()
                 .stream()
-                .map(role -> new CommonCode(role.getId(), role.getCommonCodeName()))
+                .map(role -> new CommonCodeDTO(role.getId(), role.getCommonCodeName()))
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +58,7 @@ public class RoleServiceImpl implements RoleService {
      * @param pageable 페이징 정보
      * @return 사원 권한 뷰(MemberRoleView) Page
      */
-    public Page<MemberRoleView> findMemberByRole(long roleId, Pageable pageable) {
+    public Page<MemberRoleViewDTO> findMemberByRole(long roleId, Pageable pageable) {
         Page<java.util.Map<String, Object>> result = memberRoleRepository.findMembersByRoleId(roleId, pageable);
         
         return result.map(map -> {
@@ -71,7 +71,7 @@ public class RoleServiceImpl implements RoleService {
             String pos = (String) (map.get("POSITION") != null ? map.get("POSITION") : map.get("position"));
             String desc = (String) (map.get("DESCRIPTION") != null ? map.get("DESCRIPTION") : map.get("description"));
             
-            return new MemberRoleView(memberId, rId, name, empNo, dept, pos, desc);
+            return new MemberRoleViewDTO(memberId, rId, name, empNo, dept, pos, desc);
         });
     }
 
@@ -131,9 +131,9 @@ public class RoleServiceImpl implements RoleService {
      * @return 전체 사원 DTO 리스트
      */
     @Override
-    public List<MemberSummary> getAssignableMembers() {
+    public List<MemberSummaryDTO> getAssignableMembers() {
         return accountRepository.findAll().stream()
-                .map(m -> modelMapper.map(m, MemberSummary.class))
+                .map(m -> modelMapper.map(m, MemberSummaryDTO.class))
                 .collect(Collectors.toList());
     }
 

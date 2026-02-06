@@ -52,6 +52,13 @@ dependencies {
     implementation 'org.modelmapper:modelmapper:3.2.6'
     
     implementation 'org.json:json:20231013'
+    // Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+   // implementation 'com.fasterxml.jackson.core:jackson-databind:2.21.0'
+    // Jackson for JSON processing
+   // implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // Source: https://mvnrepository.com/artifact/com.google.code.gson/gson
+    //implementation 'com.google.code.gson:gson:2.13.2'
     
     // 웹소켓
     implementation 'org.springframework.boot:spring-boot-starter-websocket'

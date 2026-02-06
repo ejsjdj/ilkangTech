@@ -9,7 +9,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "draft_apprval_status")
+@Table(name = "draft_approval_status")
 @SequenceGenerator(
         name = "draft_status_seq_gen",
         sequenceName = "draft_status_seq",

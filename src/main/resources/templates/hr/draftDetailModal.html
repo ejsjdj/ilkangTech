@@ -1,39 +1,22 @@
-<!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      >
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<!-- 문서 상세보기 모달 -->
 <div th:fragment="draftDetailModal">
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+
   <div id="draftDetailModal" class="modal">
     <div class="modalBody">
-
       <h3>상세보기</h3>
-
-      <!-- 제목 -->
       <div class="form-group">
         <label>제목</label>
         <input type="text" id="detailTitle_view" readonly>
       </div>
-
-      <!-- 내용 -->
       <div class="form-group">
         <label>내용</label>
-        <textarea id="detailContent_view" rows="5" readonly></textarea>
+        <div id="detailContent_view"></div>
       </div>
-
-
-        <!-- 첨부파일 -->
-        <div class="form-group">
-            <label>첨부파일</label>
-            <div id="fileListContainer" class="file-list-box"></div>
-        </div>
-
-      <!-- 날짜 -->
+      <div class="form-group">
+        <label>첨부파일</label>
+        <div id="fileListContainer" class="file-list-box"></div>
+      </div>
       <div class="form-group">
         <label>결재 기간</label>
         <div class="date-group">
@@ -42,51 +25,32 @@
           <input type="date" id="detailEndDate_view" readonly>
         </div>
       </div>
-
-      <!-- 결재자 라인 -->
       <div class="form-group">
         <label>결재 라인</label>
-
         <div class="approval-line-container">
-
           <div class="approval-card">
             <div class="card-header">1차 결재자</div>
             <div class="card-body" id="detail_display_approver1">대기 중</div>
           </div>
-
-          <div class="approval-arrow">
-            <i class="bi bi-arrow-right"></i>
-          </div>
-
+          <div class="approval-arrow"><i class="bi bi-arrow-right"></i></div>
           <div class="approval-card">
             <div class="card-header">2차 결재자</div>
             <div class="card-body" id="detail_display_approver2">대기 중</div>
           </div>
-
-          <div class="approval-arrow">
-            <i class="bi bi-arrow-right"></i>
-          </div>
-
+          <div class="approval-arrow"><i class="bi bi-arrow-right"></i></div>
           <div class="approval-card">
             <div class="card-header">3차 결재자</div>
             <div class="card-body" id="detail_display_approver3">대기 중</div>
           </div>
-
         </div>
       </div>
-
-      <!-- 버튼 -->
       <div class="form-group">
         <button type="button" class="btn-cancel" onclick="closeDetailModal()">닫기</button>
       </div>
-
       <div id="detail_Button_Group" class="detail_Button_Group" style="display: none;">
         <button type="button" class="btn-approve" onclick="decideApprove('승인')">승인</button>
         <button type="button" class="btn-reject" onclick="decideApprove('반려')">반려</button>
       </div>
-
     </div>
   </div>
 </div>
-</body>
-</html>

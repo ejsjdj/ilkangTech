@@ -19,10 +19,8 @@ public class DraftDetailDTO {
     private String detailTitle;
     private String detailContent;
     private List<AttachmentDTO> detailFile;
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate detailStartDate;
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate detailEndDate;
+    private String detailStartDate;
+    private String detailEndDate;
 
     // 결재 상황
     private List<ApprovalInfo> approvalLine;
@@ -39,7 +37,7 @@ public class DraftDetailDTO {
     }
 
     @Builder
-    public DraftDetailDTO(Long userId, Long detailWriterId, List<String> detailRoles, String detailTitle, String detailContent, List<AttachmentDTO> detailFile, LocalDate detailStartDate, LocalDate detailEndDate, List<ApprovalInfo> approvalLine){
+    public DraftDetailDTO(Long userId, Long detailWriterId, List<String> detailRoles, String detailTitle, String detailContent, List<AttachmentDTO> detailFile, String detailStartDate, String detailEndDate, List<ApprovalInfo> approvalLine){
         this.userId = userId;
         this.detailWriterId = detailWriterId;
         this.detailRoles = detailRoles;

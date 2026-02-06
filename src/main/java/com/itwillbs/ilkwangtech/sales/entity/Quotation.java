@@ -66,7 +66,7 @@ public class Quotation {
     private String currency = "KRW";
 
     // 비고
-    @Column(name = "remarks", length = 4000) // 4000자 이내라면 이렇게 설정
+    @Column(length = 255)
     private String remarks;
 
     // 담당 영업사원

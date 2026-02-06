@@ -1,8 +1,8 @@
 package com.itwillbs.ilkwangtech.account.service;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequestDTO;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponseDTO;
 import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.account.repository.ProfileImgRepository;
@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -56,14 +58,14 @@ public class AccountServiceImpl implements AccountService {
 	 * @param req 회원가입 요청 데이터
 	 * @return 등록 결과 응답 데이터
 	 */
-	public AccountRegisterResponse register(AccountRegisterRequest req) {
+	public AccountRegisterResponseDTO register(AccountRegisterRequestDTO req) {
 
 		// 1. 중복 데이터 검증 (이메일, 전화번호, 주민번호, 계좌번호)
-		AccountRegisterResponse res = validateDuplicates(req);
+		AccountRegisterResponseDTO res = validateDuplicates(req);
 		if (res != null) {
 			return res; // 중복이 발견되면 에러 메시지가 담긴 응답 반환
 		} else {
-			res = new AccountRegisterResponse();
+			res = new AccountRegisterResponseDTO();
 		}
 
 		// 2. 새로운 사원번호 생성을 위한 시퀀스 조회 및 설정
@@ -134,9 +136,9 @@ public class AccountServiceImpl implements AccountService {
 	 * @param req 등록 요청 데이터
 	 * @return 중복 발견 시 에러 메시지가 담긴 응답 DTO, 없으면 null
 	 */
-	private AccountRegisterResponse validateDuplicates(AccountRegisterRequest req) {
+	private AccountRegisterResponseDTO validateDuplicates(AccountRegisterRequestDTO req) {
 
-		AccountRegisterResponse res = new AccountRegisterResponse();
+		AccountRegisterResponseDTO res = new AccountRegisterResponseDTO();
 		res.setSuccess(false);
 
 		if (accountRepository.existsByEmail(req.getEmail())) {
@@ -161,52 +163,81 @@ public class AccountServiceImpl implements AccountService {
 		return null;
 	}
 
-	public int updateProfileImage(MultipartFile upload, @AuthenticationPrincipal AccountLogin login) throws IOException {
+	@Transactional
+	public int updateProfileImage(@AuthenticationPrincipal AccountLogin login, MultipartFile upload) throws IOException {
 
 		if (login == null || upload == null || upload.isEmpty()) return 0;
 
 		// 기존 대표 이미지 해제
-		profileImgRepository.findByMemberIdAndRepImgYn(login.getId(), "Y")
-				.ifPresent(existingImg -> {
-					existingImg.setRepImgYn("N");
-					profileImgRepository.save(existingImg);
-				});
+		// 더티체킹으로 변경상태를 DB 에 반영
+		List<ProfileImg> existingImgs = profileImgRepository.findByMemberIdAndRepImgYn(login.getId(), "Y");
+		existingImgs.forEach(ProfileImg::unmarkRepresentative);
 
-		ProfileImg profileImg = new ProfileImg();
+		// "yyyy/MM/dd" 패턴으로 서브주소를 만든다.
+		String subDir = makeSubDir();
 
-		LocalDate today = LocalDate.now();
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-		String subDir = today.format(dtf);
+		// 물리적 저장을 위한 절대 경로 (서버 내부용)
+		Path uploadDir = absolutePath(subDir);
 
-		Path uploadDir = Paths.get(uploadBaseLocation, subDir).toAbsolutePath().normalize();
+		// 해당 경로가 없을때 경로를 생성
+		if(!Files.exists(uploadDir)) Files.createDirectories(uploadDir);
 
-		if(!Files.exists(uploadDir)) {
-			Files.createDirectories(uploadDir);
-		}
-
+		// uploadDir 에 UUID 와 originFileName 까지 붙여서 경로를 만듬
 		String originalFileName = upload.getOriginalFilename();
 		String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
 		Path uploadPath = uploadDir.resolve(fileName);
+
+		// 해당 경로에 저장
 		upload.transferTo(uploadPath);
 
-		Member member = accountRepository.findById(login.getId()).orElseThrow();
+		Member member = accountRepository.getReferenceById(login.getId());
 
-		profileImg.setMember(member);
-		profileImg.setImgName(fileName);
-		profileImg.setOriginalImgName(originalFileName);
-		profileImg.setImgLocation(profileImageLocation + "/" + subDir);
-		profileImg.setRepImgYn("Y");
+		// 상대경로를 생성
+		String relativePath = makeRelativePath(subDir);
+		
+		ProfileImg profileImg = ProfileImg.of(
+				fileName,
+				originalFileName,
+				relativePath,
+				member
+		);
 
-		member.setProfileImg(profileImg);
+		// DB 에 인스턴스를 저장
 		profileImgRepository.save(profileImg);
-		accountRepository.save(member);
 
 		// 세션 정보 갱신을 위해 URL 설정
-		String url = profileImageLocation + "/" + subDir + "/" + fileName;
-		login.setProfileImgUrl(url);
+		List<ProfileImg> loginsImgs = login.getProfileImgs();
+		loginsImgs.add(profileImg);
+
+		loginsImgs.sort((o1, o2) -> {
+			// 1. Y를 우선순위로
+			if (!o1.getRepImgYn().equals(o2.getRepImgYn())) return o2.getRepImgYn().compareTo(o1.getRepImgYn());
+			// 2. 위치(날짜) 내림차순
+			return o2.getImgLocation().compareTo(o1.getImgLocation());
+		});
+
+		login.updateSortImages(loginsImgs);
 
 		return 1;
 	}
 
+	// 현재 시간을 포맷에 맞춰 String 으로 만든다
+	private String makeSubDir() {
+		LocalDate today = LocalDate.now();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
+		return today.format(dtf);
+	}
+
+	// 절대경로를 생성
+	private Path absolutePath(String subDir) {
+		return Paths.get(uploadBaseLocation, profileImageLocation, subDir)
+					.toAbsolutePath()
+					.normalize();
+	}
+
+	// 상대경로를 생성
+	private String makeRelativePath(String subDir) {
+		return profileImageLocation + "/" + subDir;
+	}
 }

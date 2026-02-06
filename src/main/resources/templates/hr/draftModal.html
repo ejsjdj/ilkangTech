@@ -1,48 +1,32 @@
-<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<!-- 문서 작성 모달 -->
 <div th:fragment="draftModal">
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+
     <div id="draftModal" class="modal">
         <div class="modalBody">
-
             <h3>결재 문서 작성</h3>
-
-            <!-- 결재 문서 양식 -->
             <div class="form-group">
                 <label for="draftType">결재양식 선택</label>
                 <select id="draftType" name="draftType" onchange="loadApprovalLine(this.value)">
+                    <option value="" disabled selected>선택하세요</option>
                     <option value="PTO">휴가</option>
                     <option value="HDF">반차</option>
                     <option value="BUY">구매</option>
                     <option value="EXP">지출</option>
                 </select>
             </div>
-
-            <!-- 제목 -->
             <div class="form-group">
                 <label for="draftTitle">제목</label>
                 <input type="text" id="draftTitle" name="draftTitle" placeholder="제목을 입력하세요">
             </div>
-
-            <!-- 내용 -->
             <div class="form-group">
-                <label for="draftContent">내용</label>
-                <textarea id="draftContent" name="draftContent" rows="5"
-                          placeholder="결재 내용을 입력하세요"></textarea>
+                <label>내용</label>
+                <div id="draftEditor"></div>
             </div>
-
-            <!-- 파일 업로드 -->
             <div class="form-group">
                 <label for="draftFile">첨부 파일</label>
                 <input type="file" id="draftFile" name="draftFile">
             </div>
-
-            <!-- 날짜 -->
             <div class="form-group">
                 <label>결재 기간</label>
                 <div class="date-group">
@@ -51,8 +35,6 @@
                     <input type="date" id="endDate" name="endDate">
                 </div>
             </div>
-
-            <!-- 결재자 라인 -->
             <div class="form-group">
                 <label>결재 라인</label>
                 <div class="approval-line-container">
@@ -61,17 +43,13 @@
                         <div class="card-body" id="display_approver1">대기 중</div>
                         <input type="hidden" id="approver1" name="approver1">
                     </div>
-
                     <div class="approval-arrow"><i class="bi bi-arrow-right"></i></div>
-
                     <div class="approval-card">
                         <div class="card-header">2차 결재자</div>
                         <div class="card-body" id="display_approver2">대기 중</div>
                         <input type="hidden" id="approver2" name="approver2">
                     </div>
-
                     <div class="approval-arrow"><i class="bi bi-arrow-right"></i></div>
-
                     <div class="approval-card">
                         <div class="card-header">3차 결재자</div>
                         <div class="card-body" id="display_approver3">대기 중</div>
@@ -79,16 +57,10 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 버튼 -->
             <div class="modal-footer">
-
-                    <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
-                    <button type="button" class="btn-submit" onclick="postDraft()">등록</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+                <button type="button" class="btn-submit" onclick="postDraft()">등록</button>
             </div>
-
         </div>
     </div>
 </div>
-</body>
-</html>

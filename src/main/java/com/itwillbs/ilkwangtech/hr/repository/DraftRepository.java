@@ -52,6 +52,7 @@ public interface DraftRepository extends JpaRepository<DraftEntity, Long> {
          SELECT new com.itwillbs.ilkwangtech.hr.dto.DraftDTO(
                         d.draftId,
                         d.draftTitle,
+                        d.draftContent,
                         d.draftStartDate,  
                         d.draftEndDate,    
                         d.draftStatus      
@@ -78,6 +79,7 @@ public interface DraftRepository extends JpaRepository<DraftEntity, Long> {
     SELECT new com.itwillbs.ilkwangtech.hr.dto.DraftDTO(
         d.draftId,
         d.draftTitle,
+        d.draftContent,
         d.draftStartDate,
         d.draftEndDate,
         d.draftStatus

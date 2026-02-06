@@ -92,8 +92,8 @@ public class DraftDetailService {
                 .detailTitle(draftDetail.getDraftTitle())
                 .detailContent(draftDetail.getDraftContent())
                 .detailFile(files)
-                .detailStartDate(draftDetail.getDraftStartDate())
-                .detailEndDate(draftDetail.getDraftEndDate())
+                .detailStartDate(String.valueOf(draftDetail.getDraftStartDate()))
+                .detailEndDate(String.valueOf(draftDetail.getDraftEndDate()))
                 .approvalLine(approvalInfo)
                 .build();
     }

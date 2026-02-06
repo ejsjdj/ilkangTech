@@ -22,7 +22,7 @@ import java.util.List;
 public class DraftEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "draft_document_seq_gen")
-    private long draftId;
+    private Long draftId;
 
     @ManyToOne
     @JoinColumn(name = "member_id")

@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberSummary {
+public class MemberSummaryDTO {
     private Long id;
     private String name;
     private String employeeNumber;

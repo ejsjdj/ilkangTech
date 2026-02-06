@@ -8,16 +8,19 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(name = "profile_img")
+@SequenceGenerator(name = "profile_img_seq", sequenceName = "profile_img_seq", initialValue = 1000, allocationSize = 1)
 public class ProfileImg {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "profile_img_seq")
+    private Long profileImgId;
     private String imgName;
     private String originalImgName;
     private String imgLocation;
     private String repImgYn;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id")
     private Member member;
 }

@@ -163,30 +163,33 @@ public class AccountServiceImpl implements AccountService {
 
 	public int updateProfileImage(MultipartFile upload, @AuthenticationPrincipal AccountLogin login) throws IOException {
 
+		// 사용자, 파일 상태 확인
 		if (login == null || upload == null || upload.isEmpty()) return 0;
 
-		// 기존 대표 이미지 해제
-		profileImgRepository.findByMemberIdAndRepImgYn(login.getId(), "Y")
-				.ifPresent(existingImg -> {
-					existingImg.setRepImgYn("N");
-					profileImgRepository.save(existingImg);
-				});
-
+		// 이미지의 경로, 정보등을 저장할 profileImg 객체를 만든다.
 		ProfileImg profileImg = new ProfileImg();
+
 
 		LocalDate today = LocalDate.now();
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 		String subDir = today.format(dtf);
 
-		Path uploadDir = Paths.get(uploadBaseLocation, subDir).toAbsolutePath().normalize();
+
+		Path uploadDir = Paths.get(uploadBaseLocation, profileImageLocation, subDir) // 경로를 합침
+				              .toAbsolutePath()	// 절대 경로로 변환
+				              .normalize();		// 노멀라이제이션
 
 		if(!Files.exists(uploadDir)) {
 			Files.createDirectories(uploadDir);
 		}
 
+		// 원래 파일 이름
 		String originalFileName = upload.getOriginalFilename();
+		// 저장용으로 만든 파일 이름
 		String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
+		// 기존 경로 담고 있는 Path 객체의 resolve() 메서드 호출하여 기존 경로에 파일명을 추가로 결합!
 		Path uploadPath = uploadDir.resolve(fileName);
+		// 업로드된 파일을 실제 경로에 저장
 		upload.transferTo(uploadPath);
 
 		Member member = accountRepository.findById(login.getId()).orElseThrow();
@@ -194,7 +197,7 @@ public class AccountServiceImpl implements AccountService {
 		profileImg.setMember(member);
 		profileImg.setImgName(fileName);
 		profileImg.setOriginalImgName(originalFileName);
-		profileImg.setImgLocation(profileImageLocation + "/" + subDir);
+		profileImg.setImgLocation(uploadPath);
 		profileImg.setRepImgYn("Y");
 
 		member.setProfileImg(profileImg);

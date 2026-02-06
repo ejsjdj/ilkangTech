@@ -49,9 +49,9 @@ public class Member {
     @Column(length = 20)
     private String residentNumber; // 주민등록번호
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "profile_img_id")
-    private ProfileImg profileImg;
+    private List<ProfileImg> profileImgs;
 
     @Column(length = 100, nullable = false, unique = true)
     private String email; // 이메일

@@ -7,6 +7,8 @@ import com.itwillbs.ilkwangtech.account.service.AccountService;
 import com.itwillbs.ilkwangtech.account.service.BankService;
 import com.itwillbs.ilkwangtech.account.service.DepartmentService;
 import com.itwillbs.ilkwangtech.account.service.PositionService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,9 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 
@@ -118,6 +117,13 @@ public class AccountController {
     public String updateProfileImgFile(@AuthenticationPrincipal AccountLogin user,
                                        @RequestParam("profileImgFile") MultipartFile profileImgFile,
                                        RedirectAttributes rttr) throws IOException {
+
+        // 프로필 이미지를 지정하지 선택하지 않았을때
+        if (profileImgFile.isEmpty()) {
+            rttr.addFlashAttribute("프로필 이미지를 지정해 주세요!");
+            return "redirect:/account/myInfo";
+        }
+
         int row = accountService.updateProfileImage(profileImgFile, user);
 
         rttr.addFlashAttribute(row > 0 ? "successMessage" : "errorMessage", 

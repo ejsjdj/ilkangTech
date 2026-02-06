@@ -7,9 +7,16 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(name = "draft_attachment_entity")
+@SequenceGenerator(
+        name = "draft_attach_seq_gen",
+        sequenceName = "draft_attach_seq",
+        initialValue = 1,
+        allocationSize = 1
+)
 public class DraftAttachmentEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "draft_attach_seq_gen")
     private Long id;
 
     @ManyToOne

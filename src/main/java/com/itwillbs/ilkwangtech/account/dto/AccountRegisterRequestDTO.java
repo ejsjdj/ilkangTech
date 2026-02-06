@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @ToString
-public class AccountRegisterRequest {
+public class AccountRegisterRequestDTO {
 
     private static final long serialVersionUID = 1L;
 

@@ -26,6 +26,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // 캐시 설정
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
     // 보안설정
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'

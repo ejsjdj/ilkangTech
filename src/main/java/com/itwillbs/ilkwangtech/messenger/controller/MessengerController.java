@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,9 +210,14 @@ public class MessengerController {
     // 채팅 읽음 처리
     @PostMapping("/api/read/{roomId}")
     @ResponseBody
-    public String readMessages(@PathVariable("roomId") Long roomId, @AuthenticationPrincipal AccountLogin login) {
+    public String readMessages(@PathVariable("roomId") Long roomId, 
+    						   @RequestParam(value = "lastTime", required = false) String lastTime,
+    						   @AuthenticationPrincipal AccountLogin login) {
         Long myId = login.getId();
-        messengerService.updateLastReadAt(roomId, myId);
+        
+        // 파라미터로 받은 시간이 있으면 그것을 사용, 없으면 현재시간 사용
+        LocalDateTime readTime = (lastTime != null) ? LocalDateTime.parse(lastTime) : LocalDateTime.now();
+        messengerService.updateLastReadAt(roomId, myId, readTime);
         
         // 채팅방 내부용 신호 (숫자 1 제거용)
         ChatBroadcastMessageDTO readSignal = new ChatBroadcastMessageDTO();

@@ -35,6 +35,6 @@ public class DraftApprovalLineEntity {
     private Member member;
 
     // 결재 순서
-    @Column(nullable = false)
+    @Column(name = "sequence", nullable = false)
     private long sequence;
 }

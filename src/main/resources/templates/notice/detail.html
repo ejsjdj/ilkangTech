@@ -42,7 +42,7 @@
                 </div>
             </div>
 
-            <div class="detail-content" th:text="${notice.content}"></div>
+            <div class="detail-content" th:utext="${notice.content}"></div>
 
             <div class="detail-images" th:if="${not #lists.isEmpty(notice.imageFiles)}">
                 <div th:each="img : ${notice.imageFiles}">

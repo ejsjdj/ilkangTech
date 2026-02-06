@@ -18,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,9 +45,28 @@ public class HrApprovalController {
                                   @RequestParam(value = "startDate", required = false) LocalDate startDate,
                                   @RequestParam(value = "endDate", required = false) LocalDate endDate,
                                   Model model){
+        LocalDate today = LocalDate.now();
+
+        // 1. 날짜 기본값 설정 (null 체크)
+        if (startDate == null) {
+            // 이번 달 1일 (예: 2026-02-01)
+            startDate = today.withDayOfMonth(1);
+        }
+
+        if (endDate == null) {
+            // 이번 달 마지막 날 (예: 2026-02-28)
+            endDate = today.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
+        }
+
+        // 1. 기본값 설정 (파라미터가 없을 때만)
+        if (draftType == null || draftType.isEmpty()) {
+            draftType = "PTO"; // 기본값: 휴가 신청서
+        }
 
         Page<DraftDTO> draftList = draftService.getDraftById((AccountLogin) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal(), accountLogin.getId(), pageable, type, draftType, startDate, endDate);
+
+        System.out.println(draftList.getContent());
 
         model.addAttribute("draftList", draftList);
         model.addAttribute("type", type);

@@ -6,9 +6,11 @@
       layout:decorate="~{layout/layout}">
 
 <head>
-    <title>전자결재</title>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <title>전자결재 시스템</title>
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
     <th:block layout:fragment="style">
         <link rel="stylesheet" th:href="@{/css/draft.css}">
     </th:block>
@@ -17,103 +19,53 @@
 <body>
 
 <div layout:fragment="content">
-
     <div class="header-container">
-        <h1>전자결재 문서 목록</h1>
-        <button type="button" class="btn-register" onclick="openModal()">
-            <i class="fas fa-plus"></i> 결재 등록
-        </button>
+        <h1>전자 결재</h1>
+        <button type="button" class="btn-register" onclick="openModal()">+ 새 결재 작성</button>
     </div>
 
-    <!-- 문서 작성 모달 -->
     <div th:replace="hr/draftModal :: draftModal"></div>
-
-    <!-- 상세보기 모달 -->
     <div th:replace="hr/draftDetailModal :: draftDetailModal"></div>
 
     <div class="search-container">
         <form th:action="@{/draft/list}" method="get" id="searchForm" class="search-form">
             <input type="hidden" name="type" th:value="${type}">
-
-            <div class="search-row">
+            <div class="search-row" style="display: flex; gap: 10px; align-items: center;">
                 <select name="draftType" class="search-select custom-dropdown">
-                    <option value="ALL" th:selected="${draftType == null || draftType == 'ALL'}" hidden disabled>선택하세요</option>
                     <option value="PTO" th:selected="${draftType == 'PTO'}">휴가 신청서</option>
                     <option value="EXP" th:selected="${draftType == 'EXP'}">지출 결의서</option>
                     <option value="BUY" th:selected="${draftType == 'BUY'}">구매 품의서</option>
-                    <option value="APP" th:selected="${draftType == 'APP'}">발령 요청서</option>
+                    <option value="APP" th:selected="${draftType == 'APP'}">발령 품의서</option>
                 </select>
-
                 <div class="date-range-group">
                     <input type="date" name="startDate" class="date-input" th:value="${startDate}">
-                    <span class="date-separator">~</span>
+                    <span>~</span>
                     <input type="date" name="endDate" class="date-input" th:value="${endDate}">
                 </div>
-
                 <button type="submit" class="btn-search-submit">조회</button>
             </div>
         </form>
     </div>
 
     <div class="tab-container">
-        <button type="button"
-                th:classappend="${type == 'inbox'} ? 'active'"
-                onclick="switchTab('inbox')">결재할 문서</button>
-
-        <button type="button"
-                th:classappend="${type == 'outbox'} ? 'active'"
-                onclick="switchTab('outbox')">내가 올린 문서</button>
+        <button type="button" th:classappend="${type == 'inbox'} ? 'active'" onclick="switchTab('inbox')">수신 문서</button>
+        <button type="button" th:classappend="${type == 'outbox'} ? 'active'" onclick="switchTab('outbox')">송신 문서</button>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>결재 ID</th>
-            <th>제목</th>
-            <th>시작 날짜</th>
-            <th>종료 날짜</th>
-            <th>결과</th>
-            <th>등록 및 조회</th>
-        </tr>
-        </thead>
+    <div id="grid"></div>
 
-        <tbody>
-        <tr th:each="d : ${draftList}">
-            <td th:text="${d.draft_id}">1</td>
-            <td th:text="${d.draft_title}">제목</td>
-            <td th:text="${#temporals.format(d.draft_startTime, 'yyyy-MM-dd')}"></td>
-            <td th:text="${#temporals.format(d.draft_endDate, 'yyyy-MM-dd')}"></td>
-            <td th:text="${d.draft_status}">대기</td>
-            <td><button type="button" th:onclick="|draftDetail(${d.draft_id})|">상세보기</button></td>
-        </tr>
+    <script th:inline="javascript">
+        console.log([[${draftList}]]);
+        /*<![CDATA[*/
 
-        <tr th:if="${#lists.isEmpty(draftList)}">
-            <td colspan="7">문서가 없습니다.</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div class="pagination-container" th:if="${draftList.totalPages > 0}">
-        <ul class="pagination">
-            <li th:classappend="${draftList.first} ? 'disabled'">
-                <a th:href="@{/draft/list(page=${draftList.number - 1}, type=${type}, draftType=${draftType}, startDate=${startDate}, endDate=${endDate})}">&laquo;</a>
-            </li>
-
-            <li th:each="i : ${#numbers.sequence(0, draftList.totalPages - 1)}"
-                th:classappend="${i == draftList.number} ? 'active'">
-                <a th:href="@{/draft/list(page=${i}, type=${type}, draftType=${draftType}, startDate=${startDate}, endDate=${endDate})}"
-                   th:text="${i + 1}"></a>
-            </li>
-
-            <li th:classappend="${draftList.last} ? 'disabled'">
-                <a th:href="@{/draft/list(page=${draftList.number + 1}, type=${type}, draftType=${draftType}, startDate=${startDate}, endDate=${endDate})}">&raquo;</a>
-            </li>
-        </ul>
-    </div>
-
+        const rawData = /*[[${draftList instanceof T(org.springframework.data.domain.Page) ? draftList.content : draftList}]]*/ [];
+        /*]]>*/
+    </script>
 </div>
 
 <th:block layout:fragment="script">
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
     <script th:src="@{/js/draft.js}"></script>
 </th:block>
 

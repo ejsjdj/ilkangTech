@@ -17,4 +17,8 @@ public class ChatMessageResponseDTO {
     private String deptName;
     private String positionName;
     private Long attachId;
+    private boolean isFirstUnread;
+    
+    public boolean isIsFirstUnread() { return isFirstUnread; }
+    public void setIsFirstUnread(boolean isFirstUnread) { this.isFirstUnread = isFirstUnread; }
 }

@@ -129,10 +129,13 @@ public class MessengerService {
     
     // 사용자가 메시지를 확인한 가장 최근 시간 기록(읽음 처리 관리)
     @Transactional
-    public void updateLastReadAt(Long roomId, Long memberId) {
+    public void updateLastReadAt(Long roomId, Long memberId, LocalDateTime readTime) {
         ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, memberId))
                 .orElseThrow();
-        membership.setLastReadAt(LocalDateTime.now());
+        
+        if (membership.getLastReadAt() == null || membership.getLastReadAt().isBefore(readTime)) {
+            membership.setLastReadAt(readTime);
+        }
     }
     
     // 메세지 전송 시간을 기준으로 해당 메시지를 읽지 않은 참여자 수 계산
@@ -149,7 +152,11 @@ public class MessengerService {
     public List<ChatMessageResponseDTO> getChatHistory(Long roomId, Long myId) {
         ChatRoomMember membership = chatRoomMemberRepository.findById(new ChatRoomMemberId(roomId, myId)).orElseThrow();
         List<ChatMessage> messages = chatMessageRepository.findHistory(roomId, membership.getJoinedAt());
+        LocalDateTime lastReadAt = membership.getLastReadAt();
 
+        // 안 읽은 첫 번째 메시지 찾기
+        final boolean[] markedFirst = {false}; 
+        
         return messages.stream().map(msg -> {
             ChatMessageResponseDTO dto = new ChatMessageResponseDTO();
             dto.setMemberId(msg.getMemberId());
@@ -157,16 +164,30 @@ public class MessengerService {
             dto.setCreatedAt(msg.getCreatedAt());
             dto.setMsgType(msg.getMsgType());
             
-            // [중요] DB에서 해당 메시지의 첨부파일 ID를 찾아 DTO에 담습니다.
+            // 첨부파일 처리
             chatAttachmentRepository.findByMessageId(msg.getId()).ifPresent(attach -> {
                 dto.setAttachId(attach.getId());
             });
 
-            // 발신자 이름 및 시간 세팅
+            // 발신자 정보 세팅
             String senderName = memberRepository.findById(msg.getMemberId()).map(Member::getName).orElse("사용자");
             dto.setMemberName(senderName);
             dto.setFormattedTime(msg.getCreatedAt().format(DateTimeFormatter.ofPattern("a h:mm")));
             dto.setUnreadCount(getUnreadCount(roomId, msg.getCreatedAt())); 
+
+            // 안 읽은 첫 번째 메시지 판별 로직
+            // 1. 상대방이 보낸 메시지여야 함
+            // 2. 내 마지막 읽은 시간(lastReadAt)보다 나중에 생성됨
+            // 3. 아직 첫 번째 메시지로 지정된 적이 없음
+            if (!msg.getMemberId().equals(myId) && 
+                (lastReadAt == null || msg.getCreatedAt().isAfter(lastReadAt)) && 
+                !markedFirst[0]) {
+                
+                dto.setIsFirstUnread(true); 
+                markedFirst[0] = true; // 이후 메시지들은 false로 남음
+            } else {
+                dto.setIsFirstUnread(false);
+            }
             
             return dto;
         }).collect(Collectors.toList());

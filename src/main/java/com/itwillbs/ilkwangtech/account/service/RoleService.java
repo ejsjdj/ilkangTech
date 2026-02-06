@@ -1,8 +1,8 @@
 package com.itwillbs.ilkwangtech.account.service;
 
-import com.itwillbs.ilkwangtech.account.dto.CommonCode;
-import com.itwillbs.ilkwangtech.account.dto.MemberRoleView;
-import com.itwillbs.ilkwangtech.account.dto.MemberSummary;
+import com.itwillbs.ilkwangtech.account.dto.CommonCodeDTO;
+import com.itwillbs.ilkwangtech.account.dto.MemberRoleViewDTO;
+import com.itwillbs.ilkwangtech.account.dto.MemberSummaryDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,7 +18,7 @@ public interface RoleService {
      *
      * @return 권한 정보 목록
      */
-    List<CommonCode> getRoles();
+    List<CommonCodeDTO> getRoles();
 
     /**
      * 특정 권한을 가진 사원 목록을 페이징하여 조회합니다.
@@ -27,7 +27,7 @@ public interface RoleService {
      * @param pageable 페이징 및 정렬 정보
      * @return 권한을 가진 사원 목록 Page
      */
-    Page<MemberRoleView> findMemberByRole(long roleId, Pageable pageable);
+    Page<MemberRoleViewDTO> findMemberByRole(long roleId, Pageable pageable);
     
     /**
      * 사원에게서 특정 권한을 회수(삭제)합니다.
@@ -50,7 +50,7 @@ public interface RoleService {
      *
      * @return 전체 사원 DTO 목록
      */
-    List<MemberSummary> getAssignableMembers();
+    List<MemberSummaryDTO> getAssignableMembers();
 
     /**
      * 사원의 부서 변경에 따른 권한 재부여

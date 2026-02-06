@@ -37,67 +37,70 @@ public class DraftRegistService {
     @Transactional
     public void putDraft(DraftRegistDTO draftRegistDTO, Long userId) {
 
+        List<DraftAttachmentEntity> attachment = null;
+
         // Draft 엔티티에 새로문 결재문서 등록
         DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class); // DTO와 Entity 매핑
         draftEntity.setMember(entityManager.getReference(Member.class, userId)); // 작성자 ID 등록
 
-        List<DraftAttachmentEntity> attachment = draftRegistDTO.getDraftFile().stream()
-                .map(attachmentDTO -> {
-                    DraftAttachmentEntity e = new DraftAttachmentEntity();
-                    e.setFileId(attachmentDTO.getFileId());
-                    e.setDraft(draftEntity);
-                    return e;
-                }).toList();
+        if (draftRegistDTO.getDraftFile() != null) {
+            attachment = draftRegistDTO.getDraftFile().stream()
+                    .map(attachmentDTO -> {
+                        DraftAttachmentEntity e = new DraftAttachmentEntity();
+                        e.setFileId(attachmentDTO.getFileId());
+                        e.setDraft(draftEntity);
+                        return e;
+                    }).toList();
+            draftEntity.setDraftFile(attachment);
+            draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus()); // 최종 결재상태(기본값 WAT) 등록
 
-        draftEntity.setDraftFile(attachment);
-        draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus()); // 최종 결재상태(기본값 WAT) 등록
+            DraftEntity savedDraft = draftRepository.save(draftEntity);
 
-        DraftEntity savedDraft = draftRepository.save(draftEntity);
-
-        if("APP".equals(draftRegistDTO.getDraftType())){
-            registAppointmentService.registAppointment(draftRegistDTO, savedDraft);
-        }
-
-        // 결재자 리스트
-        List<String> approverStrings;
-
-        if (draftRegistDTO.getDraftApprover() == null
-                || draftRegistDTO.getDraftApprover().isEmpty()) {
-
-            // 기본 결재선 조회
-            approverStrings = draftApprovalLineRepository
-                    .findByDraftType("APP")
-                    .stream()
-                    .map(line ->
-                            line.getMember().getId() + " " + line.getSequence()
-                    )
-                    .toList();
-
-        } else {
-            approverStrings = draftRegistDTO.getDraftApprover();
-        }
-
-        // 리스트 가공
-        for (String approverString : approverStrings) {
-
-            if (approverString == null || approverString.trim().isEmpty()) {
-                continue;
+            if ("APP".equals(draftRegistDTO.getDraftType())) {
+                registAppointmentService.registAppointment(draftRegistDTO, savedDraft);
             }
 
-            DraftApproveStatusEntity entity = new DraftApproveStatusEntity();
+            // 결재자 리스트
+            List<String> approverStrings;
 
-            String[] parts = approverString.trim().split("\\s+");
-            Long memberId = Long.parseLong(parts[0]);
-            int sequence = Integer.parseInt(parts[parts.length - 1]);
+            if (draftRegistDTO.getDraftApprover() == null
+                    || draftRegistDTO.getDraftApprover().isEmpty()) {
 
-            Member approver = entityManager.getReference(Member.class, memberId);
+                // 기본 결재선 조회
+                approverStrings = draftApprovalLineRepository
+                        .findByDraftType("APP")
+                        .stream()
+                        .map(line ->
+                                line.getMember().getId() + " " + line.getSequence()
+                        )
+                        .toList();
 
-            entity.setDraftEntity(savedDraft);
-            entity.setMember(approver);
-            entity.setSequence(sequence);
-            entity.setStatus("대기");
+            } else {
+                approverStrings = draftRegistDTO.getDraftApprover();
+            }
 
-            draftApproveStatusRepository.save(entity);
+            // 리스트 가공
+            for (String approverString : approverStrings) {
+
+                if (approverString == null || approverString.trim().isEmpty()) {
+                    continue;
+                }
+
+                DraftApproveStatusEntity entity = new DraftApproveStatusEntity();
+
+                String[] parts = approverString.trim().split("\\s+");
+                Long memberId = Long.parseLong(parts[0]);
+                int sequence = Integer.parseInt(parts[parts.length - 1]);
+
+                Member approver = entityManager.getReference(Member.class, memberId);
+
+                entity.setDraftEntity(savedDraft);
+                entity.setMember(approver);
+                entity.setSequence(sequence);
+                entity.setStatus("대기");
+
+                draftApproveStatusRepository.save(entity);
+            }
         }
     }
 }

@@ -166,28 +166,53 @@ h1 {
 
 /* 결재 등록 버튼 (오른쪽 배치 및 포인트 컬러) */
 .btn-register {
-    background-color: #4e73df;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
+    background-color: #d6e4ff;  /* 선택하신 연한 파란색 */
+    color: #4e73df;             /* 배경이 연하므로 글자색은 진한 파란색 추천 */
+    border: none;               /* 테두리 제거 */
+    outline: none;              /* 클릭 시 발생하는 강조선 제거 */
+    border-radius: 4px;
+    box-shadow: none;
+    height: 36px;
+    font-size: 13px;
+    appearance: none;           /* 브라우저 기본 UI 스타일 제거 (주로 버튼/셀렉트박스) */
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 6px rgba(78, 115, 223, 0.2);
+    margin-top: 20px;    /* 위에서 아래로 밀기 */
+    margin-right: 20px;  /* 오른쪽에서 왼쪽으로 밀기 */
 }
 
 .btn-register:hover {
-    background-color: #2e59d9;
+    background-color: #375dc7;
     transform: translateY(-1px);
 }
 /* 검색 영역 컨테이너 */
 .search-container {
-    background-color: #f8f9fc;
-    padding: 15px 20px;
-    border: 1px solid #e3e6f0;
-    border-radius: 10px;
-    margin-bottom: 25px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+}
+
+/* 검색 요소들 높이 통일 */
+.search-select,
+.date-input,
+.btn-search-submit {
+    height: 36px;
+    font-size: 13px;
+    box-sizing: border-box;
+    border: 1px solid #d1d3e2;
+    border-radius: 4px;
+    padding: 0 10px;
+    outline: none;
+}
+
+.btn-search-submit {
+    background-color: #4e73df;
+    color: white;
+    border: none;            /* 버튼 테두리 제거 */
+    padding: 0 18px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 /* 요소들을 일렬로 배치하는 핵심 로직 */
@@ -244,33 +269,36 @@ h1 {
 /* 탭 네비게이터 스타일 */
 .tab-container {
     display: flex;
-    gap: 10px;
-    margin-bottom: -1px;
+    gap: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 8px;
 }
 
+/* 기본 탭 */
 .tab-container button {
-    padding: 12px 24px;
-    border: 1px solid #e3e6f0;
-    border-bottom: none;
-    background-color: #f8f9fc;
-    color: #858796;
-    border-radius: 10px 10px 0 0;
-    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    font-size: 14px;
     font-weight: 600;
-    transition: all 0.3s;
-}
-
-.tab-container button.active {
-    background-color: white;
-    color: #4e73df;
-    border-color: #e3e6f0;
-    border-bottom: 2px solid white;
+    color: #6b7280;
+    cursor: pointer;
     position: relative;
-    z-index: 1;
 }
 
-.tab-container button:hover:not(.active) {
-    background-color: #eaecf4;
+/* 활성 탭 */
+.tab-container button.active {
+    color: #4e73df;
+}
+
+.tab-container button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #4e73df;
 }
 
 /* 테이블 기본 스타일 보정 */
@@ -379,14 +407,52 @@ table td {
     height: 38px;
 }
 
-
-
 .modalBody {
     overflow-y: auto;
 }
 
+.draft-preview {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+    max-height: 120px;
+    overflow: hidden;
+}
+
+#grid {
+    border: 1px solid #e5e7eb;
+    border-top: none;
+}
 
 /* 폼 그룹 간격 */
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
 .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; }
+
+/* Grid 내부 배지 스타일 */
+            .tui-grid-cell .status-badge {
+                padding: 2px 10px;
+                border-radius: 2px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .badge-wait { background: #eee; color: #666; }
+            .badge-approve { background: #e3f2fd; color: #1976d2; }
+            .badge-reject { background: #ffebee; color: #c62828; }
+
+            /* Grid 커스텀 버튼 스타일 */
+            .btn-grid-detail {
+                padding: 2px 12px;
+                border: 1px solid #ddd;
+                background: #fff;
+                cursor: pointer;
+            }
+
+/* 날짜 선택 input 요소 */
+input[type="date"] {
+    height: 36px;             /* 설정하신 높이 */
+    padding: 0 10px;          /* 상하 패딩은 0으로, 좌우만 줌 */
+    box-sizing: border-box;   /* 패딩과 테두리를 높이에 포함시킴 */
+    line-height: 34px;        /* 텍스트 수직 중앙 정렬 (height보다 약간 작게) */
+    vertical-align: middle;
+}

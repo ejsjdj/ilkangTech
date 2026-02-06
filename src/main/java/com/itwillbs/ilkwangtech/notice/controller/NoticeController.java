@@ -4,7 +4,7 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeDetailDTO;
-import com.itwillbs.ilkwangtech.notice.dto:.NoticeSearchDTO;
+import com.itwillbs.ilkwangtech.notice.dto.NoticeSearchDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeWriteDTO;
 import com.itwillbs.ilkwangtech.notice.entity.NoticeFile;
 import com.itwillbs.ilkwangtech.notice.repository.NoticeFileRepository;

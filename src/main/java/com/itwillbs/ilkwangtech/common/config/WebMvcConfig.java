@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-	@Value("${file.uploadBaseLocation}")
+	  @Value("${file.uploadBaseLocation}")
     private String uploadBaseLocation;
 
     @Value("${file.profileImgLocation}")

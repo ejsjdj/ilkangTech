@@ -106,7 +106,8 @@ public class AccountController {
      * @return 내 정보 수정 페이지 뷰 경로
      */
     @GetMapping("/myInfo")
-    public String update() {
+    public String update(@AuthenticationPrincipal AccountLogin user, Model model) {
+        model.addAttribute("user", user);
         return "/account/myInfo";
     }
 

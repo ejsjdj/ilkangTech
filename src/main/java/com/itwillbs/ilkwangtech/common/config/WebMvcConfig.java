@@ -37,7 +37,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         // "/images/profileImg/**" 경로로 요청이 들어오면 위에서 생성된 절대 경로로 매핑
         registry.addResourceHandler("/images/profileImg/**")
-                .addResourceLocations(profileImgPath);
+                .addResourceLocations("file:///" + profileImgPath + "/");
     }
 
 }

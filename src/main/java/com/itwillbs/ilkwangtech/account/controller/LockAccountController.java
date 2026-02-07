@@ -2,16 +2,11 @@ package com.itwillbs.ilkwangtech.account.controller;
 
 import com.itwillbs.ilkwangtech.account.dto.LoginAttemptDTO;
 import com.itwillbs.ilkwangtech.account.service.LoginAttemptService;
-import com.itwillbs.ilkwangtech.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller

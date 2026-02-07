@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.boot.context.properties.source.ConfigurationPropertyName.isValid;
-
 /**
  * Spring Security의 UserDetails를 구현한 클래스
  * 인증된 사용자의 정보와 권한을 담는 객체로 세션에 저장됩니다.

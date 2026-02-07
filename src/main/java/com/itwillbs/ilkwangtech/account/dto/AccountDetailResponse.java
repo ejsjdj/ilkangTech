@@ -1,14 +1,12 @@
 package com.itwillbs.ilkwangtech.account.dto;
 
+import com.itwillbs.ilkwangtech.common.entity.CommonCode;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.entity.MemberRole;
-import com.itwillbs.ilkwangtech.common.entity.CommonCode;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * 사원 상세 정보 조회 시 사용하는 응답 DTO

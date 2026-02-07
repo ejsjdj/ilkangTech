@@ -13,8 +13,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import javax.management.relation.Role;
-
 @Service
 @RequiredArgsConstructor
 public class CommonCodeServiceImpl implements CommonCodeService {

@@ -206,8 +206,7 @@ public class AccountServiceImpl implements AccountService {
 		profileImgRepository.save(profileImg);
 
 		// 세션 정보 갱신을 위해 URL 설정
-		List<ProfileImg> loginsImgs = login.getProfileImgs();
-		loginsImgs.add(profileImg);
+		List<ProfileImg> loginsImgs = profileImgRepository.findByMemberId(login.getId());
 
 		loginsImgs.sort((o1, o2) -> {
 			// 1. Y를 우선순위로

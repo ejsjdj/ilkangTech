@@ -3,10 +3,7 @@ package com.itwillbs.ilkwangtech.account.service;
 import com.itwillbs.ilkwangtech.account.dto.LoginAttemptDTO;
 import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.util.List;
 
 public interface LoginAttemptService {
 

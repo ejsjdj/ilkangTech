@@ -1,6 +1,6 @@
 package com.itwillbs.ilkwangtech.member.service;
 
-import com.itwillbs.ilkwangtech.member.entity.Member;
+
 
 public interface MemberService {
 

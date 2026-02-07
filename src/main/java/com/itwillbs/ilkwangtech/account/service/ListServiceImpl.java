@@ -52,9 +52,6 @@ public class ListServiceImpl implements ListService {
      * @return 전체 사원 목록 Page (AccountDetail DTO)
      */
     public Page<AccountForList> getAccountList(Pageable pageable) {
-        System.out.println("👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌");
-        System.out.println(pageable.toString());
-        System.out.println("👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌👌");
         return memberToAccountForList(listRepository.findAll(pageable));
     }
 
@@ -97,9 +94,9 @@ public class ListServiceImpl implements ListService {
     // 프로필에 띄울 사진 주소 리턴
     private String getFirstProfileImgUrl(Member member) {
 
-        if (member.getProfileImg() == null || member.getProfileImg().isEmpty()) return null;
+        if (member.getProfileImgs() == null || member.getProfileImgs().isEmpty()) return null;
 
-        ProfileImg profileImg = member.getProfileImg().getFirst();
+        ProfileImg profileImg = member.getProfileImgs().getFirst();
         String fileName = profileImg.getImgName();
         String imgLocation = profileImg.getImgLocation();
 

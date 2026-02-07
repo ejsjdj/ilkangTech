@@ -360,8 +360,12 @@
                 <div class="form-card profile-summary" style="padding-bottom: 24px;">
                     <div class="profile-photo-wrapper">
                         <div class="profile-photo">
-                            <img th:if="${user.profileImgUrl}" th:src="${user.profileImgUrl}" alt="urlError">
-                            <span th:unless="${user.profileImgUrl}" th:text="${#strings.substring(user.name, 0, 1)}">홍</span>
+                            <img th:if="${user.profileImgs != null and !user.profileImgs.isEmpty()}"
+                                 th:src="|${user.profileImgs[0].imgLocation}/${user.profileImgs[0].imgName}|"
+                                 alt="Profile Image">       <script>console.log("|/images/${user.profileImgs[0].imgLocation}/${user.profileImgs[0].imgName}|")</script>
+
+                            <span th:unless="${user.profileImgs != null and !user.profileImgs.isEmpty()}"
+                                  th:text="${user.name != null ? #strings.substring(user.name, 0, 1) : '?' }">홍</span>
                         </div>
                     </div>
                     <h2 class="profile-name" th:text="${user.name}">홍길동</h2>

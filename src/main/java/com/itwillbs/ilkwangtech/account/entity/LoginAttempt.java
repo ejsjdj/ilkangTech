@@ -2,7 +2,9 @@ package com.itwillbs.ilkwangtech.account.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

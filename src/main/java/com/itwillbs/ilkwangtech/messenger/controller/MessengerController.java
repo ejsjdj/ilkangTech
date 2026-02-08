@@ -352,7 +352,7 @@ public class MessengerController {
 
         String dispositionType = (contentType.startsWith("image")) ? "inline" : "attachment";
 
-        ContentDisposition contentDisposition = ContentDisposition.builder(dispositionType)
+        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
                 .filename(attach.getOriginalName(), java.nio.charset.StandardCharsets.UTF_8)
                 .build();
 
@@ -368,6 +368,25 @@ public class MessengerController {
     public boolean unreadExists(@AuthenticationPrincipal AccountLogin login) {
         if (login == null) return false;
         return messengerService.hasAnyUnread(login.getId());
+    }
+    
+    @GetMapping("/view/{attachId}")
+    public ResponseEntity<Resource> viewImage(@PathVariable("attachId") Long attachId) throws IOException {
+        ChatAttachment attach = chatAttachmentRepository.findById(attachId)
+                .orElseThrow(() -> new RuntimeException("파일을 찾을 수 없습니다."));
+
+        Path path = Paths.get(uploadBaseLocation, attach.getStorePath())
+                         .resolve(attach.getStoredName())
+                         .normalize();
+        
+        Resource resource = new UrlResource(path.toUri());
+        String contentType = Files.probeContentType(path);
+
+        // inline으로 설정하여 브라우저가 새 창에서 바로 렌더링하게 합니다.
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline") 
+                .body(resource);
     }
     
 }

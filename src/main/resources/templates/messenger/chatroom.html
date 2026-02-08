@@ -760,21 +760,22 @@ function uploadFile(input) {
 
 //chatroom.html 내부의 formatMessage 함수 전체 수정
 function formatMessage(msg) {
-  if (msg.msgType === "IMAGE") {
-    return ''
-      + '<div class="chat-file-msg" style="display:flex; flex-direction:column; gap:8px;">'
-      +   '<a href="/messenger/download/' + msg.attachId + '" target="_blank">'
-      +     '<img src="/messenger/download/' + msg.attachId + '" class="img-preview" '
-      +          'onload="scrollToBottom()" style="max-width:200px; border-radius:10px; cursor:pointer; display:block;">'
-      +   '</a>'
-      +   '<a href="/messenger/download/' + msg.attachId + '" class="file-link" '
-      +      'style="text-decoration:none; color:#2563eb; font-size:13px; display:flex; align-items:center; gap:5px;">'
-      +     '<span class="icon">📎</span>'
-      +     '<span class="file-name" style="word-break:break-all;">' + (msg.content || "") + '</span>'
-      +     '<span class="download-text" style="font-size:11px; color:#9ca3af;">(다운로드)</span>'
-      +   '</a>'
-      + '</div>';
-  }
+	if (msg.msgType === "IMAGE") {
+	    return ''
+	      + '<div class="chat-file-msg" style="display:flex; flex-direction:column; gap:8px;">'
+	      // 클릭 시 /view/ 주소로 연결하여 새 창에서 원본 보기
+	      +   '<a href="/messenger/view/' + msg.attachId + '" target="_blank">' 
+	      +     '<img src="/messenger/download/' + msg.attachId + '" class="img-preview" '
+	      +          'onload="scrollToBottom()" style="max-width:200px; border-radius:10px; cursor:pointer; display:block;">'
+	      +   '</a>'
+	      // 다운로드 버튼은 기존 /download/ 주소 유지
+	      +   '<a href="/messenger/download/' + msg.attachId + '" class="file-link" ...>'
+	      +     '<span class="icon">📎</span>'
+	      +     '<span class="file-name">' + (msg.content || "") + '</span>'
+	      +     '<span class="download-text">(다운로드)</span>'
+	      +   '</a>'
+	      + '</div>';
+	  }
 
   if (msg.msgType === "FILE") {
     return ''

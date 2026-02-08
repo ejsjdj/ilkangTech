@@ -316,16 +316,33 @@
                      th:text="${msg.memberName}"></div>
                      
                 <div class="msg-row">
-                    <div class="msg">
-                        <span th:if="${msg.msgType == 'TEXT'}" th:text="${msg.content}"></span>
-                        <div th:if="${msg.msgType == 'IMAGE'}" class="chat-file-msg">
-                             <img th:src="@{'/messenger/download/' + ${msg.attachId}}" class="img-preview" style="max-width:200px; border-radius:10px;">
-                        </div>
-                    </div>
-                    <span class="time" th:text="${#temporals.format(msg.createdAt, 'a h:mm')}"></span>
-                    <span class="unread-count" th:if="${msg.unreadCount > 0}" th:text="${msg.unreadCount}"></span>
-                    
-                </div>
+	                <div class="msg">
+	                    <span th:if="${msg.msgType == 'TEXT'}" th:text="${msg.content}"></span>
+	                    
+	                    <div th:if="${msg.msgType == 'IMAGE'}" class="chat-file-msg" style="display:flex; flex-direction:column; gap:8px;">
+						    
+						    <a href="javascript:void(0);" 
+						       th:if="${msg.attachId != null}"
+						       th:onclick="|openImagePopup('/messenger/view/${msg.attachId}')|"
+						       style="display:block; width:fit-content;">
+						        <img th:src="@{|/messenger/download/${msg.attachId}|}" 
+						             class="img-preview" 
+						             style="cursor:pointer; max-width:200px; border-radius:10px; display:block;">
+						    </a>
+						    
+						    <a th:href="@{|/messenger/download/${msg.attachId}|}" class="file-link" 
+						       style="text-decoration:none; color:#2563eb; font-size:13px; display:inline-flex; align-items:center; gap:5px; width:max-content;">
+						        <span class="icon">📎</span>
+						        <span class="file-name" th:text="${msg.content}" style="word-break:break-all;">파일명</span>
+						        <span class="download-text" style="font-size:11px; color:#9ca3af;">(다운로드)</span>
+						    </a>
+						</div>
+	                </div>
+	                
+	                <span class="time" th:text="${msg.formattedTime}">오전 10:00</span>
+	                
+	                <span class="unread-count" th:if="${msg.unreadCount > 0}" th:text="${msg.unreadCount}">1</span>
+	            </div>
             </div>
         </div>
     	</th:block>
@@ -761,18 +778,20 @@ function uploadFile(input) {
 //chatroom.html 내부의 formatMessage 함수 전체 수정
 function formatMessage(msg) {
 	if (msg.msgType === "IMAGE") {
+	    var viewUrl = '/messenger/view/' + msg.attachId;
 	    return ''
 	      + '<div class="chat-file-msg" style="display:flex; flex-direction:column; gap:8px;">'
-	      // 클릭 시 /view/ 주소로 연결하여 새 창에서 원본 보기
-	      +   '<a href="/messenger/view/' + msg.attachId + '" target="_blank">' 
+	      +   ''
+	      +   '<a href="javascript:void(0);" onclick="openImagePopup(\'' + viewUrl + '\')" style="display:block; width:fit-content;">'
 	      +     '<img src="/messenger/download/' + msg.attachId + '" class="img-preview" '
 	      +          'onload="scrollToBottom()" style="max-width:200px; border-radius:10px; cursor:pointer; display:block;">'
 	      +   '</a>'
-	      // 다운로드 버튼은 기존 /download/ 주소 유지
-	      +   '<a href="/messenger/download/' + msg.attachId + '" class="file-link" ...>'
+	      +   ''
+	      +   '<a href="/messenger/download/' + msg.attachId + '" class="file-link" '
+	      +      'style="text-decoration:none; color:#2563eb; font-size:13px; display:inline-flex; align-items:center; gap:5px; width:max-content;">'
 	      +     '<span class="icon">📎</span>'
-	      +     '<span class="file-name">' + (msg.content || "") + '</span>'
-	      +     '<span class="download-text">(다운로드)</span>'
+	      +     '<span class="file-name" style="word-break:break-all;">' + (msg.content || "") + '</span>'
+	      +     '<span class="download-text" style="font-size:11px; color:#9ca3af;">(다운로드)</span>'
 	      +   '</a>'
 	      + '</div>';
 	  }
@@ -918,6 +937,20 @@ document.querySelectorAll('.msgWrap').forEach(function(w){
 	  );
 	});
 
+function openImagePopup(url) {
+    // 새 창의 가로, 세로 크기 설정
+    var width = 800;
+    var height = 600;
+    
+    // 화면 중앙에 띄우기 위한 좌표 계산
+    var left = (window.screen.width / 2) - (width / 2);
+    var top = (window.screen.height / 2) - (height / 2);
+    
+    window.open(url, 'imagePreview', 
+        'width=' + width + ', height=' + height + 
+        ', top=' + top + ', left=' + left + 
+        ', resizable=yes, scrollbars=yes');
+}
 </script>
 </body>
 </html>

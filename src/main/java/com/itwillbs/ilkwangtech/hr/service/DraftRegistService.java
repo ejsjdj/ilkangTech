@@ -37,6 +37,7 @@ public class DraftRegistService {
     @Transactional
     public void putDraft(DraftRegistDTO draftRegistDTO, Long userId) {
 
+        int seq = 1;
         List<String> approverStrings;
         List<DraftAttachmentEntity> attachment = null;
 
@@ -85,21 +86,14 @@ public class DraftRegistService {
             // 리스트 가공
             for (String approverString : approverStrings) {
                 System.out.println("결재자 ID : " + approverString);
-                if (approverString == null || approverString.trim().isEmpty()) {
-                    continue;
-                }
+                if (approverString == null || approverString.trim().isEmpty()) { continue; }
+
+                Long memberId = Long.parseLong(approverString);
 
                 DraftApproveStatusEntity entity = new DraftApproveStatusEntity();
-
-                String[] parts = approverString.trim().split("\\s+");
-                Long memberId = Long.parseLong(parts[0]);
-                int sequence = Integer.parseInt(parts[parts.length - 1]);
-
-                Member approver = entityManager.getReference(Member.class, memberId);
-
                 entity.setDraftEntity(savedDraft);
-                entity.setMember(approver);
-                entity.setSequence(sequence);
+                entity.setMember(entityManager.getReference(Member.class, memberId));
+                entity.setSequence(seq++);
                 entity.setStatus("대기");
 
                 draftApproveStatusRepository.save(entity);

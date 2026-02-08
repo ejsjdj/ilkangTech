@@ -61,16 +61,38 @@
                         </button>
                     </div>
                     <div class="approval-arrow"><i class="bi bi-arrow-right"></i></div>
-                    <div class="approval-card">
-                        <div class="card-header">2차 결재자</div>
+                    <div class="approval-card" data-step="2">
+                        <div class="card-header">
+                            1차 결재자
+                            <button type="button" class="btn-remove" onclick="removeApprover(2)">✕</button>
+                        </div>
+
                         <div class="card-body" id="display_approver2">대기 중</div>
                         <input type="hidden" id="approver2" name="approver2">
+
+                        <button type="button"
+                                class="btn-add"
+                                onclick="openEmployeeModal(2)"
+                                style="display:none;">
+                            + 추가
+                        </button>
                     </div>
                     <div class="approval-arrow"><i class="bi bi-arrow-right"></i></div>
-                    <div class="approval-card">
-                        <div class="card-header">3차 결재자</div>
+                    <div class="approval-card" data-step="3">
+                        <div class="card-header">
+                            1차 결재자
+                            <button type="button" class="btn-remove" onclick="removeApprover(3)">✕</button>
+                        </div>
+
                         <div class="card-body" id="display_approver3">대기 중</div>
                         <input type="hidden" id="approver3" name="approver3">
+
+                        <button type="button"
+                                class="btn-add"
+                                onclick="openEmployeeModal(3)"
+                                style="display:none;">
+                            + 추가
+                        </button>
                     </div>
                 </div>
             </div>

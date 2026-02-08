@@ -306,6 +306,7 @@ SELECT leave_status_seq.NEXTVAL, M.id, 15, 0, 15 FROM members M;
 
 -- 결재선 (Draft Approval Line) - member_id는 결재자를 의미하며 반드시 members 테이블에 존재해야 함
 
+
 -- [1] 고정 게시글 3개 등록 (is_pinned = 1)
 INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
 VALUES (SEQ_NOTICE.NEXTVAL, '[중요] 전사 통합 ERP 시스템 점검 안내', '시스템 안정화를 위한 정기 점검이 예정되어 있습니다.', '이순신', '사장', '관리부', 120, 1, 1, TO_TIMESTAMP('2026-01-26 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE);
@@ -362,6 +363,7 @@ SELECT SEQ_NOTICE.NEXTVAL,
 FROM DUAL 
 CONNECT BY LEVEL <= 90;
 
+COMMIT;
 
 
 INSERT INTO commute_update_request (

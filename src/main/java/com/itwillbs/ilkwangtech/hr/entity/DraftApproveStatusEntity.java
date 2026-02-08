@@ -34,7 +34,7 @@ public class DraftApproveStatusEntity {
     private Member member;
 
     // 이 사람의 결재 순서는?
-    @Column(nullable = false)
+    @Column(name = "step_no", nullable = false)
     private long sequence;
 
     // 이 사람의 결재 상태는?

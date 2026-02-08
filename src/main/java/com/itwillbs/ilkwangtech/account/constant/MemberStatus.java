@@ -1,27 +1,32 @@
 package com.itwillbs.ilkwangtech.account.constant;
 
-import jakarta.persistence.Converter;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-import java.util.Arrays;
-
-@Getter
-@RequiredArgsConstructor
 public enum MemberStatus {
-
-    ACTIVE(1, "재직중"),
-    INACTIVE(2, "휴직중"),
-    LEAVE(3, "퇴사");
+    EMPLOYED(1, "재직"),
+    WORKING(2, "근무"),
+    OFF_WORK(3, "퇴근"),
+    OUT_OFFICE(4, "외근"),
+    ANNUAL_LEAVE(5, "연차"),
+    RESIGNED(6, "퇴사");
 
     private final int code;
     private final String description;
 
-    public static MemberStatus fromCode(Integer code) {
-        return Arrays.stream(MemberStatus.values())
-                .filter(v -> v.getCode() == code)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("상태를 알수 없습니다."));
+    MemberStatus(int code, String description) {
+        this.code = code;
+        this.description = description;
     }
 
+    public int getCode() { return code; }
+    public String getDescription() { return description; }
+
+    // 숫자를 넣으면 해당 Enum을 찾아주는 메서드
+    public static MemberStatus fromCode(Integer code) {
+        if (code == null) return null;
+        for (MemberStatus status : MemberStatus.values()) {
+            if (status.getCode() == code) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Unknown code: " + code);
+    }
 }

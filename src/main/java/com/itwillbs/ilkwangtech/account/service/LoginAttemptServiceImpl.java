@@ -54,12 +54,8 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     @Override
     public Page<LoginAttemptDTO> getList(Integer page, Integer size, String sortBy, Sort.Direction direction) {
 
-        System.out.println("@@@@@@@@@@@@"+direction);
-        System.out.println("@@@@@@@@@@@@"+sortBy);
-
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction,sortBy));
        // Pageable pageable = PageRequest.of(page - 1, size);
-        System.out.println("@@@@@@@@@@@@"+pageable);
 
 
         Page<LoginAttemptDTO> loginAttempts = loginAttemptRepository.findAttemptLongingList(pageable);

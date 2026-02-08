@@ -151,7 +151,7 @@ public class AccountLogin implements UserDetails {
 				 .email(member.getEmail())
 				 .phoneNumber(member.getPhoneNumber())
 				 .accountNumber(member.getAccountNumber())
-				 .profileImgs(member.getProfileImgs()) // 이 줄이 반드시 필요합니다!
+				 .profileImgs(member.getProfileImgs())
 				 .roles(member.getRoles())
 				 .build();
 	 }

@@ -48,6 +48,7 @@ public class AccountDetailResponse {
                 .department(department)
                 .position(position)
                 .bank(bank)
+                .status(member.getStatus().getDescription())
                 .profileImgUrl(profileImgUrl)
                 .roles(member.getRoles().stream()
                         .map(MemberRole::getRole)
@@ -55,4 +56,25 @@ public class AccountDetailResponse {
                         .toList())
                 .build();
     }
+
+//    public static AccountDetailResponse of(Member member, String department, String position, String bank) {
+//        return AccountDetailResponse.builder()
+//                .id(member.getId())
+//                .employeeNumber(member.getEmployeeNumber())
+//                .accountNumber(member.getAccountNumber())
+//                .name(member.getName())
+//                .gender(member.getGender() == 1 ? "남" : "여")
+//                .hireDate(member.getHireDate())
+//                .residentNumber(member.getResidentNumber())
+//                .email(member.getEmail())
+//                .phoneNumber(member.getPhoneNumber())
+//                .department(department)
+//                .position(position)
+//                .bank(bank)
+//                .roles(member.getRoles().stream()
+//                        .map(MemberRole::getRole)
+//                        .map(CommonCode::getCommonCodeName)
+//                        .toList())
+//                .build();
+//    }
 }

@@ -25,22 +25,19 @@ import lombok.extern.log4j.Log4j2;
 public class AttendanceApiController {
 
     private final AttendanceService attendanceService;
-    
+
     // 시간 포맷 
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("a hh:mm");
 
     // 1. 상태 조회
     @GetMapping("/status")
     public ResponseEntity<AttendanceDTO> getStatus(@AuthenticationPrincipal AccountLogin loginMember) {
-    	log.info("getStatus() 실행!");
-    	log.info("getStatus() 종료!");
         return ResponseEntity.ok(attendanceService.getTodayStatus(loginMember.getId()));
     }
 
     // 2. 출근
     @PostMapping("/in")
     public ResponseEntity<AttendanceDTO> clockIn(@AuthenticationPrincipal AccountLogin loginMember) {
-    	log.info("clockIn() 실행!");
     	try {
             AttendanceDTO result = attendanceService.clockIn(loginMember.getId());
             
@@ -49,14 +46,12 @@ public class AttendanceApiController {
                     loginMember.getName(), loginMember.getPosition(), time);
             
             result.setMessage(message); // 성공 메시지 설정
-            log.info("clockIn() 종료(출근 성공)!");
             return ResponseEntity.ok(result);
 
         } catch (IllegalStateException e) {
             AttendanceDTO errorResult = new AttendanceDTO();
             errorResult.setMessage(e.getMessage()); 
-            
-            log.info("clockIn() 종료(중복 출근)!");
+
             return ResponseEntity.ok(errorResult);
         }
     }
@@ -73,7 +68,6 @@ public class AttendanceApiController {
         
         result.setMessage(message);
 
-        log.info("clockOut() 종료!");
         return ResponseEntity.ok(result);
     }
 
@@ -81,7 +75,6 @@ public class AttendanceApiController {
     @PostMapping("/outside")
     public ResponseEntity<AttendanceDTO> goOutside(@RequestBody AttendanceDTO params, 
                                                    @AuthenticationPrincipal AccountLogin loginMember) {
-    	log.info("goOutside() 실행!");
         AttendanceDTO result = attendanceService.goOutside(loginMember.getId(), params);
 
         String time = LocalDateTime.now().format(timeFormatter);
@@ -91,14 +84,12 @@ public class AttendanceApiController {
         
         result.setMessage(message);
 
-        log.info("goOutside() 종료!");
         return ResponseEntity.ok(result);
     }
 
     // 5. 복귀
     @PostMapping("/return")
     public ResponseEntity<AttendanceDTO> comeBack(@AuthenticationPrincipal AccountLogin loginMember) {
-    	log.info("comeBack() 실행!");
         AttendanceDTO result = attendanceService.comeBack(loginMember.getId());
 
         String time = LocalDateTime.now().format(timeFormatter);
@@ -107,7 +98,6 @@ public class AttendanceApiController {
         
         result.setMessage(message);
 
-        log.info("comeBack() 종료!");
         return ResponseEntity.ok(result);
     }
 }

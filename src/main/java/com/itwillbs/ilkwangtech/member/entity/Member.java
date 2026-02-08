@@ -50,7 +50,7 @@ public class Member {
     @Column(length = 20)
     private String residentNumber; // 주민등록번호
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, mappedBy = "member")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "member")
     private List<ProfileImg> profileImgs;
 
     @Column(length = 100, nullable = false, unique = true)
@@ -97,10 +97,10 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberRole> roles = new ArrayList<>();
 
-    /**
-     * 로그인 시도 및 계정 잠금 정보 (1:1 관계)
-     */
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private LoginAttempt loginAttempt;
+//    /**
+//     * 로그인 시도 및 계정 잠금 정보 (1:1 관계)
+//     */
+//    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private LoginAttempt loginAttempt;
 
 }

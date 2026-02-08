@@ -37,7 +37,7 @@ public class AccountForList {
                 .name(member.getName())
                 .department(departmentName)
                 .position(positionName)
-                .status(member.getStatus() == null ? "재직중" : "추후수정")
+                .status(member.getStatus().getDescription())
                 .phoneNumber(member.getPhoneNumber())
                 .email(member.getEmail())
                 .build();

@@ -49,8 +49,6 @@ public class RoleServiceImpl implements RoleService {
                 .collect(Collectors.toList());
     }
 
-
-
     /**
      * 특정 권한 ID를 가진 모든 사원 정보를 조회합니다.
      *

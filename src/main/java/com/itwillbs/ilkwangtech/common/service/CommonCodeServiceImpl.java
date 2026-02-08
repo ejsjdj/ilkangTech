@@ -23,14 +23,14 @@ public class CommonCodeServiceImpl implements CommonCodeService {
     private final BankRepository bankRepository;
 
     @Override
-    @Cacheable(value = "departments", key = "#id", unless = "#result == null")
+    @Cacheable(value = "departments", key = "#p0", unless = "#result == null")
     public String getDepartmentName(Integer id) {
         if (id == null) return null;
         return departmentRepository.findById(id).map(Department::getDepartmentName).orElse(null);
     }
 
     @Override
-    @CacheEvict(value = "departments", key = "#id")
+    @CacheEvict(value = "departments", key = "#p0")
     public void updateDepartment(Integer id, String newName) {
         Department dept = departmentRepository.findById(id).orElseThrow(() -> new RuntimeException("부서를 찾을 수 없습니다."));
         if (newName != null) dept.setDepartmentName(newName);
@@ -38,14 +38,14 @@ public class CommonCodeServiceImpl implements CommonCodeService {
     }
 
     @Override
-    @Cacheable(value = "positions", key = "#id", unless = "#result == null")
+    @Cacheable(value = "positions", key = "#p0", unless = "#result == null")
     public String getPositionName(Integer id) {
         if (id == null) return null;
         return positionRepository.findById(id).map(Position::getPositionName).orElse(null);
     }
 
     @Override
-    @CacheEvict(value = "positions", key = "#id")
+    @CacheEvict(value = "positions", key = "#p0")
     public void updatePosition(Integer id, String newName) {
         Position pos = positionRepository.findById(id).orElseThrow(() -> new RuntimeException("직책을 찾을 수 없습니다."));
         if (newName != null) pos.setPositionName(newName);
@@ -53,14 +53,14 @@ public class CommonCodeServiceImpl implements CommonCodeService {
     }
 
     @Override
-    @Cacheable(value = "banks", key = "#id", unless = "#result == null")
+    @Cacheable(value = "banks", key = "#p0", unless = "#result == null")
     public String getBankName(Integer id) {
         if (id == null) return null;
         return bankRepository.findById(id).map(Bank::getBankName).orElse(null);
     }
 
     @Override
-    @CacheEvict(value = "banks", key = "#id")
+    @CacheEvict(value = "banks", key = "#p0")
     public void updateBank(Integer id, String newName) {
         Bank bank = bankRepository.findById(id).orElseThrow(() -> new RuntimeException("은행을 찾을 수 없습니다."));
         if (newName != null) bank.setBankName(newName);
@@ -68,7 +68,7 @@ public class CommonCodeServiceImpl implements CommonCodeService {
     }
 
     @Override
-    @Cacheable(value = "roles", key = "#id", unless = "#result == null")
+    @Cacheable(value = "roles", key = "#p0", unless = "#result == null")
     public String getRoleName(Long id) {
         if (id == null) return null;
         return commonCodeRepository.findById(id).map(CommonCode::getCommonCodeName).orElse(null);

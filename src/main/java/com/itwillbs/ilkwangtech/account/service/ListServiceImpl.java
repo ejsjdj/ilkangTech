@@ -74,6 +74,7 @@ public class ListServiceImpl implements ListService {
         String profileImgUrl = getFirstProfileImgUrl(member);
 
         return AccountDetailResponse.of(member, deptName, posName, bankName, profileImgUrl);
+//        return AccountDetailResponse.of(member, deptName, posName, bankName);
     }
 
     /**

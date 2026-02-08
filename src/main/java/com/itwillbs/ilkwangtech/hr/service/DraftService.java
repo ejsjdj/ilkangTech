@@ -34,9 +34,6 @@ public class DraftService {
     @Transactional
     public Page<DraftDTO> getDraftById(AccountLogin loginUser, Long userId, Pageable pageable, String docType, String draftType, LocalDate startDate, LocalDate endDate) {
 
-
-        System.out.println(draftType);
-
         // 2. employeeNumber → Member 조회
         Member member = memberRepository.findByEmployeeNumber(
                 loginUser.getEmployeeNumber()

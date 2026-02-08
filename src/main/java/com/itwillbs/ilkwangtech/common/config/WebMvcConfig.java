@@ -7,37 +7,41 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.file.Paths;
 
-/**
- * 프로필 이미지 요청을 처리하는 컨트롤러
- * WebMvcConfigurer 의 addResourceHandlers 는
- * URL 경로 -> "실제 파일 경로"로 매핑한다.
- */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-	@Value("${file.uploadBaseLocation}")
-    private String uploadBaseLocation;
+    @Value("${file.uploadBaseLocation}")
+    private String baseDir; // /usr/local/tomcat/upload/
 
     @Value("${file.profileImgLocation}")
-    private String profileImgLocation;
+    private String profileImgLocation; // images/profileImg
 
-    /**
-     * OS 에 종속되지 않고 어떤 OS 에서든
-     * 파일 경로를 동적으로 생성하여 매핑하기 위해
-     * Path 로 경로를 생성한다.
-     */
+    private String getRealUploadPath() {
+        String path = baseDir;
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            if (path.startsWith("/")) {
+                path = "C:" + path;
+            }
+        }
+        if (!path.endsWith("/") && !path.endsWith("\\")) {
+            path += "/";
+        }
+        return path;
+    }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String realPath = getRealUploadPath();
 
-        // 이미지를 불러오기 위한 경로 생성
-        String profileImgPath = Paths.get(uploadBaseLocation, profileImgLocation)
+        String profileImgPath = Paths.get(realPath, profileImgLocation)
                                      .toAbsolutePath()
                                      .normalize()
                                      .toString();
 
-        // "/images/profileImg/**" 경로로 요청이 들어오면 위에서 생성된 절대 경로로 매핑
         registry.addResourceHandler("/images/profileImg/**")
                 .addResourceLocations("file:///" + profileImgPath + "/");
+        
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations("file:///" + realPath);
     }
-
 }

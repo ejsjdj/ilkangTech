@@ -1,5 +1,4 @@
 // 전역 변수 설정
-let currentDraftId = null;
 let editor; // 작성용 에디터 객체
 let viewer; // 상세보기용 뷰어 객체
 

@@ -5,28 +5,28 @@
 
 
 DROP SEQUENCE draft_approval_line_seq;
-DROP SEQUENCE draft_approval_status;
-DROP SEQUENCE draft_attachment_entity;
+DROP SEQUENCE draft_status_seq;
+DROP SEQUENCE draft_attach_seq;
 DROP SEQUENCE draft_document_seq;
 DROP SEQUENCE leave_status_seq;
 DROP SEQUENCE member_role_seq;
 DROP SEQUENCE common_code_seq;
 DROP SEQUENCE MEMBERS_SEQ;
-/*DROP SEQUENCE SEQ_SCHEDULE;
+DROP SEQUENCE SEQ_SCHEDULE;
 DROP SEQUENCE SEQ_ATTENDANCE;
-DROP SEQUENCE SEQ_NOTICE;*/
+DROP SEQUENCE SEQ_NOTICE;
 
 CREATE SEQUENCE draft_approval_line_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE draft_approval_status START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE draft_attachment_entity START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE draft_status_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE draft_attach_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE draft_document_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE leave_status_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE member_role_seq START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE common_code_seq START WITH 1001 INCREMENT BY 1;
 CREATE SEQUENCE MEMBERS_SEQ START WITH 200 INCREMENT BY 1;
-/*CREATE SEQUENCE SEQ_SCHEDULE START WITH 200 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_SCHEDULE START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_ATTENDANCE START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE SEQ_NOTICE START WITH 1 INCREMENT BY 1;*/
+CREATE SEQUENCE SEQ_NOTICE START WITH 1 INCREMENT BY 1;
 
 
 
@@ -305,17 +305,9 @@ INSERT INTO leave_status (leave_id, member_id, total_leave, used_leave, remain_l
 SELECT leave_status_seq.NEXTVAL, M.id, 15, 0, 15 FROM members M;
 
 -- 결재선 (Draft Approval Line) - member_id는 결재자를 의미하며 반드시 members 테이블에 존재해야 함
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'PTO', 1, 1); -- 휴가
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'HTO', 1, 1); -- 반차
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 200, 1); -- 구매
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 13, 2); -- 구매
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'BUY', 1, 3); -- 구매
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'EXP', 2, 1); -- 지출
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'EXP', 1, 2); -- 지출
-INSERT INTO draft_approval_line (line_id, draft_type, member_id, sequence) VALUES (draft_approval_line_seq.NEXTVAL, 'APP', 1, 1); -- 발령
 
 -- [1] 고정 게시글 3개 등록 (is_pinned = 1)
-/*INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
+INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
 VALUES (SEQ_NOTICE.NEXTVAL, '[중요] 전사 통합 ERP 시스템 점검 안내', '시스템 안정화를 위한 정기 점검이 예정되어 있습니다.', '이순신', '사장', '관리부', 120, 1, 1, TO_TIMESTAMP('2026-01-26 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE);
 
 INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
@@ -323,12 +315,12 @@ VALUES (SEQ_NOTICE.NEXTVAL, '[공지] 2026년 상반기 핵심 경영 목표 공
 
 INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
 VALUES (SEQ_NOTICE.NEXTVAL, '[안내] 설 연휴 사내 보안 및 전자기기 점검 지침', '연휴 기간 중 보안 사고 예방을 위해 지침을 준수해 주세요.', '넬슨', '사장', '관리부', 85, 1, 0, TO_TIMESTAMP('2026-01-24 10:30:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE);
-*/
+
 
 -- [2] 일반 게시글 등록 (개별 INSERT 방식 - 총 100개)
 -- 최신순 정렬 확인을 위해 날짜를 역순으로 배치했습니다.
 
-/*INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
+INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
 VALUES (SEQ_NOTICE.NEXTVAL, '2026년 상반기 전체 부서 워크숍 안내', '상반기 결산 및 팀워크 향상을 위한 워크숍이 3월 중 진행됩니다.', '김관리', '부장', '관리부', 15, 0, 0, TO_TIMESTAMP('2026-01-28 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), SYSDATE);
 
 INSERT INTO notice (id, title, content, writer_name, writer_rank, writer_dept, view_count, is_pinned, has_attachment, reg_date, mod_date)
@@ -370,7 +362,6 @@ SELECT SEQ_NOTICE.NEXTVAL,
 FROM DUAL 
 CONNECT BY LEVEL <= 90;
 
-COMMIT;*/
 
 
 INSERT INTO commute_update_request (

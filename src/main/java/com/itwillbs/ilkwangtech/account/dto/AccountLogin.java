@@ -138,6 +138,7 @@ public class AccountLogin implements UserDetails {
 	 // 빌더
 	 public static AccountLogin of(Member member, String department, String position, String name) {
 		 return AccountLogin.builder()
+                 .id(member.getId())
 				 .employeeNumber(member.getEmployeeNumber())
 				 .password(member.getPassword())
 				 .name(name)

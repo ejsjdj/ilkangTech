@@ -37,6 +37,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // 부서, 직급, 은행 이름 조회
         String departmentName = commonCodeService.getDepartmentName(member.getDepartment());
+        log.info(">>>>>> 들어온 department : " + departmentName);
         String positionName = commonCodeService.getPositionName(member.getPosition());
         String bankName = commonCodeService.getBankName(member.getBank());
 

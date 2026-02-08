@@ -75,7 +75,7 @@ public class CommonCodeServiceImpl implements CommonCodeService {
     }
 
     @Override
-    @CacheEvict(value = "roles", key = "#id")
+    @CacheEvict(value = "roles", key = "#p0")
     public void updateRole(Long id, String newName) {
         CommonCode commonCode = commonCodeRepository.findById(id).orElseThrow(() -> new RuntimeException("권한을 찾을 수 없습니다."));
         if (newName != null) commonCode.setCommonCodeName(newName);

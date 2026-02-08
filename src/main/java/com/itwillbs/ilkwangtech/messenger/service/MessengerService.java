@@ -139,10 +139,12 @@ public class MessengerService {
     }
     
     // 메세지 전송 시간을 기준으로 해당 메시지를 읽지 않은 참여자 수 계산
-    public int getUnreadCount(Long roomId, LocalDateTime messageTime) {
+    public int getUnreadCount(Long roomId, LocalDateTime messageTime, Long senderId) {
         List<ChatRoomMember> members = chatRoomMemberRepository.findByRoomId(roomId);
         
         return (int) members.stream()
+                // [핵심] 메시지 발신자는 안 읽은 사람 수에서 제외
+                .filter(m -> !m.getId().getMemberId().equals(senderId)) 
                 .filter(m -> m.getLastReadAt() == null || m.getLastReadAt().isBefore(messageTime))
                 .count();
     }
@@ -154,7 +156,6 @@ public class MessengerService {
         List<ChatMessage> messages = chatMessageRepository.findHistory(roomId, membership.getJoinedAt());
         LocalDateTime lastReadAt = membership.getLastReadAt();
 
-        // 안 읽은 첫 번째 메시지 찾기
         final boolean[] markedFirst = {false}; 
         
         return messages.stream().map(msg -> {
@@ -162,29 +163,30 @@ public class MessengerService {
             dto.setMemberId(msg.getMemberId());
             dto.setContent(msg.getContent());
             dto.setCreatedAt(msg.getCreatedAt());
-            dto.setMsgType(msg.getMsgType());
+            dto.setMsgType(msg.getMsgType()); // DB의 타입을 기본으로 세팅
             
-            // 첨부파일 처리
+            // 첨부파일 처리 및 타입 보정
             chatAttachmentRepository.findByMessageId(msg.getId()).ifPresent(attach -> {
                 dto.setAttachId(attach.getId());
+                // DB에 타입이 누락되었을 경우를 대비해 보정
+                if (dto.getMsgType() == null || "TEXT".equals(dto.getMsgType())) {
+                    dto.setMsgType("Y".equals(attach.getIsImage()) ? "IMAGE" : "FILE");
+                }
             });
 
-            // 발신자 정보 세팅
             String senderName = memberRepository.findById(msg.getMemberId()).map(Member::getName).orElse("사용자");
             dto.setMemberName(senderName);
             dto.setFormattedTime(msg.getCreatedAt().format(DateTimeFormatter.ofPattern("a h:mm")));
-            dto.setUnreadCount(getUnreadCount(roomId, msg.getCreatedAt())); 
+            
+            // [수정] 발신자 ID를 넘겨서 본인을 제외하고 카운트하게 함
+            dto.setUnreadCount(getUnreadCount(roomId, msg.getCreatedAt(), msg.getMemberId())); 
 
-            // 안 읽은 첫 번째 메시지 판별 로직
-            // 1. 상대방이 보낸 메시지여야 함
-            // 2. 내 마지막 읽은 시간(lastReadAt)보다 나중에 생성됨
-            // 3. 아직 첫 번째 메시지로 지정된 적이 없음
+            // 안 읽은 첫 번째 메시지 판별 (기존 로직 유지)
             if (!msg.getMemberId().equals(myId) && 
                 (lastReadAt == null || msg.getCreatedAt().isAfter(lastReadAt)) && 
                 !markedFirst[0]) {
-                
                 dto.setIsFirstUnread(true); 
-                markedFirst[0] = true; // 이후 메시지들은 false로 남음
+                markedFirst[0] = true;
             } else {
                 dto.setIsFirstUnread(false);
             }
@@ -359,6 +361,8 @@ public class MessengerService {
                 }
             }
         });
+        
+        settingRepository.save(setting);
     }
     
     private void syncChatRoomFavorite(Long roomId, Long memberId, String status) {

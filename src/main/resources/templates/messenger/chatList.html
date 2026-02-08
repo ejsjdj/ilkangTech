@@ -569,6 +569,13 @@ function toggleCheckbox(item) {
     updateSelectedDisplay();
 }
 
+window.addEventListener('message', function(e) {
+	  if (!e || !e.data) return;
+	  if (e.data.type === 'REFRESH_LIST') {
+	    location.reload();
+	  }
+	});
+
 </script>	
 
 <div th:replace="~{messenger/messengerLayout :: messengerScript}"></div>

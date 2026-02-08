@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -141,6 +142,9 @@ public class MessengerController {
 	                       @AuthenticationPrincipal AccountLogin login, 
 	                       Model model) {
 	    Long myId = login.getId();
+	    
+	    System.out.println("=== 채팅방 입장 확인 ===");
+	    System.out.println("현재 로그인한 사용자 ID (myId): " + myId);
 
 	    model.addAttribute("displayTitle", messengerService.getRoomDisplayTitle(roomId, myId));
 	    
@@ -271,16 +275,35 @@ public class MessengerController {
     
     // 채팅창에 대한 즐겨찾기 설정
     @PostMapping("/api/favorite")
-    @ResponseBody
-    public ResponseEntity<String> toggleFavorite(@RequestBody Map<String, Object> params) {
-        Long roomId = Long.valueOf(params.get("roomId").toString());
-        Long memberId = Long.valueOf(params.get("myMemberId").toString());
-        String status = params.get("status").toString(); // "Y" 또는 "N"
+    public ResponseEntity<?> toggleFavorite(@RequestBody Map<String, Object> params) {
+        try {
+            // 1. 데이터 추출
+            Object roomIdObj = params.get("roomId");
+            Object memberIdObj = params.get("myMemberId");
+            Object statusObj = params.get("status");
 
-        // CHAT_ROOM_MEMBER_SETTING 테이블에 상태 업데이트 또는 Insert 로직 수행
-        messengerService.updateFavoriteStatus(roomId, memberId, status);
-        
-        return ResponseEntity.ok("success");
+            // 2. Null 체크
+            if (roomIdObj == null || memberIdObj == null || statusObj == null) {
+                return ResponseEntity.badRequest().body("필수 파라미터가 누락되었습니다.");
+            }
+
+            // 3. 타입 변환 (안전하게 처리)
+            Long roomId = Long.parseLong(roomIdObj.toString());
+            Long memberId = Long.parseLong(memberIdObj.toString());
+            String status = statusObj.toString();
+
+            // 4. 후속 로직: DB 업데이트 (본인의 Service 명칭에 맞게 수정하세요)
+            messengerService.updateFavoriteStatus(roomId, memberId, status);
+            // 지금은 서비스 호출 코드가 없으므로 로그로 대체하거나 본인의 코드를 넣으세요.
+            System.out.println("즐겨찾기 업데이트: 방=" + roomId + ", 회원=" + memberId + ", 상태=" + status);
+
+            // 5. 성공 응답 반환 (이게 있어야 빨간 줄이 사라집니다)
+            return ResponseEntity.ok().body(Map.of("status", "success", "currentStatus", status));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("에러 발생: " + e.getMessage());
+        }
     }
     
     @PostMapping("/api/favorite/member")

@@ -3,10 +3,7 @@ package com.itwillbs.ilkwangtech.hr.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.member.entity.Member;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class DraftRegistDTO {
     //======================사용자 입력=========================//
     private String draftType;

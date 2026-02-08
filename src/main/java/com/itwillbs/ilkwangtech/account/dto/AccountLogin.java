@@ -13,13 +13,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.springframework.boot.context.properties.source.ConfigurationPropertyName.isValid;
 
 /**
  * Spring Security의 UserDetails를 구현한 클래스
@@ -37,7 +36,7 @@ public class AccountLogin implements UserDetails {
 	private String employeeNumber;  	// 사원번호 (로그인 ID로 사용)
 	private String password;			// 암호화된 비밀번호게
 	private int gender;          		// 성별
-	private LocalDateTime hireDate;     // 입사일
+	private LocalDate hireDate;     // 입사일
 	private String residentNumber;  	// 주민등록번호
 
 	@Email
@@ -136,14 +135,23 @@ public class AccountLogin implements UserDetails {
 	 }
 
 	 // 빌더
-	 public static AccountLogin of(Member member, String department, String position, String name) {
+	// AccountLogin 클래스 내부의 of 메서드 수정
+	 public static AccountLogin of(Member member, String department, String position, String bankName) {
 		 return AccountLogin.builder()
-                 .id(member.getId())
+				 .id(member.getId()) // ID가 있어야 수정 폼에서 pk를 인식합니다
 				 .employeeNumber(member.getEmployeeNumber())
 				 .password(member.getPassword())
-				 .name(name)
+				 .name(member.getName()) // member에서 직접 가져오기
 				 .department(department)
 				 .position(position)
+				 .bank(bankName)
+				 .hireDate(member.getHireDate())
+				 .gender(member.getGender())
+				 .residentNumber(member.getResidentNumber())
+				 .email(member.getEmail())
+				 .phoneNumber(member.getPhoneNumber())
+				 .accountNumber(member.getAccountNumber())
+				 .profileImgs(member.getProfileImgs()) // 이 줄이 반드시 필요합니다!
 				 .roles(member.getRoles())
 				 .build();
 	 }

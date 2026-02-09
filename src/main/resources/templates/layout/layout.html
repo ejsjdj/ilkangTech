@@ -139,13 +139,15 @@
                     <span class="nav-icon">💼</span><span class="nav-menu">영업관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-sales">
-                    <li><a class="nav-child" th:href="@{/sales/management}">영업관리 메인</a></li>
                     <li><a class="nav-child" th:href="@{/sales/customer/list}">고객사 관리</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('견적 관리 페이지 준비 중입니다'); return false;">견적 관리</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('판매 주문 페이지 준비 중입니다'); return false;">판매 주문</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('배송 관리 페이지 준비 중입니다'); return false;">배송 관리</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('인보이스 페이지 준비 중입니다'); return false;">인보이스</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('창고 관리 페이지 준비 중입니다'); return false;">창고 관리</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/order/list}">수주 현황</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/invoice/list}">인보이스 관리</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/price/list}">단가 관리</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/performance/list}">매출 현황</a></li>
                 </ul>
             </div>
         </nav>

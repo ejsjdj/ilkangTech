@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * ListService 인터페이스의 구현체
  * 사원 목록 조회, 검색, 상세 정보 조회를 처리합니다.
@@ -71,9 +73,9 @@ public class ListServiceImpl implements ListService {
         String deptName = commonCodeService.getDepartmentName(member.getDepartment());
         String posName = commonCodeService.getPositionName(member.getPosition());
         String bankName = commonCodeService.getBankName(member.getBank());
-        String profileImgUrl = getFirstProfileImgUrl(member);
+        List<ProfileImg> profileImgs = member.getProfileImgs();
 
-        return AccountDetailResponse.of(member, deptName, posName, bankName, profileImgUrl);
+        return AccountDetailResponse.of(member, deptName, posName, bankName, profileImgs);
 //        return AccountDetailResponse.of(member, deptName, posName, bankName);
     }
 
@@ -92,16 +94,16 @@ public class ListServiceImpl implements ListService {
         ));
     }
 
-    // 프로필에 띄울 사진 주소 리턴
-    private String getFirstProfileImgUrl(Member member) {
-
-        if (member.getProfileImgs() == null || member.getProfileImgs().isEmpty()) return null;
-
-        ProfileImg profileImg = member.getProfileImgs().getFirst();
-        String fileName = profileImg.getImgName();
-        String imgLocation = profileImg.getImgLocation();
-
-        return imgLocation + "/" + fileName;
-    }
+//    // 프로필에 띄울 사진 주소 리턴
+//    private String getFirstProfileImgUrl(Member member) {
+//
+//        if (member.getProfileImgs() == null || member.getProfileImgs().isEmpty()) return null;
+//
+//        ProfileImg profileImg = member.getProfileImgs().getFirst();
+//        String fileName = profileImg.getImgName();
+//        String imgLocation = profileImg.getImgLocation();
+//
+//        return imgLocation + "/" + fileName;
+//    }
 
 }

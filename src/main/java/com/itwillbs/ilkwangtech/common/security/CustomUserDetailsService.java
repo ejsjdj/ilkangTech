@@ -3,11 +3,9 @@ package com.itwillbs.ilkwangtech.common.security;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.entity.Bank;
 import com.itwillbs.ilkwangtech.account.entity.Department;
+import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
 import com.itwillbs.ilkwangtech.account.entity.Position;
-import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
-import com.itwillbs.ilkwangtech.account.repository.BankRepository;
-import com.itwillbs.ilkwangtech.account.repository.DepartmentRepository;
-import com.itwillbs.ilkwangtech.account.repository.PositionRepository;
+import com.itwillbs.ilkwangtech.account.repository.*;
 import com.itwillbs.ilkwangtech.common.service.CommonCodeService;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // 부서, 직급, 은행 관련 주입
     private final CommonCodeService commonCodeService;
+    private final LoginAttemptRepository loginAttemptRepository;
 
     @Override
     public UserDetails loadUserByUsername(String employeeNumber) throws UsernameNotFoundException {
@@ -35,6 +34,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .findByEmployeeNumberWithMemberRoles(employeeNumber)
                 .orElseThrow(() -> new UsernameNotFoundException(employeeNumber + " : + 사용자 조회 실패!"));
 
+        LoginAttempt loginAttempt = loginAttemptRepository.findByMemberId(member.getId()).orElse(null);
+
         // 부서, 직급, 은행 이름 조회
         String departmentName = commonCodeService.getDepartmentName(member.getDepartment());
         log.info(">>>>>> 들어온 department : " + departmentName);
@@ -42,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         String bankName = commonCodeService.getBankName(member.getBank());
 
         // 빌더를 이용해서 login 객체를 생성
-        return AccountLogin.of(member, departmentName, positionName, bankName);
+        return AccountLogin.of(member, departmentName, positionName, bankName, loginAttempt);
     }
 
 }

@@ -1,29 +1,39 @@
 package com.itwillbs.ilkwangtech.notice.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeDetailDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeSearchDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeWriteDTO;
-import com.itwillbs.ilkwangtech.notice.entity.NoticeFile;
 import com.itwillbs.ilkwangtech.notice.repository.NoticeFileRepository;
 import com.itwillbs.ilkwangtech.notice.service.NoticeService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriUtils;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequestMapping("/notice/*")
@@ -203,27 +213,27 @@ public class NoticeController {
 
     // 첨부파일 다운로드 처리
     @GetMapping("/download/{fileId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId) throws MalformedURLException {
+    public ResponseEntity<Resource> download(@PathVariable("fileId") Long fileId) throws IOException {
+        // 1. 서비스에서 '실제 파일'을 가져옴 (경로 문제 해결됨)
+        File file = noticeService.getDownloadFile(fileId);
         
-        // 1. DB에서 파일 정보 조회
-        NoticeFile fileEntity = noticeFileRepository.findById(fileId).orElse(null);
-        if (fileEntity == null) {
-            return ResponseEntity.notFound().build();
+        if (!file.exists()) {
+            throw new FileNotFoundException("파일을 찾을 수 없습니다: " + file.getAbsolutePath());
         }
 
-        // 2. 실제 파일 경로를 통해 리소스 생성 (file:///C:/upload/notice/uuid_filename)
-        // savedFileName만 가지고 있다면 전체 경로를 조합해야 함
-        // NoticeService에서 정의한 경로와 일치해야 합니다. (여기선 예시 경로)
-        String uploadPath = "C:/upload/"; 
-        UrlResource resource = new UrlResource("file:" + uploadPath + fileEntity.getSavedFileName());
+        // 2. 스트림 리소스 생성
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+        
+        // 3. 다운로드 파일명 인코딩 (한글 깨짐 방지)
+        // UUID(36자) + _(1자) = 37자 제거 후 원본 이름 추출
+        String originalName = file.getName().substring(37); 
+        String encodedName = URLEncoder.encode(originalName, StandardCharsets.UTF_8.toString())
+                                       .replaceAll("\\+", "%20"); // 공백 처리
 
-        // 3. 한글 파일명 깨짐 방지 인코딩
-        String encodedUploadFileName = UriUtils.encode(fileEntity.getOriginalFileName(), StandardCharsets.UTF_8);
-        String contentDisposition = "attachment; filename=\"" + encodedUploadFileName + "\"";
-
-        // 4. 다운로드 응답 반환
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.length())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedName + "\"")
                 .body(resource);
     }
 	

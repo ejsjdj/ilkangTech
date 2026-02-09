@@ -295,4 +295,29 @@ public class ScheduleService {
         }
         scheduleFileRepository.delete(fileEntity);
     }
+    
+    // [추가] 파일 다운로드를 위한 파일 객체 반환
+    @Transactional(readOnly = true)
+    public File getDownloadFile(Long fileId) {
+        ScheduleFile fileEntity = scheduleFileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+        
+        // Service가 알고 있는 정확한 경로(getRealUploadPath) 사용
+        String realPath = getRealUploadPath() + fileEntity.getSavedFileName();
+        return new File(realPath);
+    }
+
+    // [추가] 썸네일 다운로드를 위한 파일 객체 반환
+    @Transactional(readOnly = true)
+    public File getThumbnailFile(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("일정을 찾을 수 없습니다."));
+        
+        if (schedule.getThumbnailPath() == null) {
+            throw new IllegalArgumentException("썸네일이 존재하지 않습니다.");
+        }
+
+        String realPath = getRealUploadPath() + schedule.getThumbnailPath();
+        return new File(realPath);
+    }
 }

@@ -259,4 +259,15 @@ public class NoticeService {
     public NoticeDetailDTO getNoticeForEdit(Long id) {
         return getNoticeDetail(id);
     }
+    
+    // [추가] 파일 다운로드를 위한 파일 객체 반환 메서드
+    public File getDownloadFile(Long fileId) {
+        NoticeFile noticeFile = noticeFileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일이 존재하지 않습니다."));
+        
+        // getRealUploadPath()를 사용하여 OS(윈도우/리눅스)에 맞는 정확한 경로 완성
+        String realPath = getRealUploadPath() + noticeFile.getSavedFileName();
+        
+        return new File(realPath);
+    }
 }

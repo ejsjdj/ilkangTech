@@ -36,10 +36,10 @@ public class FileUploadController {
         meta.setOriginalName(file.getOriginalFilename());
         meta.setStoredName(storedName);
         meta.setFilePath(uploadDir);
-        fileMetaRepository.save(meta);
+        FileMeta savedMeta = fileMetaRepository.saveAndFlush(meta);
 
         // 3. fileId 반환
-        return new FileUploadDTO(meta.getId());
+        return new FileUploadDTO(savedMeta.getId());
     }
 
     // 파일 다운로드

@@ -283,3 +283,50 @@ function showError(containerId, message) {
         </div>
     `);
 }
+
+/**
+ * 8. 관리자용 출퇴근 시간 수정 실행
+ */
+function saveTime() {
+    // 1. 데이터 수집 (RequestParam 형식이므로 일반 객체로 생성)
+    const attendanceId = $('#attendanceId').val();
+    const inTime = $('#modalInTime').val();
+    const outTime = $('#modalOutTime').val();
+    const goOutTime = $('#modalGoOutTime').val();
+    const returnTime = $('#modalReturnTime').val();
+
+    if (!attendanceId) {
+        alert("출퇴근 기록 식별자(ID)가 없습니다.");
+        return;
+    }
+
+    if (!confirm("출퇴근 시간을 수정하시겠습니까?")) return;
+
+    // 2. AJAX 전송
+    $.ajax({
+        url: '/attendance/commute/update',
+        type: 'POST', // 컨트롤러의 @PostMapping과 일치시킴
+        // contentType을 설정하지 않아야 기본값인 application/x-www-form-urlencoded로 전송됨
+        data: {
+            attendanceId: attendanceId,
+            inTime: inTime,
+            outTime: outTime,
+            goOutTime: goOutTime,
+            returnTime: returnTime
+        },
+        success: function() {
+            alert("수정이 완료되었습니다.");
+            closeModal();
+            // 현재 보고 있는 리스트 새로고침
+            if ($('#tabAll').hasClass('active')) {
+                loadCommuteAllList();
+            } else {
+                loadCommuteList();
+            }
+        },
+        error: function(xhr) {
+            console.error("수정 실패:", xhr);
+            alert("수정 중 오류가 발생했습니다.");
+        }
+    });
+}

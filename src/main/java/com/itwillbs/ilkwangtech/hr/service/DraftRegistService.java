@@ -88,7 +88,8 @@ public class DraftRegistService {
                 System.out.println("결재자 ID : " + approverString);
                 if (approverString == null || approverString.trim().isEmpty()) { continue; }
 
-                Long memberId = Long.parseLong(approverString);
+                String[] parts = approverString.trim().split("\\s+");
+                Long memberId = Long.parseLong(parts[0]);
 
                 DraftApproveStatusEntity entity = new DraftApproveStatusEntity();
                 entity.setDraftEntity(savedDraft);

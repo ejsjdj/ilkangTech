@@ -23,9 +23,6 @@ public class CommuteAllService {
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
 
-
-
-
     @Transactional
     public List<CommuteAllDTO> getCommuteAllList(Integer dept, LocalDate date) {
 

@@ -51,12 +51,14 @@ public class DraftRegistService {
         // 2. 파일이 있을 때 Draft + DraftAttachment 엔티티에 문서 및 파일정보 저장
         if (draftRegistDTO.getDraftFile() != null) {
             attachment = draftRegistDTO.getDraftFile().stream()
-                    .map(attachmentDTO -> {
+                    .filter(dto -> dto.getFileId() != null)
+                    .map(dto -> {
                         DraftAttachmentEntity e = new DraftAttachmentEntity();
-                        e.setFileId(attachmentDTO.getFileId());
+                        e.setFileId(dto.getFileId());
                         e.setDraft(draftEntity);
                         return e;
                     }).toList();
+
             draftEntity.setDraftFile(attachment);
             draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus());
 

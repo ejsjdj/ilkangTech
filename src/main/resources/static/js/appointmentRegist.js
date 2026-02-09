@@ -128,13 +128,13 @@ function registAppointment() {
 /* 결재 문서 등록 */
 async function postDraft(generatedTitle, generatedContent){
 
-
     let uploadedFile = null;
     const fileInput = document.getElementById("draftFile");
 
     // 파일 업로드 (있을 때만)
     if (fileInput.files.length > 0) {
         uploadedFile = await uploadFile();
+        console.log("1. 서버에서 받은 파일 정보:", uploadedFile);
     } else {
         alert("첨부파일을 등록하세요.")
     }
@@ -164,6 +164,8 @@ async function postDraft(generatedTitle, generatedContent){
         draftStatus: "대기",
         appointmentRegistDTO: appointmentRegistDTO
     };
+
+    console.log("2. 서버로 보낼 전체 데이터:", draftData);
 
     // 전송
     try {

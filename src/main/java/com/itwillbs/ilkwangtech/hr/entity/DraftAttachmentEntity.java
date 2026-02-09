@@ -19,7 +19,8 @@ public class DraftAttachmentEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "draft_attach_seq_gen")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "draft_draft_id", nullable = false)
     private DraftEntity draft;
 
     @Column(nullable = false)

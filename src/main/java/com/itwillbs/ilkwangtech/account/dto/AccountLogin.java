@@ -136,7 +136,7 @@ public class AccountLogin implements UserDetails {
 
 	 // 빌더
 	// AccountLogin 클래스 내부의 of 메서드 수정
-	 public static AccountLogin of(Member member, String department, String position, String bankName) {
+	 public static AccountLogin of(Member member, String department, String position, String bankName, LoginAttempt loginAttempt) {
 		 return AccountLogin.builder()
 				 .id(member.getId()) // ID가 있어야 수정 폼에서 pk를 인식합니다
 				 .employeeNumber(member.getEmployeeNumber())
@@ -153,6 +153,7 @@ public class AccountLogin implements UserDetails {
 				 .accountNumber(member.getAccountNumber())
 				 .profileImgs(member.getProfileImgs())
 				 .roles(member.getRoles())
+				 .loginAttempt(loginAttempt)
 				 .build();
 	 }
 

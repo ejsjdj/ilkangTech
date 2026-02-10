@@ -49,7 +49,7 @@ public class ListController {
 
         AccountDetailResponse detail = listService.getAccountDetail(id);
 
-        model.addAttribute("employee", detail);
+        model.addAttribute("user", detail);
 
         return "/account/detail";
     }

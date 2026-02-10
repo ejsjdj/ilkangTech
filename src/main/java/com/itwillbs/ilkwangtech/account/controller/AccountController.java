@@ -1,12 +1,10 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountDetailResponse;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequestDTO;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponseDTO;
-import com.itwillbs.ilkwangtech.account.service.AccountService;
-import com.itwillbs.ilkwangtech.account.service.BankService;
-import com.itwillbs.ilkwangtech.account.service.DepartmentService;
-import com.itwillbs.ilkwangtech.account.service.PositionService;
+import com.itwillbs.ilkwangtech.account.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +35,7 @@ public class AccountController {
     private final PositionService positionService;
     private final BankService bankService;
     private final AccountService accountService;
+    private final ListService listService;
 
     /**
      * 회원가입 페이지를 요청합니다.
@@ -107,7 +106,9 @@ public class AccountController {
      */
     @GetMapping("/myInfo")
     public String update(@AuthenticationPrincipal AccountLogin user, Model model) {
-        model.addAttribute("user", user);
+
+        AccountDetailResponse detail = listService.getAccountDetail(user.getId());
+        model.addAttribute("user", detail);
         return "/account/myInfo";
     }
 

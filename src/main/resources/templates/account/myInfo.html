@@ -394,7 +394,7 @@
                         <div class="detail-item" style="margin-bottom: 20px;">
                             <span class="detail-label">보유 권한</span>
                             <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end;">
-                                <span th:each="role : ${user.authorities}" class="info-badge primary" th:text="${role.authority}">ROLE_USER</span>
+                                <span th:each="role : ${user.roles}" class="info-badge primary" th:text="${role}">ROLE_USER</span>
                             </div>
                         </div>
                     </div>

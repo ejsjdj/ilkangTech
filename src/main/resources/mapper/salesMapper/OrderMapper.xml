@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.OrderMapper">
+
+    <insert id="insertOrder" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO order (customer_id, order_date, order_status)
+        VALUES (#{customerId}, #{orderDate}, #{orderStatus})
+    </insert>
+
+    <insert id="insertOrderDetail">
+        INSERT INTO order_detail (order_id, product_id, quantity, price)
+        VALUES (#{orderId}, #{productId}, #{quantity}, #{price})
+    </insert>
+
+    <insert id="insertOrderDetails" parameterType="java.util.List">
+        INSERT INTO order_detail (
+            order_id, product_id, quantity, price, delivery_date, detail_status
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.orderId},
+            #{item.productId},
+            #{item.quantity},
+            #{item.price},
+            #{item.deliveryDate},
+            #{item.detailStatus}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectByPage" resultType="com.itwillbs.ilkwangtech.sales.dto.OrderDTO">
+        SELECT orderId, customerId, orderDate, orderStatus
+        FROM order
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="selectById" resultType="com.itwillbs.ilkwangtech.sales.dto.OrderDTO">
+        SELECT orderId, customerId, orderDate, orderStatus
+        FROM order
+        WHERE orderId = #{id}
+    </select>
+
+</mapper>

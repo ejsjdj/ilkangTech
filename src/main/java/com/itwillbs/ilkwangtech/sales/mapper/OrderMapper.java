@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface OrderMapper {
@@ -16,4 +17,7 @@ public interface OrderMapper {
 
     List<OrderDTO> selectByPage(@Param("offset") long offset, @Param("pageSize") int pageSize);
 
+    Optional<OrderDTO> selectById(Long id);
+
+    void updateOrder(OrderDTO orderDTO);
 }

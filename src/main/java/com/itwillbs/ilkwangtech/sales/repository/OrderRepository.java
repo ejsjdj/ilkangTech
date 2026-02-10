@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,4 +26,13 @@ public class OrderRepository {
     public List<OrderDTO> getOrderList(long offset, int pageSize) {
         return orderMapper.selectByPage(offset, pageSize);
     }
+
+    public Optional<OrderDTO> getOrder(Long id) {
+        return orderMapper.selectById(id);
+    }
+
+    public void updateOrder(OrderDTO orderDTO) {
+        orderMapper.updateOrder(orderDTO);
+    }
+
 }

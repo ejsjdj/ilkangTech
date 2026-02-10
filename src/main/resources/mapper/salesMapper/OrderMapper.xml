@@ -38,4 +38,10 @@
         LIMIT #{offset}, #{pageSize}
     </select>
 
+    <select id="selectById" resultType="com.itwillbs.ilkwangtech.sales.dto.OrderDTO">
+        SELECT orderId, customerId, orderDate, orderStatus
+        FROM order
+        WHERE orderId = #{id}
+    </select>
+
 </mapper>

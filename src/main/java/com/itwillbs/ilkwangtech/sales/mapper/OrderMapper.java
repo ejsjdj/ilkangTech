@@ -1,0 +1,19 @@
+package com.itwillbs.ilkwangtech.sales.mapper;
+
+import com.itwillbs.ilkwangtech.sales.dto.OrderDTO;
+import com.itwillbs.ilkwangtech.sales.dto.OrderDetailDTO;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+@Mapper
+public interface OrderMapper {
+
+    void insertOrder(OrderDTO orderDTO);
+
+    void insertOrderDetail(@Param("list") List<OrderDetailDTO> list);
+
+    List<OrderDTO> selectByPage(@Param("offset") long offset, @Param("pageSize") int pageSize);
+
+}

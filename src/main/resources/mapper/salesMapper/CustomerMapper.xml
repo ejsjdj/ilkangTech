@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.CustomerMapper">
+
+    <insert id="insertCustomer" useGeneratedKeys="true" keyProperty="customerId">
+        INSERT INTO customer (name, email, phone, valid)
+        VALUES (#{name}, #{email}, #{phone}, #{valid})
+    </insert>
+
+    <select id="selectByPage" resultType="com.itwillbs.ilkwangtech.sales.dto.CustomerDTO">
+        SELECT customerId, name, email, phone, valid
+        FROM customer
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="selectById" resultType="com.itwillbs.ilkwangtech.sales.dto.CustomerDTO">
+        SELECT customerId, name, email, phone, valid
+        FROM customer
+        WHERE customerId = #{customerId}
+    </select>
+
+    <update id="update">
+        UPDATE customer
+        SET name = #{name},
+        email = #{email},
+        phone = #{phone},
+        valid = #{valid}  WHERE customerId = #{customerId}
+    </update>
+
+    <update id="invalid">
+        UPDATE customer
+        SET valid = #{status}  WHERE customerId = #{customerId}
+    </update>
+
+    <update id="valid">
+        UPDATE customer
+        SET valid = #{status}  WHERE customerId = #{customerId}
+    </update>
+
+</mapper>

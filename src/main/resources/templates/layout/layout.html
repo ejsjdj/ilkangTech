@@ -139,17 +139,59 @@
                     <span class="nav-icon">💼</span><span class="nav-menu">영업관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-sales">
-                    <li><a class="nav-child" th:href="@{/sales/customer/list}">고객사 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/sales/customer/list}">고객사/협력사 관리</a></li>
 
                     <li><a class="nav-child" th:href="@{/sales/order/list}">수주 현황</a></li>
 
-                    <li><a class="nav-child" th:href="@{/sales/invoice/list}">인보이스 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/sales/order/list}">구매 계획</a></li>
 
-                    <li><a class="nav-child" th:href="@{/sales/price/list}">단가 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/sales/order/list}">반품 관리</a></li>
 
                     <li><a class="nav-child" th:href="@{/sales/performance/list}">매출 현황</a></li>
                 </ul>
             </div>
+            <div class="menu-category">MES</div>
+            <div class="nav-group">
+                <button type="button" class="nav-parent" data-target="menu-standard" aria-expanded="false">
+                    <span class="nav-icon">⚙️</span><span class="nav-menu">기준정보관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-standard">
+                    <li><a class="nav-child" th:href="@{/account/list}">BOM</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">품질항목 기준</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">설비정보</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">공정라우트정보</a></li>
+                </ul>
+
+                <button type="button" class="nav-parent" data-target="menu-pr" aria-expanded="false">
+                    <span class="nav-icon">🏭</span><span class="nav-menu">생산관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-pr">
+                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">생산계획</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">작업지시</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">작업일정</a></li>
+                </ul>
+
+                <button type="button" class="nav-parent" data-target="menu-stock" aria-expanded="false">
+                    <span class="nav-icon">📦</span><span class="nav-menu">재고관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-stock">
+                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">재고현황</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">입출고관리</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">재고실사</a></li>
+                </ul>
+
+                <button type="button" class="nav-parent" data-target="menu-qc" aria-expanded="false">
+                    <span class="nav-icon">✅</span><span class="nav-menu">품질관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-qc">
+                    <li><a class="nav-child" th:href="@{/account/list}">LOT 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">불량관리</a></li>
+                </ul>
+            </div>
+
         </nav>
     </div>
 

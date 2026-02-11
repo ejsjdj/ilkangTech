@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" 
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
@@ -74,6 +74,13 @@
             border-right: 2px dashed #fff;
         }
 
+        .page-header {
+            display: flex;
+            justify-content: space-between; /* 양 끝으로 배치 */
+            align-items: center;            /* 세로 중앙 정렬 */
+            margin-bottom: 20px;            /* 테이블과의 간격 */
+        }
+
         .btn-add-sticker {
             background: #FF8E9E;
             color: white;
@@ -81,6 +88,11 @@
             border-radius: 50px;
             padding: 8px 20px;
             box-shadow: 2px 4px 0px #FF5E7E;
+        }
+
+        .btn-add-sticker:active {
+            transform: translateY(2px);
+            box-shadow: 1px 2px 0px #FF5E7E;
         }
 
         /* 테이블 디자인 */
@@ -104,6 +116,54 @@
         .cute-table tr:hover {
             background-color: #FFF9FA;
         }
+
+        // modal 에 대한 디자인
+
+        /* 모달 배경 (어둡게) */
+        .modal-overlay {
+            display: none; /* 기본은 숨김 */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            backdrop-filter: blur(3px); /* 배경 살짝 흐리게 */
+        }
+
+        /* 모달 본체 (다이어리 속지 느낌) */
+        .modal-diary-page {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            border: 4px solid #ADE8F4; /* 하늘색 테두리 */
+            width: 400px;
+            box-shadow: 20px 20px 0px rgba(173, 232, 244, 0.5);
+        }
+
+        .yellow-tape { background: rgba(254, 249, 231, 0.8) !important; width: 100px !important; }
+
+        /* 입력창 스타일 */
+        .input-group-cute { margin-bottom: 20px; }
+        .input-group-cute label { display: block; color: #FF8E9E; margin-bottom: 5px; }
+        .input-group-cute input {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #FFDEE9;
+            border-radius: 10px;
+            outline: none;
+        }
+        .input-group-cute input:focus { border-color: #FF8E9E; background-color: #FFF9FA; }
+
+        /* 버튼들 */
+        .modal-btns { display: flex; gap: 10px; margin-top: 30px; }
+        .btn-sticker {
+            flex: 1; border: none; padding: 10px; border-radius: 20px;
+            color: white; font-weight: bold; cursor: pointer;
+        }
+        .btn-sticker.pink { background: #FF8E9E; }
+        .btn-sticker.blue { background: #ADE8F4; color: #0077B6; }
     </style>
 </head>
 <body>
@@ -148,6 +208,32 @@
         </div>
     </div>
 </div>
+
+<div id="addModal" class="modal-overlay">
+    <div class="modal-diary-page">
+        <div class="masking-tape yellow-tape"></div>
+        <h3>✨ 새 거래처 등록</h3>
+        <form id="addForm">
+            <div class="input-group-cute">
+                <label>거래처 명</label>
+                <input type="text" id="newName" placeholder="회사 이름을 적어주세요">
+            </div>
+            <div class="input-group-cute">
+                <label>연락처</label>
+                <input type="text" id="newPhone" placeholder="010-0000-0000">
+            </div>
+            <div class="input-group-cute">
+                <label>이메일/메모</label>
+                <input type="text" id="newEmail" placeholder="특이사항을 적어주세요">
+            </div>
+            <div class="modal-btns">
+                <button type="button" class="btn-sticker pink" onclick="closeModal()">닫기</button>
+                <button type="submit" class="btn-sticker blue">저장하기!</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
 
@@ -180,4 +266,42 @@ function renderTable(data) {
         </tr>
     `).join('');
 }
+
+    // 모달에 대한 자바스크립트
+
+    // 1. 모달 열기
+document.querySelector('.btn-add-sticker').addEventListener('click', function() {
+    document.getElementById('addModal').style.display = 'block';
+});
+
+// 2. 모달 닫기
+function closeModal() {
+    document.getElementById('addModal').style.display = 'none';
+    }
+
+    // 3. 폼 제출 (저장)
+    document.getElementById('addForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const payload = {
+            name: document.getElementById('newName').value,
+            phone: document.getElementById('newPhone').value,
+            email: document.getElementById('newEmail').value
+        };
+
+        // 서버로 데이터 전송 (컨트롤러 주소에 맞게 수정하세요)
+        fetch('/api/partners/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if(res.ok) {
+                alert('성공적으로 저장되었어요! ✨');
+                closeModal();
+                location.reload(); // 목록 새로고침
+            }
+        });
+    });
+
 </script>

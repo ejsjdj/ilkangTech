@@ -10,7 +10,6 @@ import java.util.Optional;
 @Mapper
 public interface CustomerMapper {
 
-
     void insertCustomer(CustomerDTO customerDTO);
 
     CustomerDTO selectByName(String name);
@@ -23,7 +22,8 @@ public interface CustomerMapper {
 
     void update(CustomerDTO customerDTO);
 
-    void invalid(@Param("customerId") Long customerId, @Param("status") String status);
+    void invalid(Long customerId);
 
-    void valid(@Param("customerId") Long customerId, @Param("status") String status);
+    void valid(Long customerId);
+
 }

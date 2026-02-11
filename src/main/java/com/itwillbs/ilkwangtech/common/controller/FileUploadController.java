@@ -27,8 +27,14 @@ public class FileUploadController {
     @PostMapping("/file/upload")
     public FileUploadDTO upload(@RequestParam MultipartFile file) throws IOException {
         // 1. 서버 디스크에 저장
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
         String storedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        Path savePath = Paths.get(uploadDir, storedName);
+        Path savePath = uploadPath.resolve(storedName);
+
         Files.copy(file.getInputStream(), savePath);
 
         // 2. 메타정보 DB 저장
@@ -37,6 +43,8 @@ public class FileUploadController {
         meta.setStoredName(storedName);
         meta.setFilePath(uploadDir);
         FileMeta savedMeta = fileMetaRepository.saveAndFlush(meta);
+
+        System.out.println("FileId = " + savedMeta.getId());
 
         // 3. fileId 반환
         return new FileUploadDTO(savedMeta.getId());

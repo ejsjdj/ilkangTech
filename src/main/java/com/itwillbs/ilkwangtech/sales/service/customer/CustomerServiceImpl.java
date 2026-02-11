@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.service.customer;
 
+import com.itwillbs.ilkwangtech.sales.constant.CustomerStatus;
 import com.itwillbs.ilkwangtech.sales.dto.CustomerDTO;
 import com.itwillbs.ilkwangtech.sales.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class CustomerServiceImpl implements CustomerService {
     public void createCustomer(CustomerDTO customerDTO) {
         if (customerRepository.findByName(customerDTO.getName()) != null)
             throw new IllegalArgumentException("이미 존재하는 고객입니다.");
+        customerDTO.setValid(CustomerStatus.ACTIVE);
         customerRepository.save(customerDTO);
     }
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" 
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
@@ -8,176 +8,178 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        /* 폰트 적용 (Google Fonts 등에서 나눔손글씨 추천) */
         @import url('https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap');
 
-        body {
-            background-color: #FFF5F7; /* 아주 연한 핑크 배경 */
-            font-family: 'Gamja Flower', cursive;
-        }
-
-        .diary-wrapper {
-            display: flex;
-            max-width: 900px;
-            margin: 50px auto;
-        }
-
-        /* 왼쪽 탭: 스티커 느낌 */
-        .diary-bookmarks {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-top: 40px;
-        }
-
-        .bookmark {
-            border: none;
-            padding: 15px 20px;
-            border-radius: 20px 0 0 20px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: -4px 4px 0px rgba(0,0,0,0.05);
-        }
-
+        body { background-color: #FFF5F7; font-family: 'Gamja Flower', cursive; }
+        .diary-wrapper { display: flex; max-width: 900px; margin: 50px auto; }
+        .diary-bookmarks { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; }
+        .bookmark { border: none; padding: 15px 20px; border-radius: 20px 0 0 20px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; box-shadow: -4px 4px 0px rgba(0,0,0,0.05); }
         .bookmark.pink { background-color: #FFDEE9; color: #FF8E9E; }
         .bookmark.yellow { background-color: #FEF9E7; color: #F7DC6F; }
+        .bookmark.active { transform: translateX(10px); font-weight: bold; box-shadow: none; }
+        .diary-page { flex: 1; background: white; border: 5px solid #FFDEE9; border-radius: 40px; padding: 40px; min-height: 600px; position: relative; box-shadow: 15px 15px 0px #FFEDF2; }
+        .masking-tape { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 120px; height: 35px; background: rgba(173, 216, 230, 0.6); border-left: 2px dashed #fff; border-right: 2px dashed #fff; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-add-sticker { background: #FF8E9E; color: white; border: none; border-radius: 50px; padding: 8px 20px; box-shadow: 2px 4px 0px #FF5E7E; cursor: pointer; }
+        .cute-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .cute-table th { color: #FF8E9E; border-bottom: 2px solid #FFDEE9; padding: 10px; }
+        .cute-table td { padding: 15px 10px; border-bottom: 1px solid #F0F0F0; }
 
-        .bookmark.active {
-            transform: translateX(10px); /* 눌린 느낌 */
-            font-weight: bold;
-            box-shadow: none;
-        }
-
-        /* 다이어리 속지 */
-        .diary-page {
-            flex: 1;
-            background: white;
-            border: 5px solid #FFDEE9; /* 두꺼운 핑크 테두리 */
-            border-radius: 40px;
-            padding: 40px;
-            min-height: 600px;
-            position: relative;
-            box-shadow: 15px 15px 0px #FFEDF2;
-        }
-
-        /* 상단 마스킹 테이프 꾸미기 */
-        .masking-tape {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 35px;
-            background: rgba(173, 216, 230, 0.6); /* 반투명 하늘색 테이프 */
-            border-left: 2px dashed #fff;
-            border-right: 2px dashed #fff;
-        }
-
-        .btn-add-sticker {
-            background: #FF8E9E;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 8px 20px;
-            box-shadow: 2px 4px 0px #FF5E7E;
-        }
-
-        /* 테이블 디자인 */
-        .cute-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .cute-table th {
-            color: #FF8E9E;
-            border-bottom: 2px solid #FFDEE9;
-            padding: 10px;
-        }
-
-        .cute-table td {
-            padding: 15px 10px;
-            border-bottom: 1px solid #F0F0F0;
-        }
-
-        .cute-table tr:hover {
-            background-color: #FFF9FA;
-        }
+        /* 모달 스타일 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); z-index: 9999; backdrop-filter: blur(3px); }
+        .modal-diary-page { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 30px; border: 4px solid #ADE8F4; width: 400px; box-shadow: 20px 20px 0px rgba(173, 232, 244, 0.5); }
+        .yellow-tape { background: rgba(254, 249, 231, 0.8) !important; width: 100px !important; }
+        .input-group-cute { margin-bottom: 20px; }
+        .input-group-cute label { display: block; color: #FF8E9E; margin-bottom: 5px; }
+        .input-group-cute input { width: 100%; padding: 10px; border: 2px dashed #FFDEE9; border-radius: 10px; outline: none; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 30px; }
+        .btn-sticker { flex: 1; border: none; padding: 10px; border-radius: 20px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-sticker.pink { background: #FF8E9E; }
+        .btn-sticker.blue { background: #ADE8F4; color: #0077B6; }
     </style>
 </head>
 <body>
-<div layout:fragment="content" class="diary-container">
-    <div class="diary-container">
-        <div class="diary-wrapper">
-            <div class="diary-bookmarks">
-                <button class="bookmark pink active" onclick="showList('vendor')">
-                    <span>협력사</span>
-                </button>
-                <button class="bookmark yellow" onclick="showList('customer')">
-                    <span>고객사</span>
-                </button>
+
+<div layout:fragment="content">
+    <div class="diary-wrapper">
+        <div class="diary-bookmarks">
+            <button class="bookmark pink active" onclick="showList('vendor', this)">
+                <span>협력사</span>
+            </button>
+            <button class="bookmark yellow" onclick="showList('customer', this)">
+                <span>고객사</span>
+            </button>
+        </div>
+
+        <div class="diary-page">
+            <div class="masking-tape"></div>
+
+            <div class="page-header">
+                <h2 id="list-title">My 협력사 리스트</h2>
+                <button type="button" id="openModalBtn" class="btn-add-sticker">+ 추가하기</button>
             </div>
 
-            <div class="diary-page">
-                <div class="masking-tape"></div>
-
-                <div class="page-header">
-                    <h2 id="list-title">My 협력사 리스트</h2>
-                    <button class="btn-add-sticker">+ 추가하기</button>
-                </div>
-
-                <table class="cute-table">
-                    <thead>
-                    <tr>
-                        <th>이름</th>
-                        <th>전화번호</th>
-                        <th>이메일</th>
-                        <th>상세정보</th>
-                    </tr>
-                    </thead>
-                    <tbody id="list-body">
-                    <tr>
-                        <td>(주)무지개컴퍼니</td>
-                        <td>010-1234-5678</td>
-                        <td>매주 화요일 방문 ✨</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="cute-table">
+                <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>전화번호</th>
+                    <th>이메일/메모</th>
+                </tr>
+                </thead>
+                <tbody id="list-body">
+                <tr>
+                    <td>(주)무지개컴퍼니</td>
+                    <td>010-1234-5678</td>
+                    <td>매주 화요일 방문 ✨</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <div id="addModal" class="modal-overlay">
+        <div class="modal-diary-page">
+            <div class="masking-tape yellow-tape"></div>
+            <h3>✨ 새 거래처 등록</h3>
+            <form id="addForm">
+                <div class="input-group-cute">
+                    <label>거래처 명</label>
+                    <input type="text" id="newName" placeholder="회사 이름을 적어주세요" required>
+                </div>
+                <div class="input-group-cute">
+                    <label>연락처</label>
+                    <input type="text" id="newPhone" placeholder="010-0000-0000">
+                </div>
+                <div class="input-group-cute">
+                    <label>이메일/메모</label>
+                    <input type="text" id="newEmail" placeholder="특이사항을 적어주세요">
+                </div>
+                <div class="input-group-cute">
+                    <label>담당자/이름</label>
+                    <input type="text" id="newManager" placeholder="담당자 이름">
+                </div>
+                <div class="input-group-cute">
+                    <label>구분</label>
+                    <select id="newCategory">
+                        <option value="supplier">협력사</option>
+                        <option value="client">고객사</option>
+                        <option value="partner">둘 다 (협력/고객)</option>
+                    </select>
+                </div>
+                <div class="modal-btns">
+                    <button type="button" class="btn-sticker pink" onclick="closeModal()">닫기</button>
+                    <button type="submit" class="btn-sticker blue">저장하기!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--신규 추가-->
+    <script th:inline="javascript">
+        function openModal() {
+            document.getElementById('addModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        // 탭 전환
+        function showList(type, element) {
+            document.querySelectorAll('.bookmark').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('list-title').innerText = type === 'vendor' ? 'My 협력사 리스트' : 'My 고객사 리스트';
+        }
+
+        // 이벤트 바인딩은 DOMContentLoaded 안에서!
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // 1. 추가하기 버튼 클릭 이벤트 등록 (이게 없으면 모달 안 열림)
+            const openBtn = document.getElementById('openModalBtn');
+            if(openBtn) openBtn.onclick = openModal;
+
+            // 2. 저장 폼 제출 이벤트
+            document.getElementById('addForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const payload = {
+                    name: document.getElementById('newName').value,
+                    phone: document.getElementById('newPhone').value,
+                    email: document.getElementById('newEmail').value,
+                    manager: document.getElementById('newManager').value,
+                    category: document.getElementById('newCategory').value
+                };
+
+                try {
+                    const response = await fetch('/api/sales/customers/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        alert('성공적으로 저장되었습니다! ✨');
+                        closeModal();
+                        location.reload(); // 저장 후 목록 갱신
+                    } else {
+                        // 여기서 500 에러가 나면 서버 로그(IntelliJ 등)를 봐야 합니다.
+                        alert('서버 에러 발생! 서버 로그를 확인해 주세요.');
+                    }
+                } catch (error) {
+                    alert('네트워크 오류가 발생했습니다.');
+                }
+            });
+        });
+    </script>
+
+    <!-- 리스트 불러오기 -->
+    <script th:inline="javascript">
+
+
+
+    </script>
 </div>
+
 </body>
 </html>
-
-<script>
-    function showList(type) {
-    // 1. 모든 북마크 활성화 해제 및 클릭된 것 활성화
-    document.querySelectorAll('.bookmark').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-
-    // 2. 제목 변경
-    const title = type === 'vendor' ? '협력사 목록' : '고객사 목록';
-    document.getElementById('list-title').innerText = title;
-
-    // 3. 데이터 가져오기 (Fetch API 사용 예시)
-    fetch(`/api/partners?type=${type}`)
-        .then(response => response.json())
-        .then(data => {
-            renderTable(data);
-        });
-}
-
-function renderTable(data) {
-    const tbody = document.getElementById('list-body');
-    tbody.innerHTML = data.map(item => `
-        <tr>
-            <td>${item.code}</td>
-            <td>${item.name}</td>
-            <td>${item.phone}</td>
-            <td>${item.status}</td>
-        </tr>
-    `).join('');
-}
-</script>

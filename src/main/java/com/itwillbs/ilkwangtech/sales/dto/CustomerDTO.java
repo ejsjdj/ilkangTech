@@ -1,18 +1,20 @@
 package com.itwillbs.ilkwangtech.sales.dto;
 
+import com.itwillbs.ilkwangtech.sales.constant.CustomerCategory;
 import com.itwillbs.ilkwangtech.sales.constant.CustomerStatus;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
-@Builder
+@NoArgsConstructor
+@ToString
 public class CustomerDTO {
     private Long customerId;
     private String name;
     private String email;
     private String phone;
+    private String manager;
+    private CustomerCategory category;
     private CustomerStatus valid;
 
 }

@@ -19,14 +19,15 @@ public class CustomerApiController {
     private final CustomerService customerService;
 
     // 1. 고객사 등록
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ApiResponseDTO<Void>> createCustomer(@RequestBody CustomerDTO customerDTO) {
+        System.out.println("customerDTO = " + customerDTO);
         customerService.createCustomer(customerDTO);
         return ResponseEntity.ok(ApiResponseDTO.success("고객사 등록에 성공했습니다."));
     }
 
     // 2. 고객사 목록 조회
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<ApiResponseDTO<PageResponseDTO<CustomerDTO>>> getCustomerList(Pageable pageable) {
         List<CustomerDTO> list = customerService.getCustomerList(pageable);
         long total = customerService.getTotalCount();

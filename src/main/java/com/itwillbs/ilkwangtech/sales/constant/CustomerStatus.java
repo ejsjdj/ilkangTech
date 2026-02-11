@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CustomerStatus implements BaseEnum {
 
-    ACTIVE(0, "거래중"),
-    INACTIVE(1, "비활성화");
+    ACTIVE(1, "거래중"),
+    INACTIVE(0, "비활성화");
 
     private final int code;
     private final String description;

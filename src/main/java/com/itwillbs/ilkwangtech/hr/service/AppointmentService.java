@@ -27,7 +27,7 @@ public class AppointmentService {
     // 발령 리스트 조회
     public Page<AppointmentDTO> hrAppointmentService(Pageable pageable, String keyword){
 
-        // 1. 마스터 정보 Map 생성 (루프 밖에서 한 번만 실행)
+        // 1. 부서명, 직급명 순회하며 조회
         Map<Integer, String> deptMap = departmentRepository.findAll().stream()
                 .collect(Collectors.toMap(Department::getId, Department::getDepartmentName, (e, r) -> e));
 
@@ -48,13 +48,12 @@ public class AppointmentService {
             return AppointmentDTO.builder()
                     .appointmentId(appointmentEntity.getAppointmentId())
                     .memberId(appointmentEntity.getMemberId().getName())
-                    .approverId(appointmentEntity.getApproverId() != null ? appointmentEntity.getApproverId().getName() : "승인 대기")
                     .preDept(preDeptName)
                     .currentDept(currDeptName)
                     .preRank(preRankName)
                     .currentRank(currRankName)
                     .workStatus(appointmentEntity.getWorkStatus())
-                    .appointmentDate(appointmentEntity.getAppointmentDate())
+                    .approveDate(appointmentEntity.getApproveDate())
                     .build();
         });
     }

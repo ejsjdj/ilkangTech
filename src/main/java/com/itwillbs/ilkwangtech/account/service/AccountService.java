@@ -1,7 +1,12 @@
 package com.itwillbs.ilkwangtech.account.service;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequestDTO;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponseDTO;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * 계정 관리 비즈니스 로직을 정의한 서비스 인터페이스
@@ -15,7 +20,7 @@ public interface AccountService {
      * @param request 회원가입 정보가 담긴 DTO
      * @return 등록 성공 여부 및 사원번호 등이 포함된 응답 DTO
      */
-    AccountRegisterResponse register(AccountRegisterRequest request);
+    AccountRegisterResponseDTO register(AccountRegisterRequestDTO request);
 
     /**
      * 사원의 개인 정보를 수정합니다. (이메일, 전화번호)
@@ -36,5 +41,7 @@ public interface AccountService {
      * @return 본인 여부
      */
     boolean isSelf(Long id, String employeeNumber);
+
+    int updateProfileImage(@AuthenticationPrincipal AccountLogin login, MultipartFile upload) throws IOException;
 
 }

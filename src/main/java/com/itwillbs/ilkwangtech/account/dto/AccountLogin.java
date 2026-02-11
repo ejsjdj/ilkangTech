@@ -1,14 +1,19 @@
 package com.itwillbs.ilkwangtech.account.dto;
 
 import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
+import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.entity.MemberRole;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,7 +25,7 @@ import java.util.stream.Collectors;
  * 인증된 사용자의 정보와 권한을 담는 객체로 세션에 저장됩니다.
  */
 @Getter
-@Setter
+@Builder
 @ToString
 public class AccountLogin implements UserDetails {
 
@@ -29,16 +34,22 @@ public class AccountLogin implements UserDetails {
 	private Long id;					// 회원 고유 ID
 	private String name;            	// 이름
 	private String employeeNumber;  	// 사원번호 (로그인 ID로 사용)
-	private String password;			// 암호화된 비밀번호
+	private String password;			// 암호화된 비밀번호게
 	private int gender;          		// 성별
-	private LocalDateTime hireDate;     // 입사일
+	private LocalDate hireDate;     // 입사일
 	private String residentNumber;  	// 주민등록번호
+
+	@Email
 	private String email;           	// 이메일
+
+	@Pattern(regexp = "^\\d{3}-\\d{3,4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다.")
 	private String phoneNumber;     	// 전화번호
+
 	private String department;      	// 부서명
 	private String position;        	// 직급명
 	private String bank;            	// 은행명
 	private String accountNumber;   	// 계좌번호
+	private List<ProfileImg> profileImgs;   	// 프로필 이미지 URL
 	private LocalDateTime lastLogin;	// 마지막 로그인 시간
 
 	private List<MemberRole> roles; 	// 사용자가 보유한 권한 목록
@@ -118,4 +129,44 @@ public class AccountLogin implements UserDetails {
 		return true;
  	}
 
+	 // 프로필 이미지를 재설정
+	 public void updateSortImages(List<ProfileImg> sortedImgs) {
+		 this.profileImgs = sortedImgs;
+	 }
+
+	 // 빌더
+	// AccountLogin 클래스 내부의 of 메서드 수정
+	 public static AccountLogin of(Member member, String department, String position, String bankName, LoginAttempt loginAttempt) {
+		 return AccountLogin.builder()
+				 .id(member.getId()) // ID가 있어야 수정 폼에서 pk를 인식합니다
+				 .employeeNumber(member.getEmployeeNumber())
+				 .password(member.getPassword())
+				 .name(member.getName()) // member에서 직접 가져오기
+				 .department(department)
+				 .position(position)
+				 .bank(bankName)
+				 .hireDate(member.getHireDate())
+				 .gender(member.getGender())
+				 .residentNumber(member.getResidentNumber())
+				 .email(member.getEmail())
+				 .phoneNumber(member.getPhoneNumber())
+				 .accountNumber(member.getAccountNumber())
+				 .profileImgs(member.getProfileImgs())
+				 .roles(member.getRoles())
+				 .loginAttempt(loginAttempt)
+				 .build();
+	 }
+
+	 // email, phoneNumber 세터
+	 public boolean updateInfo(String email, String phoneNumber) {
+		 boolean isEmailValid = (email != null && email.contains("@"));
+		 boolean isPhoneValid = (phoneNumber != null && phoneNumber.matches("^\\d{3}-\\d{3,4}-\\d{4}$"));
+
+		 if (!(isEmailValid && isPhoneValid)) return false;
+
+		 this.email = email;
+		 this.phoneNumber = phoneNumber;
+
+		 return true;
+	 }
 }

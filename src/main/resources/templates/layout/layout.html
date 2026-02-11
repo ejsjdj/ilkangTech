@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 <meta charset="UTF-8">
 <title>ERP Dashboard</title>
@@ -97,7 +98,7 @@
 		            <span class="nav-menu">공지사항</span>
 		        </a>
 		    </div>
-		
+
 		    <div class="menu-category">ERP</div>
             <div class="nav-group">
                 <button type="button" class="nav-parent" data-target="menu-hr" aria-expanded="false">
@@ -105,9 +106,12 @@
                 </button>
                 <ul class="nav-children" id="menu-hr">
                     <li><a class="nav-child" th:href="@{/account/list}">사원목록</a></li>
-                    <li><a class="nav-child" th:href="@{/hr/appointment}">발령 관리</a></li>
+                    <li sec:authorize="hasAnyAuthority('CEO','HR')"><a class="nav-child" th:href="@{/hr/appointment}">발령 관리</a></li>
                     <li><a class="nav-child" th:href="@{/account/orgChart}">조직도</a></li>
-                    <li><a class="nav-child" th:href="@{/account/role}">권한 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/account/role}"
+                           sec:authorize="hasAnyAuthority('CEO','INFORMATION')">권한 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/account/lockAccount}"
+                           sec:authorize="hasAnyAuthority('CEO','HR')">잠긴 계정 관리</a></li>
                 </ul>
             </div>
             <div class="nav-group">
@@ -116,7 +120,7 @@
                 </button>
                 <ul class="nav-children" id="menu-att">
                     <li><a class="nav-child" th:href="@{/attendance/commute}">출퇴근 현황</a></li>
-                    <li><a class="nav-child" th:href="@{/attendance/work}">근무 현황</a></li>
+                    <li sec:authorize="hasAnyAuthority('CEO','HR')"><a class="nav-child" th:href="@{/attendance/work}">근무 현황</a></li>
                     <li><a class="nav-child" th:href="@{/attendance/vacation}">휴가 관리</a></li>
                 </ul>
             </div>
@@ -135,15 +139,59 @@
                     <span class="nav-icon">💼</span><span class="nav-menu">영업관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-sales">
-                    <li><a class="nav-child" th:href="@{/sales/management}">영업관리 메인</a></li>
-                    <li><a class="nav-child" th:href="@{/sales/customer/list}">고객사 관리</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('견적 관리 페이지 준비 중입니다'); return false;">견적 관리</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('판매 주문 페이지 준비 중입니다'); return false;">판매 주문</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('배송 관리 페이지 준비 중입니다'); return false;">배송 관리</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('인보이스 페이지 준비 중입니다'); return false;">인보이스</a></li>
-                    <li><a class="nav-child" href="#" onclick="alert('창고 관리 페이지 준비 중입니다'); return false;">창고 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/sales/customer/list}">고객사/협력사 관리</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/order/list}">수주 현황</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/order/list}">구매 계획</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/order/list}">반품 관리</a></li>
+
+                    <li><a class="nav-child" th:href="@{/sales/performance/list}">매출 현황</a></li>
                 </ul>
             </div>
+            <div class="menu-category">MES</div>
+            <div class="nav-group">
+                <button type="button" class="nav-parent" data-target="menu-standard" aria-expanded="false">
+                    <span class="nav-icon">⚙️</span><span class="nav-menu">기준정보관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-standard">
+                    <li><a class="nav-child" th:href="@{/account/list}">BOM</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">품질항목 기준</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">설비정보</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">공정라우트정보</a></li>
+                </ul>
+
+                <button type="button" class="nav-parent" data-target="menu-pr" aria-expanded="false">
+                    <span class="nav-icon">🏭</span><span class="nav-menu">생산관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-pr">
+                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">생산계획</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">작업지시</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">작업일정</a></li>
+                </ul>
+
+                <button type="button" class="nav-parent" data-target="menu-stock" aria-expanded="false">
+                    <span class="nav-icon">📦</span><span class="nav-menu">재고관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-stock">
+                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">재고현황</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">입출고관리</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">재고실사</a></li>
+                </ul>
+
+                <button type="button" class="nav-parent" data-target="menu-qc" aria-expanded="false">
+                    <span class="nav-icon">✅</span><span class="nav-menu">품질관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-qc">
+                    <li><a class="nav-child" th:href="@{/account/list}">LOT 관리</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">불량관리</a></li>
+                </ul>
+            </div>
+
         </nav>
     </div>
 
@@ -204,7 +252,9 @@
         fetch('/messenger/api/unread-exists')
             .then(res => res.json())
             .then(exists => { 
-                if(mainDot && exists) mainDot.style.display = 'block'; 
+            	if (mainDot) {
+                    mainDot.style.display = exists ? 'block' : 'none'; 
+                }
             })
             .catch(err => console.error("초기 알림 체크 실패:", err));
 

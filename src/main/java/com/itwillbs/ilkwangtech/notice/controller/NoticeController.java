@@ -1,12 +1,16 @@
 package com.itwillbs.ilkwangtech.notice.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -18,19 +22,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.util.UriUtils;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeDetailDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeSearchDTO;
 import com.itwillbs.ilkwangtech.notice.dto.NoticeWriteDTO;
-import com.itwillbs.ilkwangtech.notice.entity.NoticeFile;
 import com.itwillbs.ilkwangtech.notice.repository.NoticeFileRepository;
 import com.itwillbs.ilkwangtech.notice.service.NoticeService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 
 @Controller
 @RequestMapping("/notice/*")
@@ -40,6 +43,27 @@ public class NoticeController {
 	
 	private final NoticeService noticeService;
 	private final NoticeFileRepository noticeFileRepository;
+	
+	private final MemberRepository memberRepository;
+	
+	// 권한 체크 로직
+    private boolean checkAdminPermission(Long memberId) {
+        if (memberId == null) return false;
+
+        // 1. 최신 회원 정보 조회 (DB)
+        Member freshMember = memberRepository.findById(memberId).orElse(null);
+
+        // 2. 권한 확인
+        if (freshMember != null && freshMember.getRoles() != null) {
+            return freshMember.getRoles().stream()
+                    .anyMatch(memberRole -> {
+                        Long roleId = memberRole.getRole().getId();
+                        // 0: 시스템관리자, 2: 관리자, 6: 인사관리자 (예시)
+                        return roleId == 6L || roleId == 0L || roleId == 2L;
+                    });
+        }
+        return false;
+    }
 	
 	@GetMapping("/list")
 	public String list(@RequestParam(value = "page", defaultValue = "0") int page, Model model, 
@@ -51,40 +75,49 @@ public class NoticeController {
         model.addAttribute("noticeList", noticeService.getNoticeList(page, searchDTO));
         model.addAttribute("searchDTO", searchDTO);
 
-	    // 1-4. 권한 체크: 전산관리부 혹은 관리부 계정 확인
-	    boolean canWrite = false;
-	    
-	    if (loginMember != null) {
-	        // AccountLogin 객체의 department 필드를 직접 참조
-	        String dept = loginMember.getDepartment(); 
-	        
-	        if ("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept)) {
-	            canWrite = true;
-	        }
-	        
-	        log.info("접속 사원: {}, 부서: {}, 쓰기권한: {}", loginMember.getName(), dept, canWrite);
-	    }
+	    // 권한 체크: 전산관리부 혹은 관리부 계정 확인
+        boolean canWrite = false;
+        
+        if (loginMember != null) {
+            // 1. 현재 접속한 사용자의 최신 정보를 DB에서 다시 가져옴 (새로고침 효과)
+            Member freshMember = memberRepository.findById(loginMember.getId()).orElse(null);
+        
+            if (freshMember != null && freshMember.getRoles() != null) {
+                // 2. 방금 가져온 정보(freshMember)로 권한 체크
+                canWrite = freshMember.getRoles().stream()
+                        .anyMatch(memberRole -> {
+                            Long roleId = memberRole.getRole().getId();
+                            return roleId == 6L || roleId == 0L || roleId == 2L;
+                        });
+                
+                log.info("실시간 권한 체크 - 사원: {}, 결과: {}", freshMember.getName(), canWrite);
+            }
+        }
 	    model.addAttribute("canWrite", canWrite);
 
 	    return "notice/list";
 	}
 	
-	// 1-1. 공지사항 작성 페이지 이동
-    @GetMapping("/write")
+	// 공지사항 작성 페이지 이동
+	@GetMapping("/write")
     public String writeForm(@AuthenticationPrincipal AccountLogin loginMember, Model model) {
-        // 1-7. 권한 체크 (URL 직접 접근 방지)
-        if (loginMember == null) return "redirect:/login";
-        String dept = loginMember.getDepartment();
-        if (!("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept))) {
-            return "redirect:/notice/list"; // 권한 없으면 리스트로 튕겨내기
+        // 비로그인 체크
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+        
+        // Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("작성 권한 없음: 사용자 ID {}", loginMember.getId());
+            return "redirect:/notice/list"; // 권한 없으면 리스트로
         }
         
         model.addAttribute("writerName", loginMember.getName());
-        model.addAttribute("writerDept", dept);
+        model.addAttribute("writerDept", loginMember.getDepartment()); 
         return "notice/write";
     }
 
-    // 1-6. 고정 게시글 개수 체크 API (AJAX용)
+    // 고정 게시글 개수 체크 API
     @GetMapping("/api/check-pinned")
     @ResponseBody
     public boolean checkPinnedCount() {
@@ -99,30 +132,34 @@ public class NoticeController {
         return "redirect:/notice/list";
     }
     
-    // 1-2. 상세 페이지 이동
+    // 상세 페이지 이동
     @GetMapping("/detail/{id}")
     public String detail(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal AccountLogin loginMember) {
         NoticeDetailDTO notice = noticeService.getNoticeDetail(id);
         model.addAttribute("notice", notice);
         
-        // 3. 권한 체크 (수정/삭제 버튼 노출용)
+        // Role ID 기반 권한 체크
         boolean canEdit = false;
         if (loginMember != null) {
-            String dept = loginMember.getDepartment();
-            if ("정보시스템팀".equals(dept) || "임원팀".equals(dept) || "인사팀".equals(dept)) {
-                canEdit = true;
-            }
+            canEdit = checkAdminPermission(loginMember.getId());
         }
+        
         model.addAttribute("canEdit", canEdit);
         
         return "notice/detail";
     }
     
-    // [추가] 1. 수정 페이지 이동 (기존 내용 불러오기)
+    // 4. 수정 페이지 이동
     @GetMapping("/modify/{id}")
     public String modifyForm(@PathVariable("id") Long id, Model model, @AuthenticationPrincipal AccountLogin loginMember) {
-        // 권한 체크
-        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+        // 비로그인 체크
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        // Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("수정 페이지 접근 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
         }
 
@@ -133,22 +170,38 @@ public class NoticeController {
         return "notice/modify";
     }
 
-    // [추가] 2. 수정 처리
+    // 5. 수정 처리
     @PostMapping("/modify")
     public String modify(NoticeWriteDTO dto, @AuthenticationPrincipal AccountLogin loginMember) throws IOException {
-        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+        // 비로그인 체크
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        // Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("수정 처리 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
         }
+
         noticeService.updateNotice(dto, loginMember);
         return "redirect:/notice/detail/" + dto.getId();
     }
 
-    // [추가] 3. 삭제 처리
+    // 삭제 처리
     @PostMapping("/delete")
     public String delete(@RequestParam("id") Long id, @AuthenticationPrincipal AccountLogin loginMember) {
-        if (loginMember == null || !isAuthorized(loginMember.getDepartment())) {
+        // 비로그인 체크
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        // Role ID 기반 권한 체크
+        if (!checkAdminPermission(loginMember.getId())) {
+            log.warn("삭제 권한 없음: 사용자 ID {}", loginMember.getId());
             return "redirect:/notice/list";
         }
+        
         noticeService.deleteNotice(id);
         return "redirect:/notice/list";
     }
@@ -160,27 +213,27 @@ public class NoticeController {
 
     // 첨부파일 다운로드 처리
     @GetMapping("/download/{fileId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId) throws MalformedURLException {
+    public ResponseEntity<Resource> download(@PathVariable("fileId") Long fileId) throws IOException {
+        // 1. 서비스에서 '실제 파일'을 가져옴 (경로 문제 해결됨)
+        File file = noticeService.getDownloadFile(fileId);
         
-        // 1. DB에서 파일 정보 조회
-        NoticeFile fileEntity = noticeFileRepository.findById(fileId).orElse(null);
-        if (fileEntity == null) {
-            return ResponseEntity.notFound().build();
+        if (!file.exists()) {
+            throw new FileNotFoundException("파일을 찾을 수 없습니다: " + file.getAbsolutePath());
         }
 
-        // 2. 실제 파일 경로를 통해 리소스 생성 (file:///C:/upload/notice/uuid_filename)
-        // savedFileName만 가지고 있다면 전체 경로를 조합해야 함
-        // NoticeService에서 정의한 경로와 일치해야 합니다. (여기선 예시 경로)
-        String uploadPath = "C:/upload/"; 
-        UrlResource resource = new UrlResource("file:" + uploadPath + fileEntity.getSavedFileName());
+        // 2. 스트림 리소스 생성
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+        
+        // 3. 다운로드 파일명 인코딩 (한글 깨짐 방지)
+        // UUID(36자) + _(1자) = 37자 제거 후 원본 이름 추출
+        String originalName = file.getName().substring(37); 
+        String encodedName = URLEncoder.encode(originalName, StandardCharsets.UTF_8.toString())
+                                       .replaceAll("\\+", "%20"); // 공백 처리
 
-        // 3. 한글 파일명 깨짐 방지 인코딩
-        String encodedUploadFileName = UriUtils.encode(fileEntity.getOriginalFileName(), StandardCharsets.UTF_8);
-        String contentDisposition = "attachment; filename=\"" + encodedUploadFileName + "\"";
-
-        // 4. 다운로드 응답 반환
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.length())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedName + "\"")
                 .body(resource);
     }
 	

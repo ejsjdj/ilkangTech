@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChatMessageResponseDTO {
+	private Long id;
     private Long memberId;
     private String memberName; 
     private String content;
@@ -16,4 +17,9 @@ public class ChatMessageResponseDTO {
     private String formattedTime;
     private String deptName;
     private String positionName;
+    private Long attachId;
+    private boolean isFirstUnread;
+    
+    public boolean isIsFirstUnread() { return isFirstUnread; }
+    public void setIsFirstUnread(boolean isFirstUnread) { this.isFirstUnread = isFirstUnread; }
 }

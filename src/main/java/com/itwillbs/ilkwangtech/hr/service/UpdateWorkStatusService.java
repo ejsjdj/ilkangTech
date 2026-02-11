@@ -4,6 +4,7 @@ import com.itwillbs.ilkwangtech.hr.dto.AttendanceDTO;
 import com.itwillbs.ilkwangtech.hr.entity.Attendance;
 import com.itwillbs.ilkwangtech.hr.repository.AttendanceRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import lombok.extern.log4j.Log4j2;
 // 근무 상태 업데이트
 @Service
 @Log4j2
+@AllArgsConstructor
 public class UpdateWorkStatusService {
 
     private AttendanceRepository attendanceRepository;

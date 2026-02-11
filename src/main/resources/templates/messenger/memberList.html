@@ -102,7 +102,6 @@
 
 
 	<div class="main">
-<!-- 		<div class="status">상태</div> -->
 		
 		<div class="searchBarArea">
 			<input id="memberSearch" type="text" class="searchBar" placeholder="사원 또는 부서로 검색">
@@ -117,12 +116,15 @@
 			     th:attr="data-id=*{memberId}, data-name=*{memberName}, data-dept=*{departmentName}"
 			     ondblclick="goChat(this)">
 			
-			    <button type="button" 
-			            class="starBtn" 
-			            th:classappend="${member.isFavorite == 'Y'} ? 'starOn' : 'starOff'"
-			            th:onclick="'toggleFavoriteMember(' + ${member.memberId} + ', this)'">
-			        ★
-			    </button>
+			    <button th:if="${member.memberId != myMemberId}" 
+				        type="button" 
+				        class="starBtn" 
+				        th:classappend="${member.isFavorite == 'Y'} ? 'starOn' : 'starOff'"
+				        th:onclick="'toggleFavoriteMember(' + ${member.memberId} + ', this)'"
+				        ondblclick="event.stopPropagation();"> ★
+				</button>
+			    
+			    <div th:if="${member.memberId == myMemberId}" class="starBtn"></div>
 			    
 			    <div class="memberName">
 			        <span th:text="*{memberName}"></span>
@@ -144,16 +146,11 @@
 function goChat(el) {
 	  var memberId = el.dataset.id;
 	  var myId = document.getElementById("myMemberId").value;
+	  const target = event.target;
 
-	  // [추가] 클릭한 대상이 나 자신이면 채팅창을 열지 않음
-	  if (memberId == myId) {
-	      console.log("나 자신과는 채팅할 수 없습니다.");
-	      return;
-	  }
-
-	  var w = 420;
+	  var w = 470;
 	  var h = 720;
-	  var left = Math.max(0, (screen.width - w) / 2);
+	  var left = Math.max(0, screen.width / 2);
 	  var top = Math.max(0, (screen.height - h) / 2);
 
 	  var url = "/messenger/direct?memberId=" + memberId;
@@ -203,7 +200,11 @@ function applySearch() {
 })();
 
 function toggleFavoriteMember(targetId, btn) {
-    event.stopPropagation(); // 행 클릭 이벤트(채팅방 이동) 방지
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
     const isAdding = btn.classList.contains('starOff');
     const status = isAdding ? 'Y' : 'N';
     const myId = document.getElementById("myMemberId").value;
@@ -213,21 +214,44 @@ function toggleFavoriteMember(targetId, btn) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetMemberId: targetId, myMemberId: myId, status: status })
     })
-    .then(res => {
-        if(res.ok) {
-            btn.classList.toggle('starOn');
-            btn.classList.toggle('starOff');
-            const row = btn.closest('.memberRow');
-            if (status === 'Y') {
-                document.querySelector(".memberList").prepend(row); // 상단 고정
-            } else {
-                location.reload(); // 정렬을 위해 새로고침 (혹은 원래 위치로 이동 로직)
-            }
+    .then(res => res.json())
+    .then(data => {
+        // 1. 별 아이콘 UI 즉시 변경
+        btn.classList.toggle('starOn');
+        btn.classList.toggle('starOff');
+        
+        const row = btn.closest('.memberRow');
+        const listContainer = document.querySelector(".memberList");
+
+        // 2. 리스트 순서 조정
+        if (status === 'Y') {
+            listContainer.prepend(row);
+        } else {
+        	location.reload();
         }
-    });
+
+        // 3. [핵심 수정] 새 탭 방지 로직 추가
+        if (data.roomId) {
+		    const winName = 'chatWindow_' + data.roomId;
+		    
+		    if (data && data.roomId) {
+		        if ('BroadcastChannel' in window) {
+		            var bc = new BroadcastChannel('messenger_sync');
+		            bc.postMessage({
+		                type: 'ROOM_FAVORITE_CHANGED',
+		                roomId: Number(data.roomId),
+		                status: status // 'Y' or 'N'
+		            });
+		            bc.close();
+		        }
+		    }
+		}
+    })
+    .catch(err => console.error("즐겨찾기 요청 실패:", err));
 }
 </script>
 
+<div th:replace="~{messenger/messengerLayout :: messengerScript}"></div>
 
 </body>
 </html>

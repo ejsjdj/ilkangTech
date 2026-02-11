@@ -1,0 +1,19 @@
+<!-- fragments/employeeSelectModal.html -->
+<div th:fragment="employeeModal"
+     xmlns:th="http://www.thymeleaf.org">
+    <div id="employeeModal" class="modal">
+        <div class="modalBody">
+            <h3>직원 선택</h3>
+
+            <ul id="employeeList"></ul>
+
+            <div id="selectedEmployeeArea">
+                선택된 직원 없음
+            </div>
+
+            <button onclick="confirmEmployeeSelection()">등록</button>
+            <button onclick="closeEmployeeModal()">닫기</button>
+
+        </div>
+    </div>
+</div>

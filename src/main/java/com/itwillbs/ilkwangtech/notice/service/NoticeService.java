@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,12 +33,29 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class NoticeService {
-	
-	private final NoticeRepository noticeRepository;
-	private final NoticeFileRepository noticeFileRepository; // 추가 필요
-	
-	// 파일 저장 경로 (실제 존재하는 폴더여야 함)
-    private final String UPLOAD_DIR = "C:/upload/";
+    
+    private final NoticeRepository noticeRepository;
+    private final NoticeFileRepository noticeFileRepository;
+    
+    // application.properties의 설정값
+    @Value("${file.uploadBaseLocation}") 
+    private String baseDir;
+
+    /**
+     * [핵심 로직] OS 환경을 감지하여 실제 저장 경로를 반환합니다.
+     */
+    private String getRealUploadPath() {
+        String path = baseDir;
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            if (path.startsWith("/")) {
+                path = "C:" + path;
+            }
+        }
+        if (!path.endsWith("/") && !path.endsWith("\\")) {
+            path += "/";
+        }
+        return path;
+    }
 
     public List<NoticeListDTO> getPinnedNotices() {
         return noticeRepository.findTop3ByIsPinnedTrueOrderByRegDateDesc()
@@ -47,42 +65,34 @@ public class NoticeService {
                 .collect(Collectors.toList());
     }
 
- // [수정] 검색 조건을 포함한 리스트 조회
     public Page<NoticeListDTO> getNoticeList(int page, NoticeSearchDTO searchDTO) {
         Pageable pageable = PageRequest.of(page, 10);
         
-        // 날짜 변환 (LocalDate -> LocalDateTime)
         LocalDateTime startDateTime = null;
         LocalDateTime endDateTime = null;
 
         if (searchDTO.getStartDate() != null) {
-            startDateTime = searchDTO.getStartDate().atStartOfDay(); // 00:00:00
+            startDateTime = searchDTO.getStartDate().atStartOfDay(); 
         }
         if (searchDTO.getEndDate() != null) {
-            endDateTime = searchDTO.getEndDate().atTime(LocalTime.MAX); // 23:59:59.999...
+            endDateTime = searchDTO.getEndDate().atTime(LocalTime.MAX);
         }
 
-        // 레포지토리 호출
         return noticeRepository.searchNotices(
-                startDateTime, 
-                endDateTime, 
-                searchDTO.getSearchType(), 
-                searchDTO.getKeyword(), 
-                pageable
+                startDateTime, endDateTime, searchDTO.getSearchType(), 
+                searchDTO.getKeyword(), pageable
         ).map(n -> new NoticeListDTO(
                 n.getId(), n.getTitle(), n.getWriterName(), 
                 n.getWriterRank(), n.getRegDate(), n.getModDate(), 
                 n.getViewCount(), n.isPinned(), n.isHasAttachment()));
     }
     
-    // 1-6. 현재 고정 게시글 개수 확인
     public boolean checkPinnedLimit() {
         return noticeRepository.countByIsPinnedTrue() >= 3;
     }
 
     @Transactional
     public void registerNotice(NoticeWriteDTO dto, AccountLogin loginMember) throws IOException {
-    	// Notice 엔티티 저장
         Notice notice = Notice.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
@@ -91,17 +101,16 @@ public class NoticeService {
                 .writerDept(loginMember.getDepartment())
                 .isPinned(dto.isPinned())
                 .viewCount(0)
-                .hasAttachment(false) // 일단 false, 파일 있으면 true로 변경
+                .hasAttachment(false)
                 .build();
         
         Notice savedNotice = noticeRepository.save(notice);
         boolean hasFile = false;
 
-        // 폴더가 없으면 생성
-        File dir = new File(UPLOAD_DIR);
+        // [수정된 부분] 폴더 생성 시 OS 경로 반영
+        File dir = new File(getRealUploadPath());
         if (!dir.exists()) dir.mkdirs();
 
-        // (1) 이미지 파일 저장
         if (dto.getImageFiles() != null) {
             for (MultipartFile file : dto.getImageFiles()) {
                 if (!file.isEmpty()) {
@@ -111,7 +120,6 @@ public class NoticeService {
             }
         }
 
-        // (2) 일반 파일 저장
         if (dto.getGeneralFiles() != null) {
             for (MultipartFile file : dto.getGeneralFiles()) {
                 if (!file.isEmpty()) {
@@ -121,20 +129,21 @@ public class NoticeService {
             }
         }
 
-        // 첨부파일 여부 업데이트
         if (hasFile) {
             savedNotice.setHasAttachment(true);
         }
     }
 
-    // 파일 실제 저장 메소드
+    // [수정된 부분] 파일 실제 저장 메소드
     private void saveFile(MultipartFile file, Notice notice, boolean isImage) throws IOException {
         String originalName = file.getOriginalFilename();
         String uuid = UUID.randomUUID().toString();
         String savedName = uuid + "_" + originalName;
-        String filePath = UPLOAD_DIR + savedName;
+        
+        // ★ getRealUploadPath() 사용
+        String filePath = getRealUploadPath() + savedName;
 
-        file.transferTo(new File(filePath)); // 디스크에 저장
+        file.transferTo(new File(filePath)); 
 
         NoticeFile noticeFile = NoticeFile.builder()
                 .notice(notice)
@@ -145,43 +154,29 @@ public class NoticeService {
                 .isImage(isImage)
                 .build();
 
-        noticeFileRepository.save(noticeFile); // DB에 저장
+        noticeFileRepository.save(noticeFile); 
     }
 
-    // 2. 상세 조회 (DTO 변환)
     @Transactional
     public NoticeDetailDTO getNoticeDetail(Long id) {
-    	Notice notice = noticeRepository.findById(id)
+        Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
-        // 조회수 증가
         notice.setViewCount(notice.getViewCount() + 1);
 
-        // 1. 해당 게시글의 모든 파일 조회
         List<NoticeFile> files = noticeFileRepository.findByNoticeId(id);
-
-        // 2. 이미지와 일반 파일 리스트 초기화
         List<NoticeDetailDTO.NoticeFileDTO> imageList = new ArrayList<>();
         List<NoticeDetailDTO.NoticeFileDTO> fileList = new ArrayList<>();
 
-        // 3. 파일 종류에 따라 리스트 분리 (이 부분이 핵심!)
         for (NoticeFile file : files) {
             NoticeDetailDTO.NoticeFileDTO fileDTO = new NoticeDetailDTO.NoticeFileDTO(
-                    file.getId(),
-                    file.getOriginalFileName(),
-                    file.getSavedFileName()
+                    file.getId(), file.getOriginalFileName(), file.getSavedFileName()
             );
 
-            if (file.isImage()) {
-                // 이미지라면 imageList에 담기 -> <img> 태그로 보여짐
-                imageList.add(fileDTO);
-            } else {
-                // 일반 파일이라면 fileList에 담기 -> 다운로드 링크로 보여짐
-                fileList.add(fileDTO);
-            }
+            if (file.isImage()) imageList.add(fileDTO);
+            else fileList.add(fileDTO);
         }
 
-        // 4. DTO 생성 및 데이터 주입
         NoticeDetailDTO dto = new NoticeDetailDTO();
         dto.setId(notice.getId());
         dto.setTitle(notice.getTitle());
@@ -192,63 +187,53 @@ public class NoticeService {
         dto.setViewCount(notice.getViewCount());
         dto.setRegDate(notice.getRegDate());
         dto.setPinned(notice.isPinned());
-        
-        // 분리한 리스트 주입
         dto.setImageFiles(imageList);
         dto.setGeneralFiles(fileList);
 
         return dto;
     }
     
-    // [추가] 게시글 삭제 (파일 포함)
     @Transactional
     public void deleteNotice(Long id) {
-        // 1. 파일 삭제 (디스크 + DB)
         List<NoticeFile> files = noticeFileRepository.findByNoticeId(id);
         for (NoticeFile file : files) {
-            File localFile = new File(file.getFilePath());
+            // [수정된 부분] 삭제 시 OS 경로 반영
+            // DB에 저장된 filePath가 절대경로라면 그대로 쓰고, 아니라면 조합
+            // 안전하게 getRealUploadPath() + savedName 으로 접근
+            String fullPath = getRealUploadPath() + file.getSavedFileName();
+            File localFile = new File(fullPath);
             if (localFile.exists()) localFile.delete();
         }
         
-        // DB에서 파일 데이터 삭제 (Cascade 설정이 없으므로 수동 삭제)
         noticeFileRepository.deleteByNoticeId(id);
-
-        // 2. 게시글 삭제
         noticeRepository.deleteById(id);
     }
 
-    // [추가] 게시글 수정
     @Transactional
     public void updateNotice(NoticeWriteDTO dto, AccountLogin loginMember) throws IOException {
         Notice notice = noticeRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
-        // 1. 기본 정보 수정 (Dirty Checking)
         notice.setTitle(dto.getTitle());
         notice.setContent(dto.getContent());
         notice.setPinned(dto.isPinned());
-        // 수정자 정보 업데이트 (선택 사항: 보통 작성자는 유지하고 수정일만 갱신됨)
-        // notice.setModDate(LocalDateTime.now()); // @UpdateTimestamp가 있어 자동 처리됨
 
-        // 2. 삭제 요청된 기존 파일 삭제
         if (dto.getDeleteFileIds() != null) {
             for (Long fileId : dto.getDeleteFileIds()) {
                 NoticeFile file = noticeFileRepository.findById(fileId).orElse(null);
                 if (file != null) {
-                    // 실제 파일 삭제
-                    File localFile = new File(file.getFilePath());
+                    // [수정된 부분] 삭제 시 OS 경로 반영
+                    String fullPath = getRealUploadPath() + file.getSavedFileName();
+                    File localFile = new File(fullPath);
                     if (localFile.exists()) localFile.delete();
                     
-                    // DB 삭제
                     noticeFileRepository.delete(file);
                 }
             }
         }
 
-        // 3. 새로운 파일 추가 (기존 register 로직 활용)
         boolean hasNewFile = false;
         
-        // (1) 새 이미지 저장
         if (dto.getImageFiles() != null) {
             for (MultipartFile file : dto.getImageFiles()) {
                 if (!file.isEmpty()) {
@@ -257,7 +242,7 @@ public class NoticeService {
                 }
             }
         }
-        // (2) 새 일반 파일 저장
+        
         if (dto.getGeneralFiles() != null) {
             for (MultipartFile file : dto.getGeneralFiles()) {
                 if (!file.isEmpty()) {
@@ -267,25 +252,22 @@ public class NoticeService {
             }
         }
 
-        // 4. 첨부파일 여부(hasAttachment) 갱신
-        // 기존 파일이 남아있거나, 새로 추가된 파일이 있으면 true
         List<NoticeFile> remainingFiles = noticeFileRepository.findByNoticeId(notice.getId());
         notice.setHasAttachment(!remainingFiles.isEmpty());
     }
 
-    // 파일 디스크 삭제 헬퍼 메서드
-    private void deleteFileFromDisk(String filePath) {
-        if (filePath != null) {
-            File file = new File(filePath);
-            if (file.exists()) {
-                file.delete();
-            }
-        }
+    public NoticeDetailDTO getNoticeForEdit(Long id) {
+        return getNoticeDetail(id);
     }
     
-    // [추가] 수정 폼용 데이터 조회 (DetailDTO 재활용)
-    public NoticeDetailDTO getNoticeForEdit(Long id) {
-        return getNoticeDetail(id); // 기존 상세 조회 로직 활용 (조회수 증가 로직이 포함되어 있다면 분리 고려)
+    // [추가] 파일 다운로드를 위한 파일 객체 반환 메서드
+    public File getDownloadFile(Long fileId) {
+        NoticeFile noticeFile = noticeFileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일이 존재하지 않습니다."));
+        
+        // getRealUploadPath()를 사용하여 OS(윈도우/리눅스)에 맞는 정확한 경로 완성
+        String realPath = getRealUploadPath() + noticeFile.getSavedFileName();
+        
+        return new File(realPath);
     }
-
 }

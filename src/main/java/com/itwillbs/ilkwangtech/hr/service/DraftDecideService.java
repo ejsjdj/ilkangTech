@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,13 +79,12 @@ public class DraftDecideService {
 
             // 1. 휴가/반차인 경우 캘린더 및 연차 차감
             if ("PTO".equals(type) || "HDF".equals(type)) {
+                System.out.println("userId : " + userId + "draftId" + draftId);
                 registerVacationToCalendar(userId, draftId);
             }
 
             // 2. [추가] 인사발령(APP)인 경우 발령 확정 및 사원 정보 갱신
             else if ("APP".equals(type)) {
-                // 아까 만든 발령 등록 서비스 호출
-                // registAppointmentService.registAppointment(...)
                 updateAppointmentStatus(draftId);
             }
 
@@ -95,6 +95,8 @@ public class DraftDecideService {
 		// 결재 정보 조회
         DraftEntity draft = draftRepository.findById(draftId)
                 .orElseThrow(() -> new IllegalArgumentException("문서 정보가 존재하지 않습니다."));
+
+        long requesterId = draft.getMember().getId();
 
         System.out.println("작성자 : " + userId + "문서 ID : " + draftId);
 
@@ -108,7 +110,7 @@ public class DraftDecideService {
             scheduleDto.setContent(draft.getDraftContent()); // 내용: 결재 내용 복사
 
             // 잔여 휴가 갱신
-            LeaveEntity leave = draftRepository.findApprovedLeaveDraft(userId, draftId)
+            LeaveEntity leave = draftRepository.findApprovedLeaveDraft(requesterId, draftId)
                     .orElseThrow(() -> new IllegalArgumentException("휴가 정보를 찾을 수 없습니다"));
             long usingLeave = draft.getDraftTotalDate(); // 사용할 휴가
 
@@ -123,7 +125,6 @@ public class DraftDecideService {
 
 
             // 날짜 변환: LocalDate -> LocalDateTime
-            // 시작일 00:00, 종료일 23:59로 설정하여 캘린더에 꽉 차게 표시
             scheduleDto.setStartDate(draft.getDraftStartDate().atStartOfDay());
             scheduleDto.setEndDate(draft.getDraftEndDate().atTime(23, 59, 59));
             
@@ -159,8 +160,7 @@ public class DraftDecideService {
         }
 	}
 
-    @Transactional
-    private void updateAppointmentStatus(long draftId) {
+    public void updateAppointmentStatus(long draftId) {
 
         log.info("로그 1: 발령 확인 시작 - draftId: {}", draftId);
 
@@ -176,7 +176,8 @@ public class DraftDecideService {
                     .orElseThrow(() -> new IllegalArgumentException("연결된 발령 정보를 찾을 수 없습니다."));
             log.info("로그 2: 발령 데이터 찾음, 상태 변경 시도");
 
-            appointment.setApproveStatus("승인");
+            appointment.updateStatus("승인");
+            appointment.newDate(LocalDate.now());
 
             log.info("인사발령 상태 업데이트 완료 - draftId: {}", draftId);
         }

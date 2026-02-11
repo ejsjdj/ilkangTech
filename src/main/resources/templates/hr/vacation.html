@@ -2,7 +2,9 @@
 <html lang="ko"
       layout:decorate="~{layout/layout}"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
 <head>
     <meta charset="UTF-8">
     <title>휴가 현황</title>
@@ -36,7 +38,9 @@
 
         <div class="tab-container">
             <div id="tabMyVac" class="tab-item active" onclick="switchTab('MY')">개인 휴가 관리</div>
-            <div id="tabAllVac" class="tab-item" onclick="switchTab('ALL')">부서원 휴가 현황</div>
+            <l1 sec:authorize="hasAnyAuthority('CEO','HR')">
+                <div id="tabAllVac" class="tab-item" onclick="switchTab('ALL')">부서원 휴가 현황</div>
+            </l1>
         </div>
 
         <!-- 휴가 요약 카드 영역 -->
@@ -50,11 +54,16 @@
             </div>
         </div>
 
-        <div class="dropdown">
+        <div class="filter-bar">
+            <div class="filter-left">
+                <i class="bi bi-calendar3"></i>
+                <span>기준 월</span>
+            </div>
             <input type="month" id="dateFilter" class="form-control-sm">
         </div>
 
-         <!-- 휴가 리스트 테이블 -->
+
+        <!-- 휴가 리스트 테이블 -->
         <div class="table-wrapper">
             <div class="table-scroll" id="vacationListContainer"> <!-- 로딩 상태 -->
                 <div class="text-center p-5">

@@ -11,12 +11,14 @@ import com.itwillbs.ilkwangtech.account.service.PositionService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 // 인사관리 메뉴탭
 @Controller
@@ -31,7 +33,16 @@ public class HrController {
 
     // 발령 관리
     @GetMapping("/appointment")
-    public String getAppointment(){
+    public String getAppointment(Model model, @AuthenticationPrincipal AccountLogin accountLogin){
+
+        System.out.println("보유 권한 : " + accountLogin.getRoles().get(0).getRole().getCommonCode());
+
+        List<String> roleList = accountLogin.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        model.addAttribute("myRoles", roleList);
+
         return "hr/appointment";
     }
 
@@ -39,7 +50,7 @@ public class HrController {
     @GetMapping("/appointment/list")
     @ResponseBody
     public Page<AppointmentDTO> getAppointmentList(Pageable pageable,
-                                                   @RequestParam(name = "searchField") String searchField){
+                                                   @RequestParam(name = "searchField", required = false) String searchField){
 
         return appointmentService.hrAppointmentService(pageable, searchField);
     }
@@ -57,17 +68,6 @@ public class HrController {
         return "hr/appointmentInsert";
     }
 
-    // 발령 등록
-    @GetMapping("/appointment/insertData")
-    public void registAppointmentInsert(@AuthenticationPrincipal AccountLogin accountLogin,
-                                        @RequestParam(name = "userId") Long userId,
-                                        @RequestParam(name = "newDept", required = false) Integer newDept,
-                                        @RequestParam(name = "newRank", required = false) Integer newRank,
-                                        @RequestParam(name = "workStatus", required = false) String workStatus){
-
-        Long approverId = accountLogin.getId();
-        registAppointmentService.registAppointment(approverId, userId, newDept, newRank, workStatus);
-    }
 
     // 조직도
     @GetMapping("/organization")

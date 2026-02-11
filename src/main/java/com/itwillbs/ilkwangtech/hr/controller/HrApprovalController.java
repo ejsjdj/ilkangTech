@@ -1,22 +1,27 @@
 package com.itwillbs.ilkwangtech.hr.controller;
 
-import com.itwillbs.ilkwangtech.hr.dto.DraftApprovalLineDTO;
-import com.itwillbs.ilkwangtech.hr.dto.DraftDTO;
-import com.itwillbs.ilkwangtech.hr.dto.DraftDetailDTO;
-import com.itwillbs.ilkwangtech.hr.dto.DraftRegistDTO;
+import com.itwillbs.ilkwangtech.hr.dto.*;
 import com.itwillbs.ilkwangtech.hr.repository.DraftRepository;
 import com.itwillbs.ilkwangtech.hr.service.*;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/draft")
@@ -33,21 +38,59 @@ public class HrApprovalController {
 
     // 결재문서 리스트
     @GetMapping("/list")
-    public String getApprovalList(@AuthenticationPrincipal AccountLogin accountLogin,Model model){
-        Long userId = accountLogin.getId();
-        List<DraftDTO> draftList = draftService.getDraftById(userId);
+    public String getApprovalList(@AuthenticationPrincipal AccountLogin accountLogin,
+                                  @PageableDefault(size = 10) Pageable pageable,
+                                  @RequestParam(value = "type", required = false) String type,
+                                  @RequestParam(value = "draftType", defaultValue = "PTO") String draftType,
+                                  @RequestParam(value = "startDate", required = false) LocalDate startDate,
+                                  @RequestParam(value = "endDate", required = false) LocalDate endDate,
+                                  Model model){
+        LocalDate today = LocalDate.now();
+
+        // 1. 날짜 기본값 설정 (null 체크)
+        if (startDate == null) {
+            // 이번 달 1일 (예: 2026-02-01)
+            startDate = today.withDayOfMonth(1);
+        }
+
+        if (endDate == null) {
+            // 이번 달 마지막 날 (예: 2026-02-28)
+            endDate = today.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
+        }
+
+        // 1. 기본값 설정 (파라미터가 없을 때만)
+        if (draftType == null || draftType.isEmpty()) {
+            draftType = "PTO"; // 기본값: 휴가 신청서
+        }
+
+        Page<DraftDTO> draftList = draftService.getDraftById((AccountLogin) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal(), accountLogin.getId(), pageable, type, draftType, startDate, endDate);
+
+        System.out.println(draftList.getContent());
 
         model.addAttribute("draftList", draftList);
+        model.addAttribute("type", type);
+        model.addAttribute("draftType", draftType);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+
         return "/hr/draft";
     }
 
     // 결재문서 상세보기
     @GetMapping("/detail")
     @ResponseBody
-    public DraftDetailDTO getApprovalDetail(@RequestParam("draftId") long draftId, @AuthenticationPrincipal AccountLogin accountLogin){
+    public DraftDetailDTO getApprovalDetail(@RequestParam("draftId") long draftId,
+                                            @AuthenticationPrincipal AccountLogin accountLogin){
         System.out.println("상세보기 문서 Id : " + draftId);
+
         Long userId = accountLogin.getId();
-        return draftDetailService.getDraftDetail(userId, draftId);
+
+        List<String> roleList = accountLogin.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        return draftDetailService.getDraftDetail(userId, draftId, roleList);
     }
 
     // 결재문서 양식 선택
@@ -60,17 +103,18 @@ public class HrApprovalController {
     }
 
     // 결재 등록
-    // 결재 문서 테이블에 정보 저장
     @PostMapping("/register")
     @ResponseBody
-    public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO, @AuthenticationPrincipal AccountLogin accountLogin){
-        Long userId = accountLogin.getId();
+    public void createApproval(@RequestBody DraftRegistDTO draftRegistDTO,
+                               @AuthenticationPrincipal AccountLogin accountLogin){
 
-        draftRegistService.putDraft(draftRegistDTO, userId);
+        draftRegistService.putDraft(draftRegistDTO, accountLogin.getId());
+
     }
 
     // 결재 승인/반려
     @PutMapping("/decide")
+    @ResponseBody
     public String approvalDecide(@RequestBody Map<String, Object> payload,
                                @AuthenticationPrincipal AccountLogin accountLogin){
     	log.info("approvalDecidePOST() 실행!");
@@ -83,7 +127,7 @@ public class HrApprovalController {
         // 서비스 호출 (최종 승인 시 캘린더 등록 로직 포함됨)
         try {
             draftDecideService.putApprovalDecide(userId, draftId, decision);
-            return "success"; // AJAX 호출에 대한 응답
+            return "/draft/list"; // AJAX 호출에 대한 응답
         } catch (Exception e) {
             log.error("결재 처리 중 오류 발생", e);
             return "fail";

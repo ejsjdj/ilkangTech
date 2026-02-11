@@ -29,10 +29,13 @@
 		.searchBtn:hover { background: #f6f6f6; }
 		/* 채팅 아이템 스타일 */
 		.chat-item {
+		    position: relative; /* [추가] 배지 위치의 기준점이 됩니다. */
 		    padding: 16px;
 		    border-bottom: 1px solid #f3f4f6;
 		    cursor: pointer;
 		    transition: background 0.2s;
+		    height: 85px; /* [추가] 높이를 고정하면 더 안정적입니다. */
+		    box-sizing: border-box; /* 패딩이 높이에 영향을 주지 않도록 설정 */
 		}
 		.chat-item:hover { background-color: #f9fafb; }
 		
@@ -95,6 +98,124 @@
 	}
 	.starOn { color: #f59e0b; } /* 활성: 노랑 */
 	.starOff { color: #d1d5db; } /* 비활성: 회색 */
+	
+	/* 그룹채팅 생성 - 사원 초대 모달 */
+	.modal-content.erp-style { 
+	    width: 400px; 
+	    height: 580px; 
+	    padding: 0; 
+	    overflow: hidden; 
+	    border-radius: 12px; 
+	    display: flex; 
+	    flex-direction: column; /* 내부 요소들을 수직으로 배치 */
+	    background: #fff;
+	    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+	}
+	.modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+	.modal-header h3 { margin: 0; font-size: 18px; color: #111827; }
+	
+	.modal-body { 
+	    padding: 20px; 
+	    display: flex; 
+	    flex-direction: column; 
+	    gap: 12px; 
+	    flex: 1; 
+	    overflow: hidden; 
+	}
+	
+	/* 입력창 & 검색창 스타일 */
+	.erp-input { width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e5e7eb; border-radius: 8px; box-sizing: border-box; }
+	.erp-search-wrap { position: relative; }
+	.erp-search-wrap input { background-color: #f9fafb; padding-left: 35px; }
+	.erp-search-icon { position: absolute; left: 12px; top: 10px; color: #9ca3af; }
+	
+	/* 추가된 사원 확인바 */
+	.selected-members-bar {
+	    display: flex;
+	    flex-wrap: wrap;
+	    gap: 6px;
+	    padding: 10px;
+	    background-color: #f3f4f6;
+	    border-radius: 8px;
+	    max-height: 80px;
+	    overflow-y: auto;
+	}
+	
+	.selected-tag {
+	    background-color: #2563eb;
+	    color: white;
+	    padding: 2px 8px;
+	    border-radius: 15px;
+	    font-size: 12px;
+	    display: flex;
+	    align-items: center;
+	    gap: 4px;
+	}
+	
+	.selected-tag .remove-btn {
+	    cursor: pointer;
+	    font-weight: bold;
+	    font-size: 14px;
+	}
+	
+	/* 사원 리스트 */
+	.member-selector.erp-list { 
+	    flex: 1; 
+	    overflow-y: auto; 
+	    border: 1px solid #f3f4f6; 
+	    border-radius: 8px; 
+	    margin: 0; 
+	    background-color: #fff;
+	}
+	.invite-item { display: flex; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f9fafb; cursor: pointer; }
+	.invite-item:hover { background-color: #f3f4f6; }
+	.invite-item .m-name { font-size: 14px; font-weight: 500; color: #1f2937; }
+	.invite-item .m-dept { font-size: 12px; color: #6b7280; }
+	
+	.modal-footer { padding: 15px 20px; background: #f9fafb; display: flex; justify-content: flex-end; gap: 8px; }
+	
+	/* 그룹 채팅 생성 - 사원리스트 스크롤바 디자인 */
+	.member-selector.erp-list::-webkit-scrollbar {
+	    width: 6px;
+	}
+	.member-selector.erp-list::-webkit-scrollbar-track {
+	    background: #f1f1f1;
+	    border-radius: 8px;
+	}
+	.member-selector.erp-list::-webkit-scrollbar-thumb {
+	    background: #d1d5db; /* 스크롤 바 색상 */
+	    border-radius: 8px;
+	}
+	.member-selector.erp-list::-webkit-scrollbar-thumb:hover {
+	    background: #9ca3af;
+	}
+	.invite-item.is-me {
+	    opacity: 0.6;      
+	    cursor: default;   
+	    background-color: #f9fafb;
+	}
+	
+	.invite-item.is-me:hover {
+	    background-color: #f9fafb; 
+	}
+	
+	/* 채팅 알림 */
+	.unread-badge {
+	    position: absolute; 
+	    right: 16px;        
+	    bottom: 18px;       
+	    background-color: #ff3b30;
+	    color: white;
+	    font-size: 11px;
+	    font-weight: bold;
+	    min-width: 18px;
+	    height: 18px;
+	    line-height: 18px;
+	    text-align: center;
+	    border-radius: 9px;
+	    padding: 0 5px;
+	    z-index: 5;
+	}
 	</style>
 </head>
 <body>
@@ -132,11 +253,18 @@
 				                        th:onclick="'toggleFavoriteRoom(' + ${room.roomId} + ', this)'">★</button>
 				                <span class="chat-name" th:text="${room.roomTitle}"></span>
 				            </div>
-				            <span class="chat-time" th:text="${room.lastTime}"></span>
+				            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+				                <span class="chat-time" th:text="${room.lastTime}"></span>
+				            </div>
 				        </div>
 				        
 				        <div class="chat-bottom chat-preview" th:text="${room.lastMessage}">
 				        </div>
+				        
+		                <span th:id="'unread-badge-' + ${room.roomId}" 
+		                      class="unread-badge" 
+		                      th:if="${room.unreadCount > 0}" 
+		                      th:text="${room.unreadCount}"></span>
 				    </div>
 				</div>
 				<input type="hidden" id="myId" th:value="${#authentication.principal.id}">
@@ -145,23 +273,51 @@
 		</div>			<!-- main 종료 -->
 		
 	<div id="inviteModal" class="modal" style="display:none;">
-	    <div class="modal-content">
-	        <h3>그룹 채팅 초대</h3>
-	        <input type="text" id="groupRoomName" placeholder="채팅방 이름을 입력하세요" class="input">
-	        
-	        <div class="member-selector">
-	            <div th:each="member : ${memberList}" class="member-item">
-	                <input type="checkbox" name="selectedMembers" th:value="${member.memberId}">
-	                <span th:text="|${member.memberName} (${member.departmentName})|"></span>
-	            </div>
-	        </div>
-	        
-	        <div class="modal-footer">
-	            <button class="btn" onclick="closeInviteModal()">취소</button>
-	            <button class="btn btn-primary" onclick="createGroupChat()">생성</button>
-	        </div>
-		</div>
-	</div>
+    <div class="modal-content erp-style">
+        <div class="modal-header">
+            <h3>그룹 채팅 초대</h3>
+            <span class="close-btn" onclick="closeInviteModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+            <input type="text" id="groupRoomName" placeholder="채팅방 이름을 입력하세요" class="erp-input">
+            
+            <div class="erp-search-wrap">
+                <input type="text" id="memberSearch" placeholder="사원명 또는 부서명으로 검색" 
+                       onkeyup="filterInviteMembers()" class="erp-input">
+                <span class="erp-search-icon">🔍</span>
+            </div>
+            
+            <div id="selectedMembersBar" class="selected-members-bar" style="display: none;">
+        </div>
+            
+            <div class="member-selector erp-list" id="inviteMemberList">
+                <div th:each="member : ${memberList}" 
+				     class="member-item invite-item" 
+				     th:classappend="${member.memberId == #authentication.principal.id} ? 'is-me' : ''"
+				     th:onclick="${member.memberId == #authentication.principal.id} ? '' : 'toggleCheckbox(this)'"> 
+				           <input type="checkbox" name="selectedMembers" 
+				           th:value="${member.memberId}" 
+				           th:attr="data-name=${member.memberName}"
+				           th:disabled="${member.memberId == #authentication.principal.id}"
+				           class="erp-checkbox" 
+				           onclick="event.stopPropagation(); updateSelectedDisplay();">
+                    <div class="m-info">
+                        <span class="m-name" 
+			              	th:text="${member.memberId == #authentication.principal.id} ? ${member.memberName} + ' (나)' : ${member.memberName}">
+				        </span>
+                        <span class="m-dept" th:text="${member.departmentName}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="searchBtn" onclick="closeInviteModal()">취소</button>
+            <button class="searchBtn btn-primary" onclick="createGroupChat()">채팅방 생성</button>
+        </div>
+    </div>
+</div>
 		
 </div>
 	
@@ -181,41 +337,6 @@ function connectList() {
         });
     });
 }
-
-//chatList.html 의 updateChatList 함수 수정
-function updateChatList(msg) {
-    var roomItem = document.querySelector(".chat-item[data-room-id='" + msg.roomId + "']");
-    var sidebarDot = document.getElementById('main-unread-dot'); // messengerLayout의 점 ID
-
-    if (msg.msgType === 'READ') {
-        // 읽음 신호 시 전체 체크 후 점 제어
-        fetch('/messenger/api/unread-exists')
-            .then(res => res.json())
-            .then(exists => {
-                if(sidebarDot) sidebarDot.style.display = exists ? 'block' : 'none';
-            });
-        return;
-    }
-
-    // 새 메시지 수신 시 로직
-    if (roomItem) {
-        roomItem.querySelector(".chat-preview").textContent = msg.content;
-        roomItem.querySelector(".chat-time").textContent = msg.formattedTime;
-        
-        // 즐겨찾기가 아닐 때만 위로 이동
-        if (!roomItem.classList.contains('favorite-room')) {
-            document.querySelector(".chatList").prepend(roomItem);
-        }
-        
-        // [추가] 사이드바 빨간 점 표시 (내가 보낸 게 아닐 때)
-        if (sidebarDot && msg.memberId !== Number(document.getElementById("myId").value)) {
-            sidebarDot.style.display = 'block';
-        }
-    } else {
-        location.reload(); 
-    }
-}
-
 
 // 채팅방 검색
 function applySearch() {
@@ -242,6 +363,15 @@ function applySearch() {
 connectList();
 
 function openInviteModal() {
+    document.getElementById("memberSearch").value = "";
+    document.getElementById("groupRoomName").value = "";
+    document.getElementById("selectedMembersBar").innerHTML = "";
+    document.getElementById("selectedMembersBar").style.display = "none";
+    
+    const checkboxes = document.querySelectorAll('input[name="selectedMembers"]');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    document.querySelectorAll(".invite-item").forEach(i => i.style.display = "flex");
     document.getElementById("inviteModal").style.display = "flex";
 }
 
@@ -287,12 +417,18 @@ function toggleFavoriteRoom(roomId, btn) {
         if(res.ok) {
             location.reload(); // 즐겨찾기 순서 정렬을 위해 새로고침 권장
         }
+        
+        // 바로 적용을 위해 채팅방 새로고침
+        var chatWin = window.open('', 'chatWindow_' + roomId);
+        if (chatWin && !chatWin.closed && chatWin.location.href !== 'about:blank') {
+            chatWin.location.reload();
+        }
     });
 }
 
-//[추가] 채팅방 팝업창 열기 함수
+// 채팅방 팝업창 열기 함수
 function openChatRoom(roomId) {
-    var w = 420;
+    var w = 470;
     var h = 720;
     var left = Math.max(0, (screen.width - w) / 2);
     var top = Math.max(0, (screen.height - h) / 2);
@@ -304,27 +440,65 @@ function openChatRoom(roomId) {
     );
 }
 
-// [보정] 실시간 메시지 수신 시 목록 업데이트
+//[통합] 실시간 채팅 목록 업데이트 함수
 function updateChatList(msg) {
-    // data-room-id 속성이 있어야 요소를 찾을 수 있습니다.
-    var roomItem = document.querySelector(".chat-item[data-room-id='" + msg.roomId + "']");
-    var listContainer = document.querySelector(".chatList");
-
-    if (roomItem) {
-        // 마지막 메시지 내용과 시간 갱신 (위에서 추가한 .chat-preview 사용)
-        var preview = roomItem.querySelector(".chat-preview");
-        var time = roomItem.querySelector(".chat-time");
-        
-        if(preview) preview.textContent = msg.content;
-        if(time) time.textContent = msg.formattedTime;
-
-        // 즐겨찾기가 아닌 경우에만 맨 위로 이동 (즐겨찾기는 상단 고정 유지)
-        if (!roomItem.classList.contains('favorite-room')) {
-            listContainer.prepend(roomItem);
-        }
-    } else {
-        location.reload(); 
-    }
+ // 1. 해당 채팅방 아이템과 배지, 사이드바 점 찾기
+	const roomItem = document.querySelector(".chat-item[data-room-id='" + msg.roomId + "']");
+	const badge = document.getElementById('unread-badge-' + msg.roomId);
+	const sidebarDot = document.getElementById('main-unread-dot'); // layout/messengerLayout 통합 ID
+	const myId = Number(document.getElementById("myId").value);
+	
+	// 읽음 신호(READ) 처리
+	if (msg.msgType === 'READ') {
+	    // 내가 읽은 경우 해당 방의 빨간 숫자 숨기기
+	    if (msg.memberId === myId && badge) {
+	        badge.style.display = 'none';
+	        badge.textContent = '0';
+	    }
+	    
+	    // 전체 안 읽은 메시지가 더 있는지 서버에 확인하여 사이드바 점 갱신
+	    fetch('/messenger/api/unread-exists')
+	        .then(res => res.json())
+	        .then(exists => {
+	            if (sidebarDot) sidebarDot.style.display = exists ? 'block' : 'none';
+	        });
+	    return;
+	}
+	
+	// 새 메시지 수신 처리
+	if (roomItem) {
+	    // 미리보기 텍스트와 시간 업데이트
+	    const preview = roomItem.querySelector(".chat-preview");
+	    const time = roomItem.querySelector(".chat-time");
+	    
+	    if (preview) preview.textContent = msg.content;
+	    if (time) time.textContent = msg.formattedTime;
+	
+	    // 내가 보낸 게 아닌 경우에만 숫자 배지 업데이트
+	    if (msg.memberId !== myId) {
+	        if (badge) {
+	            // 이미 배지가 있는 경우 숫자 +1
+	            badge.style.display = 'inline-block';
+	            const currentCount = parseInt(badge.textContent) || 0;
+	            badge.textContent = currentCount + 1;
+	        } else {
+	            // th:if 때문에 배지 요소가 아예 없었다면 새로고침해서 생성
+	            location.reload(); 
+	        }
+	        
+	        // 사이드바 알림 점 켜기
+	        if (sidebarDot) sidebarDot.style.display = 'block';
+	    }
+	
+	    // 즐겨찾기 방이 아니면 목록 맨 위로 올리기
+	    if (!roomItem.classList.contains('favorite-room')) {
+	        const listContainer = document.querySelector(".chatList");
+	        listContainer.prepend(roomItem);
+	    }
+	} else {
+	    // 목록에 없는 새로운 방에서 메시지가 온 경우 목록 새로고침
+	    location.reload(); 
+	}
 }
 
 // 채팅 목록(chatList) 페이지에 들어오면 빨간 점을 숨김
@@ -336,9 +510,75 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+function filterInviteMembers() {
+    const keyword = document.getElementById("memberSearch").value.toLowerCase();
+    const items = document.querySelectorAll(".invite-item");
+
+    items.forEach(item => {
+        const name = item.querySelector(".m-name").textContent.toLowerCase();
+        const dept = item.querySelector(".m-dept").textContent.toLowerCase();
+        
+        // 이름이나 부서명에 키워드가 포함되면 표시
+        if (name.includes(keyword) || dept.includes(keyword)) {
+            item.style.display = "flex";
+        } else {
+            item.style.display = "none";
+        }
+    });
+}
+
+function updateSelectedDisplay() {
+    const selectedBar = document.getElementById("selectedMembersBar");
+    const checkboxes = document.querySelectorAll('input[name="selectedMembers"]:checked');
+    
+    selectedBar.innerHTML = ""; // 기존 내용 초기화
+
+    if (checkboxes.length > 0) {
+        selectedBar.style.display = "flex";
+        checkboxes.forEach(cb => {
+            const name = cb.getAttribute("data-name");
+            const tag = document.createElement("div");
+            tag.className = "selected-tag";
+            tag.innerHTML = `
+                <span>${name}</span>
+                <span class="remove-btn" onclick="removeMember('${cb.value}')">&times;</span>
+            `;
+            selectedBar.appendChild(tag);
+        });
+    } else {
+        selectedBar.style.display = "none";
+    }
+}
+
+/* 선택된 사원을 X 버튼을 눌러 선택 취소하는 함수 */
+function removeMember(memberId) {
+    const cb = document.querySelector(`input[name="selectedMembers"][value="${memberId}"]`);
+    if (cb) {
+        cb.checked = false;
+        updateSelectedDisplay();
+    }
+}
+
+/* 체크박스 제외한 항목 부분을 클릭해도 체크박스가 선택되게 하는 함수 */
+function toggleCheckbox(item) {
+    const cb = item.querySelector('input[type="checkbox"]');
+    
+    if(cb.disabled) return;
+    
+    cb.checked = !cb.checked;
+    updateSelectedDisplay();
+}
+
+window.addEventListener('message', function(e) {
+	  if (!e || !e.data) return;
+	  if (e.data.type === 'REFRESH_LIST') {
+	    location.reload();
+	  }
+	});
+
 </script>	
 
-	
+<div th:replace="~{messenger/messengerLayout :: messengerScript}"></div>
 	
 </body>
 </html>

@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/lang/summernote-ko-KR.min.js"></script>
+
     <th:block layout:fragment="style">
         <style>
             .page-container { background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); min-height: 800px; }
@@ -43,6 +47,10 @@
             .file-list-item:first-child { border-top: 1px solid #f0f0f0; margin-top: 10px; }
             .btn-file-delete { border: 1px solid #dc3545; background: white; color: #dc3545; font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
             .btn-file-delete:hover { background: #dc3545; color: white; }
+
+            /* [추가] Summernote 스타일 보정 */
+            .note-editor { border-color: #ced4da !important; background: white; }
+            .note-toolbar { background: #f8f9fa !important; border-bottom: 1px solid #ced4da !important; }
         </style>
     </th:block>
 </head>
@@ -97,8 +105,7 @@
                     <label class="form-label text-primary fw-bold">기존 이미지 (삭제할 이미지만 X 클릭)</label>
                     <div class="d-flex flex-wrap gap-3 p-3 bg-light border rounded">
                         <div th:each="img : ${notice.imageFiles}" class="old-img-box">
-                            <img th:src="@{|/upload/${img.savedFileName}|}">
-                            <button type="button" class="btn-del" th:onclick="'markFileForDelete(this, ' + ${img.id} + ')'">X</button>
+                            <img th:src="@{|/notice/download/${img.id}|}"> <button type="button" class="btn-del" th:onclick="'markFileForDelete(this, ' + ${img.id} + ')'">X</button>
                         </div>
                     </div>
                 </div>
@@ -141,15 +148,12 @@
 
     <th:block layout:fragment="script">
         <script>
-            // [핵심 변경] 1. 기존 파일 삭제 표시 함수 (ID 기반 -> DOM 탐색 기반으로 변경)
+            // 기존 파일 삭제 표시 함수
             function markFileForDelete(btn, fileId) {
                 if(!confirm('수정 완료 시 해당 파일은 영구 삭제됩니다.\n삭제하시겠습니까?')) return;
                 
-                // 1. 화면에서 해당 요소 즉시 제거 (jQuery closest 활용)
-                // 이미지 박스(.old-img-box) 혹은 파일 리스트 아이템(.list-group-item)을 찾아서 제거
                 $(btn).closest('.old-img-box, .list-group-item').remove();
                 
-                // 2. form 내부에 hidden input 생성하여 삭제할 ID 추가
                 const container = document.getElementById('deleteFilesContainer');
                 const input = document.createElement('input');
                 input.type = 'hidden';
@@ -159,10 +163,58 @@
             }
 
             $(document).ready(function() {
+                // -----------------------------------------------------
+                // [추가] 1. Summernote 에디터 초기화 (write.html과 동일하게 설정)
+                // -----------------------------------------------------
+                $('#content').summernote({
+                    height: 400,                 
+                    minHeight: null,             
+                    maxHeight: null,             
+                    focus: false,                
+                    lang: "ko-KR",               
+                    placeholder: '내용을 입력하세요',
+                    toolbar: [
+                        ['fontname', ['fontname']],
+                        ['fontsize', ['fontsize']],
+                        ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
+                        ['color', ['forecolor','color']],
+                        ['table', ['table']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['height', ['height']],
+                        ['insert',['picture','link','video']],
+                        ['view', ['fullscreen', 'help']]
+                    ],
+                    fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
+                    fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72']
+                });
+
+                // -----------------------------------------------------
+                // 2. 템플릿 양식 (write.html의 HTML 양식으로 교체)
+                // -----------------------------------------------------
+                const templates = {
+                    "1": "<p><strong>[전사 공지]</strong></p><p>안녕하십니까, 경영지원팀입니다.<br>회사의 주요 경영 사항 및 전체 공지 내용을 아래와 같이 전달해 드립니다.</p><p>1. 주요 내용:<br>2. 시행 일자:<br>3. 문의 사항:</p><p>임직원 여러분의 많은 협조 부탁드립니다.</p>",
+                    "2": "<p><strong>[휴무 안내]</strong></p><p>즐거운 명절/공휴일을 맞이하여 사내 휴무 일정을 안내드립니다.</p><p>- 휴무 기간: 2026년 00월 00일 ~ 00월 00일<br>- 업무 재개: 2026년 00월 00일</p><p>연휴 기간 동안 보안 및 시설물 점검에 유의해 주시기 바랍니다.</p>",
+                    "3": "<p><strong>[사내 이슈/주의]</strong></p><p>최근 사내에서 발생한 이슈와 관련하여 주의 사항을 안내드립니다.</p><p>- 발생 내용:<br>- 주의 사항:</p><p>쾌적하고 안전한 근무 환경을 위해 협조 바랍니다.</p>",
+                    "4": "<p><strong>[시스템 점검]</strong></p><p>안정적인 서비스 제공을 위해 전산 시스템 정기 점검이 진행될 예정입니다.</p><p>- 점검 일시: 2026년 00월 00일 00:00 ~ 00:00 (약 0시간)<br>- 점검 대상: 그룹웨어 및 ERP 시스템<br>- 유의 사항: 점검 시간 동안 접속이 제한됩니다.</p>"
+                };
+                
+                $('#templateSelect').change(function() {
+                    const val = $(this).val();
+                    if(val && templates[val]) {
+                        if(confirm('작성 중인 내용이 사라지고 선택한 양식으로 대체됩니다. 적용하시겠습니까?')) {
+                            // [수정] Summernote API를 사용하여 내용 설정
+                            $('#content').summernote('code', templates[val]);
+                        }
+                    }
+                });
+
+                // -----------------------------------------------------
+                // 3. 파일 및 이미지 처리 (기존 로직 유지)
+                // -----------------------------------------------------
                 const dtImages = new DataTransfer();
                 const dtFiles = new DataTransfer();
 
-                // 2. 새 이미지 처리
+                // 새 이미지 처리
                 $('#imageInput').change(function() {
                     const files = this.files;
                     if (dtImages.items.length + files.length > 5) { alert("이미지는 최대 5개까지만 등록 가능합니다."); this.value = ''; return; }
@@ -191,7 +243,7 @@
                     renderImagePreviews();
                 }
 
-                // 3. 새 첨부파일 처리
+                // 새 첨부파일 처리
                 $('#fileInput').change(function() {
                     const files = this.files;
                     if (dtFiles.items.length + files.length > 10) { alert("파일은 최대 10개까지만 등록 가능합니다."); this.value = ''; return; }
@@ -216,21 +268,7 @@
                     renderFileList();
                 }
 
-                // 4. 템플릿 선택 및 고정핀 토글
-                const templates = {
-                    "1": "[전사 공지]\n\n안녕하십니까, 경영지원팀입니다.\n회사의 주요 경영 사항 및 전체 공지 내용을 아래와 같이 전달해 드립니다.\n\n1. 주요 내용:\n2. 시행 일자:\n3. 문의 사항:\n\n임직원 여러분의 많은 협조 부탁드립니다.",
-                    "2": "[휴무 안내]\n\n즐거운 명절/공휴일을 맞이하여 사내 휴무 일정을 안내드립니다.\n\n- 휴무 기간: 2026년 00월 00일 ~ 00월 00일\n- 업무 재개: 2026년 00월 00일\n\n연휴 기간 동안 보안 및 시설물 점검에 유의해 주시기 바랍니다.",
-                    "3": "[사내 이슈/주의]\n\n최근 사내에서 발생한 이슈와 관련하여 주의 사항을 안내드립니다.\n\n- 발생 내용:\n- 주의 사항:\n\n쾌적하고 안전한 근무 환경을 위해 협조 바랍니다.",
-                    "4": "[시스템 점검]\n\n안정적인 서비스 제공을 위해 전산 시스템 정기 점검이 진행될 예정입니다.\n\n- 점검 일시: 2026년 00월 00일 00:00 ~ 00:00 (약 0시간)\n- 점검 대상: 그룹웨어 및 ERP 시스템\n- 유의 사항: 점검 시간 동안 접속이 제한됩니다."
-                };
-                
-                $('#templateSelect').change(function() {
-                    const val = $(this).val();
-                    if(val && templates[val] && confirm('작성 중인 내용이 사라지고 선택한 양식으로 대체됩니다. 적용하시겠습니까?')) {
-                        $('#content').val(templates[val]);
-                    }
-                });
-
+                // 고정 핀 기능
                 $('#isPinned').change(function() {
                     if($(this).is(':checked')) {
                         $.ajax({ url: '/notice/api/check-pinned', type: 'GET', success: function(limit) {
@@ -240,9 +278,19 @@
                     } else { $('#toggleText').text('일반 공지').css('color', '#64748b'); }
                 });
 
+                // [수정] 폼 전송 시 Summernote 내용 체크
                 $('#modifyForm').submit(function(e) {
-                    if(!$('#title').val().trim() || !$('#content').val().trim()) { 
-                        alert('제목과 내용은 필수 입력입니다.'); 
+                    const title = $('#title').val().trim();
+                    
+                    if ($('#content').summernote('isEmpty')) {
+                        alert('내용을 입력해주세요.');
+                        e.preventDefault();
+                        return false; 
+                    }
+                    if(!title) {
+                        alert('제목을 입력해주세요.');
+                        $('#title').focus();
+                        e.preventDefault();
                         return false; 
                     }
                 });

@@ -5,9 +5,16 @@
 
 <mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.CustomerMapper">
 
-    <insert id="insertCustomer" keyProperty="customerId">
-        INSERT INTO customers (name, email, phone, valid)
-        VALUES (#{name}, #{email}, #{phone}, 1)
+    <insert id="insertCustomer" useGeneratedKeys="true" keyProperty="customerId" keyColumn="customer_id">
+        INSERT INTO customers (name, email, phone, valid, manager, category)
+        VALUES (
+        #{name},
+        #{email, jdbcType=VARCHAR},
+        #{phone, jdbcType=VARCHAR},
+        1,
+        #{manager, jdbcType=VARCHAR},
+        #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+        )
     </insert>
 
     <select id="selectByName" resultType="com.itwillbs.ilkwangtech.sales.dto.CustomerDTO">

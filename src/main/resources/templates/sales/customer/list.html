@@ -95,6 +95,18 @@
                     <label>이메일/메모</label>
                     <input type="text" id="newEmail" placeholder="특이사항을 적어주세요">
                 </div>
+                <div class="input-group-cute">
+                    <label>담당자/이름</label>
+                    <input type="text" id="newManager" placeholder="담당자 이름">
+                </div>
+                <div class="input-group-cute">
+                    <label>구분</label>
+                    <select id="newCategory">
+                        <option value="supplier">협력사</option>
+                        <option value="client">고객사</option>
+                        <option value="partner">둘 다 (협력/고객)</option>
+                    </select>
+                </div>
                 <div class="modal-btns">
                     <button type="button" class="btn-sticker pink" onclick="closeModal()">닫기</button>
                     <button type="submit" class="btn-sticker blue">저장하기!</button>
@@ -134,7 +146,9 @@
                 const payload = {
                     name: document.getElementById('newName').value,
                     phone: document.getElementById('newPhone').value,
-                    email: document.getElementById('newEmail').value
+                    email: document.getElementById('newEmail').value,
+                    manager: document.getElementById('newManager').value,
+                    category: document.getElementById('newCategory').value
                 };
 
                 try {
@@ -157,6 +171,13 @@
                 }
             });
         });
+    </script>
+
+    <!-- 리스트 불러오기 -->
+    <script th:inline="javascript">
+
+
+
     </script>
 </div>
 

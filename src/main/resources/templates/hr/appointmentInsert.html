@@ -59,19 +59,23 @@
                         </div>
                     </div>
 
-                    <input type="hidden" id="selectedDate" name="selectedDate" value="2025-01-01">
+
+                    <div class="form-group">
+                        <label for="draftFile">첨부 파일</label>
+                        <input type="file" id="draftFile" name="draftFile">
+                    </div>
 
                     <!-- 푸터 (왼쪽 컬럼 하단 배치) -->
-                    <div class="form-group form-row-full">
-                        <p class="field-hint">※ 결재권자의 승인 없이 이루어진 발령은 근로기준법에 따라 해고 및 처벌될 수 있습니다. ※</p>
-                    </div>
                     <div class="form-footer" style="margin-top: 0; border-top: none; padding-top: 0; justify-content: flex-start;">
                         <button type="submit" class="btn-submit" onclick="registAppointment()">
                             <i class="bi bi-person-check-fill"></i> 발령 등록
                         </button>
                         <button type="button" class="btn-cancel" onclick="location.href='/account/list'">취소</button>
                     </div>
+
+                    <input type="hidden" id="selectedDate" name="selectedDate" value="2025-01-01">
                 </div>
+
 
                 <!-- 직급 변경 -->
                 <div class="form-column">
@@ -137,6 +141,8 @@
                             </div>
                         </div>
                     </div>
+
+
                 </div>
             </div>
         </form>

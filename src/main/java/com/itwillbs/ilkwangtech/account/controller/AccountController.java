@@ -1,22 +1,25 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountDetailResponse;
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequest;
-import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponse;
-import com.itwillbs.ilkwangtech.account.service.AccountService;
-import com.itwillbs.ilkwangtech.account.service.BankService;
-import com.itwillbs.ilkwangtech.account.service.DepartmentService;
-import com.itwillbs.ilkwangtech.account.service.PositionService;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequestDTO;
+import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponseDTO;
+import com.itwillbs.ilkwangtech.account.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
 
 
 /**
@@ -32,6 +35,7 @@ public class AccountController {
     private final PositionService positionService;
     private final BankService bankService;
     private final AccountService accountService;
+    private final ListService listService;
 
     /**
      * 회원가입 페이지를 요청합니다.
@@ -63,8 +67,8 @@ public class AccountController {
      * @return 성공 시 사원 목록 페이지로, 실패 시 회원가입 페이지로 리다이렉트
      */
     @PostMapping("/register")
-    public String register(AccountRegisterRequest req, RedirectAttributes redirectAttributes) {
-        AccountRegisterResponse res = accountService.register(req);
+    public String register(AccountRegisterRequestDTO req, RedirectAttributes redirectAttributes) {
+        AccountRegisterResponseDTO res = accountService.register(req);
         if(res.isSuccess()) {
             redirectAttributes.addFlashAttribute("successMessage", "사원 등록이 완료되었습니다. 사원번호: " + res.getEmployeeNumber());
             return "redirect:/account/list";
@@ -98,15 +102,28 @@ public class AccountController {
 
     /**
      * 내 정보 수정 페이지를 요청합니다.
-     *
-     * @param user 현재 로그인한 사용자 정보 (@AuthenticationPrincipal)
-     * @param model 뷰에 전달할 데이터를 담는 객체
      * @return 내 정보 수정 페이지 뷰 경로
      */
     @GetMapping("/myInfo")
     public String update(@AuthenticationPrincipal AccountLogin user, Model model) {
-        model.addAttribute("user", user);
+
+        AccountDetailResponse detail = listService.getAccountDetail(user.getId());
+        model.addAttribute("user", detail);
         return "/account/myInfo";
+    }
+
+    // 마이페이지에서 프로필
+    @PostMapping("/update/profileImgFile")
+    public String updateProfileImgFile(@AuthenticationPrincipal AccountLogin user,
+                                       @RequestParam("profileImgFile") MultipartFile profileImgFile,
+                                       RedirectAttributes rttr) throws IOException {
+
+        int row = accountService.updateProfileImage(user, profileImgFile);
+
+        rttr.addFlashAttribute(row > 0 ? "successMessage" : "errorMessage", 
+                               row > 0 ? "프로필 이미지가 변경되었습니다." : "프로필 이미지 변경에 실패했습니다.");
+
+        return "redirect:/account/myInfo";
     }
 
     /**
@@ -120,6 +137,7 @@ public class AccountController {
      * @return 내 정보 수정 페이지로 리다이렉트
      */
     @PostMapping("/update")
+    @Transactional
     public String updateMyInfo(@AuthenticationPrincipal AccountLogin user,
                                Long id,
                                String email,
@@ -132,16 +150,11 @@ public class AccountController {
             return "redirect:/account/myInfo";
         }
 
-        boolean success = accountService.updateMyInfo(id, email, phoneNumber);
-
-        if (success) {
-            // 성공 시 현재 로그인 세션 객체의 정보도 갱신
-            user.setEmail(email);
-            user.setPhoneNumber(phoneNumber);
+        if (user.updateInfo(email, phoneNumber) && accountService.updateMyInfo(id, email, phoneNumber))
             redirectAttributes.addFlashAttribute("successMessage", "내 정보가 수정되었습니다.");
-        } else {
+
+        else
             redirectAttributes.addFlashAttribute("errorMessage", "정보 수정에 실패했습니다.");
-        }
 
         return "redirect:/account/myInfo";
     }

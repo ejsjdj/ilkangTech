@@ -2,7 +2,7 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+      layout:decorate="~{layout/layout}" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -265,40 +265,34 @@
             background-color: #f8fafc;
         }
 
-        /* 상태 배지 개선 */
+
+        /* 공통 배지 스타일 */
         .status-badge {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            gap: 4px;
+            padding: 4px 4px; /* 여백을 조금 더 주면 훨씬 고급스러워요 */
+            border-radius: 999px; /* 완전 둥근 디자인 */
+            font-size: 12px;
+            font-weight: 600;
+            gap: 6px;
         }
 
-        .status-active {
-            background-color: #dcfce7;
-            color: #15803d;
-        }
-
-        .status-active::before {
+        /* 도트 공통 스타일 */
+        .status-badge::before {
             content: '';
             width: 6px;
             height: 6px;
-            background-color: #16a34a;
             border-radius: 50%;
+            background-color: currentColor; /* 글자색을 그대로 따라갑니다 */
         }
 
-        .status-inactive {
-            background-color: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .status-leave {
-            background-color: #e0f2fe;
-            color: #0369a1;
-        }
+        /* 상태별 컬러 정의 (배경-글자 순서) */
+        .status-active   { background-color: #DCFCE7; color: #16A34A; } /* 재직 (초록) */
+        .status-working  { background-color: #DBEAFE; color: #2563EB; } /* 근무중 (파랑) */
+        .status-leave    { background-color: #F3F4F6; color: #4B5563; } /* 퇴근 (회색) */
+        .status-outside  { background-color: #FEF9C3; color: #CA8A04; } /* 외근 (노랑) */
+        .status-dayoff   { background-color: #FCE7F3; color: #DB2777; } /* 연차 (핑크) */
+        .status-inactive { background-color: #FEE2E2; color: #DC2626; } /* 퇴사 (빨강) */
 
         /* 상세 버튼 */
         .action-btn {
@@ -344,7 +338,7 @@
             padding: 12px 20px;
             border-top: 1px solid #e2e8f0;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             background: #ffffff;
             flex-shrink: 0;
@@ -359,6 +353,7 @@
         }
 
         .pagination a, .pagination span {
+
             display: flex;
             align-items: center;
             justify-content: center;
@@ -438,7 +433,7 @@
                         <p class="page-subtitle">사원 정보 조회 및 관리</p>
                     </div>
                 </div>
-                <a href="/account/register" class="btn-add">
+                <a href="/account/register" class="btn-add" sec:authorize="hasAnyAuthority('CEO','HR')">
                     <i class="bi bi-person-plus-fill"></i> 사원 등록
                 </a>
             </div>
@@ -541,12 +536,18 @@
                 case 'ACTIVE':
                 case '재직':
                     return '<span class="status-badge status-active">재직</span>';
-                case 'INACTIVE':
+                case '근무중':
+                    return '<span class="status-badge status-working">근무중</span>';
+                case '퇴근':
+                    return '<span class="status-badge status-leave">퇴근</span>';
+                case '외근':
+                    return '<span class="status-badge status-outside">외근</span>';
+                case '연차':
+                    return '<span class="status-badge status-dayoff">연차</span>';
                 case '퇴사':
                     return '<span class="status-badge status-inactive">퇴사</span>';
                 case 'LEAVE':
-                case '휴직':
-                    return '<span class="status-badge status-leave">휴직</span>';
+
                 default:
                     return '<span class="status-badge status-unknown">' + status + '</span>';
             }

@@ -1,6 +1,8 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
+import com.itwillbs.ilkwangtech.hr.dto.AppointmentRegistDTO;
 import com.itwillbs.ilkwangtech.hr.dto.DraftRegistDTO;
+import com.itwillbs.ilkwangtech.hr.entity.DraftAttachmentEntity;
 import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.hr.entity.DraftApproveStatusEntity;
 import com.itwillbs.ilkwangtech.hr.repository.DraftApprovalLineRepository;
@@ -30,57 +32,75 @@ public class DraftRegistService {
     private final ModelMapper modelMapper;
     private final MemberRepository memberRepository;
     private final DraftApprovalLineRepository draftApprovalLineRepository;
+    private final RegistAppointmentService registAppointmentService;
 
     @Transactional
     public void putDraft(DraftRegistDTO draftRegistDTO, Long userId) {
 
-        // Draft 엔티티에 새로문 결재문서 등록
-        DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class); // DTO와 Entity 매핑
-        Member memberRef = entityManager.getReference(Member.class, userId); // member 엔티티에서 작성자 ID 참조
-        draftEntity.setMember(memberRef); // 작성자 ID 등록
-        draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus()); // 최종 결재상태(기본값 WAT) 등록
-        DraftEntity savedDraft = draftRepository.save(draftEntity);
-
-        // 결재자 리스트
+        int seq = 1;
         List<String> approverStrings;
+        List<DraftAttachmentEntity> attachment = null;
 
-        if (draftRegistDTO.getDraftApprover() == null
-                || draftRegistDTO.getDraftApprover().isEmpty()) {
+        System.out.println("결재 등록 : " + draftRegistDTO);
+        System.out.println("결재 등록자 : " + userId);
 
-            // 기본 결재선 조회
-            approverStrings = draftApprovalLineRepository
-                    .findByDraftType("APP")
-                    .stream()
-                    .map(line ->
-                            line.getMember().getId() + " " + line.getSequence()
-                    )
-                    .toList();
+        // 1. 파일이 없을 때 Draft 엔티티에 문서 등록
+        DraftEntity draftEntity = modelMapper.map(draftRegistDTO, DraftEntity.class); // draftRegistDTO -> DraftEntity 저장
+        draftEntity.setMember(entityManager.getReference(Member.class, userId)); // 작성자 ID -> DraftEntity 저장
 
-        } else {
-            approverStrings = draftRegistDTO.getDraftApprover();
-        }
+        // 2. 파일이 있을 때 Draft + DraftAttachment 엔티티에 문서 및 파일정보 저장
+        if (draftRegistDTO.getDraftFile() != null) {
+            attachment = draftRegistDTO.getDraftFile().stream()
+                    .filter(dto -> dto.getFileId() != null)
+                    .map(dto -> {
+                        DraftAttachmentEntity e = new DraftAttachmentEntity();
+                        e.setFileId(dto.getFileId());
+                        e.setDraft(draftEntity);
+                        return e;
+                    }).toList();
 
-        // 리스트 가공
-        for (String approverString : approverStrings) {
+            draftEntity.setDraftFile(attachment);
+            draftEntity.setDraftStatus(draftRegistDTO.getDraftStatus());
 
-            if (approverString == null || approverString.trim().isEmpty()) {
-                continue;
+            DraftEntity savedDraft = draftRepository.save(draftEntity);
+
+            if ("APP".equals(draftRegistDTO.getDraftType())) {
+                registAppointmentService.registAppointment(draftRegistDTO, savedDraft);
             }
 
-            DraftApproveStatusEntity entity = new DraftApproveStatusEntity();
+            // 3. 발령 등록창에서 등록할 때 실행 결재자 목록 불러오기
+            if (draftRegistDTO.getDraftApprover() == null
+                    || draftRegistDTO.getDraftApprover().isEmpty()) {
 
-            String[] parts = approverString.trim().split("\\s+");
-            Long memberId = Long.parseLong(parts[0]);
-            int sequence = Integer.parseInt(parts[parts.length - 1]);
+                // 양식이 발령(APP)인 결재선 불러오기
+                approverStrings = draftApprovalLineRepository
+                        .findByDraftType("APP")
+                        .stream()
+                        .map(line ->
+                                line.getMember().getId() + " " + line.getSequence()
+                        )
+                        .toList();
 
-            Member approver = entityManager.getReference(Member.class, memberId);
+            } else {
+                approverStrings = draftRegistDTO.getDraftApprover();
+            }
 
-            entity.setDraftEntity(savedDraft);
-            entity.setMember(approver);
-            entity.setSequence(sequence);
-            entity.setStatus("대기");
+            // 리스트 가공
+            for (String approverString : approverStrings) {
+                System.out.println("결재자 ID : " + approverString);
+                if (approverString == null || approverString.trim().isEmpty()) { continue; }
 
-            draftApproveStatusRepository.save(entity);
+                String[] parts = approverString.trim().split("\\s+");
+                Long memberId = Long.parseLong(parts[0]);
+
+                DraftApproveStatusEntity entity = new DraftApproveStatusEntity();
+                entity.setDraftEntity(savedDraft);
+                entity.setMember(entityManager.getReference(Member.class, memberId));
+                entity.setSequence(seq++);
+                entity.setStatus("대기");
+
+                draftApproveStatusRepository.save(entity);
+            }
         }
     }
 }

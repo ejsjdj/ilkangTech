@@ -30,5 +30,13 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
                                  @Param("joinedAt") LocalDateTime joinedAt, 
                                  Pageable pageable);
 
-    long countByRoomIdAndCreatedAtAfter(Long roomId, LocalDateTime createdAt); 
+    long countByRoomIdAndCreatedAtAfter(Long roomId, LocalDateTime createdAt);
+
+    long countByRoomIdAndCreatedAtAfterAndMemberIdNotAndMsgTypeNot(
+            Long roomId, LocalDateTime lastRead, Long myId, String msgType
+        );
+    
+    long countByRoomIdAndCreatedAtAfterAndMemberIdNot(Long roomId, LocalDateTime after, Long myId);
+
+	List<ChatMessage> findByRoomId(Long id);
 }

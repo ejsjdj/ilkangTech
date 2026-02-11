@@ -69,7 +69,6 @@ function renderEmployeeTable(pageData) {
                         `;
         });
     }
-
     container.innerHTML = html;
 }
 
@@ -87,7 +86,6 @@ function selectEmployee(element, id, name, dept, pos) {
     document.getElementById('selectedEmployeeDisplay').innerHTML =
         `<i class="bi bi-check-circle-fill"></i> 선택됨: ${name} (${dept} / ${pos})`;
 
-
     // 4. 선택된 직급, 부서 연결
     document.getElementById('currentDeptDisplay').value = dept;
     document.getElementById('currentRankDisplay').value = pos;
@@ -97,13 +95,11 @@ function selectEmployee(element, id, name, dept, pos) {
 // 발령 데이터 가공
 function registAppointment() {
     // 1. 현재 화면에 입력/선택된 값 가져오기
-    const userId = document.getElementById('selectedMemberId').value;
     const userName = document.getElementById('hiddenName').value;
     const newDept = document.querySelector('select[name="department"]').value;
     const currentDept = document.getElementById('currentDeptDisplay').value;
     const newRank = document.querySelector('select[name="position"]').value;
     const currentRank = document.getElementById('currentRankDisplay').value;
-    const workStatus = document.querySelector('select[name="bank"]').value; // HTML의 name에 맞춤
 
     // --- 제목 생성 로직 시작 ---
     let generatedTitle = '';
@@ -126,29 +122,50 @@ function registAppointment() {
 
     postDraft(generatedTitle, generatedContent)
 
-    // 3. 컨트롤러 주소에 파라미터를 붙여서 이동 (GET 방식)
-    // 주소 형식: /주소?userId=1&newDept=2...
-    location.href = `/hr/appointment/insertData?userId=${userId}&newDept=${newDept}&newRank=${newRank}&workStatus=${encodeURIComponent(workStatus)}`;
+
 }
 
-
-// 결재 문서 등록
+/* 결재 문서 등록 */
 async function postDraft(generatedTitle, generatedContent){
+
+    let uploadedFile = null;
+    const fileInput = document.getElementById("draftFile");
+
+    // 파일 업로드 (있을 때만)
+    if (fileInput.files.length > 0) {
+        uploadedFile = await uploadFile();
+        console.log("1. 서버에서 받은 파일 정보:", uploadedFile);
+    } else {
+        alert("첨부파일을 등록하세요.")
+    }
 
     const baseDate = document.getElementById('selectedDate').value;
     const startDate = today();
-    const endDate = plusDays(startDate, 3);
+    const endDate = plusDays(startDate, 90);
 
+
+    // 발령 등록
+    const appointmentRegistDTO = {
+        memberId: document.getElementById('selectedMemberId').value,
+        newDept: document.querySelector('select[name="department"]').value,
+        newRank: document.querySelector('select[name="position"]').value,
+        workStatus: document.querySelector('select[name="bank"]').value,
+        approveStatus: "대기"
+    };
+
+    // 전자결재 등록
     const draftData = {
         draftTitle: generatedTitle,
         draftContent: generatedContent,
         draftType: 'APP',
+        draftFile: [{ fileId: uploadedFile.fileId }],
         draftStartDate: startDate,
         draftEndDate: endDate,
         draftStatus: "대기",
-    }
+        appointmentRegistDTO: appointmentRegistDTO
+    };
 
-    console.log("발령 데이터 : ", draftData);
+    console.log("2. 서버로 보낼 전체 데이터:", draftData);
 
     // 전송
     try {
@@ -175,15 +192,29 @@ async function postDraft(generatedTitle, generatedContent){
     }
 }
 
+/*파일 전송*/
+async function uploadFile(){
+    const fileInput = document.getElementById("draftFile");
 
-/*날짜 계산*/
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    const res = await fetch("/file/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    return await res.json();
+}
+
+/* 날짜 계산 */
 function plusDays(dateStr, days) {
   const d = new Date(dateStr);
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
 }
 
-// 오늘날짜 정의
+/* 오늘날짜 정의 */
 function today() {
   const d = new Date();
   const yyyy = d.getFullYear();

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!-- Bootstrap / Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <!-- Toast UI Grid CSS -->
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+        <style>
+            /* Noto Sans KR 폰트 추가 */
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800;900&display=swap');
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                font-family: 'Noto Sans KR', sans-serif;
+                color: #1e293b;
+                min-height: 100vh;
+            }
+
+            /* 메인 컨테이너 */
+            .main-container {
+                max-width: 200%;
+                margin-left: 10%;
+                margin-right: 10%;
+                padding: 1rem;
+            }
+
+            /* 페이지 헤더 */
+            .page-header {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                text-align: center;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 0.5rem;
+            }
+
+            .page-subtitle {
+                color: #64748b;
+                font-size: 1.1rem;
+                font-weight: 500;
+            }
+
+            /* 컨트롤 패널 */
+            .control-panel {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 16px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .control-group {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .control-label {
+                font-weight: 600;
+                color: #374151;
+                font-size: 0.9rem;
+            }
+
+            .form-select {
+                padding: 0.75rem 1rem;
+                border: 2px solid #e5e7eb;
+                background: white;
+                border-radius: 12px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #374151;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                min-width: 120px;
+            }
+
+            .form-select:hover {
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+
+            .form-select:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+            }
+
+            /* 그리드 컨테이너 */
+            .grid-container {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                padding: 1.5rem;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                min-height: 500px;
+            }
+
+            #grid {
+                height: 450px;
+                border-radius: 12px;
+                overflow: hidden;
+                width: 100%;
+            }
+
+            /* Toast UI Grid 커스텀 스타일 */
+            .tui-grid {
+                border-radius: 12px !important;
+                border: none !important;
+                font-family: 'Noto Sans KR', sans-serif !important;
+            }
+
+            .tui-grid-header-area {
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+                border-radius: 12px 12px 0 0 !important;
+            }
+
+            .tui-grid-header th {
+                font-weight: 700 !important;
+                color: #374151 !important;
+                font-size: 0.85rem !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.05em !important;
+                border-bottom: 2px solid #e5e7eb !important;
+                text-align: center !important;
+            }
+
+            .tui-grid-body-area .tui-grid-row:hover {
+                background: rgba(102, 126, 234, 0.05) !important;
+            }
+
+            .tui-grid-cell {
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+
+            .tui-grid-cell[data-column-name="employeeNumber"] {
+                font-weight: 700 !important;
+                color: #1e40af !important;
+                background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+            }
+
+            .tui-grid-cell[data-column-name="name"] {
+                font-weight: 600 !important;
+                color: #1f2937 !important;
+            }
+
+            .tui-grid-cell[data-column-name="department"] {
+                color: #4b5563 !important;
+                font-style: italic !important;
+            }
+
+            .tui-grid-cell[data-column-name="position"] {
+                font-weight: 600 !important;
+                color: #7c3aed !important;
+                background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%) !important;
+                border-radius: 4px !important;
+                margin: 2px !important;
+            }
+
+            .tui-grid-cell[data-column-name="phoneNumber"] {
+                font-family: 'Monaco', 'Menlo', monospace !important;
+                color: #059669 !important;
+            }
+
+            .tui-grid-cell[data-column-name="email"] {
+                color: #0891b2 !important;
+                font-size: 13px !important;
+            }
+
+            .tui-grid-cell[data-column-name="lockDateTime"] {
+                font-weight: 700 !important;
+                color: #991b1b !important;
+                background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+                border-radius: 4px !important;
+                margin: 2px 4px !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+            }
+
+            .tui-grid-cell .btn-detail {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+                font-weight: 600;
+                border-radius: 8px;
+                border: 2px solid #3b82f6;
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+
+            .tui-grid-cell .btn-detail:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            }
+
+            .tui-grid-cell .btn-unlock {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+                font-weight: 600;
+                border-radius: 8px;
+                border: 2px solid #10b981;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+
+            .tui-grid-cell .btn-unlock:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            }
+
+            /* 반응형 */
+            @media (max-width: 768px) {
+                .main-container {
+                    padding: 1rem;
+                }
+
+                .page-header {
+                    padding: 1.5rem;
+                }
+
+                .page-title {
+                    font-size: 2rem;
+                }
+
+                .control-panel {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .control-group {
+                    justify-content: space-between;
+                }
+
+                #grid {
+                    height: 350px;
+                }
+            }
+
+            /* 애니메이션 */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .page-header,
+            .control-panel,
+            .grid-container {
+                animation: fadeInUp 0.6s ease-out;
+            }
+
+            .control-panel {
+                animation-delay: 0.1s;
+            }
+
+            .grid-container {
+                animation-delay: 0.2s;
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content" class="container py-4">
+        <div class="main-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="bi bi-shield-lock" style="margin-right: 0.5rem;"></i>
+                    계정 잠금 관리
+                </h1>
+                <p class="page-subtitle">잠긴 계정 목록을 조회하고 잠금을 해제하세요</p>
+            </div>
+
+            <!-- 컨트롤 패널 -->
+            <div class="control-panel">
+                <div class="control-group">
+                    <label class="control-label">페이지 크기:</label>
+                    <select id="selectListPerPage" class="form-select">
+                        <option value="10">10개씩</option>
+                        <option value="20">20개씩</option>
+                        <option value="50">50개씩</option>
+                        <option value="100">100개씩</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <button class="btn btn-outline-primary" onclick="refreshGrid()">
+                        <i class="bi bi-arrow-clockwise"></i> 새로고침
+                    </button>
+                </div>
+            </div>
+
+            <!-- 그리드 컨테이너 -->
+            <div class="grid-container">
+                <div id="grid"></div>
+            </div>
+        </div>
+    </th:block>
+
+    <!-- 개별 페이지의 스크립트 영역 -->
+    <th:block layout:fragment="script">
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <!-- Toast UI Grid JS -->
+        <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+        <script>
+            let grid;
+            let currentPage = 1;
+            let pageSize = 10;
+            let sortBy = "memberId";
+            let direction = "ASC";
+
+            $(function() {
+                // Toast UI Grid 생성
+                grid = new tui.Grid({
+                    // 그리드 표시 대상 요소 el 프로퍼티 지정
+                    el: document.getElementById("grid"),
+
+                    // 그리드 표시 옵션
+                    rowHeaders: ["rowNum"],
+                    // 제목 및 데이터가 표시될 컬럼을 columns 프로퍼티로 생성(복수개의 컬럼을 리스트 형식으로 나열)
+
+                    columns: [
+                        { header: "id", name: "memberId", hidden: true },
+                        { header: "사원번호", name: "employeeNumber", sortable: true },
+                        { header: "부서", name: "department", sortable: true },
+                        { header: "직급", name: "position", sortable: true },
+                        { header: "이름", name: "name", sortable: true },
+                        { header: "전화번호", name: "phoneNumber", sortable: true },
+                        { header: "이메일", name: "email", sortable: true },
+                        { header: "잠긴 시간", name: "lockDateTime", sortable: true },
+                        {
+                            header: "상세 정보",
+                            name: "detail",
+
+                            formatter: ({row}) => `<button class="btn btn-sm btn-outline-primary btn-detail">상세 정보</button>`
+                        },
+                        {
+                            header: "관리",
+                            name : "unlock",
+
+                            formatter: ({row}) => `<button class="btn btn-sm btn-outline-primary btn-unlock">잠금 해제</button>`
+                        }
+                    ]
+                }); // tui.Grid 생성자 끝
+
+                // 페이지 로드 시 데이터 가져오기
+                loadPage();
+
+                $("#selectListPerPage").change(function() {
+                    // 셀렉트박스 요소의 value 속성값 가져오기(정수화)
+                    pageSize = parseInt(this.value);
+                    // 페이지 리로드를 위해 loadPage() 함수 호출
+                    loadPage();
+                }); // 페이징 적용 함수 끝
+
+                grid.on("click", ev => {
+
+                    const memberId = grid.getRow(ev.rowKey).memberId;
+
+                    if (ev.columnName === "detail") {
+                        location.href = `/account/detail/${memberId}`;
+                    }
+                    if (ev.columnName === "unlock") {
+                        $.ajax({
+                            url:`/account/unlock/${memberId}`,
+                            type: "POST",
+                            contentType:"application/json",
+                            success: function (res) {
+                                alert("계정 잠금이 해제되었습니다.");
+                                // 리로드
+                                location.reload();
+                            },
+                            error: function (xhr) {
+                                alert("계정 잠금 해제에 실패했습니다. 관리자에게 문의하세요.");
+                                console.error(xhr.responseText);
+                            }
+                        });
+                    }
+                }); // grid 클릭시에 상세정보 조회 요청
+
+
+            }) // jquery toast UI 생성 함수 끝
+
+            function loadPage() {
+                $.getJSON("/account/lockAccountList", {
+                    page: currentPage,
+                    size: pageSize,
+                    sortBy: sortBy,
+                    direction: direction
+                }, data => {
+                    console.log("data($.getJSON) : ", data);
+                    grid.resetData(data.content);
+                })
+            }
+
+            function refreshGrid() {
+                loadPage();
+            }
+
+
+        </script>
+    </th:block>
+</body>
+
+
+</html>

@@ -1,46 +1,34 @@
 package com.itwillbs.ilkwangtech.hr.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class DraftDTO {
-    private long draft_id;
+    private Long draft_id;
     private String draft_title;
     private String draft_content;
-    private LocalDate draft_startTime;
-    private LocalDate draft_endDate;
-    private LocalDate draft_approvalDate;
+    private String draft_startDate;
+    private String draft_endDate;
     private String draft_status;
 
-    @Builder
-    public DraftDTO(long draft_id, String draft_title, String draft_content, LocalDate draft_startTime, LocalDate draft_endDate, LocalDate draft_approvalDate, String draft_status){
-        super();
-        this.draft_id = draft_id;
-        this.draft_title = draft_title;
-        this.draft_content = draft_content;
-        this.draft_startTime = draft_startTime;
-        this.draft_endDate = draft_endDate;
-        this.draft_approvalDate = draft_approvalDate;
-        this.draft_status = draft_status;
-    }
-
-    public DraftDTO(Long draft_id,
-                    String draft_title,
-                    LocalDate draft_startTime,
-                    LocalDate draft_endDate,
-                    String draft_status) {
-        this.draft_id = draft_id;
-        this.draft_title = draft_title;
-        this.draft_startTime = draft_startTime;
-        this.draft_endDate = draft_endDate;
-        this.draft_status = draft_status;
+    public DraftDTO(Long draftId,
+                    String draftTitle,
+                    String draftContent,
+                    LocalDate draftStartDate,
+                    LocalDate draftEndDate,
+                    String draftStatus) {
+        this.draft_id = draftId;
+        this.draft_title = draftTitle;
+        this.draft_content = draftContent;
+        this.draft_startDate = draftStartDate != null ? draftStartDate.toString() : null;
+        this.draft_endDate = draftEndDate != null ? draftEndDate.toString() : null;
+        this.draft_status = draftStatus;
     }
 
 }

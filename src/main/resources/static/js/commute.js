@@ -7,7 +7,7 @@ $(document).ready(function() {
  */
 function initPage() {
     // 오늘 날짜 세팅
-    const today = new Date().toISOString().split('T')[0];
+    const today = getKSTDate('date');
     const dateFilter = document.getElementById('dateFilter');
     if (dateFilter) dateFilter.value = today;
 
@@ -28,29 +28,36 @@ function initPage() {
     switchTab('MY'); // 초기 진입 시 내 출퇴근 로드
 }
 
+
+function getKSTDate(format = 'date') {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const kstDate = new Date(now.getTime() - offset);
+
+    if (format === 'month') {
+        return kstDate.toISOString().substring(0, 7); // "2026-02"
+    }
+    return kstDate.toISOString().split('T')[0]; // "2026-02-05"
+}
+
 /**
  * 2. 탭 전환 로직
  */
 function switchTab(tabType) {
     $('.tab-item').removeClass('active');
     const dateInput = document.getElementById('dateFilter');
-    const now = new Date();
-    
+
     if (tabType === 'MY') {
         $('#tabMy').addClass('active');
         $('#deptFilterContainer').hide();
-
         dateInput.type = 'month';
-        dateInput.value = now.toISOString().substring(0, 7); // "2026-02"
-
+        dateInput.value = getKSTDate('month'); // 수정
         loadCommuteList();
     } else {
         $('#tabAll').addClass('active');
         $('#deptFilterContainer').show();
-
         dateInput.type = 'date';
-        dateInput.value = now.toISOString().split('T')[0]; // "2026-02-01"
-
+        dateInput.value = getKSTDate('date'); // 수정
         loadCommuteAllList();
     }
 }
@@ -98,10 +105,16 @@ function renderListTable(response) {
 
     let html = `
         <div class="table-scroll">
-            <table class="table emp-table">
+            <table class="emp-table">
                 <thead>
                     <tr>
-                        <th>날짜</th><th>출근</th><th>퇴근</th><th>외근</th><th>복귀</th><th>관리</th>
+                        <th>ID</th>
+                        <th>근무일</th>
+                        <th>출근</th>
+                        <th>퇴근</th>
+                        <th>외근</th>
+                        <th>복귀</th>
+                        <th>관리</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,7 +122,6 @@ function renderListTable(response) {
 
     if (response?.length > 0) {
         response.forEach(item => {
-            const args = `'${item.workDate}'`;
             html += `
                 <tr>
                     <td>${item.attendanceId || '-'}</td>
@@ -119,15 +131,27 @@ function renderListTable(response) {
                     <td>${item.goOutTime || '-'}</td>
                     <td>${item.returnTime || '-'}</td>
                     <td>
-                    <button class="btn-search" onclick="openRequestUpdateModal('${item.attendanceId}', '${item.workDate}')">수정</button>
+                        <button class="btn-search"
+                            onclick="openRequestUpdateModal('${item.attendanceId}', '${item.workDate}')">
+                            수정
+                        </button>
                     </td>
                 </tr>`;
         });
     } else {
-        html += `<tr><td colspan="5" class="text-center">데이터가 없습니다.</td></tr>`;
+        html += `
+            <tr>
+                <td colspan="7" class="text-center">데이터가 없습니다.</td>
+            </tr>`;
     }
-    $('#tableContainer').html(html + `</tbody></table></div>`);
 
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    $('#tableContainer').html(html);
 }
 
 /**
@@ -216,37 +240,33 @@ function openEditTimeModal(id, inTime, outTime, goOutTime, returnTime) {
     const modal = document.getElementById("commuteModal");
     if (!modal) return;
 
+    // 1. 기본 정보 세팅
     $('#modalEmpIdDisplay').text(id);
     $('#attendanceId').val(id);
-    $('#modalInTime').val(inTime);
-    $('#modalOutTime').val(outTime);
-    $('#modalGoOutTime').val(goOutTime);
-    $('#modalReturnTime').val(returnTime);
 
-    modal.style.display = "block";
-}
-
-function saveTime() {
-    const params = {
-        attendanceId: $('#attendanceId').val(),
-        inTime: $('#modalInTime').val(),
-        outTime: $('#modalOutTime').val(),
-        goOutTime: $('#modalGoOutTime').val(),
-        returnTime: $('#modalReturnTime').val()
+    // 2. 각 필드별 값 세팅 및 비활성화 로직
+    const timeFields = {
+        '#modalInTime': inTime,
+        '#modalOutTime': outTime,
+        '#modalGoOutTime': goOutTime,
+        '#modalReturnTime': returnTime
     };
 
-    $.ajax({
-        url: '/attendance/commute/update',
-        type: 'POST',
-        data: params,
-        success: function() {
-            alert("수정이 완료되었습니다.");
-            closeModal();
-            // 현재 활성화된 탭에 따라 리스트 갱신
-            $('.tab-item#tabMy').hasClass('active') ? loadCommuteList() : loadCommuteAllList();
-        },
-        error: () => alert("수정 중 오류가 발생했습니다.")
+    Object.entries(timeFields).forEach(([selector, value]) => {
+        const $el = $(selector);
+        $el.val(value); // 값 할당
+
+        // 값이 null, undefined, 또는 빈 문자열일 경우 비활성화
+        if (!value || value.trim() === '' || value === 'null') {
+            $el.prop('disabled', true);
+            $el.css('background-color', '#f5f5f5'); // 비활성화 시 시각적 표시 (선택사항)
+        } else {
+            $el.prop('disabled', false);
+            $el.css('background-color', '#ffffff'); // 활성화 시 배경색 초기화
+        }
     });
+
+    modal.style.display = "block";
 }
 
 function closeModal() {
@@ -264,31 +284,49 @@ function showError(containerId, message) {
     `);
 }
 
-// 페이지네이션
-//function renderPagination(pageData) {
-//    let html = '<div class="pagination-wrapper" style="text-align:center; margin-top:20px;">';
-//
-//    // 이전 버튼
-//    if (!pageData.first) {
-//        html += `<button class="btn-page" onclick="loadCommuteAllList(${pageData.number - 1})">이전</button>`;
-//    }
-//
-//    // 페이지 번호 루프
-//    for (let i = 0; i < pageData.totalPages; i++) {
-//        const isCurrent = (i === pageData.number);
-//        html += `
-//            <button class="btn-page ${isCurrent ? 'active' : ''}"
-//                    onclick="loadCommuteAllList(${i})"
-//                    style="margin: 0 3px; padding: 5px 10px; ${isCurrent ? 'background:#4f46e5; color:white;' : ''}">
-//                ${i + 1}
-//            </button>`;
-//    }
-//
-//    // 다음 버튼
-//    if (!pageData.last) {
-//        html += `<button class="btn-page" onclick="loadCommuteAllList(${pageData.number + 1})">다음</button>`;
-//    }
-//
-//    html += '</div>';
-//    $('#paginationContainer').html(html);
-//}
+/**
+ * 8. 관리자용 출퇴근 시간 수정 실행
+ */
+function saveTime() {
+    // 1. 데이터 수집 (RequestParam 형식이므로 일반 객체로 생성)
+    const attendanceId = $('#attendanceId').val();
+    const inTime = $('#modalInTime').val();
+    const outTime = $('#modalOutTime').val();
+    const goOutTime = $('#modalGoOutTime').val();
+    const returnTime = $('#modalReturnTime').val();
+
+    if (!attendanceId) {
+        alert("출퇴근 기록 식별자(ID)가 없습니다.");
+        return;
+    }
+
+    if (!confirm("출퇴근 시간을 수정하시겠습니까?")) return;
+
+    // 2. AJAX 전송
+    $.ajax({
+        url: '/attendance/commute/update',
+        type: 'POST', // 컨트롤러의 @PostMapping과 일치시킴
+        // contentType을 설정하지 않아야 기본값인 application/x-www-form-urlencoded로 전송됨
+        data: {
+            attendanceId: attendanceId,
+            inTime: inTime,
+            outTime: outTime,
+            goOutTime: goOutTime,
+            returnTime: returnTime
+        },
+        success: function() {
+            alert("수정이 완료되었습니다.");
+            closeModal();
+            // 현재 보고 있는 리스트 새로고침
+            if ($('#tabAll').hasClass('active')) {
+                loadCommuteAllList();
+            } else {
+                loadCommuteList();
+            }
+        },
+        error: function(xhr) {
+            console.error("수정 실패:", xhr);
+            alert("수정 중 오류가 발생했습니다.");
+        }
+    });
+}

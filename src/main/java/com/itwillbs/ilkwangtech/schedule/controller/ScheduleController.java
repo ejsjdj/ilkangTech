@@ -1,23 +1,22 @@
 package com.itwillbs.ilkwangtech.schedule.controller;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
-
-import java.net.MalformedURLException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +34,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.util.UriUtils;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
+import com.itwillbs.ilkwangtech.notice.service.NoticeService;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleDTO;
 import com.itwillbs.ilkwangtech.schedule.dto.ScheduleSearchDTO;
 import com.itwillbs.ilkwangtech.schedule.entity.ScheduleFile;
@@ -51,6 +52,7 @@ import lombok.extern.log4j.Log4j2;
 public class ScheduleController {
 
 	private final ScheduleService scheduleService;
+	private final NoticeService noticeService;
 	
 	// [추가 1] 빈 문자열("")을 null로 변환하여 LocalDate 바인딩 에러 방지
 	@InitBinder
@@ -59,8 +61,11 @@ public class ScheduleController {
     }
 
 	@GetMapping("/calendar")
-	public String calendarGET() {
+	public String calendarGET(Model model) {
 		log.info("calendarGET() 실행!");
+		
+		model.addAttribute("pinnedNotices", noticeService.getPinnedNotices());
+		
 		log.info("calendarGET() 종료!");
 		return "/schedule/calendar";
 	}
@@ -165,7 +170,7 @@ public class ScheduleController {
         }
     }
     
- // [추가] 캘린더용 일정 데이터 조회 (JSON 반환)
+    // [추가] 캘린더용 일정 데이터 조회 (JSON 반환)
     @GetMapping("/api/events")
     @ResponseBody
     public ResponseEntity<List<ScheduleDTO>> getCalendarEvents(
@@ -191,68 +196,52 @@ public class ScheduleController {
         return ResponseEntity.ok(result.getContent());
     }
     
-    @Value("${file.upload.path:C:/upload/}") // application.properties의 경로와 일치해야 함
-    private String uploadDir;
-    
-    // 썸네일 다운로드 기능 추가
+    // 썸네일 다운로드 기능 수정
     @GetMapping("/download/thumbnail/{scheduleId}")
-    public ResponseEntity<Resource> downloadThumbnail(@PathVariable(name = "scheduleId") Long scheduleId) throws MalformedURLException {
+    public ResponseEntity<Resource> downloadThumbnail(@PathVariable(name = "scheduleId") Long scheduleId) throws IOException {
         
-        // 1. 일정 정보 조회 (Service 재사용 또는 Repository 사용)
-        ScheduleDTO schedule = scheduleService.getScheduleDetails(scheduleId);
-        String thumbnailPath = schedule.getThumbnailPath();
-        
-        if (thumbnailPath == null) {
-            throw new RuntimeException("썸네일이 존재하지 않습니다.");
+        // 1. Service를 통해 실제 파일 객체 가져오기
+        File file = scheduleService.getThumbnailFile(scheduleId);
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("썸네일 파일을 찾을 수 없습니다: " + file.getAbsolutePath());
         }
 
-        // 2. 파일 경로 설정
-        Path filePath = Paths.get(uploadDir + thumbnailPath);
-        Resource resource = new UrlResource(filePath.toUri());
-
-        if (!resource.exists() || !resource.isReadable()) {
-            throw new RuntimeException("파일을 찾을 수 없습니다.");
-        }
-
-        // 3. 다운로드 헤더 설정 (파일명: thumbnail_일정ID.jpg 형식으로 지정)
-        // 원본 파일명을 따로 저장하지 않았다면 UUID 부분을 제외하거나 임의의 이름을 부여
-        String originalName = "thumbnail_" + scheduleId + ".jpg"; 
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
         
-        // 만약 저장된 파일명에서 UUID를 떼고 싶다면 아래 로직 사용
-        if (thumbnailPath.contains("_")) {
-             originalName = thumbnailPath.substring(thumbnailPath.indexOf("_") + 1);
-        }
-
+        String originalName = "thumbnail_" + scheduleId + ".jpg";
         String encodedFileName = UriUtils.encode(originalName, StandardCharsets.UTF_8);
-        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .contentType(MediaType.IMAGE_JPEG) // 썸네일은 보통 이미지이므로 contentType 지정 권장
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"")
                 .body(resource);
     }
 
-    // [메서드 추가] 첨부파일 다운로드
+    // 첨부파일 다운로드 수정
     @GetMapping("/download/{fileId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable(name = "fileId") Long fileId) throws MalformedURLException {
+    public ResponseEntity<Resource> downloadFile(@PathVariable(name = "fileId") Long fileId) throws IOException {
         
-        // 1. DB에서 파일 정보 조회
-        ScheduleFile fileEntity = scheduleService.getScheduleFile(fileId);
+        // 1. Service를 통해 실제 파일 객체 가져오기
+        File file = scheduleService.getDownloadFile(fileId);
         
-        // 2. 실제 파일 경로 찾기
-        // 저장된 파일명(UUID_원본명)을 사용
-        Path filePath = Paths.get(uploadDir + fileEntity.getSavedFileName());
-        Resource resource = new UrlResource(filePath.toUri());
-        
-        if (!resource.exists() || !resource.isReadable()) {
-            throw new RuntimeException("파일을 찾을 수 없거나 읽을 수 없습니다.");
+        if (!file.exists()) {
+            throw new FileNotFoundException("파일을 찾을 수 없습니다: " + file.getAbsolutePath());
         }
+        
+        // 2. DB에서 원본 파일명을 가져오기 위해(파일명 인코딩용) 엔티티 조회
+        // (Service 메서드가 File객체만 리턴하므로, 파일명 조회용으로 getScheduleFile 호출이 필요할 수 있음.
+        //  성능상 한 번에 DTO로 가져오는게 좋지만, 현재 구조 유지를 위해 간단히 처리)
+        ScheduleFile fileEntity = scheduleService.getScheduleFile(fileId);
 
-        // 3. 다운로드 시 원본 파일명으로 다운로드되도록 헤더 설정 (한글 깨짐 방지)
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
         String encodedFileName = UriUtils.encode(fileEntity.getOriginalFileName(), StandardCharsets.UTF_8);
-        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
-
+        
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.length())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"")
                 .body(resource);
     }
     

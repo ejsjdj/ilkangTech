@@ -2,7 +2,9 @@ package com.itwillbs.ilkwangtech.account.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +22,6 @@ public class LoginAttempt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "LOGIN_ATTEMPTS_SEQ")
-
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)

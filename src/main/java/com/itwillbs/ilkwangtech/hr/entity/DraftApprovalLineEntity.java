@@ -31,10 +31,10 @@ public class DraftApprovalLineEntity {
     // 승인자 ID
     // 사원 고유번호
     @ManyToOne
-    @JoinColumn(name="common_id")
+    @JoinColumn(name="member_id")
     private Member member;
 
     // 결재 순서
-    @Column(nullable = false)
+    @Column(name = "step_no", nullable = false)
     private long sequence;
 }

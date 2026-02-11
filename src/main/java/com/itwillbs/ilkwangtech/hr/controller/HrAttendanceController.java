@@ -136,8 +136,8 @@ public class HrAttendanceController {
     public List<WorkStatusDTO> getWorkList(@RequestParam(name = "deptCode") Integer deptCode,
                                            @RequestParam(name = "workDate") LocalDate workDate){
 
-        System.out.println(deptCode);
-        System.out.println(workDate);
+        System.out.println("근무현황 부서 코드 : " + deptCode);
+        System.out.println("근무현황 일자 : " + workDate);
 
         return workStatusService.getWorkStatus(deptCode, workDate);
     }
@@ -146,6 +146,7 @@ public class HrAttendanceController {
     @PostMapping("/work/updateGoOut")
     @ResponseBody
     public AttendanceDTO updateGoOut(@RequestParam("userId") long userId){
+        System.out.println("퇴근처리 사원 ID : " + userId);
         return updateWorkStatusService.updateGoOutService(userId);
     }
 

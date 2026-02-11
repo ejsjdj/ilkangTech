@@ -1,7 +1,9 @@
 package com.itwillbs.ilkwangtech.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.itwillbs.ilkwangtech.account.constant.MemberStatus;
 import com.itwillbs.ilkwangtech.account.entity.LoginAttempt;
+import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +27,7 @@ import java.util.List;
 @SequenceGenerator(
         name = "MEMBERS_SEQ_GENERATOR", 
         sequenceName = "MEMBERS_SEQ",   
-        initialValue = 200,				
+        initialValue = 1000,
         allocationSize = 1				
 )
 public class Member {
@@ -48,7 +50,8 @@ public class Member {
     @Column(length = 20)
     private String residentNumber; // 주민등록번호
 
-    private String profilePhotoLink; // 프로필 사진 경로
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "member")
+    private List<ProfileImg> profileImgs;
 
     @Column(length = 100, nullable = false, unique = true)
     private String email; // 이메일
@@ -79,6 +82,13 @@ public class Member {
     @LastModifiedDate
     private LocalDateTime updatedAt; // 정보 수정 일시
 
+    @Column(length = 20, nullable = true)
+    private MemberStatus status;
+
+    public void changeStatus(MemberStatus status) {
+        this.status = status;
+    }
+
     /**
      * 사원이 보유한 권한 목록 (1:N 관계)
      * MemberRole 엔티티를 통해 권한(CommonCode)과 다대다 관계를 맺습니다.
@@ -87,10 +97,10 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberRole> roles = new ArrayList<>();
 
-    /**
-     * 로그인 시도 및 계정 잠금 정보 (1:1 관계)
-     */
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private LoginAttempt loginAttempt;
+//    /**
+//     * 로그인 시도 및 계정 잠금 정보 (1:1 관계)
+//     */
+//    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private LoginAttempt loginAttempt;
 
 }

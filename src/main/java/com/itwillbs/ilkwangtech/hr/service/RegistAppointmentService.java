@@ -1,6 +1,9 @@
 package com.itwillbs.ilkwangtech.hr.service;
 
+import com.itwillbs.ilkwangtech.hr.dto.AppointmentRegistDTO;
+import com.itwillbs.ilkwangtech.hr.dto.DraftRegistDTO;
 import com.itwillbs.ilkwangtech.hr.entity.AppointmentEntity;
+import com.itwillbs.ilkwangtech.hr.entity.DraftEntity;
 import com.itwillbs.ilkwangtech.hr.repository.AppointmentRepostiory;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
@@ -22,11 +25,14 @@ public class RegistAppointmentService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public void registAppointment(Long approverId, Long userId, Integer newDept, Integer newRank, String workStatus){
+    public void registAppointment(DraftRegistDTO draftRegistDTO, DraftEntity saveDraft){
+
+        Long userId = draftRegistDTO.getAppointmentRegistDTO().getMemberId();
+        Integer newDept = draftRegistDTO.getAppointmentRegistDTO().getNewDept();
+        Integer newRank = draftRegistDTO.getAppointmentRegistDTO().getNewRank();
+        String workStatus = draftRegistDTO.getAppointmentRegistDTO().getWorkStatus();
 
         Member member = memberRepository.findById(userId).orElseThrow(); // Member 테이블에서 발령 대상인 사원 찾기
-
-        Member approver = memberRepository.findById(approverId).orElseThrow();
 
         AppointmentEntity appointmentEntity = new AppointmentEntity(member);
 
@@ -49,7 +55,7 @@ public class RegistAppointmentService {
         // 2. 직급 등록
         if (newRank != null) {
 
-            appointmentEntity.changeRank(member.getPosition());
+            appointmentEntity.changeRank(newRank);
 
             appointmentEntity.newRank(newRank);
 
@@ -70,11 +76,14 @@ public class RegistAppointmentService {
 
         }
 
-        // 4. 승인날짜 등록
-        appointmentEntity.newDate(LocalDate.now());
+        // 4. 문서 ID 등록
+        appointmentEntity.setDraft(saveDraft);
 
-        // 5. 승인자 등록
-        appointmentEntity.newApprover(approver);
+        // 승인날짜 등록
+        // appointmentEntity.newDate(LocalDate.now());
+
+        // 승인자 등록
+        // appointmentEntity.newApprover(approver);
 
         appointmentRepostiory.save(appointmentEntity);
 

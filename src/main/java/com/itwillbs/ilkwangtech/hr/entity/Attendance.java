@@ -35,8 +35,6 @@ import lombok.ToString;
 @ToString(exclude = "member")
 public class Attendance {
 
-
-	
 	@Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_attendance_gen")
     @SequenceGenerator(name = "seq_attendance_gen", sequenceName = "SEQ_ATTENDANCE", allocationSize = 1)

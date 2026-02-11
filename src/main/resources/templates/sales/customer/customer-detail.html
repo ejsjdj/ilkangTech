@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" 
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
@@ -136,7 +136,7 @@
                     </div>
                 </div>
                 <div class="col-md-4 text-end">
-                    <span class="badge status-badge" 
+                    <span class="badge status-badge"
                           th:classappend="'bg-' + ${customer.status == 'ACTIVE' ? 'success' : (customer.status == 'INACTIVE' ? 'secondary' : 'warning')}"
                           th:text="${customer.status == 'ACTIVE' ? '활성' : (customer.status == 'INACTIVE' ? '비활성' : '검토중')}">
                         활성
@@ -226,7 +226,7 @@
                                             <tr>
                                                 <td width="30%">상태</td>
                                                 <td>
-                                                    <span class="badge" 
+                                                    <span class="badge"
                                                           th:classappend="'bg-' + ${customer.status == 'ACTIVE' ? 'success' : (customer.status == 'INACTIVE' ? 'secondary' : 'warning')}"
                                                           th:text="${customer.status == 'ACTIVE' ? '활성' : (customer.status == 'INACTIVE' ? '비활성' : '검토중')}">
                                                         활성
@@ -325,22 +325,22 @@
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-light">
-                                    <tr>
-                                        <th>주문번호</th>
-                                        <th>제품</th>
-                                        <th>수량</th>
-                                        <th>단가</th>
-                                        <th>총액</th>
-                                        <th>상태</th>
-                                        <th>주문일</th>
-                                        <th>납기일</th>
-                                        <th>관리</th>
-                                    </tr>
+                                <tr>
+                                    <th>주문번호</th>
+                                    <th>제품</th>
+                                    <th>수량</th>
+                                    <th>단가</th>
+                                    <th>총액</th>
+                                    <th>상태</th>
+                                    <th>주문일</th>
+                                    <th>납기일</th>
+                                    <th>관리</th>
+                                </tr>
                                 </thead>
                                 <tbody id="ordersTableBody">
-                                    <tr>
-                                        <td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -357,20 +357,20 @@
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-light">
-                                    <tr>
-                                        <th>제품명</th>
-                                        <th>현재 단가</th>
-                                        <th>기본 단가</th>
-                                        <th>차이</th>
-                                        <th>적용일</th>
-                                        <th>변경 사유</th>
-                                        <th>관리</th>
-                                    </tr>
+                                <tr>
+                                    <th>제품명</th>
+                                    <th>현재 단가</th>
+                                    <th>기본 단가</th>
+                                    <th>차이</th>
+                                    <th>적용일</th>
+                                    <th>변경 사유</th>
+                                    <th>관리</th>
+                                </tr>
                                 </thead>
                                 <tbody id="pricesTableBody">
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -481,261 +481,261 @@
 </div>
 
 <th:block layout:fragment="script">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    let editCustomerModal;
-    const customerId = /*[[${customer.customerId}]]*/ 0;
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let editCustomerModal;
+        const customerId = /*[[${customer.customerId}]]*/ 0;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        editCustomerModal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
-        loadCustomerOrders();
-        loadCustomerPrices();
-        loadActivityHistory();
-    });
-
-    function editCustomer() {
-        editCustomerModal.show();
-    }
-
-    function saveCustomerChanges() {
-        const customerData = {
-            customerId: document.getElementById('editCustomerId').value,
-            customerName: document.getElementById('editCustomerName').value,
-            businessNumber: document.getElementById('editBusinessNumber').value,
-            representativeName: document.getElementById('editRepresentativeName').value,
-            businessType: document.getElementById('editBusinessType').value,
-            phoneNumber: document.getElementById('editPhoneNumber').value,
-            email: document.getElementById('editEmail').value,
-            contactPerson: document.getElementById('editContactPerson').value,
-            managerPhone: document.getElementById('editManagerPhone').value,
-            address: document.getElementById('editAddress').value,
-            website: document.getElementById('editWebsite').value,
-            faxNumber: document.getElementById('editFaxNumber').value,
-            notes: document.getElementById('editNotes').value,
-            status: document.getElementById('editStatus').value
-        };
-
-        fetch(`/sales/customer/api/${customerId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(customerData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            editCustomerModal.hide();
-            location.reload(); // 페이지 새로고침하여 변경사항 반영
-            showNotification('고객사 정보가 수정되었습니다.', 'success');
-        })
-        .catch(error => {
-            console.error('Error updating customer:', error);
-            showNotification('수정 중 오류가 발생했습니다.', 'error');
+        document.addEventListener('DOMContentLoaded', function() {
+            editCustomerModal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
+            loadCustomerOrders();
+            loadCustomerPrices();
+            loadActivityHistory();
         });
-    }
 
-    function deleteCustomer() {
-        if (confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        function editCustomer() {
+            editCustomerModal.show();
+        }
+
+        function saveCustomerChanges() {
+            const customerData = {
+                customerId: document.getElementById('editCustomerId').value,
+                customerName: document.getElementById('editCustomerName').value,
+                businessNumber: document.getElementById('editBusinessNumber').value,
+                representativeName: document.getElementById('editRepresentativeName').value,
+                businessType: document.getElementById('editBusinessType').value,
+                phoneNumber: document.getElementById('editPhoneNumber').value,
+                email: document.getElementById('editEmail').value,
+                contactPerson: document.getElementById('editContactPerson').value,
+                managerPhone: document.getElementById('editManagerPhone').value,
+                address: document.getElementById('editAddress').value,
+                website: document.getElementById('editWebsite').value,
+                faxNumber: document.getElementById('editFaxNumber').value,
+                notes: document.getElementById('editNotes').value,
+                status: document.getElementById('editStatus').value
+            };
+
             fetch(`/sales/customer/api/${customerId}`, {
-                method: 'DELETE'
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(customerData)
             })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = '/sales/customer/list';
-                } else {
-                    throw new Error('Delete failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting customer:', error);
-                showNotification('삭제 중 오류가 발생했습니다.', 'error');
-            });
-        }
-    }
-
-    function loadCustomerOrders() {
-        fetch(`/sales/customer/api/${customerId}/orders`)
             .then(response => response.json())
             .then(data => {
-                renderOrdersTable(data);
+                editCustomerModal.hide();
+                location.reload(); // 페이지 새로고침하여 변경사항 반영
+                showNotification('고객사 정보가 수정되었습니다.', 'success');
             })
             .catch(error => {
-                console.error('Error loading orders:', error);
+                console.error('Error updating customer:', error);
+                showNotification('수정 중 오류가 발생했습니다.', 'error');
             });
-    }
-
-    function loadCustomerPrices() {
-        fetch(`/sales/quotation/customer/${customerId}/prices`)
-            .then(response => response.json())
-            .then(data => {
-                renderPricesTable(data);
-            })
-            .catch(error => {
-                console.error('Error loading prices:', error);
-            });
-    }
-
-    function loadActivityHistory() {
-        fetch(`/sales/customer/api/${customerId}/history`)
-            .then(response => response.json())
-            .then(data => {
-                renderActivityTimeline(data);
-            })
-            .catch(error => {
-                console.error('Error loading history:', error);
-            });
-    }
-
-    function renderOrdersTable(orders) {
-        const tbody = document.getElementById('ordersTableBody');
-        if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td></tr>';
-            return;
         }
 
-        tbody.innerHTML = orders.map(order => `
-            <tr>
-                <td>${order.orderNumber}</td>
-                <td>${order.productName}</td>
-                <td>${order.quantity} ${order.unit}</td>
-                <td>${order.unitPrice.toLocaleString()}원</td>
-                <td>${order.totalAmount.toLocaleString()}원</td>
-                <td><span class="badge bg-${getOrderStatusColor(order.status)}">${getOrderStatusText(order.status)}</span></td>
-                <td>${new Date(order.requestDate).toLocaleDateString('ko-KR')}</td>
-                <td>${new Date(order.deliveryDeadline).toLocaleDateString('ko-KR')}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${order.salesOrderId})">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function renderPricesTable(prices) {
-        const tbody = document.getElementById('pricesTableBody');
-        if (prices.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td></tr>';
-            return;
+        function deleteCustomer() {
+            if (confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                fetch(`/sales/customer/api/${customerId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/sales/customer/list';
+                    } else {
+                        throw new Error('Delete failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting customer:', error);
+                    showNotification('삭제 중 오류가 발생했습니다.', 'error');
+                });
+            }
         }
 
-        tbody.innerHTML = prices.map(price => {
-            const basePrice = price.basePrice || price.unitPrice;
-            const priceDiff = price.unitPrice - basePrice;
-            const priceDiffPercent = basePrice > 0 ? (priceDiff / basePrice * 100).toFixed(1) : 0;
-            const changeType = priceDiff > 0 ? 'increase' : (priceDiff < 0 ? 'decrease' : '');
+        function loadCustomerOrders() {
+            fetch(`/sales/customer/api/${customerId}/orders`)
+                .then(response => response.json())
+                .then(data => {
+                    renderOrdersTable(data);
+                })
+                .catch(error => {
+                    console.error('Error loading orders:', error);
+                });
+        }
 
-            return `
+        function loadCustomerPrices() {
+            fetch(`/sales/quotation/customer/${customerId}/prices`)
+                .then(response => response.json())
+                .then(data => {
+                    renderPricesTable(data);
+                })
+                .catch(error => {
+                    console.error('Error loading prices:', error);
+                });
+        }
+
+        function loadActivityHistory() {
+            fetch(`/sales/customer/api/${customerId}/history`)
+                .then(response => response.json())
+                .then(data => {
+                    renderActivityTimeline(data);
+                })
+                .catch(error => {
+                    console.error('Error loading history:', error);
+                });
+        }
+
+        function renderOrdersTable(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => `
                 <tr>
-                    <td>${price.productName}</td>
-                    <td>${price.unitPrice.toLocaleString()}원</td>
-                    <td>${basePrice.toLocaleString()}원</td>
+                    <td>${order.orderNumber}</td>
+                    <td>${order.productName}</td>
+                    <td>${order.quantity} ${order.unit}</td>
+                    <td>${order.unitPrice.toLocaleString()}원</td>
+                    <td>${order.totalAmount.toLocaleString()}원</td>
+                    <td><span class="badge bg-${getOrderStatusColor(order.status)}">${getOrderStatusText(order.status)}</span></td>
+                    <td>${new Date(order.requestDate).toLocaleDateString('ko-KR')}</td>
+                    <td>${new Date(order.deliveryDeadline).toLocaleDateString('ko-KR')}</td>
                     <td>
-                        <span class="price-change ${changeType}">
-                            ${priceDiff >= 0 ? '+' : ''}${priceDiff.toLocaleString()}원 (${priceDiffPercent}%)
-                        </span>
-                    </td>
-                    <td>${new Date(price.effectiveDate).toLocaleDateString('ko-KR')}</td>
-                    <td>${price.changeReason || '-'}</td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="viewPriceHistory(${price.itemStockId})">
-                                <i class="bi bi-clock-history"></i>
-                            </button>
-                            <button class="btn btn-outline-warning" onclick="negotiateProductPrice(${price.itemStockId})">
-                                <i class="bi bi-handshake"></i>
-                            </button>
-                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${order.salesOrderId})">
+                            <i class="bi bi-eye"></i>
+                        </button>
                     </td>
                 </tr>
-            `;
-        }).join('');
-    }
-
-    function renderActivityTimeline(history) {
-        const timeline = document.getElementById('activityTimeline');
-        if (history.length === 0) {
-            return;
+            `).join('');
         }
 
-        const historyItems = history.map(item => `
-            <div class="timeline-item">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="card-title">${item.activityType}</h6>
-                                <p class="card-text text-muted">${item.description}</p>
+        function renderPricesTable(prices) {
+            const tbody = document.getElementById('pricesTableBody');
+            if (prices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = prices.map(price => {
+                const basePrice = price.basePrice || price.unitPrice;
+                const priceDiff = price.unitPrice - basePrice;
+                const priceDiffPercent = basePrice > 0 ? (priceDiff / basePrice * 100).toFixed(1) : 0;
+                const changeType = priceDiff > 0 ? 'increase' : (priceDiff < 0 ? 'decrease' : '');
+
+                return `
+                    <tr>
+                        <td>${price.productName}</td>
+                        <td>${price.unitPrice.toLocaleString()}원</td>
+                        <td>${basePrice.toLocaleString()}원</td>
+                        <td>
+                            <span class="price-change ${changeType}">
+                                ${priceDiff >= 0 ? '+' : ''}${priceDiff.toLocaleString()}원 (${priceDiffPercent}%)
+                            </span>
+                        </td>
+                        <td>${new Date(price.effectiveDate).toLocaleDateString('ko-KR')}</td>
+                        <td>${price.changeReason || '-'}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="viewPriceHistory(${price.itemStockId})">
+                                    <i class="bi bi-clock-history"></i>
+                                </button>
+                                <button class="btn btn-outline-warning" onclick="negotiateProductPrice(${price.itemStockId})">
+                                    <i class="bi bi-handshake"></i>
+                                </button>
                             </div>
-                            <small class="text-muted">${new Date(item.createdAt).toLocaleString('ko-KR')}</small>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderActivityTimeline(history) {
+            const timeline = document.getElementById('activityTimeline');
+            if (history.length === 0) {
+                return;
+            }
+
+            const historyItems = history.map(item => `
+                <div class="timeline-item">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="card-title">${item.activityType}</h6>
+                                    <p class="card-text text-muted">${item.description}</p>
+                                </div>
+                                <small class="text-muted">${new Date(item.createdAt).toLocaleString('ko-KR')}</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
 
-        timeline.innerHTML += historyItems;
-    }
-
-    function createNewOrder() {
-        window.location.href = `/sales/sales-order/create?customerId=${customerId}`;
-    }
-
-    function negotiatePrice() {
-        window.location.href = `/sales/quotation/price-management?customerId=${customerId}`;
-    }
-
-    function viewOrder(orderId) {
-        window.location.href = `/sales/sales-order/${orderId}`;
-    }
-
-    function viewPriceHistory(itemStockId) {
-        window.location.href = `/sales/quotation/price-history?customerId=${customerId}&itemStockId=${itemStockId}`;
-    }
-
-    function negotiateProductPrice(itemStockId) {
-        window.location.href = `/sales/quotation/negotiate?customerId=${customerId}&itemStockId=${itemStockId}`;
-    }
-
-    function getOrderStatusColor(status) {
-        switch(status) {
-            case 'REQUESTED': return 'warning';
-            case 'ACCEPTED': return 'info';
-            case 'IN_PROGRESS': return 'primary';
-            case 'COMPLETED': return 'success';
-            case 'CANCELLED': return 'danger';
-            case 'REJECTED': return 'secondary';
-            default: return 'secondary';
+            timeline.innerHTML += historyItems;
         }
-    }
 
-    function getOrderStatusText(status) {
-        switch(status) {
-            case 'REQUESTED': return '요청됨';
-            case 'ACCEPTED': return '수락됨';
-            case 'IN_PROGRESS': return '진행중';
-            case 'COMPLETED': return '완료됨';
-            case 'CANCELLED': return '취소됨';
-            case 'REJECTED': return '거부됨';
-            default: return status;
+        function createNewOrder() {
+            window.location.href = `/sales/sales-order/create?customerId=${customerId}`;
         }
-    }
 
-    function showNotification(message, type) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.body.appendChild(alertDiv);
-        
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 3000);
-    }
-</script>
+        function negotiatePrice() {
+            window.location.href = `/sales/quotation/price-management?customerId=${customerId}`;
+        }
+
+        function viewOrder(orderId) {
+            window.location.href = `/sales/sales-order/${orderId}`;
+        }
+
+        function viewPriceHistory(itemStockId) {
+            window.location.href = `/sales/quotation/price-history?customerId=${customerId}&itemStockId=${itemStockId}`;
+        }
+
+        function negotiateProductPrice(itemStockId) {
+            window.location.href = `/sales/quotation/negotiate?customerId=${customerId}&itemStockId=${itemStockId}`;
+        }
+
+        function getOrderStatusColor(status) {
+            switch(status) {
+                case 'REQUESTED': return 'warning';
+                case 'ACCEPTED': return 'info';
+                case 'IN_PROGRESS': return 'primary';
+                case 'COMPLETED': return 'success';
+                case 'CANCELLED': return 'danger';
+                case 'REJECTED': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        function getOrderStatusText(status) {
+            switch(status) {
+                case 'REQUESTED': return '요청됨';
+                case 'ACCEPTED': return '수락됨';
+                case 'IN_PROGRESS': return '진행중';
+                case 'COMPLETED': return '완료됨';
+                case 'CANCELLED': return '취소됨';
+                case 'REJECTED': return '거부됨';
+                default: return status;
+            }
+        }
+
+        function showNotification(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
 </th:block>
 </body>
 </html>

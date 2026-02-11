@@ -1,6 +1,6 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
-import com.itwillbs.ilkwangtech.account.dto.MemberRoleView;
+import com.itwillbs.ilkwangtech.account.dto.MemberRoleViewDTO;
 import com.itwillbs.ilkwangtech.account.service.RoleService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 사용자 권한 관리를 담당하는 컨트롤러
@@ -53,8 +51,9 @@ public class RoleController {
      * @param direction 정렬 방향 (ASC/DESC, 기본값 ASC)
      * @return 직원 권한 정보 목록이 담긴 Page 객체
      */
+
     @GetMapping("/findMemberByRole")
-    public ResponseEntity<Page<MemberRoleView>> findAccountByRole(
+    public ResponseEntity<Page<MemberRoleViewDTO>> findAccountByRole(
             @RequestParam("roleId") long roleId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
@@ -66,7 +65,7 @@ public class RoleController {
         Sort.Direction sortDir = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
         
-        Page<MemberRoleView> memberRoleViews = roleService.findMemberByRole(roleId, pageable);
+        Page<MemberRoleViewDTO> memberRoleViews = roleService.findMemberByRole(roleId, pageable);
         return ResponseEntity.ok(memberRoleViews);
     }
 
@@ -77,6 +76,7 @@ public class RoleController {
      * @param roleId 회수할 권한 ID
      * @return 성공 시 200 OK
      */
+
     @DeleteMapping("/revokeRole")
     public ResponseEntity<Void> revokeRole(
             @RequestParam(value = "memberId", required = false) Long memberId,

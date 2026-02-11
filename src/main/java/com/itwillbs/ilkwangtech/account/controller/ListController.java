@@ -1,7 +1,7 @@
 package com.itwillbs.ilkwangtech.account.controller;
 
-import com.itwillbs.ilkwangtech.account.dto.AccountDetail;
 import com.itwillbs.ilkwangtech.account.dto.AccountDetailResponse;
+import com.itwillbs.ilkwangtech.account.dto.AccountForList;
 import com.itwillbs.ilkwangtech.account.service.ListService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.List;
 
 /**
  * 사원 목록 및 상세 조회를 담당하는 컨트롤러
@@ -48,8 +46,11 @@ public class ListController {
      */
     @GetMapping("/account/detail/{id}")
     public String accountDetail(@PathVariable("id") Long id, Model model) {
+
         AccountDetailResponse detail = listService.getAccountDetail(id);
-        model.addAttribute("employee", detail);
+
+        model.addAttribute("user", detail);
+
         return "/account/detail";
     }
 
@@ -65,8 +66,8 @@ public class ListController {
      */
     @GetMapping("/account/getList")
     @ResponseBody
-    public Page<AccountDetail> getEmployeeList(
-    		@RequestParam(name = "page", defaultValue = "0") int page, 
+    public Page<AccountForList> getEmployeeList(
+            @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "searchField", defaultValue = "") String searchField,
             @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
             @RequestParam(name = "direction", defaultValue = "DESC") Sort.Direction direction) {

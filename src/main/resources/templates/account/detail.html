@@ -99,26 +99,33 @@
         .profile-photo-wrapper {
             margin-bottom: 20px;
             display: inline-block;
+            position: relative;
         }
 
         .profile-photo {
-            width: 120px;
-            height: 120px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             background: linear-gradient(135deg, #4f46e5, #818cf8);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
-            font-size: 48px;
+            font-size: 40px;
             font-weight: 800;
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
             border: 4px solid #ffffff;
+            overflow: hidden;
+        }
+
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
         .profile-name {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
             color: #1e293b;
             margin-bottom: 4px;
@@ -270,26 +277,32 @@
             <!-- 왼쪽: 프로필 요약 -->
             <div class="form-card profile-summary">
                 <div class="profile-photo-wrapper">
-                    <img th:if="${employee.profilePhotoLink}" th:src="${employee.profilePhotoLink}" class="profile-photo" alt="Profile">
-                    <div th:unless="${employee.profilePhotoLink}" class="profile-photo" th:text="${#strings.substring(employee.name, 0, 1)}">홍</div>
+                    <div class="profile-photo">
+                        <img th:if="${user.profileImgs != null and !user.profileImgs.isEmpty()}"
+                             th:src="|${user.profileImgs[0].imgLocation}/${user.profileImgs[0].imgName}|"
+                             alt="Profile Image">
+
+                        <span th:unless="${user.profileImgs != null and !user.profileImgs.isEmpty()}"
+                              th:text="${user.name != null ? #strings.substring(user.name, 0, 1) : '?' }">홍</span>
+                    </div>
                 </div>
-                <h2 class="profile-name" th:text="${employee.name}">홍길동</h2>
+                <h2 class="profile-name" th:text="${user.name}">홍길동</h2>
                 <div class="profile-info-badges">
-                    <span class="info-badge primary" th:text="${employee.department}">부서명</span>
-                    <span class="info-badge" th:text="${employee.position}">직급</span>
+                    <span class="info-badge primary" th:text="${user.department}">부서명</span>
+                    <span class="info-badge" th:text="${user.position}">직급</span>
                 </div>
                 <div style="margin-top: 10px;">
-                    <span class="status-badge" th:text="${employee.status}">재직</span>
+                    <span class="status-badge" th:text="${user.status}">재직</span>
                 </div>
 
                 <div style="margin-top: 30px; text-align: left; padding-top: 20px; border-top: 1px dashed #e2e8f0;">
                     <div class="info-item" style="margin-bottom: 12px;">
                         <span class="info-label">사원번호</span>
-                        <span class="info-value" th:text="${employee.employeeNumber}">24-10001</span>
+                        <span class="info-value" th:text="${user.employeeNumber}">24-10001</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">입사일</span>
-                        <span class="info-value" th:text="${#temporals.format(employee.hireDate, 'yyyy-MM-dd')}">2024-01-01</span>
+                        <span class="info-value" th:text="${#temporals.format(user.hireDate, 'yyyy-MM-dd')}">2024-01-01</span>
                     </div>
                 </div>
             </div>
@@ -301,19 +314,19 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">성별</span>
-                            <span class="info-value" th:text="${employee.gender == 1 ? '남성' : '여성'}">남성</span>
+                            <span class="info-value" th:text="${user.gender == 1 ? '남성' : '여성'}">남성</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">생년월일</span>
-                            <span class="info-value" th:text="${employee.residentNumber != null and employee.residentNumber.length() >= 6 ? '19' + #strings.substring(employee.residentNumber, 0, 2) + '-' + #strings.substring(employee.residentNumber, 2, 4) + '-' + #strings.substring(employee.residentNumber, 4, 6) : '-'}">1990-01-01</span>
+                            <span class="info-value" th:text="${user.residentNumber != null and user.residentNumber.length() >= 6 ? '19' + #strings.substring(user.residentNumber, 0, 2) + '-' + #strings.substring(user.residentNumber, 2, 4) + '-' + #strings.substring(user.residentNumber, 4, 6) : '-'}">1990-01-01</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">휴대폰 번호</span>
-                            <span class="info-value" th:text="${employee.phoneNumber}">010-0000-0000</span>
+                            <span class="info-value" th:text="${user.phoneNumber}">010-0000-0000</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">이메일</span>
-                            <span class="info-value" th:text="${employee.email}">example@company.com</span>
+                            <span class="info-value" th:text="${user.email}">example@company.com</span>
                         </div>
                     </div>
                 </div>
@@ -323,11 +336,11 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">부서</span>
-                            <span class="info-value" th:text="${employee.department}">인사팀</span>
+                            <span class="info-value" th:text="${user.department}">인사팀</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">직급</span>
-                            <span class="info-value" th:text="${employee.position}">과장</span>
+                            <span class="info-value" th:text="${user.position}">과장</span>
                         </div>
                     </div>
                 </div>
@@ -337,7 +350,7 @@
                     <div class="info-item">
                         <span class="info-label">보유 권한</span>
                         <div style="margin-top: 4px;">
-                            <span th:each="role : ${employee.roles}" class="role-tag" th:text="${role}">ROLE_USER</span>
+                            <span th:each="role : ${user.roles}" class="role-tag" th:text="${role}">ROLE_USER</span>
                         </div>
                     </div>
                 </div>
@@ -347,11 +360,11 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">은행</span>
-                            <span class="info-value" th:text="${employee.bank}">국민은행</span>
+                            <span class="info-value" th:text="${user.bank}">국민은행</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">계좌번호</span>
-                            <span class="info-value" th:text="${employee.accountNumber}">000-000000-00000</span>
+                            <span class="info-value" th:text="${user.accountNumber}">000-000000-00000</span>
                         </div>
                     </div>
                 </div>

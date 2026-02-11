@@ -45,7 +45,7 @@ public class OrderApiController {
 
     // 4. 수주 정보 수정 (PUT)
     // 수주가 이미 '생산 시작' 또는 '출고' 상태라면 수정을 제한하는 로직이 필요합니다.
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponseDTO<OrderDTO>> updateOrder(@PathVariable Long id, @RequestBody OrderDTO orderDTO) {
         if (orderService.isEditable(id)) {
             orderService.update(orderDTO);
@@ -56,7 +56,7 @@ public class OrderApiController {
 
     // 5. 수주 삭제 (PUT)
     // 이력을 남기기 위해 '주문 취소'
-    @PutMapping("/{id}")
+    @PutMapping("/delete/{id}")
     public ResponseEntity<ApiResponseDTO<OrderDTO>> deleteOrder(@PathVariable Long id) {
 
         OrderDTO orderDTO = orderService.getOrder(id);

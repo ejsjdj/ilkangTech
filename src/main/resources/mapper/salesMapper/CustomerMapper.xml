@@ -6,19 +6,19 @@
 <mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.CustomerMapper">
 
     <insert id="insertCustomer" useGeneratedKeys="true" keyProperty="customerId">
-        INSERT INTO customer (name, email, phone, valid)
+        INSERT INTO "CUSTOMER" (name, email, phone, valid)
         VALUES (#{name}, #{email}, #{phone}, #{valid})
     </insert>
 
     <select id="selectByPage" resultType="com.itwillbs.ilkwangtech.sales.dto.CustomerDTO">
         SELECT customerId, name, email, phone, valid
-        FROM customer
-        LIMIT #{offset}, #{pageSize}
+        FROM "CUSTOMER"
+        ORDER BY customerId ASC  OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
     </select>
 
     <select id="selectById" resultType="com.itwillbs.ilkwangtech.sales.dto.CustomerDTO">
         SELECT customerId, name, email, phone, valid
-        FROM customer
+        FROM "CUSTOMER"
         WHERE customerId = #{customerId}
     </select>
 
@@ -39,5 +39,10 @@
         UPDATE customer
         SET valid = #{status}  WHERE customerId = #{customerId}
     </update>
+
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM CUSTOMER
+    </select>
+
 
 </mapper>

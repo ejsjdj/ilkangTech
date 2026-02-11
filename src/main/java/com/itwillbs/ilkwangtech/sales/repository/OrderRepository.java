@@ -20,7 +20,7 @@ public class OrderRepository {
     }
 
     public void saveOrderDetail(List<OrderDetailDTO> orderDetails) {
-        orderMapper.insertOrderDetail(orderDetails);
+        orderMapper.insertOrderDetails(orderDetails);
     }
 
     public List<OrderDTO> getOrderList(long offset, int pageSize) {

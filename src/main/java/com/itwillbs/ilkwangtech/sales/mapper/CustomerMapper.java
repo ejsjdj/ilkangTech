@@ -1,10 +1,13 @@
 package com.itwillbs.ilkwangtech.sales.mapper;
 
 import com.itwillbs.ilkwangtech.sales.dto.CustomerDTO;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Optional;
 
+@Mapper
 public interface CustomerMapper {
 
 
@@ -12,7 +15,7 @@ public interface CustomerMapper {
 
     CustomerDTO selectByName(String name);
 
-    List<CustomerDTO> selectByPage(long offset, int pageSize);
+    List<CustomerDTO> selectByPage(@Param("offset") long offset, @Param("pageSize") int pageSize);
 
     long selectCount();
 
@@ -20,7 +23,7 @@ public interface CustomerMapper {
 
     void update(CustomerDTO customerDTO);
 
-    void invalid(Long customerId);
+    void invalid(@Param("customerId") Long customerId, @Param("status") String status);
 
-    void valid(Long customerId);
+    void valid(@Param("customerId") Long customerId, @Param("status") String status);
 }

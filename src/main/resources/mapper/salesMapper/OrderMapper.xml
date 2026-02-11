@@ -6,7 +6,7 @@
 <mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.OrderMapper">
 
     <insert id="insertOrder" useGeneratedKeys="true" keyProperty="orderId">
-        INSERT INTO order (customer_id, order_date, order_status)
+        INSERT INTO "ORDER" (customer_id, order_date, order_status)
         VALUES (#{customerId}, #{orderDate}, #{orderStatus})
     </insert>
 
@@ -16,31 +16,22 @@
     </insert>
 
     <insert id="insertOrderDetails" parameterType="java.util.List">
-        INSERT INTO order_detail (
-            order_id, product_id, quantity, price, delivery_date, detail_status
-        )
-        VALUES
-        <foreach collection="list" item="item" separator=",">
-            (
-            #{item.orderId},
-            #{item.productId},
-            #{item.quantity},
-            #{item.price},
-            #{item.deliveryDate},
-            #{item.detailStatus}
-            )
+        INSERT INTO order_detail (order_id, product_id, quantity, price, delivery_date, detail_status)
+        <foreach collection="list" item="item" separator="UNION ALL">
+            SELECT #{item.orderId}, #{item.productId}, #{item.quantity}, #{item.price}, #{item.deliveryDate}, #{item.detailStatus} FROM DUAL
         </foreach>
     </insert>
 
     <select id="selectByPage" resultType="com.itwillbs.ilkwangtech.sales.dto.OrderDTO">
         SELECT orderId, customerId, orderDate, orderStatus
-        FROM order
-        LIMIT #{offset}, #{pageSize}
+        FROM "ORDER"
+        ORDER BY orderId DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
     </select>
 
     <select id="selectById" resultType="com.itwillbs.ilkwangtech.sales.dto.OrderDTO">
         SELECT orderId, customerId, orderDate, orderStatus
-        FROM order
+        FROM "ORDER"
         WHERE orderId = #{id}
     </select>
 

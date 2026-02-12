@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        .customer-header {
+        .Company-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-radius: 15px;
@@ -90,13 +90,13 @@
     <div class="container-fluid">
         <!-- 뒤로가기 버튼 -->
         <div class="mb-3">
-            <a href="/sales/customer/list" class="btn btn-outline-secondary">
+            <a href="/sales/Company/list" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
             </a>
         </div>
 
         <!-- 고객사 헤더 정보 -->
-        <div class="customer-header" th:if="${customer}">
+        <div class="Company-header" th:if="${Company}">
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <div class="d-flex align-items-center mb-3">
@@ -104,32 +104,32 @@
                             <i class="bi bi-building" style="font-size: 3rem;"></i>
                         </div>
                         <div>
-                            <h2 class="mb-1" th:text="${customer.customerName}">ABC전자</h2>
-                            <p class="mb-0" th:text="${customer.businessType}">제조업</p>
+                            <h2 class="mb-1" th:text="${Company.CompanyName}">ABC전자</h2>
+                            <p class="mb-0" th:text="${Company.businessType}">제조업</p>
                         </div>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-3">
                             <div class="stats-card">
-                                <h4 th:text="${customer.totalOrders ?: '0'}">0</h4>
+                                <h4 th:text="${Company.totalOrders ?: '0'}">0</h4>
                                 <p class="mb-0">총 주문 건수</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="stats-card">
-                                <h4 th:text="${customer.totalAmount ?: '0'}">0</h4>
+                                <h4 th:text="${Company.totalAmount ?: '0'}">0</h4>
                                 <p class="mb-0">총 거래액(만원)</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="stats-card">
-                                <h4 th:text="${customer.avgOrderAmount ?: '0'}">0</h4>
+                                <h4 th:text="${Company.avgOrderAmount ?: '0'}">0</h4>
                                 <p class="mb-0">평균 주문액(만원)</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="stats-card">
-                                <h4 th:text="${#temporals.format(customer.createdAt, 'yyyy-MM-dd')}">-</h4>
+                                <h4 th:text="${#temporals.format(Company.createdAt, 'yyyy-MM-dd')}">-</h4>
                                 <p class="mb-0">등록일</p>
                             </div>
                         </div>
@@ -137,8 +137,8 @@
                 </div>
                 <div class="col-md-4 text-end">
                     <span class="badge status-badge"
-                          th:classappend="'bg-' + ${customer.status == 'ACTIVE' ? 'success' : (customer.status == 'INACTIVE' ? 'secondary' : 'warning')}"
-                          th:text="${customer.status == 'ACTIVE' ? '활성' : (customer.status == 'INACTIVE' ? '비활성' : '검토중')}">
+                          th:classappend="'bg-' + ${Company.status == 'ACTIVE' ? 'success' : (Company.status == 'INACTIVE' ? 'secondary' : 'warning')}"
+                          th:text="${Company.status == 'ACTIVE' ? '활성' : (Company.status == 'INACTIVE' ? '비활성' : '검토중')}">
                         활성
                     </span>
                     <div class="mt-3">
@@ -156,7 +156,7 @@
         <!-- 상세 정보 탭 -->
         <div class="card">
             <div class="card-header bg-white">
-                <ul class="nav nav-tabs card-header-tabs" id="customerTab" role="tablist">
+                <ul class="nav nav-tabs card-header-tabs" id="CompanyTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
                             <i class="bi bi-info-circle"></i> 기본 정보
@@ -185,7 +185,7 @@
                 </ul>
             </div>
             <div class="card-body">
-                <div class="tab-content" id="customerTabContent">
+                <div class="tab-content" id="CompanyTabContent">
                     <!-- 기본 정보 탭 -->
                     <div class="tab-pane fade show active" id="basic" role="tabpanel">
                         <div class="row">
@@ -196,23 +196,23 @@
                                         <table class="table table-sm">
                                             <tr>
                                                 <td width="30%">고객사명</td>
-                                                <td th:text="${customer.customerName}">ABC전자</td>
+                                                <td th:text="${Company.CompanyName}">ABC전자</td>
                                             </tr>
                                             <tr>
                                                 <td>사업자번호</td>
-                                                <td th:text="${customer.businessNumber}">123-45-67890</td>
+                                                <td th:text="${Company.businessNumber}">123-45-67890</td>
                                             </tr>
                                             <tr>
                                                 <td>대표자명</td>
-                                                <td th:text="${customer.representativeName}">김대표</td>
+                                                <td th:text="${Company.representativeName}">김대표</td>
                                             </tr>
                                             <tr>
                                                 <td>업종</td>
-                                                <td th:text="${customer.businessType}">제조업</td>
+                                                <td th:text="${Company.businessType}">제조업</td>
                                             </tr>
                                             <tr>
                                                 <td>주소</td>
-                                                <td th:text="${customer.address}">서울시 강남구 테헤란로 123</td>
+                                                <td th:text="${Company.address}">서울시 강남구 테헤란로 123</td>
                                             </tr>
                                         </table>
                                     </div>
@@ -227,27 +227,27 @@
                                                 <td width="30%">상태</td>
                                                 <td>
                                                     <span class="badge"
-                                                          th:classappend="'bg-' + ${customer.status == 'ACTIVE' ? 'success' : (customer.status == 'INACTIVE' ? 'secondary' : 'warning')}"
-                                                          th:text="${customer.status == 'ACTIVE' ? '활성' : (customer.status == 'INACTIVE' ? '비활성' : '검토중')}">
+                                                          th:classappend="'bg-' + ${Company.status == 'ACTIVE' ? 'success' : (Company.status == 'INACTIVE' ? 'secondary' : 'warning')}"
+                                                          th:text="${Company.status == 'ACTIVE' ? '활성' : (Company.status == 'INACTIVE' ? '비활성' : '검토중')}">
                                                         활성
                                                     </span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>등록일</td>
-                                                <td th:text="${#temporals.format(customer.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</td>
+                                                <td th:text="${#temporals.format(Company.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</td>
                                             </tr>
                                             <tr>
                                                 <td>최종 수정일</td>
-                                                <td th:text="${customer.updatedAt ? #temporals.format(customer.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">2024-01-20 14:15</td>
+                                                <td th:text="${Company.updatedAt ? #temporals.format(Company.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">2024-01-20 14:15</td>
                                             </tr>
                                             <tr>
                                                 <td>등록자</td>
-                                                <td th:text="${customer.createdBy ?: '-'}">김관리</td>
+                                                <td th:text="${Company.createdBy ?: '-'}">김관리</td>
                                             </tr>
                                             <tr>
                                                 <td>수정자</td>
-                                                <td th:text="${customer.updatedBy ?: '-'}">이관리</td>
+                                                <td th:text="${Company.updatedBy ?: '-'}">이관리</td>
                                             </tr>
                                         </table>
                                     </div>
@@ -257,7 +257,7 @@
                         <div class="info-card card">
                             <div class="card-body">
                                 <h6 class="card-title"><i class="bi bi-file-text"></i> 비고</h6>
-                                <p th:text="${customer.notes ?: '등록된 비고가 없습니다.'}">특별 요청사항이나 메모 내용</p>
+                                <p th:text="${Company.notes ?: '등록된 비고가 없습니다.'}">특별 요청사항이나 메모 내용</p>
                             </div>
                         </div>
                     </div>
@@ -271,19 +271,19 @@
                                         <h6 class="card-title"><i class="bi bi-telephone"></i> 회사 연락처</h6>
                                         <div class="contact-item">
                                             <i class="bi bi-telephone-fill text-primary"></i>
-                                            <strong>대표전화:</strong> <span th:text="${customer.phone}">02-1234-5678</span>
+                                            <strong>대표전화:</strong> <span th:text="${Company.phone}">02-1234-5678</span>
                                         </div>
                                         <div class="contact-item">
                                             <i class="bi bi-envelope-fill text-primary"></i>
-                                            <strong>이메일:</strong> <span th:text="${customer.email}">info@abc.com</span>
+                                            <strong>이메일:</strong> <span th:text="${Company.email}">info@abc.com</span>
                                         </div>
                                         <div class="contact-item">
                                             <i class="bi bi-globe-fill text-primary"></i>
-                                            <strong>웹사이트:</strong> <span th:text="${customer.website ?: '-'}">www.abc.com</span>
+                                            <strong>웹사이트:</strong> <span th:text="${Company.website ?: '-'}">www.abc.com</span>
                                         </div>
                                         <div class="contact-item">
                                             <i class="bi bi-geo-alt-fill text-primary"></i>
-                                            <strong>주소:</strong> <span th:text="${customer.address}">서울시 강남구 테헤란로 123</span>
+                                            <strong>주소:</strong> <span th:text="${Company.address}">서울시 강남구 테헤란로 123</span>
                                         </div>
                                     </div>
                                 </div>
@@ -294,19 +294,19 @@
                                         <h6 class="card-title"><i class="bi bi-person"></i> 담당자 정보</h6>
                                         <div class="contact-item">
                                             <i class="bi bi-person-fill text-success"></i>
-                                            <strong>담당자명:</strong> <span th:text="${customer.contactPerson}">이담당자</span>
+                                            <strong>담당자명:</strong> <span th:text="${Company.contactPerson}">이담당자</span>
                                         </div>
                                         <div class="contact-item">
                                             <i class="bi bi-telephone-fill text-success"></i>
-                                            <strong>담당자 연락처:</strong> <span th:text="${customer.managerPhone ?: '-'}">010-1234-5678</span>
+                                            <strong>담당자 연락처:</strong> <span th:text="${Company.managerPhone ?: '-'}">010-1234-5678</span>
                                         </div>
                                         <div class="contact-item">
                                             <i class="bi bi-envelope-fill text-success"></i>
-                                            <strong>담당자 이메일:</strong> <span th:text="${customer.managerEmail ?: '-'}">manager@abc.com</span>
+                                            <strong>담당자 이메일:</strong> <span th:text="${Company.managerEmail ?: '-'}">manager@abc.com</span>
                                         </div>
                                         <div class="contact-item">
                                             <i class="bi bi-telephone-fill text-info"></i>
-                                            <strong>FAX:</strong> <span th:text="${customer.faxNumber ?: '-'}">02-1234-5679</span>
+                                            <strong>FAX:</strong> <span th:text="${Company.faxNumber ?: '-'}">02-1234-5679</span>
                                         </div>
                                     </div>
                                 </div>
@@ -388,7 +388,7 @@
                                                 <h6 class="card-title">고객사 등록</h6>
                                                 <p class="card-text text-muted">신규 고객사로 등록되었습니다.</p>
                                             </div>
-                                            <small class="text-muted" th:text="${#temporals.format(customer.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</small>
+                                            <small class="text-muted" th:text="${#temporals.format(Company.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</small>
                                         </div>
                                     </div>
                                 </div>
@@ -410,62 +410,62 @@
                 </div>
                 <div class="modal-body">
                     <form id="editCustomerForm">
-                        <input type="hidden" id="editCustomerId" th:value="${customer.customerId}">
+                        <input type="hidden" id="editCustomerId" th:value="${Company.CompanyId}">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">고객사명 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="editCustomerName" th:value="${customer.customerName}" required>
+                                <input type="text" class="form-control" id="editCustomerName" th:value="${Company.CompanyName}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">사업자번호 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="editBusinessNumber" th:value="${customer.businessNumber}" required>
+                                <input type="text" class="form-control" id="editBusinessNumber" th:value="${Company.businessNumber}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">대표자명 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="editRepresentativeName" th:value="${customer.representativeName}" required>
+                                <input type="text" class="form-control" id="editRepresentativeName" th:value="${Company.representativeName}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">업종</label>
-                                <input type="text" class="form-control" id="editBusinessType" th:value="${customer.businessType}">
+                                <input type="text" class="form-control" id="editBusinessType" th:value="${Company.businessType}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">연락처 <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" id="editPhoneNumber" th:value="${customer.phoneNumber}" required>
+                                <input type="tel" class="form-control" id="editPhoneNumber" th:value="${Company.phoneNumber}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">이메일</label>
-                                <input type="email" class="form-control" id="editEmail" th:value="${customer.email}">
+                                <input type="email" class="form-control" id="editEmail" th:value="${Company.email}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">담당자명</label>
-                                <input type="text" class="form-control" id="editContactPerson" th:value="${customer.contactPerson}">
+                                <input type="text" class="form-control" id="editContactPerson" th:value="${Company.contactPerson}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">담당자 연락처</label>
-                                <input type="tel" class="form-control" id="editManagerPhone" th:value="${customer.managerPhone}">
+                                <input type="tel" class="form-control" id="editManagerPhone" th:value="${Company.managerPhone}">
                             </div>
                             <div class="col-12">
                                 <label class="form-label">주소</label>
-                                <input type="text" class="form-control" id="editAddress" th:value="${customer.address}">
+                                <input type="text" class="form-control" id="editAddress" th:value="${Company.address}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">웹사이트</label>
-                                <input type="url" class="form-control" id="editWebsite" th:value="${customer.website}">
+                                <input type="url" class="form-control" id="editWebsite" th:value="${Company.website}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">FAX</label>
-                                <input type="tel" class="form-control" id="editFaxNumber" th:value="${customer.faxNumber}">
+                                <input type="tel" class="form-control" id="editFaxNumber" th:value="${Company.faxNumber}">
                             </div>
                             <div class="col-12">
                                 <label class="form-label">비고</label>
-                                <textarea class="form-control" id="editNotes" rows="3" th:text="${customer.remark}"></textarea>
+                                <textarea class="form-control" id="editNotes" rows="3" th:text="${Company.remark}"></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">상태</label>
                                 <select class="form-select" id="editStatus">
-                                    <option value="ACTIVE" th:selected="${customer.status == 'ACTIVE'}">활성</option>
-                                    <option value="INACTIVE" th:selected="${customer.status == 'INACTIVE'}">비활성</option>
-                                    <option value="PENDING" th:selected="${customer.status == 'PENDING'}">검토중</option>
+                                    <option value="ACTIVE" th:selected="${Company.status == 'ACTIVE'}">활성</option>
+                                    <option value="INACTIVE" th:selected="${Company.status == 'INACTIVE'}">비활성</option>
+                                    <option value="PENDING" th:selected="${Company.status == 'PENDING'}">검토중</option>
                                 </select>
                             </div>
                         </div>
@@ -484,7 +484,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let editCustomerModal;
-        const customerId = /*[[${customer.customerId}]]*/ 0;
+        const CompanyId = /*[[${Company.CompanyId}]]*/ 0;
 
         document.addEventListener('DOMContentLoaded', function() {
             editCustomerModal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
@@ -498,9 +498,9 @@
         }
 
         function saveCustomerChanges() {
-            const customerData = {
-                customerId: document.getElementById('editCustomerId').value,
-                customerName: document.getElementById('editCustomerName').value,
+            const CompanyData = {
+                CompanyId: document.getElementById('editCustomerId').value,
+                CompanyName: document.getElementById('editCustomerName').value,
                 businessNumber: document.getElementById('editBusinessNumber').value,
                 representativeName: document.getElementById('editRepresentativeName').value,
                 businessType: document.getElementById('editBusinessType').value,
@@ -515,12 +515,12 @@
                 status: document.getElementById('editStatus').value
             };
 
-            fetch(`/sales/customer/api/${customerId}`, {
+            fetch(`/sales/Company/api/${CompanyId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(customerData)
+                body: JSON.stringify(CompanyData)
             })
             .then(response => response.json())
             .then(data => {
@@ -529,32 +529,32 @@
                 showNotification('고객사 정보가 수정되었습니다.', 'success');
             })
             .catch(error => {
-                console.error('Error updating customer:', error);
+                console.error('Error updating Company:', error);
                 showNotification('수정 중 오류가 발생했습니다.', 'error');
             });
         }
 
         function deleteCustomer() {
             if (confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                fetch(`/sales/customer/api/${customerId}`, {
+                fetch(`/sales/Company/api/${CompanyId}`, {
                     method: 'DELETE'
                 })
                 .then(response => {
                     if (response.ok) {
-                        window.location.href = '/sales/customer/list';
+                        window.location.href = '/sales/Company/list';
                     } else {
                         throw new Error('Delete failed');
                     }
                 })
                 .catch(error => {
-                    console.error('Error deleting customer:', error);
+                    console.error('Error deleting Company:', error);
                     showNotification('삭제 중 오류가 발생했습니다.', 'error');
                 });
             }
         }
 
         function loadCustomerOrders() {
-            fetch(`/sales/customer/api/${customerId}/orders`)
+            fetch(`/sales/Company/api/${CompanyId}/orders`)
                 .then(response => response.json())
                 .then(data => {
                     renderOrdersTable(data);
@@ -565,7 +565,7 @@
         }
 
         function loadCustomerPrices() {
-            fetch(`/sales/quotation/customer/${customerId}/prices`)
+            fetch(`/sales/quotation/Company/${CompanyId}/prices`)
                 .then(response => response.json())
                 .then(data => {
                     renderPricesTable(data);
@@ -576,7 +576,7 @@
         }
 
         function loadActivityHistory() {
-            fetch(`/sales/customer/api/${customerId}/history`)
+            fetch(`/sales/Company/api/${CompanyId}/history`)
                 .then(response => response.json())
                 .then(data => {
                     renderActivityTimeline(data);
@@ -678,11 +678,11 @@
         }
 
         function createNewOrder() {
-            window.location.href = `/sales/sales-order/create?customerId=${customerId}`;
+            window.location.href = `/sales/sales-order/create?CompanyId=${CompanyId}`;
         }
 
         function negotiatePrice() {
-            window.location.href = `/sales/quotation/price-management?customerId=${customerId}`;
+            window.location.href = `/sales/quotation/price-management?CompanyId=${CompanyId}`;
         }
 
         function viewOrder(orderId) {
@@ -690,11 +690,11 @@
         }
 
         function viewPriceHistory(itemStockId) {
-            window.location.href = `/sales/quotation/price-history?customerId=${customerId}&itemStockId=${itemStockId}`;
+            window.location.href = `/sales/quotation/price-history?CompanyId=${CompanyId}&itemStockId=${itemStockId}`;
         }
 
         function negotiateProductPrice(itemStockId) {
-            window.location.href = `/sales/quotation/negotiate?customerId=${customerId}&itemStockId=${itemStockId}`;
+            window.location.href = `/sales/quotation/negotiate?CompanyId=${CompanyId}&itemStockId=${itemStockId}`;
         }
 
         function getOrderStatusColor(status) {

@@ -14,7 +14,7 @@ import java.util.List;
 public class OrderDTO {
 
     private Long orderId;
-    private Long customerId;
+    private Long CompanyId;
     private LocalDateTime orderDate; // 주문 접수 일자
     private OrderStatus orderStatus;      // 주문 상태 (접수, 처리중, 완료 등)
     private List<OrderDetailDTO> orderDetails;

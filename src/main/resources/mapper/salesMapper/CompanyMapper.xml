@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.CompanyMapper">
+
+    <resultMap id="CompanyResultMap" type="com.itwillbs.ilkwangtech.sales.dto.CompanyDTO">
+        <id property="companyId" column="companyId"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="manager" column="manager"/>
+        <result property="category" column="category"
+                typeHandler="com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler"/>
+        <result property="valid" column="valid"
+                typeHandler="com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler"/>
+    </resultMap>
+
+    <insert id="insertCompany" useGeneratedKeys="true" keyProperty="companyId" keyColumn="company_id">
+        INSERT INTO Companys (name, email, phone, valid, manager, category)
+        VALUES (
+        #{name},
+        #{email, jdbcType=VARCHAR},
+        #{phone, jdbcType=VARCHAR},
+        1,
+        #{manager, jdbcType=VARCHAR},
+        <!-- ★ insert에서도 typeHandler 명시 ★ -->
+        #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+        )
+    </insert>
+
+    <select id="selectByName" resultMap="CompanyResultMap">
+        SELECT
+        company_id AS companyId,
+        name,
+        email,
+        phone,
+        manager,
+        category,
+        valid
+        FROM Companys
+        WHERE name = #{name}
+    </select>
+
+    <select id="selectByPage" resultMap="CompanyResultMap">
+        SELECT
+        company_id AS companyId,
+        name,
+        email,
+        phone,
+        manager,
+        category,
+        valid
+        FROM Companys
+        <where>
+            <if test="category != null">
+                category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+            </if>
+        </where>
+        ORDER BY company_id ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*)
+        FROM Companys
+        <where>
+            <if test="category != null">
+                category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+            </if>
+        </where>
+    </select>
+
+</mapper>

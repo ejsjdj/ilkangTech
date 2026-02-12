@@ -19,7 +19,7 @@ public class PerformanceApiController {
     }
 
     // 3. 고객사별 매출 순위/비중 조회 (GET)
-    @GetMapping("/statistics/customer")
+    @GetMapping("/statistics/Company")
     public void getPerformanceByCustomer() {
     }
 

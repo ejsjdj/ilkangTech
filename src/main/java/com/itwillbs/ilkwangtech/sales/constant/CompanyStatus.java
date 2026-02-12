@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum CustomerStatus implements BaseEnum {
+public enum CompanyStatus implements BaseEnum {
 
     ACTIVE(1, "거래중"),
     INACTIVE(0, "비활성화");

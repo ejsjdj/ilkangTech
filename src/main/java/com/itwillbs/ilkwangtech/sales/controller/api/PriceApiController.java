@@ -23,7 +23,7 @@ public class PriceApiController {
     // 사용자가 요청한 "단가 수정 내용 리스트"를 보여주는 핵심 API
     @GetMapping("/history")
     public void getPriceHistory(@RequestParam String itemCode,
-                                @RequestParam(required = false) Long customerId) {
+                                @RequestParam(required = false) Long CompanyId) {
     }
 
     // 4. 단가 정보 수정 (PUT)

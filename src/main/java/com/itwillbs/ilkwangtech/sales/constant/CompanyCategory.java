@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum CustomerCategory implements BaseEnum {
+public enum CompanyCategory implements BaseEnum {
 
     supplier(1, "협력사"),
     client(2, "고객사"),

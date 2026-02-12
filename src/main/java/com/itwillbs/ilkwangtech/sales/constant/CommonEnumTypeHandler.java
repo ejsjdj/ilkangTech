@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-@MappedTypes({OrderStatus.class, OrderDetailStatus.class, CustomerStatus.class, CustomerCategory.class})
+@MappedTypes({OrderStatus.class, OrderDetailStatus.class, CompanyStatus.class, CompanyCategory.class})
 public class CommonEnumTypeHandler<E extends Enum<E> & BaseEnum> extends BaseTypeHandler<E> {
 
     private final Class<E> type;

@@ -145,7 +145,7 @@ VALUES (53, '강인사', '26-11005', 2, TO_DATE('2026-04-15', 'YYYY-MM-DD'), '93
 
 -- 구매팀 (id: 3, parent: 1)
 INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, email, phone_number, password, department, position, bank, account_number, last_login, updated_at, status)
-VALUES (33, '나구매', '26-13000', 1, TO_DATE('2026-01-20', 'YYYY-MM-DD'), '870101-1234567', 'buy@ilkang.com', '010-4444-1111', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 3, 3, 81, '111-222-333333', SYSDATE, SYSDATE, 1);
+VALUES (33, '나구매', '26-13000', 1, TO_DATE('2026-01-20', 'YYYY-MM-DD'), '870101-1234567', 'order@ilkang.com', '010-4444-1111', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 3, 3, 81, '111-222-333333', SYSDATE, SYSDATE, 1);
 INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, email, phone_number, password, department, position, bank, account_number, last_login, updated_at, status)
 VALUES (34, '유사원', '26-13001', 2, TO_DATE('2026-02-15', 'YYYY-MM-DD'), '960202-2345678', 'yu@ilkang.com', '010-4444-2222', '$2a$10$YeG2k7GP9WJ4cRaF47JJyej6PfbNACuay.UphFmACoEiu0Q1hwk8e', 3, 6, 81, '111-222-333334', SYSDATE, SYSDATE, 1);
 INSERT INTO members (id, name, employee_number, gender, hire_date, resident_number, email, phone_number, password, department, position, bank, account_number, last_login, updated_at, status)

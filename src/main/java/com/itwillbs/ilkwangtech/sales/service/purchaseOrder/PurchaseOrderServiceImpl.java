@@ -1,4 +1,11 @@
 package com.itwillbs.ilkwangtech.sales.service.purchaseOrder;
 
-public class PurchaseServiceImpl {
+import groovy.util.logging.Slf4j;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class PurchaseOrderServiceImpl {
 }

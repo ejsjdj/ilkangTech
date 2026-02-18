@@ -39,5 +39,4 @@ public class CompanyApiController {
 
         return ResponseEntity.ok(ApiResponseDTO.success(pageData));
     }
-
 }

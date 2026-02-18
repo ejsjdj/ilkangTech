@@ -10,15 +10,22 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ItemDTO {
 
-    Integer id;
-    String itemCode;
+    Integer id; // 1. 제품 ID
 
-    // getLabel() -> 원자재, 중간제품, 완제품
+    String itemId; // 2. 품번(A-20260213-100)
+
+    String itemName; // 3. 품명(알루미늄 철판 30g)
+
+    String unit; // 4. 단위(kg, ml, cm 등등)
+
+    Long price; // 5. 단가(100)
+
+    // getLabel() -> 중간제품, 완제품, 원자재, 부자재, 포장재
     // getId() -> 1, 2, 3
-    ItemType type;
+    ItemType type; // 6. 제품 유형
 
-    Integer company_id;
+    String companyId; // 7. 거래처/판매처(PT-20250101-121)
 
-    String description;
+    String description; // 8. 제품설명(건조기 먼지필터 덮게)
 
 }

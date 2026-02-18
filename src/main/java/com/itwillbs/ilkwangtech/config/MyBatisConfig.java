@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.itwillbs.ilkwangtech.standard.mapper")
 public class MyBatisConfig {
 
     @Bean

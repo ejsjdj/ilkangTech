@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.member.entity.Member;
@@ -234,6 +235,39 @@ public class NoticeController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(file.length())
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedName + "\"")
+                .body(resource);
+    }
+    
+ // [추가 1] 썸머노트 이미지 업로드 (AJAX 요청)
+    @PostMapping("/api/upload-image")
+    @ResponseBody
+    public ResponseEntity<String> uploadSummernoteImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String savedFileName = noticeService.uploadSummernoteImage(file);
+            // 업로드된 이미지를 불러올 수 있는 URL 반환
+            // 예: /notice/api/image/uuid_filename.jpg
+            return ResponseEntity.ok("/notice/api/image/" + savedFileName);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("이미지 업로드 실패");
+        }
+    }
+
+    // [추가 2] 썸머노트 본문 이미지 출력 (src 태그용)
+    @GetMapping("/api/image/{filename}")
+    public ResponseEntity<Resource> showImage(@PathVariable("filename") String filename) throws IOException {
+        File file = noticeService.getSummernoteImageFile(filename);
+
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+        
+        // 이미지 MIME 타입 자동 감지 (또는 MediaType.IMAGE_JPEG 등으로 고정 가능)
+        // 여기서는 간단히 옥텟 스트림 혹은 확장자 체크 로직 필요하나, 기본적으로 브라우저가 해석하게 둠
+        return ResponseEntity.ok()
+                .contentLength(file.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM) // 혹은 이미지 타입에 맞춰 설정
                 .body(resource);
     }
 	

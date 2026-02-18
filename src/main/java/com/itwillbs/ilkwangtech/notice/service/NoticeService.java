@@ -111,14 +111,14 @@ public class NoticeService {
         File dir = new File(getRealUploadPath());
         if (!dir.exists()) dir.mkdirs();
 
-        if (dto.getImageFiles() != null) {
-            for (MultipartFile file : dto.getImageFiles()) {
-                if (!file.isEmpty()) {
-                    saveFile(file, savedNotice, true);
-                    hasFile = true;
-                }
-            }
-        }
+//        if (dto.getImageFiles() != null) {
+//            for (MultipartFile file : dto.getImageFiles()) {
+//                if (!file.isEmpty()) {
+//                    saveFile(file, savedNotice, true);
+//                    hasFile = true;
+//                }
+//            }
+//        }
 
         if (dto.getGeneralFiles() != null) {
             for (MultipartFile file : dto.getGeneralFiles()) {
@@ -234,14 +234,14 @@ public class NoticeService {
 
         boolean hasNewFile = false;
         
-        if (dto.getImageFiles() != null) {
-            for (MultipartFile file : dto.getImageFiles()) {
-                if (!file.isEmpty()) {
-                    saveFile(file, notice, true);
-                    hasNewFile = true;
-                }
-            }
-        }
+//        if (dto.getImageFiles() != null) {
+//            for (MultipartFile file : dto.getImageFiles()) {
+//                if (!file.isEmpty()) {
+//                    saveFile(file, notice, true);
+//                    hasNewFile = true;
+//                }
+//            }
+//        }
         
         if (dto.getGeneralFiles() != null) {
             for (MultipartFile file : dto.getGeneralFiles()) {
@@ -268,6 +268,35 @@ public class NoticeService {
         // getRealUploadPath()를 사용하여 OS(윈도우/리눅스)에 맞는 정확한 경로 완성
         String realPath = getRealUploadPath() + noticeFile.getSavedFileName();
         
+        return new File(realPath);
+    }
+    
+    // [추가] 썸머노트 이미지 업로드 처리
+    public String uploadSummernoteImage(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new IOException("파일이 비어있습니다.");
+        }
+
+        // 저장 디렉토리 생성
+        File dir = new File(getRealUploadPath());
+        if (!dir.exists()) dir.mkdirs();
+
+        // UUID 파일명 생성
+        String originalName = file.getOriginalFilename();
+        String uuid = UUID.randomUUID().toString();
+        String savedName = uuid + "_" + originalName;
+        String filePath = getRealUploadPath() + savedName;
+
+        // 파일 저장
+        file.transferTo(new File(filePath));
+
+        // 저장된 파일명 반환 (Controller에서 URL 조합용)
+        return savedName;
+    }
+
+    // [추가] 썸머노트 이미지 조회용 (파일명으로 파일 객체 반환)
+    public File getSummernoteImageFile(String filename) {
+        String realPath = getRealUploadPath() + filename;
         return new File(realPath);
     }
 }

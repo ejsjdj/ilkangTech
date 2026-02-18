@@ -11,61 +11,197 @@
     
     <th:block layout:fragment="style">
         <style>
-            .page-container { background: #fff; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); min-height: 800px; }
-            .detail-header { border-bottom: 1px solid #e0e0e0; padding-bottom: 20px; margin-bottom: 30px; }
-            .detail-title { font-size: 26px; font-weight: 700; color: #1f2937; margin-bottom: 15px; }
-            .detail-info { color: #64748b; font-size: 14px; display: flex; gap: 20px; }
-            .detail-content { min-height: 300px; font-size: 16px; line-height: 1.8; color: #334155; margin-bottom: 40px; white-space: pre-wrap; }
-            
-            /* 이미지 영역 스타일 */
-            .detail-images { margin-top: 30px; text-align: center; }
-            .detail-images img { max-width: 100%; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            /* 전체 컨테이너 */
+            .page-container { 
+                background: #ffffff; 
+                border-radius: 12px; 
+                padding: 40px; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+                min-height: 600px; 
+            }
 
-            /* 첨부파일 영역 스타일 */
-            .file-download-area { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; }
-            .file-title { font-weight: 600; color: #475569; margin-bottom: 10px; font-size: 15px; }
-            .file-link { display: block; padding: 8px 0; color: #334155; text-decoration: none; transition: 0.2s; }
-            .file-link:hover { color: #6366f1; }
-            .file-icon { margin-right: 8px; color: #64748b; }
+            /* 헤더 영역 (제목, 작성자 정보) */
+            .detail-header { 
+                border-bottom: 2px solid #e2e8f0; 
+                padding-bottom: 20px; 
+                margin-bottom: 30px; 
+            }
+            .detail-title { 
+                font-size: 24px; 
+                font-weight: 700; 
+                color: #1e293b; 
+                margin-bottom: 15px; 
+            }
+            .detail-meta { 
+                display: flex; 
+                gap: 20px; 
+                color: #64748b; 
+                font-size: 14px; 
+                align-items: center;
+            }
+            .meta-item { display: flex; align-items: center; gap: 6px; }
+
+			/* [수정] 본문 텍스트 설정 */
+            .detail-content { 
+                min-height: 300px; 
+                color: #334155; 
+                line-height: 1.8; 
+                font-size: 16px;
+                margin-bottom: 50px;
+                
+                display: flow-root;
+                
+                word-break: break-all; 
+                overflow-wrap: break-word;
+            }
+            
+            /* [수정] 이미지 스타일 (정렬 기능 부활!) */
+            .detail-content img { 
+                max-width: 100% !important;   /* 화면보다 큰 이미지만 줄여줌 */
+                height: auto !important;      /* 비율 유지 */
+                margin-bottom: 10px;          /* 아래쪽 여백 */
+                border-radius: 20px;
+            }
+                     
+            /* [추가] 본문 내 문단 간격 조정 (가독성 향상) */
+            .detail-content p {
+                margin-bottom: 10px;
+                line-height: 1.8;
+            }
+            
+            /* [추가] 왼쪽 정렬된 이미지에 여백 주기 */
+            .detail-content img[style*="float: left"], 
+            .detail-content img[style*="float:left"] {
+                margin-right: 20px !important; /* 글자와 20px 띄움 */
+            }
+
+            /* [추가] 오른쪽 정렬된 이미지에 여백 주기 */
+            .detail-content img[style*="float: right"], 
+            .detail-content img[style*="float:right"] {
+                margin-left: 20px !important;  /* 글자와 20px 띄움 */
+            }
+            
+            /* [추가] 모바일(작은 화면)에서는 정렬 무시하고 크게 보기 */
+            @media (max-width: 768px) {
+                .detail-content img {
+                    float: none !important;
+                    display: block !important;
+                    margin: 10px auto !important;
+                    width: 100% !important;
+                }
+            }
+            
+            /* (구) 방식 이미지 첨부 영역 스타일 */
+            .old-image-area {
+            	clear: both;
+                margin-top: 30px;
+                padding: 20px;
+                background-color: #f8fafc;
+                border-radius: 8px;
+                text-align: center;
+            }
+            .old-image-area img {
+                max-width: 100%;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            /* 첨부파일 영역 스타일 개선 */
+            .file-download-box { 
+            	clear: both;
+                background-color: #f1f5f9; 
+                border: 1px solid #cbd5e1; 
+                border-radius: 8px; 
+                padding: 20px;
+                margin-top: 30px;
+            }
+            .file-header { 
+                font-weight: 700; 
+                color: #475569; 
+                margin-bottom: 12px; 
+                display: flex; 
+                align-items: center; 
+                gap: 8px;
+            }
+            .file-list { list-style: none; padding: 0; margin: 0; }
+            .file-item { 
+                padding: 8px 12px; 
+                background: #fff; 
+                border: 1px solid #e2e8f0; 
+                border-radius: 6px; 
+                margin-bottom: 8px; 
+                display: flex;
+                align-items: center;
+                transition: 0.2s;
+            }
+            .file-item:hover { border-color: #94a3b8; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+            .file-link { 
+                text-decoration: none; 
+                color: #334155; 
+                font-size: 14px; 
+                flex-grow: 1;
+            }
+            .file-size { color: #94a3b8; font-size: 12px; margin-left: 10px; }
+
+            /* 버튼 영역 */
+            .btn-group-area { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 20px; }
         </style>
     </th:block>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="page-container">
+            
             <div class="detail-header">
                 <h2 class="detail-title" th:text="${notice.title}">공지사항 제목</h2>
-                <div class="detail-info">
-                    <span><i class="fa-regular fa-user me-1"></i> <span th:text="${notice.writerName} + ' ' + ${notice.writerRank}"></span></span>
-                    <span><i class="fa-regular fa-calendar me-1"></i> <span th:text="${#temporals.format(notice.regDate, 'yyyy-MM-dd HH:mm')}"></span></span>
-                    <span><i class="fa-regular fa-eye me-1"></i> <span th:text="${notice.viewCount}"></span></span>
+                <div class="detail-meta">
+                    <div class="meta-item">
+                        <i class="fa-regular fa-user"></i> 
+                        <span th:text="${notice.writerName} + ' ' + ${notice.writerRank}">작성자</span>
+                        <span class="text-secondary small" th:text="'(' + ${notice.writerDept} + ')'"></span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fa-regular fa-calendar"></i> 
+                        <span th:text="${#temporals.format(notice.regDate, 'yyyy-MM-dd HH:mm')}">등록일</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fa-regular fa-eye"></i> 
+                        <span th:text="${notice.viewCount}">0</span>
+                    </div>
                 </div>
             </div>
 
             <div class="detail-content" th:utext="${notice.content}"></div>
 
-            <div class="detail-images" th:if="${not #lists.isEmpty(notice.imageFiles)}">
+            <div class="old-image-area" th:if="${not #lists.isEmpty(notice.imageFiles)}">
+                <p class="text-muted small mb-2 text-start">※ 첨부 이미지 (구 버전)</p>
                 <div th:each="img : ${notice.imageFiles}">
-                    <img th:src="@{|/upload/${img.savedFileName}|}" alt="첨부 이미지">
+                    <img th:src="@{|/notice/api/image/${img.savedFileName}|}" alt="첨부 이미지">
                 </div>
             </div>
 
-            <div class="file-download-area" th:if="${not #lists.isEmpty(notice.generalFiles)}">
-                <div class="file-title"><i class="fa-solid fa-paperclip me-2"></i>첨부파일</div>
-                <div th:each="file : ${notice.generalFiles}">
-                    <a th:href="@{/notice/download/{id}(id=${file.id})}" class="file-link">
-                        <i class="fa-regular fa-file file-icon"></i>
-                        <span th:text="${file.originalFileName}">파일명.pdf</span>
-                    </a>
+            <div class="file-download-box" th:if="${not #lists.isEmpty(notice.generalFiles)}">
+                <div class="file-header">
+                    <i class="fa-solid fa-paperclip"></i> 첨부파일 <span class="text-primary" th:text="${#lists.size(notice.generalFiles)}">0</span>개
                 </div>
+                <ul class="file-list">
+                    <li th:each="file : ${notice.generalFiles}" class="file-item">
+                        <i class="fa-regular fa-file-lines me-2 text-secondary"></i>
+                        <a th:href="@{/notice/download/{id}(id=${file.id})}" class="file-link">
+                            <span th:text="${file.originalFileName}">파일명.pdf</span>
+                        </a>
+                        <span class="file-size">다운로드</span>
+                    </li>
+                </ul>
             </div>
 
-            <div class="d-flex justify-content-end mt-5 gap-2">
+            <div class="d-flex justify-content-end gap-2 btn-group-area">
 			    <th:block th:if="${canEdit}">
-			        <a th:href="@{/notice/modify/{id}(id=${notice.id})}" class="btn btn-primary px-4">수정</a>
-			        <button type="button" class="btn btn-danger px-4" onclick="deleteNotice()">삭제</button>
+			        <a th:href="@{/notice/modify/{id}(id=${notice.id})}" class="btn btn-primary px-4 rounded-3">수정</a>
+			        <button type="button" class="btn btn-danger px-4 rounded-3" onclick="deleteNotice()">삭제</button>
 			    </th:block>
-			    <a href="/notice/list" class="btn btn-secondary px-4">목록</a>
+			    <a href="/notice/list" class="btn btn-secondary px-4 rounded-3">목록</a>
 			</div>
 			
 			<form id="deleteForm" action="/notice/delete" method="post">
@@ -73,6 +209,7 @@
 			</form>
         </div>
     </div>
+
 <th:block layout:fragment="script">
     <script>
         function deleteNotice() {

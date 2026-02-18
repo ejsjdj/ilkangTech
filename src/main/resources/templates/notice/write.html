@@ -112,13 +112,14 @@
                     <textarea class="form-control" id="content" name="content"></textarea>
                 </div>
 
+                <!-- 
                 <div class="mb-4">
                     <label class="form-label">썸네일 파일 (이미지 / 다중 가능 / 최대 5개)</label>
                     <input type="file" class="form-control" id="imageInput" accept="image/*" multiple>
                     <input type="file" name="imageFiles" id="realImageInput" style="display:none;" multiple>
                     <div class="form-text mb-2">※ JPG, PNG, GIF 파일만 가능합니다.</div>
                     <div id="imagePreviewArea"><span class="text-muted small">이미지가 선택되지 않았습니다.</span></div>
-                </div>
+                </div> -->
 
                 <div class="mb-4">
                     <label class="form-label">자료 파일 (다중 업로드 가능 / 최대 10개)</label>
@@ -143,27 +144,61 @@
                 // -----------------------------------------------------
                 // 1. Summernote 에디터 초기화
                 // -----------------------------------------------------
-                $('#content').summernote({
-                    height: 400,                 // 에디터 높이
-                    minHeight: null,             // 최소 높이
-                    maxHeight: null,             // 최대 높이
-                    focus: false,                // 에디터 로딩 후 포커스 여부
-                    lang: "ko-KR",               // 한글 설정
-                    placeholder: '내용을 입력하세요',
-                    toolbar: [
-                        ['fontname', ['fontname']],
-                        ['fontsize', ['fontsize']],
-                        ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
-                        ['color', ['forecolor','color']],
-                        ['table', ['table']],
-                        ['para', ['ul', 'ol', 'paragraph']],
-                        ['height', ['height']],
-                        ['insert',['picture','link','video']],
-                        ['view', ['fullscreen', 'help']]
-                    ],
-                    fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
-                    fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72']
-                });
+				$('#content').summernote({
+				    height: 500,                 // 높이 약간 증가 추천
+				    minHeight: null,
+				    maxHeight: null,
+				    focus: false,
+				    lang: "ko-KR",
+				    placeholder: '내용을 입력하세요',
+				    // [중요] 툴바에 picture 버튼이 있는지 확인
+				    toolbar: [
+				        ['fontname', ['fontname']],
+				        ['fontsize', ['fontsize']],
+				        ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
+				        ['color', ['forecolor','color']],
+				        ['table', ['table']],
+				        ['para', ['ul', 'ol', 'paragraph']],
+				        ['height', ['height']],
+				        ['insert',['picture','link','video']], // picture 버튼 필수
+				        ['view', ['fullscreen', 'help']]
+				    ],
+				    fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
+				    fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
+				    
+				    // [추가] 이미지 업로드 콜백 함수 설정
+				    callbacks: {
+				        onImageUpload: function(files) {
+				            // 파일을 드래그하거나 업로드할 때 실행됨
+				            for (let i = 0; i < files.length; i++) {
+				                uploadSummernoteImageFile(files[i], this);
+				            }
+				        }
+				    }
+				});
+                
+				// [추가] 이미지 업로드 AJAX 함수
+				function uploadSummernoteImageFile(file, editor) {
+				    let data = new FormData();
+				    data.append("file", file);
+
+				    $.ajax({
+				        data: data,
+				        type: "POST",
+				        url: "/notice/api/upload-image", // Controller에 만든 엔드포인트
+				        contentType: false,
+				        processData: false,
+				        success: function(url) {
+				            // 서버가 반환한 이미지 URL을 에디터에 삽입
+				            // url 예시: /notice/api/image/uuid_파일명.jpg
+				            $(editor).summernote('insertImage', url);
+				        },
+				        error: function(data) {
+				            console.error(data);
+				            alert("이미지 업로드에 실패했습니다.");
+				        }
+				    });
+				}
 
                 // -----------------------------------------------------
                 // 2. 공지 양식 (줄바꿈 \n 대신 <br> 사용해야 함)
@@ -188,10 +223,11 @@
                 // -----------------------------------------------------
                 // 3. 파일 및 이미지 처리 (기존 로직 유지)
                 // -----------------------------------------------------
-                const dtImages = new DataTransfer();
+                /* const dtImages = new DataTransfer(); */
                 const dtFiles = new DataTransfer();
 
                 // 이미지 업로드 로직
+                /* 
                 $('#imageInput').change(function() {
                     const files = this.files;
                     if (dtImages.items.length + files.length > 5) {
@@ -205,8 +241,10 @@
                         if(!isDuplicate) dtImages.items.add(files[i]);
                     }
                     $('#realImageInput')[0].files = dtImages.files; renderImagePreviews(); this.value = ''; 
-                });
+                }); 
+                */
 
+                /* 
                 function renderImagePreviews() {
                     const $area = $('#imagePreviewArea'); $area.empty();
                     if (dtImages.files.length === 0) { $area.html('<span class="text-muted small">이미지가 선택되지 않았습니다.</span>'); return; }
@@ -223,7 +261,8 @@
                     Array.from(dtImages.files).forEach((file, i) => { if (i !== index) newDt.items.add(file); });
                     dtImages.items.clear(); Array.from(newDt.files).forEach(file => dtImages.items.add(file));
                     $('#realImageInput')[0].files = dtImages.files; renderImagePreviews();
-                }
+                } 
+                */
 
                 // 일반 파일 업로드 로직
                 $('#fileInput').change(function() {

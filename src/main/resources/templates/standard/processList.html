@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+  <title>공정라우팅 관리</title>
+  <th:block layout:fragment="css">
+    <style>
+      .nav-tabs { border-bottom: 2px solid #dee2e6; margin-bottom: 20px; display: flex; gap: 5px;}
+      .nav-tabs .nav-item {margin-bottom: -2px;}
+      .nav-tabs .nav-link {border: 1px solid transparent; border-top-left-radius: .25rem; border-top-right-radius: .25rem; padding: 10px 20px; background-color: #f8f9fa;color: #6c757d; transition: all 0.2s;}
+      .nav-tabs .nav-link.active {background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; color: #0d6efd; font-weight: bold;}
+      .tab-content-area { display: none; }
+      .tab-content-area.active { display: block; }
+      .search-bar { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
+      .modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+      .modal-content { background: white; margin: 50px auto; padding: 20px; width: 80%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+      .detail-table { width: 100%; margin-bottom: 20px; }
+      .detail-table td { padding: 10px; border: 1px solid #dee2e6; }
+      .detail-table td:nth-child(odd) { background-color: #f8f9fa; font-weight: bold; width: 15%; }
+      .tui-grid-cell { font-size: 13px; }
+    </style>
+  </th:block>
+</head>
+<body>
+
+<div layout:fragment="content" class="container-fluid">
+
+  <ul class="nav nav-tabs" id="managementTabs">
+    <li class="nav-item">
+      <button class="nav-link active" onclick="switchTab(event, 'routingTab', mainGrid)">공정라우팅 관리</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" onclick="switchTab(event, 'opCodeTab', opGrid)">공정코드 관리</button>
+    </li>
+  </ul>
+
+  <div id="routingTab" class="tab-content-area active">
+        <div class="search-bar d-flex align-items-center gap-3">
+            <span>라우트명:</span>
+            <input type="text" id="searchRouteName" class="form-control" style="width: 200px;" placeholder="라우트명 입력">
+            
+            <span>라우트타입:</span>
+            <select id="searchRouteType" class="form-select" style="width: 150px;">
+                <option value="">전체</option>
+                <option value="MAIN">메인</option>
+                <option value="SUB">서브</option>
+            </select>
+            
+            <button class="btn btn-primary" onclick="loadMainGrid()">검색</button>
+        </div>
+        <div id="mainGrid"></div>
+    </div>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <h4>공정 라우팅 상세</h4>
+            <table class="detail-table">
+                <tr>
+                    <td>라우트 ID</td>
+                    <td><input type="text" id="detailRouteId" class="form-control" readonly></td>
+                    <td>제품 코드</td>
+                    <td><input type="text" id="detailItemCode" class="form-control" readonly></td>
+                </tr>
+                <tr>
+                    <td>라우트명</td>
+                    <td colspan="3"><input type="text" id="detailRouteName" class="form-control"></td>
+                </tr>
+            </table>
+
+            <div class="mb-2 d-flex justify-content-between">
+                <h5>공정 단계 정보</h5>
+                <div>
+                    <button class="btn btn-success btn-sm" onclick="addStep()">행 추가</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteStep()">행 삭제</button>
+                </div>
+            </div>
+            
+            <div id="stepGrid"></div>
+
+            <div class="text-end mt-3">
+                <button class="btn btn-primary" onclick="saveData()">저장</button>
+                <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+  <script src="https://uicdn.toast.com/tui-grid/latest/tui-grid.js"></script>
+  <script th:src="@{/js/processList.js}"></script>
+</th:block>
+</body>
+</html>

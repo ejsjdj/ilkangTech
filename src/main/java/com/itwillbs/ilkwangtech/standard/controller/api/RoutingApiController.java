@@ -24,7 +24,13 @@ public class RoutingApiController {
                                            @RequestParam(value = "routeType", required = false) String routeType,
                                            @RequestParam(value = "routeName", required = false) String routeName){
 
-        return processService.getProcessList(pageable);
+        System.out.println("api/process_mst : " + pageable + routeName + routeType);
+
+        Page<ProcessCodeDTO> processCodeDTO = processService.getProcessList(pageable, routeType, routeName);
+
+        System.out.println("조회된 공정 라우트 리스트 : " + processCodeDTO.getContent());
+
+        return processCodeDTO;
     }
 
     // 라우팅 상세 조회

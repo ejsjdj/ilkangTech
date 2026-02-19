@@ -19,7 +19,7 @@ public class ProcessEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "operation_id")
-    private OperationEntity operation; // 공정 정보와 연결
+    private OperationEntity operation;
 
     @Column(name = "item_id", length = 10)
     private String itemId;

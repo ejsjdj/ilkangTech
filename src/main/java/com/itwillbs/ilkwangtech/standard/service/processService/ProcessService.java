@@ -11,7 +11,7 @@ import java.util.List;
 public interface ProcessService {
 
     // 1. 라우트 전체 조회
-    Page<ProcessCodeDTO> getProcessList(Pageable pageable, String routeType, String routeName);
+    Page<ProcessCodeDTO> getProcessList(Pageable pageable, Long itemId, String routeName);
 
     // 2. 라우트 상세 조회
     List<ProcessDetailDTO> getProcessDetail(String routeId);

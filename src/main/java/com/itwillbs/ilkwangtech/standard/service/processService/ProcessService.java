@@ -17,5 +17,5 @@ public interface ProcessService {
     List<ProcessDetailDTO> getProcessDetail(String routeId);
 
     // 3. 라우트 등록
-    void saveProcess(ProcessInsertDTO processInsertDTO);
+    void saveProcess(List<ProcessInsertDTO> processInsertDTO, Long userId);
 }

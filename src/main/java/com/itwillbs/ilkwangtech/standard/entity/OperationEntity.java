@@ -13,11 +13,14 @@ public class OperationEntity {
 
     @Id
     @Column(name = "id", length = 10)
-    private String id;
+    private Long id;
+
+    @Column(name = "operation_id")
+    private String operationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "machine_id")
-    private MachineEntity machine; // 설비 정보와 연결
+    private MachineEntity machine;
 
     @Column(name = "name", length = 10)
     private String name;

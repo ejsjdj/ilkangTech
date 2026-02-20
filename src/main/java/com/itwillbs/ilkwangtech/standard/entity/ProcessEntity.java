@@ -22,10 +22,10 @@ public class ProcessEntity {
     @Column(name = "operation_id")
     private String operationId;
 
-    @Column(name = "name", length = 10)
+    @Column(name = "name")
     private String name;
 
-    @Column(name = "description", length = 10)
+    @Column(name = "description")
     private String description;
 
     @ManyToOne

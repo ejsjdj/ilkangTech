@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @ToString
-public class ProcessCodeDTO {
+public class ProcessRouteDTO {
     private String routeId; // 공정라우트 코드
     private Long itemId; // 제품 코드
     private String routeName; // 라우트명
@@ -20,7 +20,7 @@ public class ProcessCodeDTO {
     private List<String> item;
 
     @Builder
-    public ProcessCodeDTO(String routeId, String description, Long itemId, String createdAt, String routeName, String constructor, List<String> item){
+    public ProcessRouteDTO(String routeId, String description, Long itemId, String createdAt, String routeName, String constructor, List<String> item){
         super();
         this.routeId = routeId;
         this.itemId = itemId;

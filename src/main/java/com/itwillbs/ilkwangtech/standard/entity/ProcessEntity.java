@@ -2,67 +2,46 @@ package com.itwillbs.ilkwangtech.standard.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
+@Table(name = "operation_info")
 @Getter
 @Setter
-@Table(name = "operation_route_info")
 public class ProcessEntity {
 
     @Id
+    @Column(name = "id", length = 10)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "route_id", length = 10)
-    private String routeId;
+    @Column(name = "operation_id")
+    private String operationId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "operation_id")
-    private OperationEntity operation;
+    @Column(name = "name", length = 10)
+    private String name;
 
-    @Column(name = "item_id", length = 10)
-    private Long itemId;
-
-    @Column(name = "sequence")
-    private Long sequence;
-
-    @Column(name = "route_name")
-    private String routeName;
-
-    @Column(name = "description")
+    @Column(name = "description", length = 10)
     private String description;
 
-    @Column(name = "note")
-    private String note;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(name = "created_at")
+    private LocalDate createdAt;
 
-    public ProcessEntity(Long id,
-                         String routeId,
-                         OperationEntity operation,
-                         Long itemId,
-                         Long sequence,
-                         String routeName,
-                         String description,
-                         String note,
-                         Member member){
-        this.id = id;
-        this.routeId = routeId;
-        this.operation = operation;
-        this.itemId = itemId;
-        this.sequence = sequence;
-        this.routeName = routeName;
+    @Builder
+    public ProcessEntity(String operationId, String name, String description, Member member, LocalDate createdAt){
+        this.operationId = operationId;
+        this.name = name;
         this.description = description;
-        this.note = note;
         this.member = member;
+        this.createdAt = createdAt;
     }
 
 }

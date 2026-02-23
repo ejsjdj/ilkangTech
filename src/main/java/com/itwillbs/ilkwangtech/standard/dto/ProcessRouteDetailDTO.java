@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProcessDetailDTO {
+public class ProcessRouteDetailDTO {
 
     private String id; // 라우트 단계 id
     private String routeId; // 라우트 id

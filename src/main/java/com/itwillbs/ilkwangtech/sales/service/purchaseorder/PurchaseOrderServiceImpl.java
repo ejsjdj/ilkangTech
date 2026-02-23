@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.sales.service.purchaseorder;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDetailDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderInsertDTO;
+import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderHeaderEntity;
 import com.itwillbs.ilkwangtech.sales.repository.PurchaseOrderRepository;
@@ -46,8 +47,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     @Transactional
     public PurchaseOrderDetailDTO getPurchaseOrderDetail(Long purchaseOrderId){
 
-        PurchaseOrderHeaderEntity detailEntity = purchaseOrderRepository.findByPurchaseIdDetail(purchaseOrderId);
+        PurchaseOrderHeaderEntity header = purchaseOrderRepository.findByPurchaseIdDetail(purchaseOrderId);
 
+        List<PurchaseOrderLineDTO> lineDto =
+                header.getLines().stream()
+                        .map(purchaseOrderEntity -> new PurchaseOrderLineDTO(
+                                purchaseOrderEntity.getId(),
+                                purchaseOrderEntity.getItem(),
+                                purchaseOrderEntity.getQuantity(),
+                                purchaseOrderEntity.getUnitPrice()
+                        ))
+                        .toList();
 
         return null;
     }

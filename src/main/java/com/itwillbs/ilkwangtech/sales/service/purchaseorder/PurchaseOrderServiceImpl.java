@@ -8,6 +8,7 @@ import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderHeaderEntity;
 import com.itwillbs.ilkwangtech.sales.repository.PurchaseOrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
@@ -47,6 +49,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     @Transactional
     public PurchaseOrderDetailDTO getPurchaseOrderDetail(Long purchaseOrderId){
 
+        log.info("발주 상세 조회 service - 발주 ID: {}", purchaseOrderId);
+
         PurchaseOrderHeaderEntity header = purchaseOrderRepository.findByPurchaseIdDetail(purchaseOrderId);
 
         List<PurchaseOrderLineDTO> lineDto =
@@ -59,7 +63,21 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                         ))
                         .toList();
 
-        return null;
+        PurchaseOrderDetailDTO detailDTO = PurchaseOrderDetailDTO.builder().
+                purchaseOrderLineDto(lineDto).
+                purchaseOrderCode(header.getPurchaseOrderCode()).
+                company(header.getCompany()).
+                companyManager(header.getCompanyManager()).
+                phone(header.getPhone()).
+                name(header.getName()).
+                status(header.getStatus()).
+                orderDate(header.getOrderDate()).
+                amount(header.getAmount()).
+                build();
+
+        log.info("발주 상세 조회 Service 결과 - 리스트: {}", detailDTO);
+
+        return detailDTO;
     }
 
     // 3. 신규 발주 등록

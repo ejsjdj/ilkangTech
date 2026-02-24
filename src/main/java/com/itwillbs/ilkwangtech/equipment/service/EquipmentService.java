@@ -50,7 +50,6 @@ public class EquipmentService {
     	log.info(">>>>>>>>>>> equipmentFailure-service");
         return equipmentFailureRepository.findAllByOrderByOccurredAtDesc();
         
-        // 된건가
     }
     
     

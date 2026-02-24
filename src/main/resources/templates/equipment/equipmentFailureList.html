@@ -52,6 +52,7 @@
         .col-level { width: 100px; }
         .col-staff { width: 120px; }
         .col-status { width: 100px; }
+        .col-fixedAt { width: 160px; }
 
         /* 상태 배지 (참고하신 스타일) */
         .status-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; gap: 6px; }
@@ -72,91 +73,182 @@
 </head>
 <body>
 
-<div class="content-root">
-    <div class="container-wrapper">
-        <div class="page-header">
-            <div class="header-title-area">
-                <div class="header-icon-bar"></div>
-                <div>
-                    <h1>설비 고장 이력</h1>
-                    <p class="page-subtitle">설비별 고장 현황 및 조치 이력 관리</p>
-                </div>
-            </div>
-            <button class="btn btn-primary" style="background-color: #4f46e5; border: none; font-size: 13px; font-weight: 700;">
-                <i class="bi bi-plus-lg"></i> 고장 신고 등록
-            </button>
-        </div>
+<th:block layout:fragment="content">
+	<div class="content-root">
+	    <div class="container-wrapper">
+	        <div class="page-header">
+	            <div class="header-title-area">
+	                <div class="header-icon-bar"></div>
+	                <div>
+	                    <h1>설비 고장 이력</h1>
+	                    <p class="page-subtitle">설비별 고장 현황 및 조치 이력 관리</p>
+	                </div>
+	            </div>
+	        </div>
+	
+	        <div class="search-filter-area">
+	            <div class="search-box">
+	                <i class="bi bi-search" style="position: absolute; top: 10px; left: 12px; color: #94a3b8;"></i>
+	                <input type="text" id="searchInput" placeholder="설비코드 / 담당자 검색">
+	            </div>
+	            <button class="btn-search" onclick="filterList()">검색</button>
+	            <button class="btn-reset" onclick="location.reload()">초기화</button>
+	            
+	            <select id="procFilter" class="form-select" style="width: 130px; font-size: 13px;">
+			        <option value="">공정 전체</option>
+			        <option value="PRESS">프레스</option>
+			        <option value="INJECT">사출</option>
+			        <option value="PAINT">도장</option>
+			        <option value="ASSY">조립</option>
+			    </select>
+			
+			    <select id="levelFilter" class="form-select" style="width: 130px; font-size: 13px;">
+			        <option value="">등급 전체</option>
+			        <option value="상">상</option>
+			        <option value="중">중</option>
+			        <option value="하">하</option>
+			    </select>
+			
+			    <select id="statusFilter" class="form-select" style="width: 130px; font-size: 13px;">
+			        <option value="">상태 전체</option>
+			        <option value="접수">접수</option>
+			        <option value="수리중">수리중</option>
+			        <option value="완료">완료</option>
+			    </select>
+	        </div>
+	
+	        <div class="table-wrapper">
+	            <div class="table-scroll">
+	                <table class="table emp-table">
+	                    <thead>
+	                        <tr>
+	                            <th class="col-id">NO.</th>
+	                            <th class="col-code">설비코드</th>
+	                            <th class="col-proc">공정</th>
+	                            <th class="col-desc">고장 내용</th>
+	                            <th class="col-date">발생 일시</th>
+	                            <th class="col-level">고장 등급</th>
+	                            <th class="col-staff">담당자</th>
+	                            <th class="col-status">상태</th>
+	                            <th class="col-fixedAt">수리 완료일</th>
+	                        </tr>
+	                    </thead>
+	                    <tbody id="failure-tbody">
+	                        </tbody>
+	                </table>
+	            </div>
+	            <div class="pagination-wrapper">
+	                <nav>
+	                    <ul class="pagination pagination-sm mb-0">
+	                        <li class="page-item disabled"><span class="page-link">이전</span></li>
+	                        <li class="page-item active"><span class="page-link" style="background-color: #4f46e5; border-color: #4f46e5;">1</span></li>
+	                        <li class="page-item disabled"><span class="page-link">다음</span></li>
+	                    </ul>
+	                </nav>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 
-        <div class="search-filter-area">
-            <div class="search-box">
-                <i class="bi bi-search" style="position: absolute; top: 10px; left: 12px; color: #94a3b8;"></i>
-                <input type="text" id="searchInput" placeholder="설비코드 / 담당자 검색">
-            </div>
-            <button class="btn-search" onclick="fetchData()">검색</button>
-            <button class="btn-reset" onclick="location.reload()">초기화</button>
-        </div>
+</th:block>
 
-        <div class="table-wrapper">
-            <div class="table-scroll">
-                <table class="table emp-table">
-                    <thead>
-                        <tr>
-                            <th class="col-id">ID</th>
-                            <th class="col-code">설비코드</th>
-                            <th class="col-proc">공정</th>
-                            <th class="col-desc">고장 내용</th>
-                            <th class="col-date">발생 일시</th>
-                            <th class="col-level">고장 등급</th>
-                            <th class="col-staff">담당자</th>
-                            <th class="col-status">상태</th>
-                        </tr>
-                    </thead>
-                    <tbody id="failure-tbody">
-                        </tbody>
-                </table>
-            </div>
-            <div class="pagination-wrapper">
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled"><span class="page-link">이전</span></li>
-                        <li class="page-item active"><span class="page-link" style="background-color: #4f46e5; border-color: #4f46e5;">1</span></li>
-                        <li class="page-item disabled"><span class="page-link">다음</span></li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
-</div>
+<th:block layout:fragment="script">
+    <script>
+    let allFailureData = [];
 
-<script>
-    document.addEventListener('DOMContentLoaded', fetchData);
+    // 페이지가 로드되면 데이터를 즉시 가져옵니다.
+    document.addEventListener('DOMContentLoaded', loadFailureList);
 
-    function fetchData() {
+    function loadFailureList() {
         fetch('/equipment/equipmentFailureList')
             .then(res => res.json())
             .then(data => {
-                const tbody = document.getElementById('failure-tbody');
-                tbody.innerHTML = data.map(item => `
-                    <tr>
-                        <td class="col-id">${item.failureId}</td>
-                        <td class="col-code">${item.equipCode}</td>
-                        <td class="col-proc">${getProcNameKr(item.procCode)}</td>
-                        <td class="col-desc" title="${item.failureDesc}">${item.failureDesc}</td>
-                        <td class="col-date">${formatDate(item.occurredAt)}</td>
-                        <td>${getLevelBadge(item.failureLevel)}</td>
-                        <td class="col-staff">${item.repairStaff || '-'}</td>
-                        <td>${getStatusBadge(item.status)}</td>
-                    </tr>
-                `).join('');
+                console.log("받아온 데이터:", data); // 데이터가 잘 오는지 콘솔에서 확인 가능
+                allFailureData = data; 
+                renderTable(data);     
+            })
+            .catch(err => {
+                console.error("데이터 로딩 실패:", err);
+                alert("데이터를 불러오지 못했습니다.");
             });
     }
+    
+    function renderTable(data) {
+        const tbody = document.getElementById('failure-tbody');
+        if(!tbody) return;
 
-    function getProcNameKr(code) {
-        const names = { 'PRESS': '프레스', 'INJECTION': '사출', 'PAINTING': '도장', 'ASSEMBLY': '조립' };
-        return names[code] || code;
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px;">조회된 데이터가 없습니다.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.map(item => `
+            <tr>
+                <td class="col-id">${item.failureId}</td>
+                <td class="col-code">${item.equipCode}</td>
+                <td class="col-proc">${getProcNameKr(item.procCode)}</td>
+                <td class="col-desc" title="${item.failureDesc}">${item.failureDesc}</td>
+                <td class="col-date">${formatDate(item.occurredAt)}</td>
+                <td class="col-level">${getLevelBadge(item.failureLevel)}</td>
+                <td class="col-staff">${item.repairStaff || '-'}</td>
+                <td class="col-status">${getStatusBadge(item.status)}</td>
+                <td class="col-fixedAt">${item.fixedAt ? formatDate(item.fixedAt) : '-'}</td>
+            </tr>
+        `).join('');
     }
+    
+    // 검색 함수 
+    function filterList() {
+    const keyword = document.getElementById('searchInput').value.toLowerCase();
+    const proc = document.getElementById('procFilter').value;
+    const level = document.getElementById('levelFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    const filtered = allFailureData.filter(item => {
+        // 1. 검색어 체크 (설비코드 또는 담당자)
+        const codeMatch = (item.equipCode || '').toLowerCase().includes(keyword);
+        const staffMatch = (item.repairStaff || '').toLowerCase().includes(keyword);
+        const keywordMatch = codeMatch || staffMatch;
+
+        // 2. 공정 체크 (선택 안했을 때는 pass)
+        const procMatch = proc === getProcNameKr(item.procCode);
+
+        // 3. 등급 체크
+        const levelMatch = !level || item.failureLevel === level;
+
+        // 4. 상태 체크
+        const statusMatch = !status || item.status === status;
+
+        // 모든 조건이 만족해야 함
+        return keywordMatch && procMatch && levelMatch && statusMatch;
+	    });
+	
+	    renderTable(filtered);
+	}
+    document.querySelectorAll('.search-filter-area select').forEach(select => {
+        select.addEventListener('change', filterList);
+    });
+
+    // 엔터키 입력 시 검색 실행
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && document.activeElement.id === 'searchInput') {
+            filterList();
+        }
+    });
+
+    // 보조 함수들
+    function getProcNameKr(code) {
+	    const names = { 
+	        'PRESS': '프레스', 
+	        'INJECT': '사출', 
+	        'PAINT': '도장', 
+	        'ASSY': '조립' 
+	    };
+	    return names[code] || code;
+	}
 
     function formatDate(dateStr) {
+        if(!dateStr) return '-';
         const d = new Date(dateStr);
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     }
@@ -174,7 +266,7 @@
         if(status === '완료') cls = 'status-done';
         return `<span class="status-badge ${cls}">${status}</span>`;
     }
-    
-</script>
+    </script>
+</th:block>
 </body>
 </html>

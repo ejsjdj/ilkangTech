@@ -24,7 +24,7 @@ public class EquipmentController {
 
     private final EquipmentService equipmentService;
 
-//  페이지 접속
+//  설비 현황 페이지 접속
     @GetMapping("/equipmentList")
     public String equipmentPage() {
         return "equipment/equipmentList"; 
@@ -45,11 +45,18 @@ public class EquipmentController {
         return equipmentService.createEquipment(equipment);
     }
     
-//  고장 이력 전체 리스트 반환
+//  고장 이력 페이지 접속
+    @GetMapping("/failure-history")
+    public String failureHistoryPage() {
+    	log.info(">>>>>>>>>>>>>>>>> failure-history 접속");
+        return "equipment/equipmentFailureList"; 
+    }
+    
+//  고장 이력 데이터 반환
     @GetMapping("/equipmentFailureList")
     @ResponseBody
     public List<EquipmentFailure> getFailureList() {
-    	log.info(">>>>>>>>>>> equipmentFailure-controller");
+    	log.info(">>>>>>>>>>>>>>>>> failure 리스트 controller 접속");
         return equipmentService.getAllFailures();
     }
 }

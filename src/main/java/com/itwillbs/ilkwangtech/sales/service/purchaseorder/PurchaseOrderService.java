@@ -20,5 +20,5 @@ public interface PurchaseOrderService  {
     PurchaseOrderDetailDTO getPurchaseOrderDetail(Long purchaseOrderId);
 
     // 3. 신규 발주 등록
-    void savePurchaseOrder(List<PurchaseOrderInsertDTO> purchaseOrderInsertDTO);
+    void savePurchaseOrder(PurchaseOrderInsertDTO purchaseOrderInsertDTO, Long userId);
 }

@@ -1,5 +1,7 @@
 package com.itwillbs.ilkwangtech.sales.service.purchaseorder;
 
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDetailDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderInsertDTO;
@@ -24,6 +26,7 @@ import java.util.List;
 public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
+    private final MemberRepository memberRepository;
 
     // 1. 발주 리스트 조회
     @Override
@@ -35,13 +38,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         Page<PurchaseOrderHeaderEntity> purchaseOrderEntities = purchaseOrderRepository.findByPurchaseOrder(pageable, start, end, searchType, keyword);
 
-        return purchaseOrderEntities.map(purchaseOrderHeaderEntity -> PurchaseOrderDTO.builder().
-                purchaseOrderCode(purchaseOrderHeaderEntity.getPurchaseOrderCode()).
-                company(purchaseOrderHeaderEntity.getCompany()).
-                name(purchaseOrderHeaderEntity.getName()).
-                status(purchaseOrderHeaderEntity.getStatus()).
-                orderDate(purchaseOrderHeaderEntity.getOrderDate()).
-                build());
+        return purchaseOrderEntities.
+                map(purchaseOrderHeaderEntity -> PurchaseOrderDTO.
+                        builder().
+                        purchaseOrderCode(purchaseOrderHeaderEntity.getPurchaseOrderCode()).
+                        company(purchaseOrderHeaderEntity.getCompany()).
+                        name(purchaseOrderHeaderEntity.getName()).
+                        status(purchaseOrderHeaderEntity.getStatus()).
+                        orderDate(String.valueOf(purchaseOrderHeaderEntity.getOrderDate())).
+                        build());
     }
 
     // 2. 발주 상세 조회
@@ -71,7 +76,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 phone(header.getPhone()).
                 name(header.getName()).
                 status(header.getStatus()).
-                orderDate(header.getOrderDate()).
+                orderDate(String.valueOf(header.getOrderDate())).
                 amount(header.getAmount()).
                 build();
 
@@ -83,7 +88,33 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     // 3. 신규 발주 등록
     @Override
     @Transactional
-    public void savePurchaseOrder(List<PurchaseOrderInsertDTO> purchaseOrderInsertDTO){
+    public void savePurchaseOrder(PurchaseOrderInsertDTO purchaseOrderInsertDTO, Long userId){
+
+        // 1. 유저 정보 확인
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
+
+        // 2. 헤더 엔티티 저장
+        PurchaseOrderHeaderEntity header = PurchaseOrderHeaderEntity.saveHeader(
+                purchaseOrderInsertDTO.getPurchaseOrderCode(),
+                purchaseOrderInsertDTO.getCompany(),
+                purchaseOrderInsertDTO.getCompanyManager(),
+                member.getPhoneNumber(),
+                member.getName(),
+                LocalDate.now()
+
+        );
+
+        // 3. 라인 엔티티 저장
+        for(PurchaseOrderLineDTO lineDTO : purchaseOrderInsertDTO.getLines()){
+
+            PurchaseOrderEntity line = PurchaseOrderEntity.create(
+                    lineDTO.getItem(),
+                    lineDTO.getQuantity(),
+                    lineDTO.getUnitPrice());
+
+            header.saveLine(line);
+        }
 
     }
 }

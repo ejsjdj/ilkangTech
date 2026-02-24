@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.controller.api;
 
+import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDetailDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderInsertDTO;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,8 +56,12 @@ public class ProcurementApiController {
 
     // 3. 신규 발주 등록
     @PostMapping("/procurement/insert")
-    public void saveProcurement(@RequestBody List<PurchaseOrderInsertDTO> purchaseOrderInsertDTO){
-        purchaseOrderService.savePurchaseOrder(purchaseOrderInsertDTO);
+    public void saveProcurement(@RequestBody PurchaseOrderInsertDTO purchaseOrderInsertDTO,
+                                @AuthenticationPrincipal AccountLogin accountLogin){
+
+        Long userId = accountLogin.getId();
+
+        purchaseOrderService.savePurchaseOrder(purchaseOrderInsertDTO, userId);
     }
 
 }

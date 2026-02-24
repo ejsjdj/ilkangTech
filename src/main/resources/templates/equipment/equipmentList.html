@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+	<meta charset="UTF-8">
+	<title>설비 정보</title>
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui-grid/latest/tui-grid.css" />
+	<style>
+	.table-wrapper {
+	    background: #ffffff;
+	    border-radius: 12px;
+	    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+	    border: 1px solid #e2e8f0;
+	    padding: 16px;
+	}
+		.detail-table {
+		    width: 100%;
+		    border-collapse: collapse;
+		    margin-top: 10px;
+		}
+		.detail-table th {
+		    width: 30%;
+		    background-color: #f8f9fa;
+		    padding: 12px;
+		    border: 1px solid #dee2e6;
+		    text-align: left;
+		}
+		.detail-table td {
+		    width: 70%;
+		    padding: 12px;
+		    border: 1px solid #dee2e6;
+		}
+		.status-badge.active { color: green; font-weight: bold; }
+		.status-badge.inactive { color: red; font-weight: bold; }
+		.container-wrapper {
+            max-width: 1400px; 
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .equipment-header{
+		  display:flex;
+		  align-items:center;       /* 제목과 버튼 높이 라인 맞춤 */
+		  justify-content:space-between;
+		  gap:12px;
+		}
+		.equipment-content {
+		    display: flex;
+		    flex-direction: column;
+		    gap: 16px;
+		}
+		
+		.equipment-list-container {
+		    display: flex;
+		    flex-direction: column;
+		}
+		
+		.equip-add-btn{
+		  border: 1px solid #d1d5db;
+		  background: #ffffff;
+		  padding: 8px 14px;
+		  border-radius: 10px;
+		  font-weight: 700;
+		  cursor: pointer;
+		}
+		.equip-add-btn:hover{
+		  background:#f3f4f6;
+		}
+		
+		/* 모달 */
+		.modal-backdrop{
+		  position:fixed;
+		  left:0; top:0;
+		  width:100%; height:100%;
+		  background: rgba(0,0,0,0.35);
+		  z-index: 9998;
+		}
+		
+		.modal{
+		  position:fixed;
+		  left:50%; top:50%;
+		  transform: translate(-50%, -50%);
+		  z-index: 9999;
+		  width: min(520px, calc(100% - 40px));
+		}
+		
+		.modal-card{
+		  background:#fff;
+		  border-radius:16px;
+		  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+		  overflow:hidden;
+		}
+		
+		.modal-header{
+		  display:flex;
+		  align-items:center;
+		  justify-content:space-between;
+		  padding: 14px 16px;
+		  border-bottom: 1px solid #e5e7eb;
+		}
+		
+		.modal-close{
+		  border:none;
+		  background:transparent;
+		  cursor:pointer;
+		  font-size:18px;
+		  line-height:1;
+		}
+		
+		.modal-body{
+		  padding: 16px;
+		}
+		
+		.form-row{
+		  display:flex;
+		  flex-direction:column;
+		  gap:6px;
+		  margin-bottom: 12px;
+		}
+		.form-row label{
+		  font-size: 14px;
+		  font-weight: 700;
+		  color:#374151;
+		}
+		.form-row input, .form-row select{
+		  border:1px solid #d1d5db;
+		  border-radius:10px;
+		  padding:10px 12px;
+		  outline:none;
+		}
+		.form-row input:focus, .form-row select:focus{
+		  border-color:#9ca3af;
+		}
+		
+		.modal-footer{
+		  display:flex;
+		  justify-content:flex-end;
+		  gap:10px;
+		  margin-top: 14px;
+		}
+		
+		.btn-secondary, .btn-primary{
+		  padding: 9px 14px;
+		  border-radius: 10px;
+		  border: 1px solid #d1d5db;
+		  cursor:pointer;
+		  font-weight: 700;
+		  background:#fff;
+		}
+		.btn-primary{
+		  border-color:#111827;
+		}
+	</style>
+</head>
+<body>
+	
+<th:block layout:fragment="content">
+	<div id="container-wrapper" class="container-wrapper">
+	    <header class="equipment-header">
+	        <h2>설비 현황</h2>
+	        
+	        <button type="button" id="btnOpenEquipModal" class="equip-add-btn">
+			    + 설비 추가
+			</button>
+	    </header>
+	    <main class="equipment-content">
+		    <section class="equipment-list-container">
+		        <div class="table-wrapper">
+		            <div id="grid"></div>
+		        </div>
+		    </section>
+		</main>
+    </div>
+
+
+	<!-- 설비 추가 모달 -->
+	<div id="equipModalBackdrop" class="modal-backdrop" style="display:none;"></div>
+	
+	<div id="equipModal" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="equipModalTitle">
+		<div class="modal-card">
+		    <div class="modal-header">
+	  	        <h3 id="equipModalTitle">설비 추가</h3>
+		        <button type="button" id="btnCloseEquipModal" class="modal-close" aria-label="닫기">✕</button>
+		    </div>
+		
+			<div class="modal-body">
+				<form id="equipForm">
+					<div class="form-row">
+					    <label for="equipName">설비명</label>
+					    <input id="equipName" name="equipName" type="text" placeholder="설비명" required>
+					</div>
+					
+					<div class="form-row">
+						<label for="procCode">공정</label>
+						<select id="procCode" name="procCode" required>
+							<option value="" disabled selected>공정을 선택하세요</option>
+							<option value="PRESS">PRESS</option>
+							<option value="INJECT">INJECT</option>
+							<option value="PAINT">PAINT</option>
+							<option value="ASSY">ASSY</option>
+						</select>
+					</div>
+					
+					<div class="form-row">
+					    <label for="maker">제조사</label>
+					    <input id="maker" name="maker" type="text" placeholder="제조사명">
+					</div>
+					
+					<div class="form-row">
+						<label for="price">가격</label>
+						<input id="price" name="price" type="number">
+					</div>
+					
+					<div class="form-row">
+						<label for="instDate">설치일</label>
+						<input id="instDate" name="instDate" type="date">
+					</div>
+					
+					<div class="form-row">
+					    <label for="useYn">사용여부</label>
+					    <select id="useYn" name="useYn" required>
+					        <option value="Y" selected>가동중</option>
+					        <option value="N">중단</option>
+				  	    </select>
+					</div>
+					
+					<div class="modal-footer">
+					    <button type="button" id="btnCancelEquipModal" class="btn-secondary">취소</button>
+					    <button type="submit" class="btn-primary">저장</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+</th:block>
+
+<th:block layout:fragment="script">
+	<script>
+	document.addEventListener('DOMContentLoaded', function () {
+	  console.log("스크립트 실행됨");
+	
+	  /* TOAST UI Grid 생성: 컬럼/정렬/포맷터 설정해서 설비 목록 표 렌더링 */
+	  const grid = new tui.Grid({
+	    el: document.getElementById('grid'),
+	    scrollX: false,
+	    scrollY: false,
+	    bodyHeight: 'auto', 
+	    columns: [
+			{ header: '설비 코드', name: 'equipCode', align: 'center' },
+			{ header: '설비명', name: 'equipName', align: 'center' },
+			{ header: '공정', name: 'procCode', align: 'center' },
+			{ header: '제조사', name: 'maker', align: 'center' },
+			{
+				header: '가격',
+				name: 'price',
+				align: 'right',
+				formatter: function(cell) {
+					  if (!cell.value) return '';
+				    return Number(cell.value).toLocaleString() + ' 원';
+				}
+			},
+			{
+				header: '설치일',
+				name: 'instDate',
+				align: 'center'
+			},
+			{
+				header: '등록일',
+				name: 'regDate',
+				align: 'center',
+				formatter: function(cell) {
+				  if (!cell.value) return '';
+				  return cell.value.split('T')[0]; // 날짜만 표시
+				}
+			},
+			{
+				header: '사용여부',
+				name: 'useYn',
+				align: 'center',
+				formatter: function (cell) { 
+				  var value = cell && cell.value ? cell.value : cell.value; 
+				  if (value === 'Y') return '가동중';
+				  if (value === 'N') return '중단';
+				  return value;
+				}
+			}]
+	  });
+	
+	  /* 2) 설비 목록 API 호출: 서버에서 JSON 받아서 그리드 데이터로 세팅 */
+	  console.log("fetch 시작");
+	  fetch('/equipment/api/equipment')
+	    .then(function (res) {
+	      console.log("응답 상태:", res.status);
+	      return res.json();
+	    })
+	    .then(function (data) {
+	      console.log("서버 데이터:", data);
+	      var rows = Array.isArray(data) ? data : (data.data || []);
+	      grid.resetData(rows);
+	    })
+	    .catch(function (err) {
+	      console.error("fetch 에러:", err);
+	    });
+	
+	  /* 그리드 행 클릭 이벤트: 클릭한 행 데이터를 우측 상세 패널에 출력 */
+	  grid.on('click', function (ev) {
+	    var rowData = grid.getRow(ev.rowKey);
+	    if (!rowData) return;
+	
+	    var detailEl = document.querySelector('#detailPanel .detail-content');
+	    if (!detailEl) return; 
+	
+	    detailEl.innerHTML = '<pre>' + JSON.stringify(rowData, null, 2) + '</pre>';
+	  });
+	
+	  /* 설비 추가 모달 열기 */
+	  function openEquipModal() {
+	
+	    var procSelect = document.getElementById('procCode');
+	    if (procSelect) procSelect.value = procSelect.value || ""; 
+	
+	    document.getElementById('equipModalBackdrop').style.display = 'block';
+	    document.getElementById('equipModal').style.display = 'block';
+	  }
+	
+	  /* 설비 추가 모달 닫기 */
+	  function closeEquipModal() {
+	    document.getElementById('equipModalBackdrop').style.display = 'none';
+	    document.getElementById('equipModal').style.display = 'none';
+	  }
+	
+	  /* 모달 열기/닫기 버튼 이벤트 바인딩 */
+	  var btnOpen = document.getElementById('btnOpenEquipModal');
+	  var btnClose = document.getElementById('btnCloseEquipModal');
+	  var btnCancel = document.getElementById('btnCancelEquipModal');
+	  var backdrop = document.getElementById('equipModalBackdrop');
+	
+	  if (btnOpen) btnOpen.addEventListener('click', openEquipModal);
+	  if (btnClose) btnClose.addEventListener('click', closeEquipModal);
+	  if (btnCancel) btnCancel.addEventListener('click', closeEquipModal);
+	  if (backdrop) backdrop.addEventListener('click', closeEquipModal);
+	
+	  /* ESC 키로 모달 닫기 */
+	  document.addEventListener('keydown', function (e) {
+	    if (e.key === 'Escape') closeEquipModal();
+	  });
+	
+	  /* 설비 추가 폼 제출: 입력값을 payload로 만들고, 모달 닫고 폼 초기화 */
+	  var equipForm = document.getElementById('equipForm');
+	  equipForm.addEventListener('submit', function (e) {
+		  e.preventDefault();
+		  
+		  var equipName = (document.getElementById('equipName').value || '').trim();
+		  
+		  var isOK = confirm('[' + equipName + ']를 추가하시겠습니까?');
+		  if(!isOK) {
+			  return;
+		  }
+		
+		  var payload = {
+		    equipName: (document.getElementById('equipName').value || '').trim(),
+		    procCode: document.getElementById('procCode').value,
+		    maker: (document.getElementById('maker').value || '').trim(),
+		    price: document.getElementById('price').value,
+		    instDate: document.getElementById('instDate').value,
+		    useYn: document.getElementById('useYn').value
+		  };
+		
+		  fetch('/equipment/api/equipment', {
+		    method: 'POST',
+		    headers: { 'Content-Type': 'application/json' },
+		    body: JSON.stringify(payload)
+		  })
+		  .then(function(res) {
+		    if (!res.ok) throw new Error('등록 실패: ' + res.status);
+		    return res.json();
+		  })
+		  .then(function(saved) {
+		    grid.appendRow(saved);
+		    closeEquipModal();
+		    equipForm.reset();
+		  })
+		  .catch(function(err) {
+		    console.error(err);
+		    alert('등록 중 오류가 발생했습니다.');
+		  });
+	  });
+	});
+	</script>
+</th:block>
+	
+</body>
+</html>

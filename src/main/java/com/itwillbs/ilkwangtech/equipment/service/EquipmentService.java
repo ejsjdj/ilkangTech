@@ -49,6 +49,8 @@ public class EquipmentService {
     public List<EquipmentFailure> getAllFailures() {
     	log.info(">>>>>>>>>>> equipmentFailure-service");
         return equipmentFailureRepository.findAllByOrderByOccurredAtDesc();
+        
+        // 된건가
     }
     
     

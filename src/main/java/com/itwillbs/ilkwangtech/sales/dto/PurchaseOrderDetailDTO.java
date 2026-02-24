@@ -11,7 +11,6 @@ import java.util.List;
 @Builder
 public class PurchaseOrderDetailDTO {
 
-
     private List<PurchaseOrderLineDTO> purchaseOrderLineDto;
 
     private String purchaseOrderCode; // 발주 코드
@@ -29,4 +28,5 @@ public class PurchaseOrderDetailDTO {
     private String orderDate;// 발주 일자
 
     private Long amount; // 총 금액
+
 }

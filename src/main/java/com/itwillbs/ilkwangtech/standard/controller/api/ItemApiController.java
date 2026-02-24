@@ -20,24 +20,24 @@ public class ItemApiController {
 
     @PostMapping("/create")
     public ResponseEntity<Void> create(@RequestBody ItemDTO dto) {
-        itemService.create(dto);
+        itemService.createItem(dto);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ItemDTO> get(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.get(id));
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<ItemDTO> get(@PathVariable Long id) {
+//        return ResponseEntity.ok(itemService.get(id));
+//    }
 
-    @PutMapping("/update")
-    public ResponseEntity<Void> update(@RequestBody ItemDTO dto) {
-        itemService.update(dto);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        itemService.delete(id);
-        return ResponseEntity.ok().build();
-    }
+//    @PutMapping("/update")
+//    public ResponseEntity<Void> update(@RequestBody ItemDTO dto) {
+//        itemService.update(dto);
+//        return ResponseEntity.ok().build();
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> delete(@PathVariable Long id) {
+//        itemService.delete(id);
+//        return ResponseEntity.ok().build();
+//    }
 }

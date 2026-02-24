@@ -53,11 +53,10 @@
         category,
         valid
         FROM Companys
-        <where>
-            <if test="category != null">
-                category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
-            </if>
-        </where>
+        WHERE
+        category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+        or
+        category = 3
         ORDER BY company_id ASC
         OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
     </select>

@@ -21,7 +21,7 @@ public class CommonEnumTypeHandler<E extends Enum<E> & BaseEnum> extends BaseTyp
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
-        ps.setInt(i, parameter.getCode()); // DB 저장 시 숫자로
+        ps.setInt(i, parameter.getCode());
     }
 
     @Override

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <!-- 각 로그에서 사용할 속성값들을 Properties 태그 내의 Property 태그로 정의(${} 활용하여 변수처럼 사용 가능) -->
+    <Properties>
+        <Property name="LOG_DIR">D:/logs/ilgwang</Property>
+
+        <!-- 아이티윌 서버(리눅스) 상에서의 로그 경로 -->
+        <!-- 만약, 로컬에서 테스트 시 워크스페이스가 있는 드라이브(ex. D드라이브)의 루트에 디렉토리가 생성됨 -->
+        <!-- 		<Property name="LOG_DIR">/usr/local/tomcat/logs/mylog</Property> -->
+
+        <!-- 로그별 출력할 패턴을 별도의 프로퍼티로 정의 -->
+        <!-- 		<Property name="LAYOUT_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %-5p: [%c] - %m%n</Property> -->
+
+        <!-- 로그 패턴에 컬러링 추가 -->
+        <!-- 컬러링 추가 대상 패턴을 %style{} 블럭으로 감싸고, 해당 블럭 뒤에 {색상명} 추가(참고. 색상명은 ANSI 표준 색상명 지정) -->
+        <!-- 실제 레이아웃 적용 대상 PatternLayout 태그에 ANSI 관련 속성 설정 추가 필수! -->
+        <!-- 		<Property name="LAYOUT_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %style{%-5p}{RED} %style{[%c]}{CYAN} - %m%n</Property> -->
+        <!-- %highlight 사용하여 심각도 컬러링 시 미리 저장되어 있는 심각도별 색상으로 설정됨(ex. DEBUG : 파랑, INFO : 녹색, WARN : 노랑 등)-->
+        <Property name="LAYOUT_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %highlight{%-5p}{RED} %style{[%c]}{CYAN} - %m%n</Property>
+    </Properties>
+
+    <!-- 로그 설정을 위한 Appenders, 로그 사용 대상 패키지 및 클래스 지정을 위한 Loggers 설정 -->
+    <Appenders>
+        <!-- 1) Console 태그 사용하여 이클립스 콘솔에 출력할 로그 메세지 관련 설정 -->
+        <!--    => name 속성값 : 로거에서 지정할 이름, target 속성값 : 출력 대상(SYSTEM_OUT 고정) -->
+        <Console name="console" target="SYSTEM_OUT">
+            <!-- 로그 메세지 형식 지정 -->
+            <!-- 1) 심각도5자리(좌측정렬): 로그발생클래스 - 로그메세지 -->
+            <!-- 			<PatternLayout pattern="%-5p: %c - %m%n" /> -->
+            <!-- 2) 로그발생일시 심각도5자리(좌측정렬): 로그발생클래스 - 로그메세지 -->
+            <!-- 			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p: %c - %m%n" /> -->
+            <!-- <Property> 태그로 지정한 로그 메세지 패턴 문자열에 대한 속성값을 가져와서 적용 -->
+            <!-- 			<PatternLayout pattern="${LAYOUT_PATTERN}" /> -->
+
+            <!-- 콘솔 로그 컬러링을 적용하기 위한 속성 추가(기본적으로 꺼져있는 컬러링 기능을 활성화) -->
+            <PatternLayout pattern="${LAYOUT_PATTERN}" disableAnsi="false" noConsoleAnsi="false" />
+        </Console>
+
+        <!-- 로그 메세지 파일 출력 설정 -->
+        <!-- RollingFile 태그 사용하여 로그 파일을 순환식으로 관리 -->
+        <!-- 순환 규칙 : 일자별 & 파일 크기 개당 10KB -->
+        <RollingFile name="rollingFile"
+                     fileName="${LOG_DIR}/mylog.log"
+                     filePattern="${LOG_DIR}/mylog-%d{yyyy-MM-dd}-%i.log">
+            <!-- 표시할 로그메세지 패턴 설정(기존에 설정해 놓은 패턴 재사용) -->
+            <PatternLayout pattern="${LAYOUT_PATTERN}" />
+            <!-- Policies 태그로 순환 규칙(정책) 설정 -->
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10KB" />
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <!-- 로그 종류 필터링 -->
+            <Filters>
+                <!-- 특정 대상 레벨 로그에 대한 필터링 -->
+                <!-- 일반 로그에서는 ERROR 레벨 이상 로그를 필터링을 통해 제외시키고, WARN 이하의 로그만 출력 -->
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="ACCEPT" />
+            </Filters>
+        </RollingFile>
+
+        <RollingFile name="rollingFileForErrorLevel"
+                     fileName="${LOG_DIR}/mylog_error.log"
+                     filePattern="${LOG_DIR}/mylog_error-%d{yyyy-MM-dd}-%i.log">
+            <!-- 표시할 로그메세지 패턴 설정(기존에 설정해 놓은 패턴 재사용) -->
+            <PatternLayout pattern="${LAYOUT_PATTERN}" />
+            <!-- Policies 태그로 순환 규칙(정책) 설정 -->
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10KB" />
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <!-- 특정 대상 레벨 로그에 대한 필터링 -->
+            <!-- 일반 로그에서는 ERROR 레벨 이상 로그를 필터링을 통해 허용하고고, WARN 이하의 로그만 필터링을 통해 제외 -->
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY" />
+        </RollingFile>
+
+
+    </Appenders>
+
+    <!-- Loggers 태그 사용하여 로그 사용할 대상(패키지, 클래스 등), 로그 심각도, 옵션 등 지정 -->
+    <Loggers>
+        <!-- Root 로거 설정 - 별도로 분리되지 않는 모든 로그 메세지 담당 -->
+        <!-- Root 태그의 level 속성을 사용하여 로그 메세지 심각도 범위 지정(TRACE < DEBUG < INFO < WARN < ERROR < FATAL) -->
+        <!-- ex) INFO 레벨 지정 시 INFO 이상의 심각도 레벨에 대한 로그 메세지 출력(INFO < WARN < ERROR < FATAL) -->
+        <!-- 만약, level 속성값을 OFF 로 설정 시 해당 로그는 동작하지 않음(로깅 끔) -->
+        <Root level="INFO">
+            <!-- WARN 레벨 이상 로그 출력 -->
+            <!-- 		<Root level="WARN"> -->
+            <!-- AppenderRef 태그 사용하여 설정된 로그 출력 대상(Appenders 태그 내의 각 요소) 지정 -->
+            <!-- ref 속성값으로 Appenders 태그 내의 각 요소에 대한 name 속성값 지정 -->
+            <AppenderRef ref="console" />
+            <!-- Root 로그 메세지를 rollingFile 파일로 출력 -->
+            <AppenderRef ref="rollingFile" />
+        </Root>
+
+        <!-- 기본 로그로 분류하지 않고, 별도로 관리할 로그들은 Logger 태그로 지정 -->
+        <!-- 현재 프로젝트(애플리케이션) 내의 특정 패키지에 대한 로그 설정 -->
+        <!-- ex) com.itwillbs.test5 패키지의 로그들을 INFO 레벨 이상만 로깅 대상으로 지정 -->
+        <!-- 		<Logger name="com.itwillbs.test5" level="INFO" additivity="false"> -->
+        <!-- DEBUG 레벨 이상 로그 출력 -->
+        <!-- 		<Logger name="com.itwillbs.test5" level="DEBUG" additivity="false"> -->
+        <!-- WARN 레벨 이상 로그 출력 -->
+        <Logger name="com.itwillbs.ilkwangtech" level="INFO" additivity="false">
+            <AppenderRef ref="console" />
+            <!-- 프로젝트 전체 패키지의 사용자 정의 클래스 로그 메세지를 rollingFile 파일로 출력 -->
+            <AppenderRef ref="rollingFile" />
+            <!-- 사용자 정의 클래스 로그 메세지 중 ERROR 레벨 이상의 로그 출력 -->
+            <AppenderRef ref="rollingFileForErrorLevel" />
+        </Logger>
+
+        <!-- 하이버네이트 관련 로그 설정 -->
+<!--        <Logger name="org.hibernate" level="DEBUG" additivity="false"> -->
+        <Logger name="org.hibernate" level="INFO" additivity="false">
+            <AppenderRef ref="console" />
+            <!-- 하이버네이트 로그 메세지를 rollingFile 파일로 출력 -->
+            <AppenderRef ref="rollingFile" />
+        </Logger>
+
+        <!-- 스프링 시큐리티 관련 로거 -->
+        <!-- 권한 없는 접근에 대한 리디렉션 등의 시큐리티 처리 과정을 확인 가능(DEBUG 레벨 설정 필요함) -->
+        <!-- 		<Logger name="org.springframework.security" level="DEBUG" additivity="false"> -->
+        <Logger name="org.springframework.security" level="OFF" additivity="false">
+            <AppenderRef ref="console" />
+            <!-- 스프링 시큐리티 로그 메세지를 rollingFile 파일로 출력 -->
+            <AppenderRef ref="rollingFile" />
+        </Logger>
+
+
+
+        <!-- 마이바티스 로거 -->
+        <Logger name="org.mybatis" level="DEBUG" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger>
+
+        <Logger name="com.itwillbs.ilkwangtech.member.mapper.MemberMapper" level="DEBUG" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger>
+
+    </Loggers>
+
+</Configuration>

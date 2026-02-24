@@ -29,7 +29,6 @@ public class CompanyApiController {
     // 2. 고객사 목록 조회
     @GetMapping("/list")
     public ResponseEntity<ApiResponseDTO<PageResponseDTO<CompanyDTO>>> getCustomerList(Pageable pageable, @RequestParam CompanyCategory category) {
-        System.out.println(category);
         List<CompanyDTO> list = companyService.getCompanyList(pageable, category);
         long total = companyService.getTotalCount(category);
 

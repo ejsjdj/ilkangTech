@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+// 공정정보 엔티티
 @Entity
 @Table(name = "operation_info")
 @Getter
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 public class ProcessEntity {
 
     @Id
-    @Column(name = "id", length = 10)
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

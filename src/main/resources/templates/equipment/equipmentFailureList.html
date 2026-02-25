@@ -94,6 +94,8 @@
 	            <button class="btn-search" onclick="filterList()">검색</button>
 	            <button class="btn-reset" onclick="location.reload()">초기화</button>
 	            
+	            <div style="flex: 1;"></div>
+	            
 	            <select id="procFilter" class="form-select" style="width: 130px; font-size: 13px;">
 			        <option value="">공정 전체</option>
 			        <option value="PRESS">프레스</option>
@@ -211,13 +213,17 @@
         const keywordMatch = codeMatch || staffMatch;
 
         // 2. 공정 체크 (선택 안했을 때는 pass)
-        const procMatch = proc === getProcNameKr(item.procCode);
+        const itemProc = (item.procCode || '');
+        console.log('itemProc : ', itemProc);
+        console.log('proc : ', getProcNameKr(proc));
+        const procMatch = !proc || itemProc === getProcNameKr(proc);
+        console.log('procMatch', procMatch);
 
         // 3. 등급 체크
-        const levelMatch = !level || item.failureLevel === level;
+        const levelMatch = !level || (item.failureLevel || '') === level;
 
         // 4. 상태 체크
-        const statusMatch = !status || item.status === status;
+        const statusMatch = !status || (item.status || '') === status;
 
         // 모든 조건이 만족해야 함
         return keywordMatch && procMatch && levelMatch && statusMatch;

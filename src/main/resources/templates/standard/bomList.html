@@ -46,13 +46,13 @@
     <div class="diary-wrapper">
         <div class="diary-bookmarks">
             <button class="bookmark pink active"
-                    data-type="finished"
+                    data-type="FG"
                     onclick="showList(this)">완제품</button>
             <button class="bookmark yellow"
-                    data-type="intermediate"
+                    data-type="WIP"
                     onclick="showList(this)">중간제품</button>
             <button class="bookmark blue"
-                    data-type="raw"
+                    data-type="RAW"
                     onclick="showList(this)">원자재</button>
         </div>
 
@@ -67,9 +67,8 @@
                 <thead>
                 <tr>
                     <th>제품코드</th>
+                    <th>제품이름</th>
                     <th>제품타입</th>
-                    <th>공급처</th>
-                    <th>설명</th>
                     <th>상세보기</th>
                 </tr>
                 </thead>
@@ -90,20 +89,16 @@
                     <input type="text" id="newCode" placeholder="제품 코드를 입력하세요" required>
                 </div>
                 <div class="input-group-cute">
-                    <label>제품타입</label>
-                    <select id="newType" required>
-                        <option value="finished">완제품</option>
-                        <option value="intermediate">중간제품</option>
-                        <option value="raw">원자재</option>
-                    </select>
-                </div>
-                <div class="input-group-cute" id="supplierGroup">
-                    <label>공급처</label>
-                    <select id="newSupplier" required></select> <!-- 동적으로 채움 -->
+                    <label>제품이름</label>
+                    <input type="text" id="newName" placeholder="제품 이름을 입력하세요" required>
                 </div>
                 <div class="input-group-cute">
-                    <label>설명</label>
-                    <input type="text" id="newDescription" placeholder="제품 설명을 입력하세요">
+                    <label>제품타입</label>
+                    <select id="newType" required>
+                        <option value="FG">완제품</option>
+                        <option value="WIP">중간제품</option>
+                        <option value="RAW">원자재</option>
+                    </select>
                 </div>
                 <div class="modal-btns">
                     <button type="button" class="btn-sticker pink" onclick="closeModal('addModal')">닫기</button>
@@ -131,13 +126,10 @@
         'use strict';
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadList('finished');  // 초기 로드: 완제품
+            loadList('FG');
 
             document.getElementById('openModalBtn')?.addEventListener('click', () => openModal('addModal'));
             document.getElementById('addForm')?.addEventListener('submit', handleAddSubmit);
-
-            // 제품타입 변경 시 공급처 동적 변경
-            document.getElementById('newType')?.addEventListener('change', handleTypeChange);
         });
 
         function openModal(modalId) {
@@ -156,10 +148,19 @@
             element.classList.add('active');
 
             const type = element.dataset.type;
-            const title = type === 'finished' ? '완제품 리스트' : (type === 'intermediate' ? '중간제품 리스트' : '원자재 리스트');
+            const title = type === 'FG' ? '완제품 리스트' : (type === 'WIP' ? '중간제품 리스트' : '원자재 리스트');
             document.getElementById('list-title').textContent = title;
 
             loadList(type);
+        }
+
+        function isSuccess(responseDto) {
+            if (!responseDto) return false;
+            if (responseDto.status === 200) return true;
+            if (typeof responseDto.status === 'string' && responseDto.status.toUpperCase() === 'SUCCESS') return true;
+            if (responseDto.success === true) return true;
+
+            return false;
         }
 
         async function loadList(type) {
@@ -172,34 +173,35 @@
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-                const json = await res.json();
-                console.log('서버 응답:', json);
+                const responseDto = await res.json();
+                console.log('서버 응답:', responseDto);
 
-                if (!json.success) {
-                    alert(`로드 실패: ${json.message || '알 수 없는 오류'}`);
+                // 🚨 수정됨: isSuccess 헬퍼 함수를 사용하여 안전하게 성공 여부 판단
+                if (!isSuccess(responseDto)) {
+                    alert(`로드 실패: ${responseDto.message || '알 수 없는 오류'}`);
                     return;
                 }
 
-                const items = json.data?.content ?? [];
+                const items = responseDto.data?.content ?? [];
 
                 tbody.innerHTML = items.length === 0
-                    ? '<tr><td colspan="5" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>'
+                    ? '<tr><td colspan="4" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>'
                     : '';
 
                 items.forEach(item => {
                     const tr = document.createElement('tr');
+
                     tr.innerHTML = `
-                        <td>${escapeHtml(item.code ?? '')}</td>
-                        <td>${escapeHtml(item.type ?? '')}</td>
-                        <td>${escapeHtml(item.supplier ?? '-')}</td>
-                        <td>${escapeHtml(item.description ?? '')}</td>
-                        <td><button class="btn-add-sticker" style="padding:2px 10px; font-size:0.8rem;" onclick="loadDetail(${item.id})">상세보기</button></td>
+                        <td>${escapeHtml(item.itemCode ?? '')}</td>
+                        <td>${escapeHtml(item.itemName ?? '')}</td>
+                        <td>${escapeHtml(item.itemType ?? '')}</td>
+                        <td><button class="btn-add-sticker" style="padding:2px 10px; font-size:0.8rem;" onclick="loadDetail(${item.itemId})">상세보기</button></td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (err) {
                 console.error('리스트 로드 오류:', err);
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">서버 연결 오류가 발생했습니다.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">서버 연결 오류가 발생했습니다.</td></tr>';
             }
         }
 
@@ -207,38 +209,34 @@
             e.preventDefault();
 
             const payload = {
-                code: document.getElementById('newCode')?.value.trim() ?? '',
-                type: document.getElementById('newType')?.value ?? '',
-                supplier: document.getElementById('newSupplier')?.value ?? '',
-                description: document.getElementById('newDescription')?.value.trim() ?? ''
+                itemCode: document.getElementById('newCode')?.value.trim() ?? '',
+                itemName: document.getElementById('newName')?.value.trim() ?? '',
+                itemType: document.getElementById('newType')?.value ?? ''
             };
 
-            if (!payload.code || !payload.type || !payload.supplier) {
+            if (!payload.itemCode || !payload.itemName || !payload.itemType) {
                 alert('필수 항목을 입력해주세요!');
                 return;
             }
 
             try {
-                const res = await fetch('/api/item/create', {
+                const res = await fetch('/api/item', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                if (!res.ok) {
-                    let msg = '등록 실패';
-                    try {
-                        const errData = await res.json();
-                        msg = errData.message || msg;
-                    } catch {}
-                    throw new Error(msg);
-                }
+                if (!res.ok) throw new Error('등록 실패');
+
+                const responseDto = await res.json();
+
+                if (!isSuccess(responseDto)) throw new Error(responseDto.message);
 
                 alert('성공적으로 등록되었습니다! ✨');
                 closeModal('addModal');
 
                 const active = document.querySelector('.bookmark.active');
-                const reloadType = active?.dataset.type ?? 'finished';
+                const reloadType = active?.dataset.type ?? 'FG';
                 loadList(reloadType);
             } catch (err) {
                 console.error('등록 오류:', err);
@@ -246,50 +244,22 @@
             }
         }
 
-        function handleTypeChange(e) {
-            const type = e.target.value;
-            const supplierSelect = document.getElementById('newSupplier');
-            supplierSelect.innerHTML = '';
-
-            if (type === 'raw') {
-                // 원자재: 회사 리스트 (백엔드 API 호출 가정, 실제로는 회사 리스트 불러오기)
-                // 여기서 /api/sales/company/list 호출해서 옵션 채움
-                fetch('/api/sales/company/list?category=supplier&page=0&size=100')
-                    .then(res => res.json())
-                    .then(json => {
-                        json.data.content.forEach(company => {
-                            const option = document.createElement('option');
-                            option.value = company.name;
-                            option.textContent = company.name;
-                            supplierSelect.appendChild(option);
-                        });
-                    });
-            } else {
-                // 중간/완제품: 부서 선택
-                ['프레스', '사출', '도장', '조립'].forEach(dept => {
-                    const option = document.createElement('option');
-                    option.value = dept;
-                    option.textContent = dept;
-                    supplierSelect.appendChild(option);
-                });
-            }
-        }
-
         async function loadDetail(itemId) {
             try {
-                const res = await fetch(`/api/item/detail/id=${itemId}`);
+                const res = await fetch(`/api/item/${itemId}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-                const json = await res.json();
-                if (!json.success) throw new Error(json.message);
+                const responseDto = await res.json();
 
-                const item = json.data;
+                if (!isSuccess(responseDto)) throw new Error(responseDto.message);
+
+                const item = responseDto.data;
                 const content = document.getElementById('detailContent');
+
                 content.innerHTML = `
-                    <p><strong>제품코드:</strong> ${escapeHtml(item.code ?? '')}</p>
-                    <p><strong>제품타입:</strong> ${escapeHtml(item.type ?? '')}</p>
-                    <p><strong>공급처:</strong> ${escapeHtml(item.supplier ?? '')}</p>
-                    <p><strong>설명:</strong> ${escapeHtml(item.description ?? '')}</p>
+                    <p><strong>제품코드:</strong> ${escapeHtml(item.itemCode ?? '')}</p>
+                    <p><strong>제품이름:</strong> ${escapeHtml(item.itemName ?? '')}</p>
+                    <p><strong>제품타입:</strong> ${escapeHtml(item.itemType ?? '')}</p>
                 `;
                 openModal('detailModal');
             } catch (err) {
@@ -299,7 +269,8 @@
         }
 
         function escapeHtml(unsafe) {
-            return unsafe
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')

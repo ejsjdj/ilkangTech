@@ -1,7 +1,7 @@
 package com.itwillbs.ilkwangtech.sales.controller.api;
 
+import com.itwillbs.ilkwangtech.common.dto.ApiResponseDTO;
 import com.itwillbs.ilkwangtech.sales.constant.CompanyCategory;
-import com.itwillbs.ilkwangtech.sales.dto.ApiResponseDTO;
 import com.itwillbs.ilkwangtech.sales.dto.CompanyDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PageResponseDTO;
 import com.itwillbs.ilkwangtech.sales.service.company.CompanyService;

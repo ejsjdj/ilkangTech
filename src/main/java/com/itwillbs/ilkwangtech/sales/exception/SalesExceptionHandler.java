@@ -1,6 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.exception;
 
-import com.itwillbs.ilkwangtech.sales.dto.ApiResponseDTO;
+import com.itwillbs.ilkwangtech.common.dto.ApiResponseDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,6 @@ public class SalesExceptionHandler {
     // 모든 일반 예외 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleAllException(Exception e) {
-        // 실패 응답을 ApiResponseDTO 규격에 맞춰서 생성
         ApiResponseDTO<Void> response = ApiResponseDTO.fail(e.getMessage());
 
         return ResponseEntity

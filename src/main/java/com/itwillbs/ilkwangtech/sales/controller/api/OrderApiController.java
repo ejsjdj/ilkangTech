@@ -1,7 +1,7 @@
 package com.itwillbs.ilkwangtech.sales.controller.api;
 
+import com.itwillbs.ilkwangtech.common.dto.ApiResponseDTO;
 import com.itwillbs.ilkwangtech.sales.constant.OrderStatus;
-import com.itwillbs.ilkwangtech.sales.dto.ApiResponseDTO;
 import com.itwillbs.ilkwangtech.sales.dto.OrderDTO;
 import com.itwillbs.ilkwangtech.sales.service.order.OrderService;
 import lombok.RequiredArgsConstructor;

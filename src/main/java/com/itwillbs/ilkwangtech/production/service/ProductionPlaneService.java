@@ -18,4 +18,7 @@ public interface ProductionPlaneService {
 
     // 3. 신규 생산계획 등록
     void saveProductionPlane(ProductionPlaneInsertDTO productionPlaneInsertDTO, Long userId);
+
+    // 4. 생산계획 및 작업지시 취소
+    void cancelProductionPlane(Long instructId);
 }

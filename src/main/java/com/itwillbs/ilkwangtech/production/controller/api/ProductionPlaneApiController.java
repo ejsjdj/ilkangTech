@@ -60,10 +60,9 @@ public class ProductionPlaneApiController {
         productionPlaneService.saveProductionPlane(productionPlaneInsertDTO, userId);
     }
 
-
-    // 4. 생산계획 취소
-    public void cancelProductionPlane(){
-
+    // 4. 생산계획 및 작업지시 취소
+    public void cancelProductionPlane(@RequestParam("planeId") Long planeId){
+        productionPlaneService.cancelProductionPlane(planeId);
     }
 
 }

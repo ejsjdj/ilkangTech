@@ -40,8 +40,8 @@ public class ProductionInstructApiController {
 
         Optional<ProductionInstructDetailDTO> detail = productionInstructService.getProductionInstructDetail(instructId);
 
-
         return detail;
+
     }
 
     // 3. 작업지시 등록
@@ -51,15 +51,25 @@ public class ProductionInstructApiController {
         Long userId = accountLogin.getId();
 
         productionInstructService.saveProductionInstruct(productionInstructInsertDTO, userId);
-    }
-
-    // 4. 작업지시 취소
-    public void deleteProductionInstruct(){
 
     }
 
-    // 5. 불량 등록
+    // 4. 불량 수량 등록
+    public void updateProductionInstructDefective(@RequestParam("DefectiveQty") Long defectiveQty,
+                                                  @RequestParam("instructCode") String instructCode,
+                                                  @RequestParam("processId") Long processId){
+
+        productionInstructService.updateInstructDefective(defectiveQty, instructCode, processId);
+
+    }
 
     // 5. 작업 완료
+    public void updateProductionInstruct(@RequestParam("instructCode") String instructCode,
+                                         @RequestParam("processId") Long processId){
+
+        productionInstructService.updateInstruct(instructCode, processId);
+
+    }
+
 
 }

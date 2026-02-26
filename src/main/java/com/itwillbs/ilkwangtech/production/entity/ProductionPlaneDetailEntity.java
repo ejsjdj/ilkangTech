@@ -2,12 +2,14 @@ package com.itwillbs.ilkwangtech.production.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 // 생산계획 상세 엔티티
 @Entity
 @Getter
+@Setter
 @Table(name = "production_plane_detail")
 public class ProductionPlaneDetailEntity {
 
@@ -33,5 +35,18 @@ public class ProductionPlaneDetailEntity {
     // 메모
     @Column(name = "memo")
     private String memo;
+
+    public static ProductionPlaneDetailEntity create(
+            Long orderId,
+            Long productQty,
+            String memo){
+        ProductionPlaneDetailEntity detail = new ProductionPlaneDetailEntity();
+
+        detail.orderId = orderId;
+        detail.productQty = productQty;
+        detail.memo = memo;
+
+        return detail;
+    }
 
 }

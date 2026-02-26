@@ -17,9 +17,13 @@ public class ProductionInstructEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 생산지시 코드(?공정마다 지시코드가 다름?)
+    // 생산지시 코드
     @Column(name = "instruct_code")
     private String instructCode;
+
+    // LOT
+    @Column(name = "lot_id")
+    private Long lotId;
 
     // 생산계획 ID
     @ManyToOne

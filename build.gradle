@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'war'
     id 'org.springframework.boot' version '4.0.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -29,54 +30,46 @@ configurations {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // 1. Core & Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // 스프링 부트 캐시 추상화 라이브러리
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.json:json:20240303'
 
-    // 보안설정
+    // 2. Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
-    // 타임리프
+    // 3. View (Thymeleaf)
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect' // 버전 생략 시 boot 버전 호환
 
-    // 데이터베이스 클라이언트
-    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
-
-    // 스프링 데이터 JPA
+    // 4. Persistence (JPA & MyBatis)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // Boot 3.x 호환 버전
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
 
-    // 롬복
-    compileOnly 'org.projectlombok:lombok:1.18.42'
-    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+    // 5. QueryDSL (Jakarta 대응)
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
 
-    // 서버 자동 로드
+    // 6. Logging (Log4j2)
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+
+    // 7. Tools
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.modelmapper:modelmapper:3.2.2'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
-    // 서로 다른 클래스(객체) 간의 변환을 지원해주는 ModelMapper 라이브러리
-    implementation 'org.modelmapper:modelmapper:3.2.6'
-
-    implementation 'org.json:json:20231013'
-
-    // 웹소켓
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    
-    // 스프링 부트 캐시 추상화 라이브러리
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-
-    // log4j2 설정
-    implementation 'org.springframework.boot:spring-boot-starter-log4j2:4.0.1'
-    implementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.25.3'
+    // 8. Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 }
 

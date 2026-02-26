@@ -43,7 +43,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                         builder().
                         purchaseOrderCode(purchaseOrderHeaderEntity.getPurchaseOrderCode()).
                         company(purchaseOrderHeaderEntity.getCompany()).
-                        name(purchaseOrderHeaderEntity.getName()).
+                        name(purchaseOrderHeaderEntity.getMember().getName()).
                         status(purchaseOrderHeaderEntity.getStatus()).
                         orderDate(String.valueOf(purchaseOrderHeaderEntity.getOrderDate())).
                         build());
@@ -74,7 +74,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 company(header.getCompany()).
                 companyManager(header.getCompanyManager()).
                 phone(header.getPhone()).
-                name(header.getName()).
+                name(header.getMember().getName()).
                 status(header.getStatus()).
                 orderDate(String.valueOf(header.getOrderDate())).
                 amount(header.getAmount()).
@@ -100,7 +100,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 purchaseOrderInsertDTO.getCompany(),
                 purchaseOrderInsertDTO.getCompanyManager(),
                 member.getPhoneNumber(),
-                member.getName(),
+                member,
                 LocalDate.now()
 
         );

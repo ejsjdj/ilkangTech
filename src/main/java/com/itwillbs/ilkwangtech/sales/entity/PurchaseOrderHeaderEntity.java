@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.sales.entity;
 
 
+import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.sales.constant.OrderStatus;
 import com.itwillbs.ilkwangtech.sales.constant.PurchaseOrderStatus;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
@@ -40,8 +41,9 @@ public class PurchaseOrderHeaderEntity {
     @Column(name = "phone")
     private String phone;// 전화번호
 
-    @Column(name = "name")
-    private String name;// 발주 담당자
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private Member member;// 발주 담당자
 
     @Column(name = "status")
     private String status;// 발주 상태(발주접수, 발주확정, 출하완료, 검수완료, 입고완료)
@@ -59,7 +61,7 @@ public class PurchaseOrderHeaderEntity {
             String company,
             String companyManager,
             String phone,
-            String name,
+            Member member,
 
             LocalDate orderDate
             ) {
@@ -69,7 +71,7 @@ public class PurchaseOrderHeaderEntity {
         header.company = company;
         header.companyManager =companyManager;
         header.phone = phone;
-        header.name = name;
+        header.member = member;
         header.orderDate = orderDate;
         header.status = String.valueOf(PurchaseOrderStatus.CONFIRMED);
         // header.amount = amount;

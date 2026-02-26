@@ -82,6 +82,7 @@ public class Member {
     @LastModifiedDate
     private LocalDateTime updatedAt; // 정보 수정 일시
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = true)
     private MemberStatus status;
 

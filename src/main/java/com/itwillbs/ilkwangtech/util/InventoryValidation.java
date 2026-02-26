@@ -13,7 +13,7 @@ public class InventoryValidation {
     // 1. 완제품 재고 확인
     public boolean checkFinishedProduct(){
 
-        /**
+        /* *
          * 1. 완제품 재고 확인
          *
          * (완제품A 가용량) = [완재품A 재고] + [입고 예정 수량] - [출하 예정 수량]
@@ -25,7 +25,7 @@ public class InventoryValidation {
     // 2. 원자재 재고 확인
     public long calculateAvailableMaterial() {
 
-        /**
+        /* *
          *
          * (원자재A 가용량) = [원자재A 재고] - [원자재A 안전재고] - [예약 재고A] + [입고 예정 재고A]
          *
@@ -36,7 +36,7 @@ public class InventoryValidation {
     // 3. 생산 가능 수량 확인
     public long getPossibleProductionQty() {
 
-        /**
+        /* *
          *
          * 완제품A 생산 가능 수량 = Min(원자재A 가용량/1, 원자재B 가용량/1, ...)
          *

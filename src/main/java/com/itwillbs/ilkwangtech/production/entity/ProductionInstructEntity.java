@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.production.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
 import jakarta.persistence.*;
@@ -35,11 +36,6 @@ public class ProductionInstructEntity {
     @JoinColumn(name = "production_id")
     private ProductionPlaneEntity productionId;
 
-    // 생산계획 상세 ID
-    @ManyToOne
-    @JoinColumn(name = "detail_id")
-    private ProductionPlaneDetailEntity detailId;
-
     // 품목 ID
     @Column
     private Long item;
@@ -50,7 +46,7 @@ public class ProductionInstructEntity {
     private ProcessEntity process;
 
     // 작업자
-    @OneToMany
+    @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "workers_info_id")
     private List<ProductionWorkerEntity> workers;
 
@@ -78,11 +74,9 @@ public class ProductionInstructEntity {
     public static ProductionInstructEntity saveHeader(
             String instructCode,
             Long lotId,
-//            ProductionPlaneEntity productionId,
-//            ProductionPlaneDetailEntity detailId,
+            ProductionPlaneEntity productionId,
             Long item,
-            //ProcessEntity process,
-            List<ProductionWorkerEntity> workers,
+            ProcessEntity process,
             Long instructQty,
             LocalDateTime startDate,
             LocalDateTime endDate,
@@ -92,11 +86,9 @@ public class ProductionInstructEntity {
         ProductionInstructEntity header = new ProductionInstructEntity();
         header.instructCode = instructCode;
         header.lotId = lotId;
-//        header.productionId = productionId;
-//        header.detailId = detailId;
+        header.productionId = productionId;
         header.item = item;
-        //header.process = process;
-        header.workers = workers;
+        header.process = process;
         header.instructQty = instructQty;
         header.startDate = startDate;
         header.endDate = endDate;
@@ -104,5 +96,11 @@ public class ProductionInstructEntity {
         header.defective = defective;
 
         return header;
+    }
+
+    // 라인 필드 저장 메서드
+    public void saveLine(ProductionWorkerEntity worker) {
+        this.workers.add(worker);
+        worker.setHeader(this);
     }
 }

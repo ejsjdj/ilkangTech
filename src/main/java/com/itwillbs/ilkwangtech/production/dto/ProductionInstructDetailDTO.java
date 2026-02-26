@@ -24,7 +24,7 @@ public class ProductionInstructDetailDTO {
     // 계획수량
     private Long instructQty;
     // 작업자
-    private List<ProductionWorkderDTO> worker;
+    private List<ProductionWorkerDTO> worker;
     // 상태
     private String status;
 
@@ -37,7 +37,7 @@ public class ProductionInstructDetailDTO {
                 startDate(String.valueOf(entity.getStartDate())).
                 instructQty(entity.getInstructQty())
                 .worker(entity.getWorkers().stream()
-                .map(ProductionWorkderDTO::fromList)
+                .map(ProductionWorkerDTO::fromList)
                 .toList()).
                 build();
     }

@@ -87,4 +87,13 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
 
         }
     }
+
+    @Override
+    @Transactional
+    // 4. 생산계획 및 작업지시 취소
+    public void cancelProductionPlane(Long planeId){
+        productionPlaneRepository.updatePlaneStatus(planeId);
+        productionPlaneRepository.updateInstructStatusByPlaneId(planeId);
+    }
+
 }

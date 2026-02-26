@@ -15,4 +15,10 @@ public interface ProductionInstructService {
     Optional<ProductionInstructDetailDTO> getProductionInstructDetail(Long instructId);
 
     void saveProductionInstruct(ProductionInstructInsertDTO productionInstructInsertDTO, Long userId);
+
+    void updateInstructDefective(Long defectiveQty, String instructCode, Long processId);
+
+    void updateInstruct(String instructCode, Long processId);
+
+
 }

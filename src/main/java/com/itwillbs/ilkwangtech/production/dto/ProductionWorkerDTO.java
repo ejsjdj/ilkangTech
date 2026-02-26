@@ -1,19 +1,19 @@
 package com.itwillbs.ilkwangtech.production.dto;
 
-import com.itwillbs.ilkwangtech.production.entity.ProductionInstructEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionWorkerEntity;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class ProductionWorkderDTO {
+public class ProductionWorkerDTO {
+
 
     private String operationName;
     private String name;
 
-    public static ProductionWorkderDTO fromList(ProductionWorkerEntity entity){
-        return ProductionWorkderDTO.builder().
+    public static ProductionWorkerDTO fromList(ProductionWorkerEntity entity){
+        return ProductionWorkerDTO.builder().
                 operationName(entity.getProcess().getName()).
                 name(entity.getMember().getName()).
                 build();

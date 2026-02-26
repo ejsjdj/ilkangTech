@@ -27,12 +27,12 @@ public class ApiResponseDTO<T> {
     }
 
     // 4. 실패 + 데이터 없음
-    public static <T> com.itwillbs.ilkwangtech.sales.dto.ApiResponseDTO<T> fail(String message) {
-        return new ApiResponseDTO<>(false, message, null);
-    }
-
-    public static <T> com.itwillbs.ilkwangtech.sales.dto.ApiResponseDTO<T> success(T data) {
-        return new ApiResponseDTO<>(true, "", data);
-    }
+//    public static <T> com.itwillbs.ilkwangtech.sales.dto.ApiResponseDTO<T> fail(String message) {
+//        return new ApiResponseDTO<>(false, message, null);
+//    }
+//
+//    public static <T> com.itwillbs.ilkwangtech.sales.dto.ApiResponseDTO<T> success(T data) {
+//        return new ApiResponseDTO<>(true, "", data);
+//    }
 
 }

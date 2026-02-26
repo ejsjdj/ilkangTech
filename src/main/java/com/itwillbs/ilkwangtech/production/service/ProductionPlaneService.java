@@ -1,0 +1,17 @@
+package com.itwillbs.ilkwangtech.production.service;
+
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDTO;
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDetailDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
+
+public interface ProductionPlaneService {
+
+    // 1. 생산계획 목록 조회
+    Page<ProductionPlaneDTO> getProductionPlaneList(Pageable pageable, String keyword);
+
+    // 2. 생산계획 상세 조회
+    Optional<ProductionPlaneDetailDTO> getProductionPlaneDetail(Long productionId);
+}

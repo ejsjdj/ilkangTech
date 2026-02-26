@@ -10,7 +10,7 @@ public class BomController {
 
     @GetMapping("/list")
     public String getBomList() {
-        return "standard/standardList";
+        return "standard/bomList";
     }
 
 }

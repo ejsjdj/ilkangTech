@@ -12,4 +12,5 @@ import java.util.List;
 public interface DraftApprovalLineRepository extends JpaRepository<DraftApprovalLineEntity, String> {
 
     List<DraftApprovalLineEntity> findByDraftType(@Param("type") String type);
+
 }

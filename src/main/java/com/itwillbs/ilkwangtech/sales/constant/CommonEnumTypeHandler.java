@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.constant;
 
+import com.itwillbs.ilkwangtech.item.constant.ItemType;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
@@ -10,7 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-@MappedTypes({OrderStatus.class, OrderDetailStatus.class, CompanyStatus.class, CompanyCategory.class})
+@MappedTypes({OrderStatus.class, OrderDetailStatus.class, CompanyStatus.class, CompanyCategory.class, ItemType.class})
 public class CommonEnumTypeHandler<E extends Enum<E> & BaseEnum> extends BaseTypeHandler<E> {
 
     private final Class<E> type;

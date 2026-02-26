@@ -1,31 +1,51 @@
 package com.itwillbs.ilkwangtech.production.dto;
 
-import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneDetailEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
+import com.itwillbs.ilkwangtech.production.entity.ProductionWorkerEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 public class ProductionInstructInsertDTO {
 
+    // 작업지시 코드
     private String instructCode;
 
+    // LOT
     private Long lotId;
 
-    private ProductionPlaneEntity productionId;
+    // 생산계획 ID
+    private Long productionId;
 
-    private ProductionPlaneDetailEntity detailId;
+    // 생산계획 상세 ID
+    private Long detailId;
 
-    private ProcessEntity process;
+    // 품목 ID
+    private Long Item;
 
+    // 공정 ID
+    private Long routeCode;
+
+    // 작업자
+    private List<ProductionWorkerEntity> workers;
+
+    // 지시 수량
     private Long instructQty;
 
-    private Long member;
+    // 지시등록일
+    private LocalDateTime startDate;
 
+    // 생산완료일
+    private LocalDateTime endDate;
+
+    // 상태
     private String status;
+
+    // 불량
+    private Long defective;
 
 }

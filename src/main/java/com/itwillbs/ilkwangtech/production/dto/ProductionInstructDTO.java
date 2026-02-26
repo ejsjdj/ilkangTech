@@ -1,11 +1,9 @@
 package com.itwillbs.ilkwangtech.production.dto;
 
 import com.itwillbs.ilkwangtech.production.entity.ProductionInstructEntity;
-import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDate;
 
 @Getter
 @Builder
@@ -18,22 +16,22 @@ public class ProductionInstructDTO {
     // 계획수량
     private Long instructQty;
     // 시작시간
-    private LocalDate startDate;
+    private String startDate;
     // 종료시간
-    private LocalDate endDate;
+    private String endDate;
     // 상태
     private String status;
 
-//    public static ProductionInstructDTO fromList(ProductionInstructEntity entity){
-//        return ProductionInstructDTO.builder().
-//                instructCode(entity.getPlaneCode()).
-//                item(LocalDate.from(entity.getPlaneDate())).
-//                instructQty(entity.getMember().getName()).
-//                startDate(entity.getItem()).
-//                endDate(entity.getStatus()).
-//                status(entity.getMemo()).
-//                build();
-//    }
+    public static ProductionInstructDTO fromList(ProductionInstructEntity entity){
+        return ProductionInstructDTO.builder().
+                instructCode(entity.getInstructCode()).
+                item(entity.getItem()).
+                instructQty(entity.getInstructQty()).
+                startDate(String.valueOf(entity.getStartDate())).
+                endDate(String.valueOf(entity.getEndDate())).
+                status(entity.getStatus()).
+                build();
+    }
 
 
 }

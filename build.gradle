@@ -37,6 +37,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.json:json:20240303'
+    testImplementation 'org.springframework.boot:spring-boot-starter-tomcat'
 
     // 2. Security
     implementation 'org.springframework.boot:spring-boot-starter-security'

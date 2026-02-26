@@ -9,7 +9,7 @@ import java.util.List;
 
 // 결재 양식별로 결재라인 가져오기
 @Repository
-public interface DraftApprovalLineRepository extends JpaRepository<DraftApprovalLineEntity, String> {
+public interface DraftApprovalLineRepository extends JpaRepository<DraftApprovalLineEntity, Long> {
 
     List<DraftApprovalLineEntity> findByDraftType(@Param("type") String type);
 }

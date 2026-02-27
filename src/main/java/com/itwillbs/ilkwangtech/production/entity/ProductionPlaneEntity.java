@@ -60,4 +60,33 @@ public class ProductionPlaneEntity {
     @Column(name = "memo")
     private String memo;
 
+
+    public static ProductionPlaneEntity saveHeader(
+            ProcessRouteEntity route,
+            String planeCode,
+            LocalDateTime planeDate,
+            Member member,
+            Long item,
+            Long totalQty,
+            String status,
+            String memo
+    ){
+         ProductionPlaneEntity header = new ProductionPlaneEntity();
+         header.route = route;
+         header.planeCode = planeCode;
+         header.planeDate = planeDate;
+         header.member = member;
+         header.item = item;
+         header.totalQty = totalQty;
+         header.status = status;
+         header.memo = memo;
+
+         return header;
+    }
+
+    public void saveDetails(ProductionPlaneDetailEntity detail){
+        this.details.add(detail);
+        detail.setHeader(this);
+    };
+
 }

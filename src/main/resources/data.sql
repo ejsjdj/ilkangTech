@@ -28,8 +28,6 @@ CREATE SEQUENCE SEQ_SCHEDULE START WITH 200 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_ATTENDANCE START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_NOTICE START WITH 1 INCREMENT BY 1;
 
-
-
 -- Common Code (사용자 권한, 메뉴, 게시판 등)
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (1000, 'MEMBER_ROLE', '일반 사용자 권한', '일반 사용자 권한', '일반 사용자 권한', 'Y');
 INSERT INTO common_code(id, group_code, common_code, common_code_name, description, use_yn) VALUES (0, 'MENU', 'CEO', '임원팀', '임원 관리자 상위코드', 'Y');

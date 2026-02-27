@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.production.service;
 
 import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDTO;
 import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDetailDTO;
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneInsertDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,4 +15,10 @@ public interface ProductionPlaneService {
 
     // 2. 생산계획 상세 조회
     Optional<ProductionPlaneDetailDTO> getProductionPlaneDetail(Long productionId);
+
+    // 3. 신규 생산계획 등록
+    void saveProductionPlane(ProductionPlaneInsertDTO productionPlaneInsertDTO, Long userId);
+
+    // 4. 생산계획 및 작업지시 취소
+    void cancelProductionPlane(Long instructId);
 }

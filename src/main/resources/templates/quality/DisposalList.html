@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>품질 검사 항목 관리</title>
+    <title>폐기 항목 관리</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -49,115 +49,6 @@
         .col-content { width: auto; color: #64748b; line-height: 1.5; }
 
         .pagination-wrapper { padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; background: #ffffff; }
-        /* 설비 현황 페이지와 동일한 모달 스타일 */
-	.modal-backdrop {
-	    position: fixed;
-	    left: 0; top: 0;
-	    width: 100%; height: 100%;
-	    background: rgba(0,0,0,0.35);
-	    z-index: 9998;
-	}
-	
-	.modal {
-	    position: fixed;
-	    left: 50%; top: 50%;
-	    transform: translate(-50%, -50%);
-	    z-index: 9999;
-	    width: min(520px, calc(100% - 40px));
-	}
-	
-	.modal-card {
-	    background: #fff;
-	    border-radius: 16px;
-	    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-	    overflow: hidden;
-	}
-	
-	.modal-header {
-	    display: flex;
-	    align-items: center;
-	    justify-content: space-between;
-	    padding: 14px 16px;
-	    border-bottom: 1px solid #e5e7eb;
-	}
-	
-	.modal-header h3 {
-	    font-size: 18px;
-	    font-weight: 800;
-	    margin: 0;
-	}
-	
-	.modal-close {
-	    border: none;
-	    background: transparent;
-	    cursor: pointer;
-	    font-size: 18px;
-	    line-height: 1;
-	}
-	
-	.modal-body {
-	    padding: 16px;
-	}
-	
-	.form-row {
-	    display: flex;
-	    flex-direction: column;
-	    gap: 6px;
-	    margin-bottom: 12px;
-	}
-	
-	.form-row label {
-	    font-size: 14px;
-	    font-weight: 700;
-	    color: #374151;
-	}
-	
-	.form-row input, .form-row select, .form-row textarea {
-	    border: 1px solid #d1d5db;
-	    border-radius: 10px;
-	    padding: 10px 12px;
-	    outline: none;
-	    font-size: 14px;
-	}
-	
-	.modal-footer {
-	    display: flex;
-	    justify-content: flex-end;
-	    gap: 10px;
-	    margin-top: 14px;
-	}
-	
-	.btn-secondary, .btn-primary {
-	    padding: 9px 14px;
-	    border-radius: 10px;
-	    border: 1px solid #d1d5db;
-	    cursor: pointer;
-	    font-weight: 700;
-	    background: #fff;
-	}
-	
-	.btn-primary {
-	    border-color: #111827;
-	    background: #111827;
-	    color: #fff;
-	}
-	
-	.btn-add-qc {
-	    border: 1px solid #d1d5db;
-	    background: #ffffff;
-	    padding: 8px 14px;
-	    border-radius: 10px;
-	    font-weight: 700;
-	    cursor: pointer;
-	    font-size: 13px;
-	    display: flex;
-	    align-items: center;
-	    gap: 4px;
-	}
-	
-	.btn-add-qc:hover {
-	    background: #f3f4f6;
-	}
     </style>
 </head>
 <body>
@@ -169,8 +60,8 @@
                 <div class="header-title-area">
                     <div class="header-icon-bar"></div>
                     <div>
-                        <h1>품질 검사 항목 관리</h1>
-                        <p class="page-subtitle">공정별 품질 검사 기준 및 세부 내용 확인</p>
+                        <h1>폐기 이력 리스트</h1>
+                        <p class="page-subtitle">뭐지</p>
                     </div>
                 </div>
             </div>
@@ -192,9 +83,6 @@
                     <option value="PAINT">도장</option>
                     <option value="ASSY">조립</option>
                 </select>
-                <button type="button" id="btnOpenQcModal" class="btn-add-qc">
-			        <i class="bi bi-plus-lg"></i> 품질 항목 추가
-			    </button>
             </div>
 
             <div class="table-wrapper">
@@ -205,7 +93,6 @@
                                 <th class="col-id">NO.</th>
                                 <th class="col-proc">공정</th>
                                 <th class="col-name">품질검사 명칭</th>
-                                <th class="col-content">세부 내용 및 기준</th>
                             </tr>
                         </thead>
                         <tbody id="qc-tbody">
@@ -224,42 +111,6 @@
             </div>
         </div>
     </div>
-    
-    <div id="qcModalBackdrop" class="modal-backdrop" style="display:none;"></div>
-	<div id="qcModal" class="modal" style="display:none;" role="dialog" aria-modal="true">
-	    <div class="modal-card">
-	        <div class="modal-header">
-	            <h3>품질검사 항목 등록</h3>
-	            <button type="button" id="btnCloseQcModal" class="modal-close">✕</button>
-	        </div>
-	        <div class="modal-body">
-	            <form id="qcForm">
-	                <div class="form-row">
-	                    <label>공정</label>
-	                    <select id="newProcCode" name="procCode" required>
-	                        <option value="" disabled selected>공정을 선택하세요</option>
-	                        <option value="PRESS">프레스</option>
-	                        <option value="INJECT">사출</option>
-	                        <option value="PAINT">도장</option>
-	                        <option value="ASSY">조립</option>
-	                    </select>
-	                </div>
-	                <div class="form-row">
-	                    <label>품질검사 명칭</label>
-	                    <input id="newQcName" name="qcName" type="text" placeholder="검사 명칭 입력" required>
-	                </div>
-	                <div class="form-row">
-	                    <label>세부 내용 및 기준</label>
-	                    <textarea id="newContent" name="content" rows="3" placeholder="세부 기준 입력" style="resize:none;"></textarea>
-	                </div>
-	                <div class="modal-footer">
-	                    <button type="button" id="btnCancelQcModal" class="btn-secondary">취소</button>
-	                    <button type="submit" class="btn-primary">저장</button>
-	                </div>
-	            </form>
-	        </div>
-	    </div>
-	</div>
 </th:block>
 
 <th:block layout:fragment="script">
@@ -379,63 +230,6 @@
                 if (e.key === 'Enter') filterList();
             });
         }
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-        /* 모달 제어 함수 */
-        function openQcModal() {
-            document.getElementById('qcModalBackdrop').style.display = 'block';
-            document.getElementById('qcModal').style.display = 'block';
-        }
-
-        function closeQcModal() {
-            document.getElementById('qcModalBackdrop').style.display = 'none';
-            document.getElementById('qcModal').style.display = 'none';
-            document.getElementById('qcForm').reset();
-        }
-
-        /* 이벤트 바인딩 */
-        const btnOpen = document.getElementById('btnOpenQcModal');
-        const btnClose = document.getElementById('btnCloseQcModal');
-        const btnCancel = document.getElementById('btnCancelQcModal');
-        const backdrop = document.getElementById('qcModalBackdrop');
-
-        if (btnOpen) btnOpen.addEventListener('click', openQcModal);
-        if (btnClose) btnClose.addEventListener('click', closeQcModal);
-        if (btnCancel) btnCancel.addEventListener('click', closeQcModal);
-        if (backdrop) backdrop.addEventListener('click', closeQcModal);
-
-        /* 폼 제출 처리 */
-        const qcForm = document.getElementById('qcForm');
-        qcForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const payload = {
-                procCode: document.getElementById('newProcCode').value,
-                qcName: document.getElementById('newQcName').value.trim(),
-                content: document.getElementById('newContent').value.trim()
-            };
-
-            if(!confirm('새 품질검사 항목을 등록하시겠습니까?')) return;
-
-            fetch('/quality/api/qcItems', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('등록 실패');
-                return res.json();
-            })
-            .then(data => {
-                alert('등록되었습니다.');
-                closeQcModal();
-                loadQcList(); // 목록 새로고침
-            })
-            .catch(err => {
-                console.error(err);
-                alert('등록 중 오류가 발생했습니다.');
-            });
-        });
     });
     </script>
 </th:block>

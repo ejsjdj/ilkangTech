@@ -25,7 +25,6 @@
         #{phone, jdbcType=VARCHAR},
         1,
         #{manager, jdbcType=VARCHAR},
-        <!-- ★ insert에서도 typeHandler 명시 ★ -->
         #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
         )
     </insert>

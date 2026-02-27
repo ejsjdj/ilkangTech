@@ -1,6 +1,6 @@
 package com.itwillbs.ilkwangtech.standard.dto;
 
-import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,10 +14,13 @@ public class BomDTO {
 
     private Long bomId;
 
-    private ItemEntity beforeItemId;
+    @JsonProperty("beforeItemId")
+    private Long beforeItemId;
 
-    private ItemEntity afterItemId;
+    @JsonProperty("afterItemId")
+    private Long afterItemId;
 
+    @JsonProperty("requiredQty")
     private Long requiredQty;
 
 }

@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.inventorymg.service;
 
+import com.itwillbs.ilkwangtech.inventorymg.dto.InboundItemDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.OrderNeededItemDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.RackItemDTO;
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
@@ -55,16 +56,15 @@ public class DashboardService {
     public Map<String, String> getWarehouseStatus() {
         Map<String, String> statusMap = new HashMap<>();
         String[] zones = {"ZONE A", "ZONE B", "ZONE C"};
-        String[] racks = {"Rack 01", "Rack 02", "Rack 03"};
+        String[] racks = {"Rack 01", "Rack 02", "Rack 03", "Rack 04", "Rack 05", "Rack 06", "Rack 07", "Rack 08", "Rack 09"};
 
         for (String zone : zones) {
             for (String rack : racks) {
                 // DB에서 실제 해당 구역/랙의 총 수량을 가져옵니다.
-                Long qty = inventoryRepository.sumQuantityByZoneAndRack(zone, rack);
+    			Long qty = inventoryRepository.sumQuantityByZoneAndRack(zone, rack);
                 
-                // 수용량 기준은 프로젝트에 맞게 조정하세요! 
-                // 예: 0개: 없음(하양), 1~50개: 보통(파랑), 51개 이상: 많음(빨강)
-                String status = (qty == 0) ? "none" : (qty <= 50 ? "normal" : "full");
+                // 변경된 수용량 기준: 1 ~ 3999는 보통(normal), 4000 이상은 많음(full)
+                String status = (qty == 0) ? "none" : (qty < 4000 ? "normal" : "full");
                 statusMap.put(zone + "_" + rack, status);
             }
         }
@@ -76,88 +76,72 @@ public class DashboardService {
     public void processCompleteOrders() {
         List<PurchaseOrderHeaderEntity> completeOrders = purchaseOrderRepository.findCompleteOrders();
 
-        if (completeOrders.isEmpty()) {
-            System.out.println("========== [입고 처리] COMPLETE 상태인 발주 데이터가 없습니다. ==========");
-            return;
-        }
-
         for (PurchaseOrderHeaderEntity order : completeOrders) {
-            System.out.println("========== [발주서 확인] 발주서 ID: " + order.getId() + " / 상세 품목 개수: " + order.getLines().size() + " ==========");
-
-            if (order.getLines().isEmpty()) {
-                System.out.println("  -> [건너뜀] 이 발주서에 등록된 상세 품목(Line) 데이터가 아예 없습니다! (DB 확인 필요)");
-            }
-
-            int successCount = 0; // 실제 창고에 들어간 횟수 카운트
-
             for (PurchaseOrderEntity line : order.getLines()) {
-                System.out.println("  -> [품목 확인] 라인 ID: " + line.getId() + " / 품목 ID: " + line.getItem() + " / 수량: " + line.getQuantity());
+                
+                // 외래키 설정 시: line.getItem()이 이미 ItemEntity 객체를 반환함
+                ItemEntity item = line.getItem(); 
 
-                if (line.getItem() == null) {
-                    System.out.println("    -> [건너뜀] 품목 ID가 NULL 입니다.");
-                    continue;
-                }
-
-                // 실제 Item 테이블에 존재하는지 확인
-                ItemEntity item = itemRepository.findById(line.getItem()).orElse(null);
-
-                if (item == null) {
-                    System.out.println("    -> [건너뜀] Item 테이블에 ID가 " + line.getItem() + "인 품목이 존재하지 않습니다.");
-                } else if (line.getQuantity() == null || line.getQuantity() <= 0) {
-                    System.out.println("    -> [건너뜀] 입고 수량이 0이거나 NULL 입니다.");
-                } else {
-                    // 모든 조건 통과! 창고 입고 시작
+                if (item != null && line.getQuantity() != null && line.getQuantity() > 0) {
                     String baseLotNumber = order.getPurchaseOrderCode() + "-L" + line.getId();
+                    
+                    // 창고 분배 로직 실행
                     receiveAndDistributeInventory(item, line.getQuantity(), baseLotNumber);
 
+                    // 입고 이력 저장
                     InventoryHistoryEntity history = new InventoryHistoryEntity();
                     history.setItem(item);
                     history.setTransactionDate(LocalDate.now());
                     history.setTransactionType("IN");
                     history.setQuantity(line.getQuantity());
                     historyRepository.save(history);
-
-                    System.out.println("    -> [입고 완료] 창고 분배 및 이력 저장 성공!");
-                    successCount++;
                 }
             }
-
-            // 물건이 단 하나라도 정상적으로 창고에 들어갔을 때만 STORED로 변경
-            if (successCount > 0) {
-                order.setStatus("STORED");
-                System.out.println("========== [상태 변경] 발주서 ID " + order.getId() + " 입고 완료(STORED) ==========");
-            } else {
-                System.out.println("========== [상태 유지] 정상 입고된 품목이 없어 COMPLETE 상태를 유지합니다. ==========");
-            }
+            order.setStatus("STORED"); 
         }
     }
     
-    // 구매팀 제품 입고 시 창고 ABC에 랜덤 고르게 분포하는 로직
+    // 구매팀 제품 입고 시 품목 코드에 따라 타겟 창고를 지정하고 분산 저장하는 로직
     @Transactional
     public void receiveAndDistributeInventory(ItemEntity item, Long totalQuantity, String baseLotNumber) {
-        String[] zones = {"ZONE A", "ZONE B", "ZONE C"};
-        String[] racks = {"Rack 01", "Rack 02", "Rack 03"};
+        String[] racks = {"Rack 01", "Rack 02", "Rack 03", "Rack 04", "Rack 05", "Rack 06", "Rack 07", "Rack 08", "Rack 09"};
         Random random = new Random();
 
-        // 수량을 3등분 하여 고르게 분포
+        // 1. 품목 코드(itemCode) 앞자리를 확인하여 타겟 창고(ZONE) 결정
+        String targetZone = "ZONE A"; // 예외 대비 기본값 (원자재)
+        String itemCode = item.getItemCode();
+        
+        if (itemCode != null) {
+            itemCode = itemCode.toUpperCase(); // 소문자로 들어올 경우를 대비해 대문자로 안전하게 변환
+            if (itemCode.startsWith("RW-")) {
+                targetZone = "ZONE A"; // 원자재
+            } else if (itemCode.startsWith("ST-") || itemCode.startsWith("IN-")) {
+                targetZone = "ZONE B"; // 반제품
+            } else if (itemCode.startsWith("SAM-")) {
+                targetZone = "ZONE C"; // 완제품
+            }
+        }
+
+        // 2. 결정된 타겟 ZONE 안에서만 수량을 3등분하여 랜덤 Rack 3곳에 분산 저장
         long partQuantity = totalQuantity / 3;
         long remainder = totalQuantity % 3;
 
         for (int i = 0; i < 3; i++) {
             InventoryEntity inventory = new InventoryEntity();
             inventory.setItem(item);
-            inventory.setLotNumber(baseLotNumber + "-" + (i + 1)); // 예: LOT20260227-1, -2, -3
+            inventory.setLotNumber(baseLotNumber + "-" + (i + 1)); // 예: LOT-20260301-L123-1
             
-            // 구역은 A, B, C 한 번씩 무조건 배정 / Rack 번호는 해당 구역 내에서 랜덤
-            inventory.setZone(zones[i]); 
-            inventory.setRack(racks[random.nextInt(racks.length)]); 
+            inventory.setZone(targetZone); // 조건문으로 찾은 타겟 창고(A, B, C 중 하나) 고정 배정
+            inventory.setRack(racks[random.nextInt(racks.length)]); // 해당 창고 내에서 랜덤으로 랙 번호 배정
             
-            // 마지막 C구역에 나누고 남은 나머지 수량을 몰아줌
-            long finalQuantity = partQuantity + (i == 2 ? remainder : 0);
+            long finalQuantity = partQuantity + (i == 2 ? remainder : 0); // 마지막 분할 시 나머지 수량 짬처리
             inventory.setCurrentQuantity(finalQuantity);
             inventory.setExpirationDate(LocalDate.now().plusYears(1)); // 유통기한 임의 1년 뒤
             
-            inventoryRepository.save(inventory); // DB 저장
+            // 수량이 0보다 클 때만 실제로 창고에 저장
+            if(finalQuantity > 0) {
+                inventoryRepository.save(inventory); 
+            }
         }
     }
 
@@ -217,13 +201,11 @@ public class DashboardService {
     // 랙 상세 정보 가져오기
     public List<RackItemDTO> getRackDetails(String zone, String rack) {
         List<InventoryEntity> inventoryList = inventoryRepository.findByZoneAndRack(zone, rack);
-        
         return inventoryList.stream().map(inv -> {
-            // ItemEntity가 Null일 경우를 대비한 안전한 처리
             String code = (inv.getItem() != null) ? inv.getItem().getItemCode() : "품목없음";
             String name = (inv.getItem() != null) ? inv.getItem().getItemName() : "이름없음";
-            
             return RackItemDTO.builder()
+                .inventoryId(inv.getId()) // 👈 이 줄 추가!
                 .itemCode(code)
                 .itemName(name)
                 .lotNumber(inv.getLotNumber())
@@ -231,6 +213,58 @@ public class DashboardService {
                 .expirationDate(inv.getExpirationDate())
                 .build();
         }).collect(Collectors.toList());
+    }
+    
+    // 재고 이동 메서드
+    @Transactional
+    public void transferInventory(Long inventoryId, String targetZone, String targetRack, Long transferQty) {
+        InventoryEntity source = inventoryRepository.findById(inventoryId)
+                .orElseThrow(() -> new RuntimeException("해당 재고를 찾을 수 없습니다."));
+
+        if (source.getCurrentQuantity() < transferQty) {
+            throw new RuntimeException("이동하려는 수량이 현재 재고보다 많습니다.");
+        }
+
+        if (source.getCurrentQuantity().equals(transferQty)) {
+            // 전량 이동: 구역과 랙 번호만 바꿈
+            source.setZone(targetZone);
+            source.setRack(targetRack);
+        } else {
+            // 부분 이동(분할): 기존 수량을 줄이고, 이동할 랙에 새 데이터를 생성
+            source.setCurrentQuantity(source.getCurrentQuantity() - transferQty);
+            
+            InventoryEntity target = new InventoryEntity();
+            target.setItem(source.getItem());
+            // LOT 번호 중복 방지를 위해 꼬리표(-M) 붙임
+            target.setLotNumber(source.getLotNumber() + "-M" + System.currentTimeMillis() % 1000); 
+            target.setZone(targetZone);
+            target.setRack(targetRack);
+            target.setCurrentQuantity(transferQty);
+            target.setExpirationDate(source.getExpirationDate());
+            inventoryRepository.save(target);
+        }
+    }
+    
+    // 금일 입고 예정 상세 리스트(모달용) 조회
+    public List<InboundItemDTO> getInboundScheduledList() {
+        // COMPLETE 상태인 헤더와 라인들을 가져옴
+        List<PurchaseOrderHeaderEntity> completeOrders = purchaseOrderRepository.findCompleteOrders();
+        List<InboundItemDTO> list = new ArrayList<>();
+        
+        for (PurchaseOrderHeaderEntity order : completeOrders) {
+            for (PurchaseOrderEntity line : order.getLines()) {
+                if (line.getItem() != null) {
+                    list.add(InboundItemDTO.builder()
+                            .purchaseOrderCode(order.getPurchaseOrderCode())
+                            .company(order.getCompany())
+                            .itemCode(line.getItem().getItemCode())
+                            .itemName(line.getItem().getItemName())
+                            .quantity(line.getQuantity())
+                            .build());
+                }
+            }
+        }
+        return list;
     }
     
 }

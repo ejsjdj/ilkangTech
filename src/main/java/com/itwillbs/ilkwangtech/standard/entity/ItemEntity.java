@@ -19,7 +19,7 @@ public class ItemEntity {
 
     private String itemName;
 
-    @Column(name = "item_type2")
+    @Column(name = "item_type")
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
 

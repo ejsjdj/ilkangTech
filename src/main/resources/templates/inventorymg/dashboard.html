@@ -24,10 +24,14 @@
             
             .zone-box { border: 1px solid #ddd; border-radius: 8px; padding: 0; background: #fff; }
             .zone-header { background: #343a40; color: #fff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; font-weight: bold; }
-            .rack-container { display: flex; justify-content: space-around; padding: 20px; }
-            .rack-box { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.9rem; }
+            .rack-container { display: grid; grid-template-columns: repeat(3, 55px); gap: 15px; justify-content: center; padding: 20px; }
+            .rack-box { width: 55px; height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
             
             #chart-area { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px; }
+            
+            /* 클릭 가능한 카드 애니메이션 효과  */
+            .clickable-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+            .clickable-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px #198754; }
         </style>
     </th:block>
 </head>
@@ -37,17 +41,17 @@
             <h4 class="mb-4 text-secondary">재고 관리 / <span class="text-dark fw-bold">대시보드</span></h4>
             
             <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="dash-card">
+                <div class="col-md-4">
+                    <div class="dash-card clickable-card" style="cursor: pointer;" onclick="showInboundScheduledModal()">
                         <div class="text-muted mb-2">금일 입고 예정</div>
                         <div class="stat-num" th:text="${inboundScheduled}">0</div>
                         <div class="text-success mt-2 d-flex justify-content-between align-items-center">
                             <span><i class="fa-solid fa-arrow-up"></i> 처리 : <span th:text="${inboundProcessed}">0</span></span>
-                            <button class="btn btn-sm btn-success" onclick="processInbound()">입고 처리</button>
+                            <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); processInbound()">입고 처리</button>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="dash-card">
                         <div class="text-muted mb-2">금일 출고 지시</div>
                         <div class="stat-num" th:text="${outboundOrdered}">0</div>
@@ -56,7 +60,7 @@
 	                    </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="dash-card">
                         <div class="text-muted mb-2">발주 필요</div>
                         <div class="stat-num text-warning"><span th:text="${#lists.size(orderList)}">0</span> / 51</div>
@@ -69,20 +73,24 @@
                 <h5 class="mb-3">창고</h5>
                 <div class="mb-3 small">
                     <span class="me-3"><i class="fa-regular fa-circle text-muted"></i> 없음(0)</span>
-                    <span class="me-3"><i class="fa-solid fa-circle" style="color:#69b3f2;"></i> 보통(1~3)</span>
-                    <span><i class="fa-solid fa-circle" style="color:#f26969;"></i> 많음(4↑)</span>
+                    <span class="me-3"><i class="fa-solid fa-circle" style="color:#69b3f2;"></i> 보통(1K~3K)</span>
+                    <span><i class="fa-solid fa-circle" style="color:#f26969;"></i> 많음(4K↑)</span>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="zone-box">
                             <div class="zone-header">ZONE A</div>
                             <div class="rack-container">
-                                <div th:class="'rack-box rack-status-' + ${warehouse['ZONE A_Rack 01']}" 
-                                     style="cursor: pointer;" onclick="showRackModal('ZONE A', 'Rack 01')">Rack<br>01</div>
-					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE A_Rack 02']}" 
-					                 style="cursor: pointer;" onclick="showRackModal('ZONE A', 'Rack 02')">Rack<br>02</div>
-					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE A_Rack 03']}" 
-					                 style="cursor: pointer;" onclick="showRackModal('ZONE A', 'Rack 03')">Rack<br>03</div>
+                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                    <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
+                                         th:class="'rack-box rack-status-' + ${warehouse['ZONE A_' + rackName]}" 
+                                         style="cursor: pointer;" 
+                                         data-zone="ZONE A"
+                                         th:data-rack="${rackName}"
+                                         onclick="showRackModal(this.getAttribute('data-zone'), this.getAttribute('data-rack'))">
+                                        Rack<br><span th:text="${rackNum}"></span>
+                                    </div>
+                                </th:block>
                             </div>
                         </div>
                     </div>
@@ -91,12 +99,16 @@
                         <div class="zone-box">
                             <div class="zone-header">ZONE B</div>
                             <div class="rack-container">
-                                <div th:class="'rack-box rack-status-' + ${warehouse['ZONE B_Rack 01']}" 
-                                     style="cursor: pointer;" onclick="showRackModal('ZONE B', 'Rack 01')">Rack<br>01</div>
-					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE B_Rack 02']}" 
-					                 style="cursor: pointer;" onclick="showRackModal('ZONE B', 'Rack 02')">Rack<br>02</div>
-					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE B_Rack 03']}" 
-					                 style="cursor: pointer;" onclick="showRackModal('ZONE B', 'Rack 03')">Rack<br>03</div>
+                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                    <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
+                                         th:class="'rack-box rack-status-' + ${warehouse['ZONE B_' + rackName]}" 
+                                         style="cursor: pointer;" 
+                                         data-zone="ZONE B"
+                                         th:data-rack="${rackName}"
+                                         onclick="showRackModal(this.getAttribute('data-zone'), this.getAttribute('data-rack'))">
+                                        Rack<br><span th:text="${rackNum}"></span>
+                                    </div>
+                                </th:block>
                             </div>
                         </div>
                     </div>
@@ -105,12 +117,16 @@
                         <div class="zone-box">
                             <div class="zone-header">ZONE C</div>
                             <div class="rack-container">
-                                <div th:class="'rack-box rack-status-' + ${warehouse['ZONE C_Rack 01']}" 
-                                     style="cursor: pointer;" onclick="showRackModal('ZONE C', 'Rack 01')">Rack<br>01</div>
-					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE C_Rack 02']}" 
-					                 style="cursor: pointer;" onclick="showRackModal('ZONE C', 'Rack 02')">Rack<br>02</div>
-					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE C_Rack 03']}" 
-					                 style="cursor: pointer;" onclick="showRackModal('ZONE C', 'Rack 03')">Rack<br>03</div>
+                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                    <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
+                                         th:class="'rack-box rack-status-' + ${warehouse['ZONE C_' + rackName]}" 
+                                         style="cursor: pointer;" 
+                                         data-zone="ZONE C"
+                                         th:data-rack="${rackName}"
+                                         onclick="showRackModal(this.getAttribute('data-zone'), this.getAttribute('data-rack'))">
+                                        Rack<br><span th:text="${rackNum}"></span>
+                                    </div>
+                                </th:block>
                             </div>
                         </div>
                     </div>
@@ -182,14 +198,16 @@
 		                <table class="table table-bordered text-center align-middle">
 		                    <thead class="table-light">
 		                        <tr>
+		                        	<th>입고일</th>
 		                            <th>품목코드</th>
 		                            <th>품목명</th>
 		                            <th>LOT 번호</th>
 		                            <th>수량</th>
-		                        </tr>
+                                    <th>관리</th> 
+                                </tr>
 		                    </thead>
 		                    <tbody id="rackModalBody">
-		                        </tbody>
+		                    </tbody>
 		                </table>
 		            </div>
 		            <div class="modal-footer">
@@ -198,6 +216,83 @@
 		        </div>
 		    </div>
 		</div>
+		
+		<div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">재고 이동</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="trInventoryId">
+                        <div class="mb-3">
+                            <label class="form-label">최대 가능 수량</label>
+                            <input type="number" class="form-control" id="trMaxQty" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">이동할 수량</label>
+                            <input type="number" class="form-control" id="trQty" min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">이동할 ZONE</label>
+                            <select class="form-select" id="trZone">
+                                <option value="ZONE A">ZONE A</option>
+                                <option value="ZONE B">ZONE B</option>
+                                <option value="ZONE C">ZONE C</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">이동할 Rack</label>
+                            <select class="form-select" id="trRack">
+                                <option value="Rack 01">Rack 01</option>
+                                <option value="Rack 02">Rack 02</option>
+                                <option value="Rack 03">Rack 03</option>
+                                <option value="Rack 04">Rack 04</option>
+                                <option value="Rack 05">Rack 05</option>
+                                <option value="Rack 06">Rack 06</option>
+                                <option value="Rack 07">Rack 07</option>
+                                <option value="Rack 08">Rack 08</option>
+                                <option value="Rack 09">Rack 09</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" onclick="executeTransfer()">이동 실행</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="inboundModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">금일 입고 대기 품목 리스트</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>발주코드</th>
+                                    <th>거래처</th>
+                                    <th>품목코드</th>
+                                    <th>품목명</th>
+                                    <th>수량</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inboundModalBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 <th:block layout:fragment="script">
@@ -288,14 +383,18 @@
                     if(data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-muted">해당 랙에 보관된 품목이 없습니다.</td></tr>';
                     } else {
-                        data.forEach(item => {
+                    	data.forEach(item => {
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
+                            	<td>${item.expirationDate || '-'}</td>
                                 <td>${item.itemCode || '-'}</td>
                                 <td>${item.itemName || '-'}</td>
                                 <td>${item.lotNumber || '-'}</td>
                                 <td class="text-primary fw-bold">${item.quantity || 0}</td>
-                                <td>${item.expirationDate || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="openTransferModal(${item.inventoryId}, ${item.quantity})">이동</button>
+                                </td>
                             `;
                             tbody.appendChild(tr);
                         });
@@ -333,6 +432,83 @@
                     alert('입고 처리 중 오류가 발생했습니다.');
                 });
             }
+        }
+     	
+     	// 찬고 수량 이동 모달 제어 함수
+        function openTransferModal(inventoryId, maxQty) {
+            document.getElementById('trInventoryId').value = inventoryId;
+            document.getElementById('trMaxQty').value = maxQty;
+            document.getElementById('trQty').value = maxQty; // 기본값은 전량 이동
+            
+            // 기존 창고 상세 모달은 잠시 숨기고 이동 모달 띄우기
+            bootstrap.Modal.getInstance(document.getElementById('rackModal')).hide();
+            new bootstrap.Modal(document.getElementById('transferModal')).show();
+        }
+
+        function executeTransfer() {
+            const inventoryId = document.getElementById('trInventoryId').value;
+            const transferQty = parseInt(document.getElementById('trQty').value);
+            const maxQty = parseInt(document.getElementById('trMaxQty').value);
+            const targetZone = document.getElementById('trZone').value;
+            const targetRack = document.getElementById('trRack').value;
+
+            if(transferQty <= 0 || transferQty > maxQty) {
+                alert('올바른 수량을 입력해주세요.'); return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('inventoryId', inventoryId);
+            formData.append('targetZone', targetZone);
+            formData.append('targetRack', targetRack);
+            formData.append('transferQty', transferQty);
+
+            fetch('/inventorymg/transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+            .then(response => {
+                if(!response.ok) throw new Error('이동 실패');
+                return response.text();
+            })
+            .then(msg => {
+                alert(msg);
+                location.reload(); // 새로고침하여 변경된 랙 상태 확인
+            })
+            .catch(error => alert(error.message));
+        }
+        
+     	// 금일 입고 예정 리스트 모달창 띄우기
+        function showInboundScheduledModal() {
+            fetch('/inventorymg/inbound-scheduled-list')
+                .then(response => {
+                    if(!response.ok) throw new Error('목록을 불러오는데 실패했습니다.');
+                    return response.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('inboundModalBody');
+                    tbody.innerHTML = ''; // 테이블 비우기
+                    
+                    if(data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-muted">입고 대기 중인 품목이 없습니다.</td></tr>';
+                    } else {
+                        data.forEach(item => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${item.purchaseOrderCode || '-'}</td>
+                                <td>${item.company || '-'}</td>
+                                <td>${item.itemCode || '-'}</td>
+                                <td>${item.itemName || '-'}</td>
+                                <td class="text-success fw-bold">${item.quantity || 0}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    
+                    // 모달 오픈
+                    new bootstrap.Modal(document.getElementById('inboundModal')).show();
+                })
+                .catch(error => alert(error.message));
         }
     </script>
 </th:block>

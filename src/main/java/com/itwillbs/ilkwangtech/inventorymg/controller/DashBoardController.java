@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.inventorymg.controller;
 
+import com.itwillbs.ilkwangtech.inventorymg.dto.InboundItemDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.RackItemDTO;
 import com.itwillbs.ilkwangtech.inventorymg.service.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +60,25 @@ public class DashBoardController {
     public ResponseEntity<String> processInbound() {
         dashboardService.processCompleteOrders();
         return ResponseEntity.ok("입고 대기(COMPLETE) 항목들이 창고 ABC에 성공적으로 분배 및 입고되었습니다.");
+    }
+    
+    // 창고 이동 관련 메서드
+    @PostMapping("/transfer")
+    @ResponseBody
+    public ResponseEntity<String> transferInventory(
+            @RequestParam("inventoryId") Long inventoryId,
+            @RequestParam("targetZone") String targetZone,
+            @RequestParam("targetRack") String targetRack,
+            @RequestParam("transferQty") Long transferQty) {
+        
+        dashboardService.transferInventory(inventoryId, targetZone, targetRack, transferQty);
+        return ResponseEntity.ok("재고 이동이 완료되었습니다.");
+    }
+    
+    // 금일 입고 예정 상세 리스트 모달용 API
+    @GetMapping("/inbound-scheduled-list")
+    @ResponseBody
+    public ResponseEntity<List<InboundItemDTO>> getInboundScheduledList() {
+        return ResponseEntity.ok(dashboardService.getInboundScheduledList());
     }
 }

@@ -47,7 +47,6 @@ public class ProductionInstructEntity {
 
     // 작업자
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "workers_info_id")
     private List<ProductionWorkerEntity> workers;
 
     // 지시 수량

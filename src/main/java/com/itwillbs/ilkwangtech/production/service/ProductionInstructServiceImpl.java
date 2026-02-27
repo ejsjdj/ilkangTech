@@ -95,13 +95,13 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         }
 
     }
+
     // 4. 불량 등록
     public void updateInstructDefective(Long defectiveQty, String instructCode, Long processId){
 
     }
 
     // 5. 작업지시 완료
-
     public void updateInstruct(String instructCode, Long processId){
         productionInsturctRepository.updateInstructCompleteStatus(instructCode, processId);
     }

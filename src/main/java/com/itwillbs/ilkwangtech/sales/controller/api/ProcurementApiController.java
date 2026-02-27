@@ -9,13 +9,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/sales")
 @RequiredArgsConstructor
 @Log4j2
@@ -26,10 +27,10 @@ public class ProcurementApiController {
     // 1. 발주 리스트 조회
     @GetMapping("/procurement")
     public Page<PurchaseOrderDTO> getProcurement(Pageable pageable,
-                                                 @RequestParam("startDate") String startDate,
-                                                 @RequestParam("endDate") String endDate,
-                                                 @RequestParam("searchType") String searchType,
-                                                 @RequestParam("keyWord") String keyword
+                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+                                                 @RequestParam(required = false) String searchType,
+                                                 @RequestParam(required = false) String keyword
                                                ){
 
         log.info("발주 리스트 조회 - 발주 시작일: {}, 발주 종료일: {}, 검색필터: {}, 검색어: {}",startDate, endDate, searchType, keyword);

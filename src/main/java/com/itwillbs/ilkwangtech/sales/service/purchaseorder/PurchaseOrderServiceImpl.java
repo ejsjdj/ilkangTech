@@ -9,6 +9,8 @@ import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderHeaderEntity;
 import com.itwillbs.ilkwangtech.sales.repository.PurchaseOrderRepository;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
+import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -27,16 +29,14 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final MemberRepository memberRepository;
+    private final ItemRepository itemRepository;
 
     // 1. 발주 리스트 조회
     @Override
     @Transactional
-    public Page<PurchaseOrderDTO> getPurchaseOrderList(Pageable pageable, String startDate, String endDate, String searchType, String keyword){
+    public Page<PurchaseOrderDTO> getPurchaseOrderList(Pageable pageable, LocalDate startDate, LocalDate endDate, String searchType, String keyword){
 
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
-
-        Page<PurchaseOrderHeaderEntity> purchaseOrderEntities = purchaseOrderRepository.findByPurchaseOrder(pageable, start, end, searchType, keyword);
+        Page<PurchaseOrderHeaderEntity> purchaseOrderEntities = purchaseOrderRepository.findByPurchaseOrder(pageable, startDate, endDate, searchType, keyword);
 
         return purchaseOrderEntities.
                 map(purchaseOrderHeaderEntity -> PurchaseOrderDTO.
@@ -62,7 +62,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 header.getLines().stream()
                         .map(purchaseOrderEntity -> new PurchaseOrderLineDTO(
                                 purchaseOrderEntity.getId(),
-                                purchaseOrderEntity.getItem(),
+                                purchaseOrderEntity.getItem().getItemId(),
                                 purchaseOrderEntity.getQuantity(),
                                 purchaseOrderEntity.getUnitPrice()
                         ))
@@ -94,6 +94,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
 
+
         // 2. 헤더 엔티티 저장
         PurchaseOrderHeaderEntity header = PurchaseOrderHeaderEntity.saveHeader(
                 purchaseOrderInsertDTO.getPurchaseOrderCode(),
@@ -108,8 +109,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         // 3. 라인 엔티티 저장
         for(PurchaseOrderLineDTO lineDTO : purchaseOrderInsertDTO.getLines()){
 
+            ItemEntity item = itemRepository.findById(lineDTO.getItem())
+                    .orElseThrow(() -> new IllegalArgumentException("품목정보가 없습니다."));
+
             PurchaseOrderEntity line = PurchaseOrderEntity.create(
-                    lineDTO.getItem(),
+                    item,
                     lineDTO.getQuantity(),
                     lineDTO.getUnitPrice());
 

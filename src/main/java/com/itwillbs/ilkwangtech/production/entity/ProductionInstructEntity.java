@@ -69,7 +69,6 @@ public class ProductionInstructEntity {
     @Column(name = "defective")
     private Long defective;
 
-
     public static ProductionInstructEntity saveHeader(
             String instructCode,
             Long lotId,

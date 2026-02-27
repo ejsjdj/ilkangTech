@@ -29,7 +29,7 @@ public class PurchaseOrderHeaderEntity {
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseOrderEntity> lines;
 
-    @Column(name = "purchase_order_id")
+    @Column(name = "purchase_order_Code")
     private String purchaseOrderCode; // 발주 코드
 
     @Column(name = "company")

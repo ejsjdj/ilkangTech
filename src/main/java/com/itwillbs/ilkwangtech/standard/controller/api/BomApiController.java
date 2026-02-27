@@ -23,14 +23,14 @@ public class BomApiController {
 
     @GetMapping("/parent/{id}")
     public ResponseEntity<ApiResponseDTO<Page<BomDTO>>> getList(
+            @PathVariable("id") Long itemId, // 👈 URL의 {id}를 itemId 변수에 쏙!
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sortBy", defaultValue = "bomId") String sortBy,
-            @RequestParam(name = "direction", defaultValue = "DESC") Sort.Direction direction,
-            @RequestParam(name = "beforeItemId", defaultValue = "0") Long itemId) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(direction, sortBy));
-        Page<BomDTO> result;
+            @RequestParam(name = "direction", defaultValue = "DESC") Sort.Direction direction) {
 
-        result = bomService.getListByItemId(itemId, pageable);
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(direction, sortBy));
+        Page<BomDTO> result = bomService.getListByItemId(itemId, pageable);
+
         return ResponseEntity.ok(ApiResponseDTO.success("BOM 목록 조회에 성공했습니다.", result));
     }
 

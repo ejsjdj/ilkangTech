@@ -19,7 +19,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
-public class EquipmentFailure {
+public class EqFailure {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

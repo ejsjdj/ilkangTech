@@ -181,23 +181,33 @@
                     <li><a class="nav-child" th:href="@{/account/list}">입출고관리</a></li>
                     <li><a class="nav-child" th:href="@{/account/list}">재고실사</a></li>
                 </ul>
+                
+                <button type="button" class="nav-parent" data-target="menu-process" aria-expanded="false">
+                    <span class="nav-icon">🔁</span><span class="nav-menu">공정관리</span><span class="nav-arrow">▸</span>
+                </button>
+                <ul class="nav-children" id="menu-process">
+                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">공정 현황</a></li>
+                    <li><a class="nav-child" th:href="@{/account/list}">LOT 추적</a></li>
+                </ul>
 
 				<button type="button" class="nav-parent" data-target="menu-eq" aria-expanded="false">
-                    <span class="nav-icon">✅</span><span class="nav-menu">설비관리</span><span class="nav-arrow">▸</span>
+                    <span class="nav-icon">🛠️</span><span class="nav-menu">설비관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-eq">
                     <li><a class="nav-child" th:href="@{/equipment/equipmentList}">설비 현황</a></li>
-                    <li><a class="nav-child" th:href="@{/account/list}">설비 이력</a></li>
-                    <li><a class="nav-child" th:href="@{/equipment/failure-history}">고장 이력</a></li>
+                    <li><a class="nav-child" th:href="@{/equipment/equipmentHistory}">설비 가동 이력</a></li>
+                    <li><a class="nav-child" th:href="@{/equipment/failure-history}">설비 고장 이력</a></li>
                 </ul>
 
                 <button type="button" class="nav-parent" data-target="menu-qc" aria-expanded="false">
                     <span class="nav-icon">✅</span><span class="nav-menu">품질관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-qc">
-                    <li><a class="nav-child" th:href="@{/account/list}">LOT 추적</a></li>
-                    <li><a class="nav-child" th:href="@{/quality/QcItemList}">품질관리항목</a></li>
-                    <li><a class="nav-child" th:href="@{/account/list}">불량관리</a></li>
+                    <li><a class="nav-child" th:href="@{/quality/QcDashboard}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/quality/QcItemList}">품질검사 항목</a></li>
+                    <li><a class="nav-child" th:href="@{/quality/QcHistory}">품질관리 현황</a></li>
+                    <li><a class="nav-child" th:href="@{/quality/DisposalList}">폐기 이력</a></li>
                 </ul>
             </div>
 

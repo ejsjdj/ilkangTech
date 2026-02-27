@@ -21,22 +21,25 @@ public class ItemServiceImpl implements ItemService{
 
     @Override
     public void create(ItemDTO dto) {
-
+        ItemEntity item = modelMapper.map(dto, ItemEntity.class);
+        itemRepository.save(item);
     }
 
     @Override
     public void update(ItemDTO dto) {
-
+        ItemEntity item = modelMapper.map(dto, ItemEntity.class);
+        itemRepository.save(item);
     }
 
     @Override
     public void delete(Long id) {
-
+        itemRepository.deleteById(id);
     }
 
     @Override
     public ItemDTO get(Long id) {
-        return null;
+        ItemDTO item = modelMapper.map(itemRepository.findByItemId(id), ItemDTO.class);
+        return item;
     }
 
     @Override

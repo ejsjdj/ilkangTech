@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>대시보드</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css" />
+
+    <th:block layout:fragment="style">
+        <style>
+            .page-container { background: #f8f9fa; border-radius: 12px; padding: 30px; }
+            .dash-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+            .stat-num { font-size: 2rem; font-weight: bold; color: #2c3e50; }
+            
+            /* 창고 랙 색상 범례 */
+            .rack-status-none { border: 2px solid #ddd; background-color: #fff; }
+            .rack-status-normal { background-color: #69b3f2; color: #fff; border-color: #69b3f2; }
+            .rack-status-full { background-color: #f26969; color: #fff; border-color: #f26969; }
+            
+            .zone-box { border: 1px solid #ddd; border-radius: 8px; padding: 0; background: #fff; }
+            .zone-header { background: #343a40; color: #fff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; font-weight: bold; }
+            .rack-container { display: flex; justify-content: space-around; padding: 20px; }
+            .rack-box { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.9rem; }
+            
+            #chart-area { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px; }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-container">
+            <h4 class="mb-4 text-secondary">재고 관리 / <span class="text-dark fw-bold">대시보드</span></h4>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="text-muted mb-2">금일 입고 예정</div>
+                        <div class="stat-num" th:text="${inboundScheduled}">0</div>
+                        <div class="text-success mt-2 d-flex justify-content-between align-items-center">
+                            <span><i class="fa-solid fa-arrow-up"></i> 처리 : <span th:text="${inboundProcessed}">0</span></span>
+                            <button class="btn btn-sm btn-success" onclick="processInbound()">입고 처리</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="text-muted mb-2">금일 출고 지시</div>
+                        <div class="stat-num" th:text="${outboundOrdered}">0</div>
+                        <div class="text-danger mt-2">
+	                        <i class="fa-solid fa-arrow-down"></i> 처리 : <span th:text="${outboundProcessed}">0</span>
+	                    </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="text-muted mb-2">발주 필요</div>
+                        <div class="stat-num text-warning"><span th:text="${#lists.size(orderList)}">0</span> / 51</div>
+                        <div class="text-warning mt-2 fw-bold">발주 필요</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-card mb-4">
+                <h5 class="mb-3">창고</h5>
+                <div class="mb-3 small">
+                    <span class="me-3"><i class="fa-regular fa-circle text-muted"></i> 없음(0)</span>
+                    <span class="me-3"><i class="fa-solid fa-circle" style="color:#69b3f2;"></i> 보통(1~3)</span>
+                    <span><i class="fa-solid fa-circle" style="color:#f26969;"></i> 많음(4↑)</span>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="zone-box">
+                            <div class="zone-header">ZONE A</div>
+                            <div class="rack-container">
+                                <div th:class="'rack-box rack-status-' + ${warehouse['ZONE A_Rack 01']}" 
+                                     style="cursor: pointer;" onclick="showRackModal('ZONE A', 'Rack 01')">Rack<br>01</div>
+					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE A_Rack 02']}" 
+					                 style="cursor: pointer;" onclick="showRackModal('ZONE A', 'Rack 02')">Rack<br>02</div>
+					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE A_Rack 03']}" 
+					                 style="cursor: pointer;" onclick="showRackModal('ZONE A', 'Rack 03')">Rack<br>03</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="zone-box">
+                            <div class="zone-header">ZONE B</div>
+                            <div class="rack-container">
+                                <div th:class="'rack-box rack-status-' + ${warehouse['ZONE B_Rack 01']}" 
+                                     style="cursor: pointer;" onclick="showRackModal('ZONE B', 'Rack 01')">Rack<br>01</div>
+					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE B_Rack 02']}" 
+					                 style="cursor: pointer;" onclick="showRackModal('ZONE B', 'Rack 02')">Rack<br>02</div>
+					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE B_Rack 03']}" 
+					                 style="cursor: pointer;" onclick="showRackModal('ZONE B', 'Rack 03')">Rack<br>03</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="zone-box">
+                            <div class="zone-header">ZONE C</div>
+                            <div class="rack-container">
+                                <div th:class="'rack-box rack-status-' + ${warehouse['ZONE C_Rack 01']}" 
+                                     style="cursor: pointer;" onclick="showRackModal('ZONE C', 'Rack 01')">Rack<br>01</div>
+					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE C_Rack 02']}" 
+					                 style="cursor: pointer;" onclick="showRackModal('ZONE C', 'Rack 02')">Rack<br>02</div>
+					            <div th:class="'rack-box rack-status-' + ${warehouse['ZONE C_Rack 03']}" 
+					                 style="cursor: pointer;" onclick="showRackModal('ZONE C', 'Rack 03')">Rack<br>03</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chart-area" class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-primary">월</button>
+                        <button class="btn btn-outline-primary">주</button>
+                        <button class="btn btn-outline-primary">일</button>
+                    </div>
+                    <h5 class="m-0 text-center flex-grow-1">재고 현황 추적</h5>
+                </div>
+                <div id="stockChart" style="width: 100%; height: 400px;"></div>
+            </div>
+
+            <div class="dash-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>발주 필요 재고 리스트</h5>
+                    <button class="btn btn-info text-white" onclick="bulkOrder()">일괄 발주</button>
+                </div>
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th><input type="checkbox" id="checkAll"></th>
+                            <th>No.</th>
+                            <th>품목명</th>
+                            <th>재고</th>
+                            <th>입고예정</th>
+                            <th>생산계획</th>
+                            <th>예약재고</th>
+                            <th>안전재고수량</th>
+                            <th>필요 재고</th>
+                            <th>단위</th>
+                            <th>발주</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item, stat : ${orderList}">
+                            <td><input type="checkbox" class="chk-item" th:value="${item.itemId}"></td>
+                            <td th:text="${stat.count}">1</td>
+                            <td th:text="${item.itemName}">라벨</td>
+                            <td th:text="${item.currentStock}">1621</td>
+                            <td th:text="${item.incomingStock}">0</td>
+                            <td th:text="${item.productionPlan}">1000</td>
+                            <td th:text="${item.reservedStock}">1000</td>
+                            <td th:text="${item.safeStock}">3000</td>
+                            <td class="text-danger fw-bold" th:text="${item.requiredStock}">1379</td>
+                            <td th:text="${item.uom}">EA</td>
+                            <td><button class="btn btn-sm btn-outline-info" th:onclick="singleOrder([[${item.itemId}]])">발주</button></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(orderList)}">
+                            <td colspan="11" class="text-center py-4">발주가 필요한 품목이 없습니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal fade" id="rackModal" tabindex="-1" aria-labelledby="rackModalLabel" aria-hidden="true">
+		    <div class="modal-dialog modal-lg modal-dialog-centered">
+		        <div class="modal-content">
+		            <div class="modal-header bg-dark text-white">
+		                <h5 class="modal-title" id="rackModalLabel">창고 상세 정보</h5>
+		                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+		            </div>
+		            <div class="modal-body">
+		                <table class="table table-bordered text-center align-middle">
+		                    <thead class="table-light">
+		                        <tr>
+		                            <th>품목코드</th>
+		                            <th>품목명</th>
+		                            <th>LOT 번호</th>
+		                            <th>수량</th>
+		                        </tr>
+		                    </thead>
+		                    <tbody id="rackModalBody">
+		                        </tbody>
+		                </table>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+    </div>
+
+<th:block layout:fragment="script">
+    <script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        // 3번 요구사항: Toast UI 차트 렌더링 (더미 데이터 적용)
+        const el = document.getElementById('stockChart');
+        const data = {
+            categories: ['2025-02', '2025-03', '2025-04', '2025-05', '2025-06', '2025-07', '2025-08'],
+            series: [
+                { name: '입고', data: [100, 7000, 8000, 9000, 11000, 10000, 7500] },
+                { name: '출고', data: [200, 6500, 7500, 8500, 9500, 8000, 6000] },
+                { name: '폐기', data: [10, 50, 40, 60, 30, 20, 15] }
+            ]
+        };
+        const options = {
+            chart: { width: 'auto', height: 400 },
+            series: { areaOpacity: 0.2 },
+            theme: {
+                series: {
+                    colors: ['#33b2df', '#4CAF50', '#ff9800'] // 파랑(입고), 초록(출고), 노랑/주황(폐기)
+                }
+            }
+        };
+        toastui.Chart.columnLineChart({ el, data, options });
+
+        // 체크박스 전체 선택 제어
+        document.getElementById('checkAll').addEventListener('change', function() {
+            const isChecked = this.checked;
+            document.querySelectorAll('.chk-item').forEach(chk => chk.checked = isChecked);
+        });
+
+        // 4, 5번 요구사항: 단건 및 일괄 발주 처리 (Fetch API)
+        function singleOrder(itemId) {
+            if(confirm('해당 품목을 구매팀에 발주 요청하시겠습니까?')) {
+                sendPurchaseRequest([itemId]);
+            }
+        }
+
+        function bulkOrder() {
+            const checkedBoxes = document.querySelectorAll('.chk-item:checked');
+            if(checkedBoxes.length === 0) {
+                alert('발주할 품목을 선택해주세요.');
+                return;
+            }
+            
+            const itemIds = Array.from(checkedBoxes).map(chk => parseInt(chk.value));
+            if(confirm('선택한 ' + itemIds.length + '개 품목을 발주 요청하시겠습니까?')) {
+                sendPurchaseRequest(itemIds);
+            }
+        }
+
+        function sendPurchaseRequest(itemIds) {
+            fetch('/inventorymg/purchase-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemIds: itemIds })
+            })
+            .then(response => response.text())
+            .then(msg => {
+                alert(msg);
+                location.reload(); // 리로딩하여 뷰 갱신
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+     	// 랙 클릭 시 모달 띄우기 함수 (에러 방어 및 추적 강화)
+        function showRackModal(zone, rack) {
+            document.getElementById('rackModalLabel').innerText = `${zone} - ${rack} 상세 정보`;
+            
+            // URL에 들어가는 공백(ZONE A)을 안전하게 인코딩 처리
+            const url = `/inventorymg/rack-info?zone=${encodeURIComponent(zone)}&rack=${encodeURIComponent(rack)}`;
+            
+            fetch(url)
+                .then(async response => {
+                    if (!response.ok) {
+                        // 서버에서 500 에러 등을 뱉었을 때 내용 확인
+                        const errText = await response.text();
+                        throw new Error(`서버 응답 오류 (${response.status}):\n${errText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('rackModalBody');
+                    tbody.innerHTML = ''; 
+                    
+                    if(data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-muted">해당 랙에 보관된 품목이 없습니다.</td></tr>';
+                    } else {
+                        data.forEach(item => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${item.itemCode || '-'}</td>
+                                <td>${item.itemName || '-'}</td>
+                                <td>${item.lotNumber || '-'}</td>
+                                <td class="text-primary fw-bold">${item.quantity || 0}</td>
+                                <td>${item.expirationDate || '-'}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    
+                    try {
+                        // 모달 띄우기 로직 (Bootstrap JS 객체 재사용 또는 생성)
+                        const modalElement = document.getElementById('rackModal');
+                        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                        modal.show();
+                    } catch (e) {
+                        console.error('모달 실행 에러:', e);
+                        alert('모달 창을 띄울 수 없습니다. 화면 내에 Bootstrap JS가 로드되었는지 확인해주세요.\n' + e.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch 에러:', error);
+                    alert(`데이터 조회 실패:\n${error.message}`);
+                });
+        }
+     	
+     	// 입고 처리 버튼 클릭 시 실행되는 함수
+        function processInbound() {
+            if(confirm('금일 입고 예정(COMPLETE) 항목들을 창고에 입고 처리하시겠습니까?')) {
+                fetch('/inventorymg/process-inbound', {
+                    method: 'POST'
+                })
+                .then(response => response.text())
+                .then(msg => {
+                    alert(msg);
+                    location.reload(); // 처리 완료 후 화면 새로고침 (숫자와 창고 색상이 실시간으로 변함!)
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('입고 처리 중 오류가 발생했습니다.');
+                });
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>

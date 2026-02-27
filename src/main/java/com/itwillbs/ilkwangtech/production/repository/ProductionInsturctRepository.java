@@ -31,12 +31,16 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
 
 
     // 불량 등록
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE ProductionInstructEntity p " +
-            "SET p.defective = defectiveQty " +
-            "WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')" +
-            "AND p.process = :processId")
-    int updateInstructDefectiveQty(@Param("defectiveQty") Long defectiveQty,
-                                @Param("planeId") String instructCode,
-                               @Param("processId") Long processId);
+    @Modifying
+    @Query("""
+            UPDATE ProductionInstructEntity p
+            SET p.defective = :defectiveQty
+            WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')
+            AND p.process = :processId
+            """)
+    int updateInstructDefectiveQty(
+            @Param("defectiveQty") Long defectiveQty,
+            @Param("instructCode") String instructCode,
+            @Param("processId") Long processId
+    );
 }

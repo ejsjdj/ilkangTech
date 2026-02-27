@@ -14,4 +14,29 @@ public enum OrderDetailStatus implements BaseEnum {
 
     private final int code;
     private final String description;
+
+    @Override
+    public int getCode() { return code; }
+
+    @Override
+    public String getDescription() { return description; }
+
+    public static OrderDetailStatus fromCode(Integer code) {
+        if (code == null) return null;
+        for (OrderDetailStatus status : OrderDetailStatus.values()) {
+            if (status.getCode() == code) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Unknown code: " + code);
+    }
+
+    public static OrderDetailStatus fromDescription(String description) {
+        for (OrderDetailStatus status : OrderDetailStatus.values()) {
+            if (status.getDescription().equals(description)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("일치하는 상태 설명이 없습니다: " + description);
+    }
 }

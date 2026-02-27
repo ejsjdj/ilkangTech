@@ -19,12 +19,6 @@ public class BomServiceImpl implements  BomService {
     private final ModelMapper modelMapper;
 
     @Override
-    public BomDTO get(Long id) {
-        BomEntity entiy = bomRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 BOM 이 없습니다."));
-        return modelMapper.map(entiy, BomDTO.class);
-    }
-
-    @Override
     public void create(BomDTO dto) {
         bomRepository.save(modelMapper.map(dto, BomEntity.class));
     }
@@ -45,7 +39,14 @@ public class BomServiceImpl implements  BomService {
     }
 
     @Override
-    public Page<BomDTO> getList(String searchField, Pageable pageable) {
-        return null;
+    public Page<BomDTO> getListByItemId(Long beforeItemId, Pageable pageable) {
+        log.info("🤣👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧");
+        log.info("beforeItemId:" + beforeItemId);
+        log.info("🤣👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧");
+        Page<BomEntity> entityPage = bomRepository.findByBeforeItem_ItemId(beforeItemId, pageable);
+        Page<BomDTO> dtoPage = entityPage.map(
+                entity -> modelMapper.map(entity, BomDTO.class)
+        );
+        return dtoPage;
     }
 }

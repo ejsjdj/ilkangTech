@@ -1,13 +1,11 @@
 package com.itwillbs.ilkwangtech.standard.service.bom;
 
+import com.itwillbs.ilkwangtech.item.dto.ItemDTO;
 import com.itwillbs.ilkwangtech.standard.dto.BomDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface BomService {
-
-    // id 로 해당 bom 을 찾는 기능이 필요한가??
-    BomDTO get(Long id);
 
     void create(BomDTO dto);
 
@@ -17,6 +15,5 @@ public interface BomService {
 
     Page<BomDTO> getList(Pageable pageable);
 
-    Page<BomDTO> getList(String searchField, Pageable pageable);
-
+    Page<BomDTO> getListByItemId(Long itemId, Pageable pageable);
 }

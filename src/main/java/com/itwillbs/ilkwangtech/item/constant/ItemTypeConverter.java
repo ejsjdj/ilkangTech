@@ -1,4 +1,5 @@
 package com.itwillbs.ilkwangtech.item.constant;
+
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

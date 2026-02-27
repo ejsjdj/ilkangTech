@@ -5,7 +5,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout/layout}">
 <head>
-    <title>발주 관리</title>
+    <title>발주 등록 </title>
 
     <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
     <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
@@ -15,11 +15,14 @@
 <body layout:fragment="content">
 
 <div style="padding:20px;">
-    <h2>발주 관리</h2>
-    <button onclick="goRegister()" style="padding:6px 12px;">
-        신규 발주 등록
-    </button>
-    <div id="grid" style="margin-top:20px;"></div>
+    <h2>발주 등록</h2>
+    <div style="padding:20px;">
+
+    <label for="purchaseRequestSelect">구매요청코드 선택</label>
+    <select id="purchaseRequestSelect">
+        <option value="">-- 선택하세요 --</option>
+    </select>
+</div>
 </div>
 
 </body>
@@ -28,7 +31,7 @@
     <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
     <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 
-    <script th:src="@{/js/purchaseOrder.js}"></script>
+    <script th:src="@{/js/purchaseRequest.js}"></script>
 </th:block>
 
 

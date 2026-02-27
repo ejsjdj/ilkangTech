@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,7 +18,7 @@ public class ProductionPlaneDetailDTO {
 
     private String routeCode;
 
-    private LocalDate planeDate; // 계획일시
+    private LocalDateTime planeDate; // 계획일시
 
     private String memberName; // 등록자
 
@@ -33,7 +34,7 @@ public class ProductionPlaneDetailDTO {
         return ProductionPlaneDetailDTO.builder()
                 .planeCode(entity.getPlaneCode())
                 .routeCode(entity.getRoute().getRouteId())
-                .planeDate(entity.getPlaneDate().toLocalDate())
+                .planeDate(entity.getPlaneDate().toLocalDate().atStartOfDay())
                 .memberName(entity.getMember().getName())
                 .item(entity.getItem())
                 .totalQty(entity.getTotalQty())

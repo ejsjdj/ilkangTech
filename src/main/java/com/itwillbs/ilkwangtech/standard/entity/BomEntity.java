@@ -16,12 +16,12 @@ public class BomEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "before_item_id")
-    private ItemEntity beforeItemId;
+    private ItemEntity beforeItem;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "after_item_id")
-    private ItemEntity afterItemId;
+    private ItemEntity afterItem;
 
-    private Long requiredQty;
+    private Long requireQty;
 
 }

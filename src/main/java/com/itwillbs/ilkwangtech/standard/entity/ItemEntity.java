@@ -19,8 +19,6 @@ public class ItemEntity {
 
     private String itemName;
 
-    @Column(name = "item_type")
-    @Enumerated(EnumType.STRING)
     private ItemType itemType;
 
     private String uom;

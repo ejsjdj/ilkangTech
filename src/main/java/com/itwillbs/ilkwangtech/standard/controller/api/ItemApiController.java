@@ -28,7 +28,6 @@ public class ItemApiController {
             @PageableDefault(page = 0, size = 10, sort = "itemId", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<ItemDTO> result = itemService.getList(type, pageable);
 
-
         return ResponseEntity.ok(ApiResponseDTO.success("품목 목록 조회에 성공했습니다.", result));
     }
 
@@ -56,4 +55,5 @@ public class ItemApiController {
         itemService.delete(id);
         return ResponseEntity.ok(ApiResponseDTO.success("품목 삭제에 성공했습니다."));
     }
+
 }

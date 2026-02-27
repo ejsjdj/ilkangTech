@@ -12,4 +12,9 @@ public class ProcurementController {
     public String getCustomerList() {
         return "sales/customer/purchaseOrder";
     }
+
+    @GetMapping("/register")
+    public String registCustomerList() {
+        return "sales/customer/purchaseOrderRegister";
+    }
 }

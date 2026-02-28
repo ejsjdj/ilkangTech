@@ -231,7 +231,6 @@
                 if (!res.ok) throw new Error(`서버 응답 오류 (HTTP ${res.status})`);
 
                 const responseDto = await res.json();
-
                 let items = [];
                 if (responseDto.data && responseDto.data.content) items = responseDto.data.content;
                 else if (Array.isArray(responseDto.data)) items = responseDto.data;

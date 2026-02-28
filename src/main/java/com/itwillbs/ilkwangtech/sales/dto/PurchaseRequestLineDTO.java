@@ -9,6 +9,9 @@ public class PurchaseRequestLineDTO {
 
     private Long id;
     private Long itemId;
+    private String itemName;
     private Long quantity;
+    private String uom;
+    private Long price;
 
 }

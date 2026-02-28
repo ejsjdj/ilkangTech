@@ -45,11 +45,11 @@ dependencies {
 
     // 3. View (Thymeleaf)
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect' // 버전 생략 시 boot 버전 호환
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 
     // 4. Persistence (JPA & MyBatis)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // Boot 3.x 호환 버전
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
 
     // 5. QueryDSL (Jakarta 대응)

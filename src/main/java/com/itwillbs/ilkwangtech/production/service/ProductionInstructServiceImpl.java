@@ -95,6 +95,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         }
 
     }
+
     // 4. 불량 등록
     public void updateInstructDefective(Long defectiveQty, String instructCode, Long processId){
 

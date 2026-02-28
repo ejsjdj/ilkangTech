@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>발주 관리</title>
+
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+</head>
+
+
+<body layout:fragment="content">
+
+<div style="padding:20px;">
+    <h2>발주 관리</h2>
+    <button onclick="goRegister()" style="padding:6px 12px;">
+        신규 발주 등록
+    </button>
+    <div id="grid" style="margin-top:20px;"></div>
+</div>
+
+</body>
+
+<th:block layout:fragment="script">
+    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+    <script th:src="@{/js/purchaseOrder.js}"></script>
+</th:block>
+
+
+</html>

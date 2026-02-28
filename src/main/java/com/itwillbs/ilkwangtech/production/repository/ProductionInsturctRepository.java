@@ -18,7 +18,7 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
             WHERE :keyword IS NULL OR p.instructCode LIKE CONCAT('%', :keyword, '%')
             """)
     Page<ProductionInstructEntity> findByKeyword(Pageable pageable,
-                                              @Param("keyword") String keyword);
+                                                 @Param("keyword") String keyword);
 
     // 작업지시 특정 공정 작업 완료
     @Modifying(clearAutomatically = true)
@@ -27,16 +27,20 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
             "WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')" +
             "AND p.process = :processId")
     int updateInstructCompleteStatus(@Param("planeId") String instructCode,
-                                  @Param("processId") Long processId);
+                                     @Param("processId") Long processId);
+    // 재고 수량 업데이트
 
 
     // 불량 등록
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE ProductionInstructEntity p " +
-            "SET p.defective = defectiveQty " +
-            "WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')" +
-            "AND p.process = :processId")
+    @Modifying
+    @Query("""
+            UPDATE ProductionInstructEntity p
+            SET p.defective = :defectiveQty
+            WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')
+            AND p.process = :processId
+            """)
     int updateInstructDefectiveQty(@Param("defectiveQty") Long defectiveQty,
-                                @Param("planeId") String instructCode,
-                               @Param("processId") Long processId);
+                                   @Param("instructCode") String instructCode,
+                                   @Param("processId") Long processId
+    );
 }

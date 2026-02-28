@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.itwillbs.ilkwangtech.equipment.entity.Equipment;
-import com.itwillbs.ilkwangtech.equipment.entity.EquipmentFailure;
-import com.itwillbs.ilkwangtech.equipment.service.EquipmentService;
+import com.itwillbs.ilkwangtech.equipment.entity.EqFailure;
+import com.itwillbs.ilkwangtech.equipment.entity.EqHistory;
+import com.itwillbs.ilkwangtech.equipment.service.EqService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -20,9 +21,9 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping("/equipment")
 @RequiredArgsConstructor
 @Log4j2
-public class EquipmentController {
+public class EqController {
 
-    private final EquipmentService equipmentService;
+    private final EqService eqService;
 
 //  설비 현황 페이지 접속
     @GetMapping("/equipmentList")
@@ -34,7 +35,7 @@ public class EquipmentController {
     @GetMapping("/api/equipment")
     @ResponseBody
     public List<Equipment> getEquipmentApi() {
-        return equipmentService.getAllEquipments();
+        return eqService.getAllEquipments();
     }
     
 //  새 설비 등록
@@ -42,7 +43,21 @@ public class EquipmentController {
     @ResponseBody
     public Equipment create(@RequestBody Equipment equipment) {
     	log.info(">>>>>>>>>>> equipment-controller : " + equipment);
-        return equipmentService.createEquipment(equipment);
+        return eqService.createEquipment(equipment);
+    }
+    
+//  설비 작동 이력 페이지 접속
+    @GetMapping("/equipmentHistory")
+    public String equipmentHistoryPage() {
+        return "equipment/equipmentHistory"; 
+    }
+    
+//  설비 가동 이력 데이터 반환
+    // URL: http://localhost:포트번호/equipment/api/history
+    @GetMapping("/api/history")
+    @ResponseBody
+    public List<EqHistory> getHistoryList() {
+        return eqService.findAllHistory();
     }
     
 //  고장 이력 페이지 접속
@@ -55,8 +70,8 @@ public class EquipmentController {
 //  고장 이력 데이터 반환
     @GetMapping("/equipmentFailureList")
     @ResponseBody
-    public List<EquipmentFailure> getFailureList() {
+    public List<EqFailure> getFailureList() {
     	log.info(">>>>>>>>>>>>>>>>> failure 리스트 controller 접속");
-        return equipmentService.getAllFailures();
+        return eqService.getAllFailures();
     }
 }

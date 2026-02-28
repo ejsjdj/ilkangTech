@@ -47,7 +47,6 @@ public class ProductionInstructEntity {
 
     // 작업자
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "workers_info_id")
     private List<ProductionWorkerEntity> workers;
 
     // 지시 수량
@@ -69,7 +68,6 @@ public class ProductionInstructEntity {
     // 불량
     @Column(name = "defective")
     private Long defective;
-
 
     public static ProductionInstructEntity saveHeader(
             String instructCode,

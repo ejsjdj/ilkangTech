@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.standard.controller.api;
 
 import com.itwillbs.ilkwangtech.common.dto.ApiResponseDTO;
+import com.itwillbs.ilkwangtech.item.dto.ItemDTO;
 import com.itwillbs.ilkwangtech.standard.dto.BomDTO;
 import com.itwillbs.ilkwangtech.standard.service.bom.BomService;
 import lombok.extern.log4j.Log4j2;
@@ -20,31 +21,19 @@ public class BomApiController {
 
     private final BomService bomService;
 
-    @GetMapping("/list")
+    @GetMapping("/parent/{id}")
     public ResponseEntity<ApiResponseDTO<Page<BomDTO>>> getList(
+            @PathVariable("id") Long itemId, // 👈 URL의 {id}를 itemId 변수에 쏙!
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "searchField", defaultValue = "") String searchField,
-            @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(name = "sortBy", defaultValue = "bomId") String sortBy,
             @RequestParam(name = "direction", defaultValue = "DESC") Sort.Direction direction) {
 
         Pageable pageable = PageRequest.of(page, 10, Sort.by(direction, sortBy));
-        Page<BomDTO> result;
-
-        if (searchField != null && !searchField.isEmpty()) result = bomService.getList(searchField, pageable);
-        else result = bomService.getList(pageable);
+        Page<BomDTO> result = bomService.getListByItemId(itemId, pageable);
 
         return ResponseEntity.ok(ApiResponseDTO.success("BOM 목록 조회에 성공했습니다.", result));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<BomDTO>> get(@PathVariable Long id) {
-        BomDTO bom = bomService.get(id);
-        return ResponseEntity.ok(ApiResponseDTO.success("BOM 상세 조회에 성공했습니다.", bom));
-    }
-
-    // BOM 을 만들때
-    // 부모아이템과 자식아이템의 id 값을 받아와서
-    // 각 dto 에 집어넣고 insert
     @PostMapping("/create")
     public ResponseEntity<ApiResponseDTO<Void>> create(@RequestBody BomDTO dto) {
         bomService.create(dto);
@@ -58,8 +47,8 @@ public class BomApiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<Void>> delete(@PathVariable Long id) {
-        bomService.delete(id);
+    public ResponseEntity<ApiResponseDTO<Void>> delete(@PathVariable("beforeItemId") Long bomId) {
+        bomService.delete(bomId);
         return ResponseEntity.ok(ApiResponseDTO.success("BOM이 성공적으로 삭제되었습니다."));
     }
 }

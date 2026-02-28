@@ -17,6 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 public class PurchaseOrderDTO {
 
+    private Long id;
+
     private String purchaseOrderCode; // 발주 번호
 
     private String company;// 거래처명
@@ -34,7 +36,8 @@ public class PurchaseOrderDTO {
     private Long amount; // 총 금액
 
     @Builder
-    public PurchaseOrderDTO(String purchaseOrderCode,
+    public PurchaseOrderDTO(Long id,
+                            String purchaseOrderCode,
                             String company,
                             String companyManager,
                             String phone,
@@ -43,6 +46,7 @@ public class PurchaseOrderDTO {
                             String orderDate,
                             Long amount){
 
+        this.id = id;
         this.purchaseOrderCode = purchaseOrderCode;
         this.company = company;
         this.companyManager = companyManager;

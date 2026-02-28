@@ -18,14 +18,13 @@
     </resultMap>
 
     <insert id="insertCompany" useGeneratedKeys="true" keyProperty="companyId" keyColumn="company_id">
-        INSERT INTO Companys (name, email, phone, valid, manager, category)
+        INSERT INTO Company (name, email, phone, valid, manager, category)
         VALUES (
         #{name},
         #{email, jdbcType=VARCHAR},
         #{phone, jdbcType=VARCHAR},
         1,
         #{manager, jdbcType=VARCHAR},
-        <!-- ★ insert에서도 typeHandler 명시 ★ -->
         #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
         )
     </insert>
@@ -39,7 +38,7 @@
         manager,
         category,
         valid
-        FROM Companys
+        FROM Company
         WHERE name = #{name}
     </select>
 
@@ -52,7 +51,7 @@
         manager,
         category,
         valid
-        FROM Companys
+        FROM Company
         WHERE
         category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
         or
@@ -63,7 +62,7 @@
 
     <select id="selectCount" resultType="long">
         SELECT COUNT(*)
-        FROM Companys
+        FROM Company
         <where>
             <if test="category != null">
                 category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}

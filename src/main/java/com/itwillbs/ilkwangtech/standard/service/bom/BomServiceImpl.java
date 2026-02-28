@@ -2,7 +2,9 @@ package com.itwillbs.ilkwangtech.standard.service.bom;
 
 import com.itwillbs.ilkwangtech.standard.dto.BomDTO;
 import com.itwillbs.ilkwangtech.standard.entity.BomEntity;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.repository.BomRepository;
+import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -16,17 +18,25 @@ import org.springframework.stereotype.Service;
 public class BomServiceImpl implements  BomService {
 
     private final BomRepository bomRepository;
+    private final ItemRepository itemRepository;
     private final ModelMapper modelMapper;
 
     @Override
-    public BomDTO get(Long id) {
-        BomEntity entiy = bomRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 BOM 이 없습니다."));
-        return modelMapper.map(entiy, BomDTO.class);
-    }
-
-    @Override
     public void create(BomDTO dto) {
-        bomRepository.save(modelMapper.map(dto, BomEntity.class));
+        // 1. DTO의 ID로 ItemEntity 조회
+        ItemEntity beforeItem = itemRepository.findById(dto.getBeforeItemId()).orElse(null);
+        ItemEntity afterItem = itemRepository.findById(dto.getAfterItemId()).orElse(null);
+
+        // 2. BomEntity 조립
+        BomEntity bom = new BomEntity();
+        bom.setBeforeItem(beforeItem);
+        bom.setAfterItem(afterItem);
+
+        // ⭐ 바로 이 부분! DTO에서 받은 수량을 Entity에 넣어주세요.
+        bom.setRequireQty(dto.getRequiredQty());
+
+        // 3. DB 저장
+        bomRepository.save(bom);
     }
 
     @Override
@@ -45,7 +55,14 @@ public class BomServiceImpl implements  BomService {
     }
 
     @Override
-    public Page<BomDTO> getList(String searchField, Pageable pageable) {
-        return null;
+    public Page<BomDTO> getListByItemId(Long beforeItemId, Pageable pageable) {
+        log.info("🤣👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧");
+        log.info("beforeItemId:" + beforeItemId);
+        log.info("🤣👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧👨‍🔧");
+        Page<BomEntity> entityPage = bomRepository.findByBeforeItem_ItemId(beforeItemId, pageable);
+        Page<BomDTO> dtoPage = entityPage.map(
+                entity -> modelMapper.map(entity, BomDTO.class)
+        );
+        return dtoPage;
     }
 }

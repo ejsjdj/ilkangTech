@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.sales.entity;
 
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDTO;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,9 +24,10 @@ public class PurchaseOrderEntity {
     @JoinColumn(name = "purchase_order_id")
     private PurchaseOrderHeaderEntity header;
 
-    // 품목명
-    @Column(name = "item_id")
-    private Long item;
+    // 품목
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private ItemEntity item;
 
     // 수량
     @Column(name = "quantity")
@@ -35,7 +37,7 @@ public class PurchaseOrderEntity {
     @Column(name = "unit_price")
     private Long unitPrice;
 
-    public static PurchaseOrderEntity create(Long item,
+    public static PurchaseOrderEntity create(ItemEntity item,
                                              Long quantity,
                                              Long unitPrice){
 

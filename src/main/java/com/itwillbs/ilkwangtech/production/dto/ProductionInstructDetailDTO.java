@@ -15,10 +15,8 @@ public class ProductionInstructDetailDTO {
     private String instructCode;
     // 생산계획코드
     private String planeCode;
-    // 진행 공정
-    private String operationCode;
     // 품목명
-    private Long item;
+    private String itemName;
     // 생산일자
     private String startDate;
     // 계획수량
@@ -32,8 +30,7 @@ public class ProductionInstructDetailDTO {
         return ProductionInstructDetailDTO.builder().
                 instructCode(entity.getInstructCode()).
                 planeCode(entity.getProductionId().getPlaneCode()).
-                operationCode(entity.getProcess().getName()).
-                item(entity.getItem()).
+                itemName(entity.getItem().getItemName()).
                 startDate(String.valueOf(entity.getStartDate())).
                 instructQty(entity.getInstructQty())
                 .worker(entity.getWorkers().stream()

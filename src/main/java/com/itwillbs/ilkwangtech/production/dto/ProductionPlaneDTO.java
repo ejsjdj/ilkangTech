@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.production.dto;
 
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class ProductionPlaneDTO {
 
     private Long id; // 기본키

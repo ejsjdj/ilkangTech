@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.production.repository;
 
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneAllDTO;
 import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDTO;
 import com.itwillbs.ilkwangtech.production.entity.ProductionInstructEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -45,5 +47,15 @@ public interface ProductionPlaneRepository extends JpaRepository<ProductionPlane
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProductionInstructEntity i SET i.status = 'CANCEL' WHERE i.productionId.id = :planeId")
     int updateInstructStatusByPlaneId(@Param("planeId") Long planeId);
+
+    @Query("""
+SELECT new com.itwillbs.ilkwangtech.production.dto.ProductionPlaneAllDTO(
+    p.id,
+    p.planeCode
+)
+FROM ProductionPlaneEntity p
+ORDER BY p.planeDate DESC
+""")
+    List<ProductionPlaneAllDTO> findAllForSelect();
 
 }

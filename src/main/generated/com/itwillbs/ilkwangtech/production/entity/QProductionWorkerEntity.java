@@ -26,9 +26,13 @@ public class QProductionWorkerEntity extends EntityPathBase<ProductionWorkerEnti
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final StringPath lot = createString("lot");
+
     public final com.itwillbs.ilkwangtech.member.entity.QMember member;
 
     public final com.itwillbs.ilkwangtech.standard.entity.QProcessEntity process;
+
+    public final StringPath status = createString("status");
 
     public QProductionWorkerEntity(String variable) {
         this(ProductionWorkerEntity.class, forVariable(variable), INITS);

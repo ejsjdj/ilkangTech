@@ -32,11 +32,7 @@ public class QProductionInstructEntity extends EntityPathBase<ProductionInstruct
 
     public final NumberPath<Long> instructQty = createNumber("instructQty", Long.class);
 
-    public final NumberPath<Long> item = createNumber("item", Long.class);
-
-    public final NumberPath<Long> lotId = createNumber("lotId", Long.class);
-
-    public final com.itwillbs.ilkwangtech.standard.entity.QProcessEntity process;
+    public final com.itwillbs.ilkwangtech.standard.entity.QItemEntity item;
 
     public final QProductionPlaneEntity productionId;
 
@@ -64,7 +60,7 @@ public class QProductionInstructEntity extends EntityPathBase<ProductionInstruct
 
     public QProductionInstructEntity(Class<? extends ProductionInstructEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.process = inits.isInitialized("process") ? new com.itwillbs.ilkwangtech.standard.entity.QProcessEntity(forProperty("process"), inits.get("process")) : null;
+        this.item = inits.isInitialized("item") ? new com.itwillbs.ilkwangtech.standard.entity.QItemEntity(forProperty("item")) : null;
         this.productionId = inits.isInitialized("productionId") ? new QProductionPlaneEntity(forProperty("productionId"), inits.get("productionId")) : null;
     }
 

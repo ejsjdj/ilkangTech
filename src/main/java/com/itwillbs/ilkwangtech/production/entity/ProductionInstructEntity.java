@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.production.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
 import jakarta.persistence.*;
@@ -27,23 +28,15 @@ public class ProductionInstructEntity {
     @Column(name = "instruct_code")
     private String instructCode;
 
-    // LOT
-    @Column(name = "lot_id")
-    private Long lotId;
-
     // 생산계획 ID
     @ManyToOne
     @JoinColumn(name = "production_id")
     private ProductionPlaneEntity productionId;
 
     // 품목 ID
-    @Column
-    private Long item;
-
-    // 공정 ID
     @ManyToOne
-    @JoinColumn(name = "operation_id")
-    private ProcessEntity process;
+    @JoinColumn(name = "item_id")
+    private ItemEntity item;
 
     // 작업자
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -71,10 +64,8 @@ public class ProductionInstructEntity {
 
     public static ProductionInstructEntity saveHeader(
             String instructCode,
-            Long lotId,
             ProductionPlaneEntity productionId,
-            Long item,
-            ProcessEntity process,
+            ItemEntity item,
             Long instructQty,
             LocalDateTime startDate,
             LocalDateTime endDate,
@@ -83,10 +74,8 @@ public class ProductionInstructEntity {
     ){
         ProductionInstructEntity header = new ProductionInstructEntity();
         header.instructCode = instructCode;
-        header.lotId = lotId;
         header.productionId = productionId;
         header.item = item;
-        header.process = process;
         header.instructQty = instructQty;
         header.startDate = startDate;
         header.endDate = endDate;

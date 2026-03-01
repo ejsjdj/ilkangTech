@@ -41,7 +41,7 @@ public class ProcessApiController {
 
     }
 
-    // 2.신규
+    // 2. 신규 공정코드 추가
     @PostMapping("/insert_process_code")
     public void insertProcess(List<ProcessInsertDTO> processInsertDTO,
                               @AuthenticationPrincipal AccountLogin accountLogin){
@@ -53,4 +53,6 @@ public class ProcessApiController {
         processService.saveProcessList(processInsertDTO, userId);
 
     }
+
+
 }

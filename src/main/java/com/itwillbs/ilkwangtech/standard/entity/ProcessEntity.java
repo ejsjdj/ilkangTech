@@ -4,6 +4,7 @@ import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @Table(name = "operation_info")
 @Getter
 @Setter
+@NoArgsConstructor
 public class ProcessEntity {
 
     @Id

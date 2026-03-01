@@ -8,25 +8,24 @@ import com.itwillbs.ilkwangtech.production.service.ProductionInstructService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 // 작업지시 컨트롤러
-@Controller
+@RestController
+@RequestMapping("/api/production_instruct")
 @RequiredArgsConstructor
 public class ProductionInstructApiController {
 
     private final ProductionInstructService productionInstructService;
 
-    /**
-     * 작업지시 목록 조회 API
-     * 검색조건 : 제품명, 작업지시 번호
-     * 페이징 조건 포함
-     */
+
+    @GetMapping("/list")
     public Page<ProductionInstructDTO> getProductionInstructList(Pageable pageable,
                                                                  @RequestParam("keyword") String keyword){
 
@@ -36,6 +35,7 @@ public class ProductionInstructApiController {
     }
 
     // 2. 작업지시 상세
+    @GetMapping("/detail")
     public Optional<ProductionInstructDetailDTO> getProductionInstructDetail(@RequestParam("instructId") Long instructId){
 
         Optional<ProductionInstructDetailDTO> detail = productionInstructService.getProductionInstructDetail(instructId);
@@ -45,14 +45,19 @@ public class ProductionInstructApiController {
     }
 
     // 3. 작업지시 등록
-    public void insertProductionInstruct(@RequestBody ProductionInstructInsertDTO productionInstructInsertDTO,
+    @PostMapping("/register")
+    public  ResponseEntity<?> insertProductionInstruct(@RequestBody ProductionInstructInsertDTO productionInstructInsertDTO,
                                          @AuthenticationPrincipal AccountLogin accountLogin){
+        System.out.println("작업지시 등록 컨트롤러 실행됨!!!!!!");
 
         Long userId = accountLogin.getId();
 
         productionInstructService.saveProductionInstruct(productionInstructInsertDTO, userId);
 
+        return ResponseEntity.ok().build();
     }
+
+
 
     // 4. 불량 수량 등록
     public void updateProductionInstructDefective(@RequestParam("DefectiveQty") Long defectiveQty,

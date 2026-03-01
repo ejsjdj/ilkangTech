@@ -8,7 +8,7 @@
 
 <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css">
 
-<!-- 
+<!--
 <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
 <link rel="stylesheet" th:href="@{/css/layout.css}" /> -->
 
@@ -21,7 +21,7 @@
     /* 공통 스타일 */
     html, body { height: 100%; margin: 0; font-family: 'Noto Sans KR', sans-serif; }
     .layout { display: flex; height: 100vh; background: #f5f6f8; overflow: hidden; }
-    
+
     /* 사이드바 */
     .sidebar { width: 250px; background: #ffffff; border-right: 1px solid #e5e7eb; padding: 16px 12px; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
     .sidebar-nav { display: flex; flex-direction: column; gap: 10px; margin-top: 10px;}
@@ -50,34 +50,34 @@
     .logo-link { display: inline-flex; align-items: center; justify-content: center; padding: 6px 10px; border-radius: 10px; transition: background 0.2s ease; }
     .logo-link:hover { background: #f3f4f6; }
     .logo img { width: 150px; height: 53px; object-fit: contain; margin: 0px 36px; }
-    
+
     /* 상단 메뉴를 일반 메뉴와 동일한 디자인으로 변경 */
 	.top-menu { display: flex; flex-direction: column; gap: 0; margin-bottom: 5px; }
-	
+
 	/* 공지사항 전용 스타일: 기존 배경을 없애고 nav-parent와 동일하게 구성 */
 	.nav-notice { width: 100%; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px;
 	              padding: 12px 10px; border-radius: 12px; font-weight: 700; color: #1f2937; text-align: left; text-decoration: none; }
-	
+
 	.nav-notice:hover {
 	    background: #f3f4f6; /* 마우스 올렸을 때만 배경색 발생 */
 	}
-	
+
 	/* ERP 구분선 텍스트 스타일 */
 	.menu-category { font-size: 13px; font-weight: 600; color: #9ca3af; margin: 15px 0 5px 10px; display: flex; align-items: center; gap: 8px; }
 	.menu-category::before { content: "—"; font-size: 10px; }
-	
+
 	.notification-container {position: relative; display: inline-block; }
-	
+
 	.red-dot {
 	    position: absolute;
 	    bottom: 0px; /* 우측 하단 배치 */
 	    right: 0px;
 	    width: 15px;
 	    height: 15px;
-	    background-color: #ff3b30; 
+	    background-color: #ff3b30;
 	    border-radius: 50%;
-	    border: 2px solid #fff; 
-	    display: none; 
+	    border: 2px solid #fff;
+	    display: none;
 	    z-index: 10;
 	}
 </style>
@@ -88,7 +88,7 @@
     <div class="sidebar">
         <div class="logo">
             <a href="/schedule/calendar">
-               <img th:src="@{/img/logo.png}" alt="ERP Logo"> 
+               <img th:src="@{/img/logo.png}" alt="ERP Logo">
             </a>
         </div>
         <nav class="sidebar-nav">
@@ -124,7 +124,7 @@
                     <li><a class="nav-child" th:href="@{/attendance/vacation}">휴가 관리</a></li>
                 </ul>
             </div>
-            
+
             <div class="nav-group">
                 <button type="button" class="nav-parent" data-target="menu-appr" aria-expanded="false">
                     <span class="nav-icon">📋</span><span class="nav-menu">전자결재</span><span class="nav-arrow">▸</span>
@@ -167,8 +167,8 @@
                 </button>
                 <ul class="nav-children" id="menu-pr">
                     <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
-                    <li><a class="nav-child" th:href="@{/account/list}">생산계획</a></li>
-                    <li><a class="nav-child" th:href="@{/account/list}">작업지시</a></li>
+                    <li><a class="nav-child" th:href="@{/production/production_list}">생산계획</a></li>
+                    <li><a class="nav-child" th:href="@{/production/production_instruct_list}">작업지시</a></li>
                     <li><a class="nav-child" th:href="@{/account/list}">작업일정</a></li>
                 </ul>
 
@@ -176,12 +176,12 @@
                     <span class="nav-icon">📦</span><span class="nav-menu">재고관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-stock">
-                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/inventorymg/dashboard}">대시보드</a></li>
                     <li><a class="nav-child" th:href="@{/account/list}">재고현황</a></li>
                     <li><a class="nav-child" th:href="@{/account/list}">입출고관리</a></li>
                     <li><a class="nav-child" th:href="@{/account/list}">재고실사</a></li>
                 </ul>
-                
+
                 <button type="button" class="nav-parent" data-target="menu-process" aria-expanded="false">
                     <span class="nav-icon">🔁</span><span class="nav-menu">공정관리</span><span class="nav-arrow">▸</span>
                 </button>
@@ -218,14 +218,14 @@
         <div class="header">
             <div class="header-box">
                 <a href="/messenger/memberList" class="messenger-btn" onclick="openMessenger(event)">
-                   <img th:src="@{/img/messenger/chat.png}" alt="Talk"> 
+                   <img th:src="@{/img/messenger/chat.png}" alt="Talk">
                    <span id="main-unread-dot" class="red-dot"></span>
                 </a>
             </div>
         </div>
 
         <div class="content" layout:fragment="content">..</div>
-    </div> 
+    </div>
 </div>
 
 <script>
@@ -244,7 +244,7 @@
             }
         });
     });
-    
+
     /* 메신저 버튼 동작 */
     function openMessenger(event) {
     event.preventDefault(); // 기본 이동 막기
@@ -261,8 +261,8 @@
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 <script th:inline="javascript">
     // Thymeleaf 변수를 자바스크립트 변수로 안전하게 할당
-    const myId = /*[[${#authentication.principal.id}]]*/ 0; 
-    
+    const myId = /*[[${#authentication.principal.id}]]*/ 0;
+
     // 페이지 로드 시 즉시 실행되지 않도록 함수로 감싸거나 하단에 배치
     document.addEventListener("DOMContentLoaded", function() {
         const mainDot = document.getElementById('main-unread-dot');
@@ -270,9 +270,9 @@
         // 1. 초기 로드 시 안 읽은 메시지 체크
         fetch('/messenger/api/unread-exists')
             .then(res => res.json())
-            .then(exists => { 
+            .then(exists => {
             	if (mainDot) {
-                    mainDot.style.display = exists ? 'block' : 'none'; 
+                    mainDot.style.display = exists ? 'block' : 'none';
                 }
             })
             .catch(err => console.error("초기 알림 체크 실패:", err));
@@ -281,15 +281,15 @@
         function connectNotification() {
             const socket = new SockJS("/ws");
             const stomp = Stomp.over(socket);
-            
+
             // 디버그 로그 끄기 (선택사항)
-            stomp.debug = null; 
+            stomp.debug = null;
 
             stomp.connect({}, function () {
             	stomp.subscribe("/topic/user/" + myId + "/list", function (message) {
             	    const payload = JSON.parse(message.body);
             	    const mainDot = document.getElementById('main-unread-dot');
-            	    
+
             	    if (!mainDot) return;
 
             	    if (payload.msgType === 'READ') {
@@ -308,7 +308,7 @@
                 setTimeout(connectNotification, 5000); // 연결 끊기면 5초 후 재시도
             });
         }
-        
+
         if (myId > 0) connectNotification();
     });
 </script>

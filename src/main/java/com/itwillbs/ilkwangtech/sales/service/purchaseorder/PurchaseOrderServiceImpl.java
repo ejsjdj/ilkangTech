@@ -104,6 +104,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     @Transactional
     public void savePurchaseOrder(PurchaseOrderInsertDTO purchaseOrderInsertDTO, Long userId){
 
+
+
         // 1. 유저 정보 확인
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
@@ -121,22 +123,26 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         purchaseOrderHeaderRepository.save(header);
 
+        Long totalAmount = 0L;
+
         // 3. 라인 엔티티 저장
         for (PurchaseOrderLineDTO lineDTO : purchaseOrderInsertDTO.getLines()) {
 
             ItemEntity item = itemRepository.findById(lineDTO.getItem())
                     .orElseThrow(() -> new IllegalArgumentException("품목정보가 없습니다."));
 
+            totalAmount += lineDTO.getTotalPrice();
+
             PurchaseOrderEntity line = PurchaseOrderEntity.create(
                     item,
                     lineDTO.getQuantity(),
-                    lineDTO.getUnitPrice()
+                    lineDTO.getTotalPrice()
             );
-
             line.setHeader(header);
 
             purchaseOrderRepository.save(line);
         }
 
+        header.setAmount(totalAmount);
     }
 }

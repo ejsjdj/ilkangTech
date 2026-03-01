@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.production.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -22,11 +23,6 @@ public class ProductionPlaneEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 공정 라우트 ID
-    @ManyToOne
-    @JoinColumn(name = "operation_route_id")
-    private ProcessRouteEntity route;
-
     // 헤더 -> 상세 조회 전용 필드
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductionPlaneDetailEntity> details;
@@ -45,8 +41,9 @@ public class ProductionPlaneEntity {
     private Member member;
 
     // 제품코드
-    @Column(name = "item_id")
-    private Long item; // 제품ID와 FK로 연결(제품코드, 제품명)
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private ItemEntity item; // 제품ID와 FK로 연결(제품코드, 제품명)
 
     // 계획 총 수량
     @Column(name = "total_qty")
@@ -62,17 +59,15 @@ public class ProductionPlaneEntity {
 
 
     public static ProductionPlaneEntity saveHeader(
-            ProcessRouteEntity route,
             String planeCode,
             LocalDateTime planeDate,
             Member member,
-            Long item,
+            ItemEntity item,
             Long totalQty,
             String status,
             String memo
     ){
          ProductionPlaneEntity header = new ProductionPlaneEntity();
-         header.route = route;
          header.planeCode = planeCode;
          header.planeDate = planeDate;
          header.member = member;

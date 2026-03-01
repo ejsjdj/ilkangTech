@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>생산계획 상세</title>
+
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/grid/latest/tui-grid.css"
+    />
+
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background: white;
+        width: 900px;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 8px;
+      }
+
+      .close-btn {
+        float: right;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .form-row {
+        margin-bottom: 10px;
+      }
+
+      input {
+        width: 200px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="detailModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">X</span>
+
+        <h3>생산계획 상세</h3>
+
+        <!-- 상단 정보 -->
+        <div class="form-row">
+          계획코드 <input type="text" id="d_planeCode" readonly /> 계획일자
+          <input type="text" id="d_planeDate" readonly /> 등록자
+          <input type="text" id="d_memberName" readonly />
+        </div>
+
+        <div class="form-row">
+          품목명 <input type="text" id="d_itemName" readonly /> 총수량
+          <input type="text" id="d_totalQty" readonly /> 상태
+          <input type="text" id="d_status" readonly />
+        </div>
+
+        <div class="form-row">
+          메모 <input type="text" id="d_memo" readonly style="width: 400px" />
+        </div>
+
+        <hr />
+
+        <!-- 하단 상세 Grid -->
+        <div id="detailGrid"></div>
+      </div>
+    </div>
+
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+  </body>
+</html>

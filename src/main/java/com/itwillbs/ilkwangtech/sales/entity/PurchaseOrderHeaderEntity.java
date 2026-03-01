@@ -25,6 +25,10 @@ public class PurchaseOrderHeaderEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 헤더 -> 라인 조회용 필드
+    @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PurchaseOrderEntity> lines;
+
     @Column(name = "purchase_order_Code")
     private String purchaseOrderCode; // 발주 코드
 
@@ -58,7 +62,6 @@ public class PurchaseOrderHeaderEntity {
             String companyManager,
             String phone,
             Member member,
-
             LocalDate orderDate
             ) {
         PurchaseOrderHeaderEntity header = new PurchaseOrderHeaderEntity();
@@ -68,12 +71,16 @@ public class PurchaseOrderHeaderEntity {
         header.companyManager =companyManager;
         header.phone = phone;
         header.member = member;
-        header.orderDate = orderDate;
         header.status = String.valueOf(PurchaseOrderStatus.CONFIRMED);
-        // header.amount = amount;
+        header.orderDate = orderDate;
 
         return header;
     }
 
 
+    // 라인 필드 저장 메서드
+    public void saveLine(PurchaseOrderEntity line) {
+        this.lines.add(line);
+        line.setHeader(this);
+    }
 }

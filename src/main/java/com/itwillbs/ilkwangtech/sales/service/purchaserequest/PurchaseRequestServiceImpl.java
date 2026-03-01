@@ -17,6 +17,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
 
     private final PurchaseRequestHeaderRepository purchaseRequestRepository;
 
+    // 구매요청 리스트 조회
     @Override
     @Transactional
     public List<PurchaseRequestHeaderDTO> getPruchaseRequest(){
@@ -28,6 +29,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                 .toList();
     }
 
+    // 구매요청 상세조회
     @Override
     @Transactional
     public PurchaseRequestDetailDTO getPurchaseReuqestDetail(Long id) {
@@ -37,12 +39,16 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                         .orElseThrow(() ->
                                 new IllegalArgumentException("존재하지 않는 구매요청입니다."));
 
+
         List<PurchaseRequestLineDTO> lineDTOs =
                 header.getLines().stream()
                         .map(line -> PurchaseRequestLineDTO.builder()
                                 .id(line.getId())
-                                .itemId(line.getItemId())
+                                .itemId(line.getItem().getItemId())
+                                .itemName(line.getItem().getItemName())
                                 .quantity(line.getQuantity())
+                                .uom(line.getItem().getUom())
+                                .price(line.getItem().getStandardPrice() * line.getQuantity())
                                 .build()
                         )
                         .toList();
@@ -59,5 +65,4 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                 .lines(lineDTOs)
                 .build();
     }
-
 }

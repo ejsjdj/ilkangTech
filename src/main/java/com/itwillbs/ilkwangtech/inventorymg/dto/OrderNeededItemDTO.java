@@ -17,4 +17,5 @@ public class OrderNeededItemDTO {
     private String uom; // 단위
     private String status; // "발주대기" 또는 "요청완료"
     private Long pendingRequestQty; // 현재 구매요청(PR) 진행 중인 수량
+
 }

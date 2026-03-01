@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.itwillbs.ilkwangtech.inventorymg.repository;
 
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryHistoryEntity;
@@ -18,4 +19,5 @@ public interface InventoryHistoryRepository extends JpaRepository<InventoryHisto
     
     // 특정 날짜 이후의 모든 수불 이력 조회 (차트 렌더링용)
     List<InventoryHistoryEntity> findByTransactionDateAfter(LocalDate startDate);
+
 }

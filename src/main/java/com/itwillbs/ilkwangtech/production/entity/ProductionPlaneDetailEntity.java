@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.production.entity;
 
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,8 +25,13 @@ public class ProductionPlaneDetailEntity {
     @JoinColumn(name = "plane_id")
     private ProductionPlaneEntity header; // 생산헤더 ID와 FK로 연결
 
+    // 품목 ID
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private ItemEntity item;
+
     // 수주 ID
-    @Column(name = "plane_detail_date")
+    @Column(name = "order_id")
     private Long orderId; // 수주ID와 FK로 연결(수주코드, 거래처명, 주문수량, 수주일자, 납기일)
 
     // 수주별 계획 수량
@@ -35,6 +41,11 @@ public class ProductionPlaneDetailEntity {
     // 메모
     @Column(name = "memo")
     private String memo;
+
+    // 예상 생산 완료일
+    @Column(name = "plane_detail_date")
+    private LocalDateTime planeDetailDate;
+
 
     public static ProductionPlaneDetailEntity create(
             Long orderId,

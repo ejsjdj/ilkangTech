@@ -28,4 +28,5 @@ public class InventoryHistoryEntity {
 
     @Column(name = "quantity")
     private Long quantity; // 변동 수량
+
 }

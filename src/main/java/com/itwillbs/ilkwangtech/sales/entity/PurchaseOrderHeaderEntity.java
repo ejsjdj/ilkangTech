@@ -62,7 +62,6 @@ public class PurchaseOrderHeaderEntity {
             String companyManager,
             String phone,
             Member member,
-
             LocalDate orderDate
             ) {
         PurchaseOrderHeaderEntity header = new PurchaseOrderHeaderEntity();
@@ -72,9 +71,8 @@ public class PurchaseOrderHeaderEntity {
         header.companyManager =companyManager;
         header.phone = phone;
         header.member = member;
-        header.orderDate = orderDate;
         header.status = String.valueOf(PurchaseOrderStatus.CONFIRMED);
-        // header.amount = amount;
+        header.orderDate = orderDate;
 
         return header;
     }

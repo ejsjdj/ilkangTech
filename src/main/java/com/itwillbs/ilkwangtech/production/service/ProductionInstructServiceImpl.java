@@ -105,6 +105,4 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     public void updateInstruct(String instructCode, Long processId){
         productionInsturctRepository.updateInstructCompleteStatus(instructCode, processId);
     }
-
-
 }

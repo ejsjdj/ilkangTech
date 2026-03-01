@@ -11,5 +11,5 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
 	
 	@Query("SELECT COALESCE(SUM(pr.quantity), 0) FROM PurchaseRequestEntity pr WHERE pr.itemId = :itemId")
     Long sumQuantityByItemId(@Param("itemId") Long itemId);
-	
+
 }

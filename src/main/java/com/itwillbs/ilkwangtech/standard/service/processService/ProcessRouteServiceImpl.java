@@ -5,8 +5,10 @@ import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.standard.dto.ProcessRouteDTO;
 import com.itwillbs.ilkwangtech.standard.dto.ProcessRouteDetailDTO;
 import com.itwillbs.ilkwangtech.standard.dto.ProcessRouteInsertDTO;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
+import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import com.itwillbs.ilkwangtech.standard.repository.OperationRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ProcessRouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
     private final ProcessRouteRepository processRouteRepository;
     private final OperationRepository operationRepository;
     private final MemberRepository memberRepository;
+    private final ItemRepository itemRepository;
 
     // 1. 라우트 전체 조회
     @Override
@@ -37,8 +40,8 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
                 processRouteRepository.findDistinctRouteIdBy(itemId, routeName, pageable);
 
         return processEntities.map(processRouteEntity -> ProcessRouteDTO.builder()
-                .routeId(processRouteEntity.getRouteId())
-                .itemId(processRouteEntity.getItemId())
+                .routeCode(processRouteEntity.getRouteCode())
+                .itemName(processRouteEntity.getItem().getItemName())
                 .routeName(processRouteEntity.getRouteName())
                 .description(processRouteEntity.getDescription())
                 .createdAt(String.valueOf(processRouteEntity.getCreatedAt()))
@@ -47,11 +50,11 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
     }
 
     // 2. 라우트 상세 조회
-    @Override
-    @Transactional
-    public List<ProcessRouteDetailDTO> getProcessRouteDetail(String routeId){
-        return processRouteRepository.findByRouteId(routeId);
-    }
+//    @Override
+//    @Transactional
+//    public List<ProcessRouteDetailDTO> getProcessRouteDetail(String routeId){
+//        return processRouteRepository.findByRouteCodeOrderBySequenceAsc(routeId);
+//    }
 
     // 3. 신규 라우트 등록
     @Override
@@ -67,12 +70,15 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
             Member member = memberRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
 
+            ItemEntity item = itemRepository.findById(saveDTO.getItemId())
+                    .orElseThrow(() -> new IllegalArgumentException("품목정보가 없습니다."));
+
             // 3. 엔티티에 등록
             ProcessRouteEntity process = ProcessRouteEntity.builder().
                     id(saveDTO.getId()).
-                    routeId(saveDTO.getRouteId()).
+                    routeCode(saveDTO.getRouteCode()).
                     operation(processEntity).
-                    itemId(saveDTO.getItemId()).
+                    item(item).
                     sequence(saveDTO.getSequence()).
                     routeName(saveDTO.getRouteName()).
                     description(saveDTO.getDescription()).

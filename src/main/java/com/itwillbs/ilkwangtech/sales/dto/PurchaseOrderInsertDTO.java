@@ -16,5 +16,7 @@ public class PurchaseOrderInsertDTO {
     private String company;
     private String companyManager;
     private String phone;
+    private String status;
+    private Long amount;
 
 }

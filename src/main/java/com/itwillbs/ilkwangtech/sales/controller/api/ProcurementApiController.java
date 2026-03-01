@@ -56,7 +56,7 @@ public class ProcurementApiController {
     }
 
     // 3. 신규 발주 등록
-    @PostMapping("/procurement/insert")
+    @PostMapping("/procurement/register")
     public void saveProcurement(@RequestBody PurchaseOrderInsertDTO purchaseOrderInsertDTO,
                                 @AuthenticationPrincipal AccountLogin accountLogin){
 

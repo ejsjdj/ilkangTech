@@ -31,8 +31,8 @@ CREATE TABLE Operation (
 
 CREATE TABLE BOM (
                      bom_id NUMBER(19) GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                     before_item_id NUMBER(19) NOT NULL REFERENCES Item(item_id),
-                     after_item_id NUMBER(19) NOT NULL REFERENCES Item(item_id),
+                     parent_item_id NUMBER(19) NOT NULL REFERENCES Item(item_id),
+                     child_item_id NUMBER(19) NOT NULL REFERENCES Item(item_id),
                      operation_id NUMBER(19) REFERENCES Operation(operation_id),
                      require_qty NUMBER(10,2) NOT NULL -- 재소 품목 소요량
 );

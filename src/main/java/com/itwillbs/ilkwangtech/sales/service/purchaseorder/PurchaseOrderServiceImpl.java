@@ -8,6 +8,7 @@ import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderInsertDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderHeaderEntity;
+import com.itwillbs.ilkwangtech.sales.repository.PurchaseOrderHeaderRepository;
 import com.itwillbs.ilkwangtech.sales.repository.PurchaseOrderRepository;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
@@ -27,6 +28,7 @@ import java.util.List;
 @Log4j2
 public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
+    private final PurchaseOrderHeaderRepository purchaseOrderHeaderRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
@@ -36,49 +38,61 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     @Transactional
     public Page<PurchaseOrderDTO> getPurchaseOrderList(Pageable pageable, LocalDate startDate, LocalDate endDate, String searchType, String keyword){
 
-        Page<PurchaseOrderHeaderEntity> purchaseOrderEntities = purchaseOrderRepository.findByPurchaseOrder(pageable, startDate, endDate, searchType, keyword);
+        Page<PurchaseOrderHeaderEntity> purchaseOrderEntities = purchaseOrderHeaderRepository.findByPurchaseOrder(pageable, startDate, endDate, searchType, keyword);
 
         return purchaseOrderEntities.
                 map(purchaseOrderHeaderEntity -> PurchaseOrderDTO.
                         builder().
+                        id(purchaseOrderHeaderEntity.getId()).
                         purchaseOrderCode(purchaseOrderHeaderEntity.getPurchaseOrderCode()).
                         company(purchaseOrderHeaderEntity.getCompany()).
+                        companyManager(purchaseOrderHeaderEntity.getCompanyManager()).
+                        phone(purchaseOrderHeaderEntity.getPhone()).
                         name(purchaseOrderHeaderEntity.getMember().getName()).
                         status(purchaseOrderHeaderEntity.getStatus()).
                         orderDate(String.valueOf(purchaseOrderHeaderEntity.getOrderDate())).
+                        amount(purchaseOrderHeaderEntity.getAmount()).
                         build());
     }
 
     // 2. 발주 상세 조회
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public PurchaseOrderDetailDTO getPurchaseOrderDetail(Long purchaseOrderId){
 
         log.info("발주 상세 조회 service - 발주 ID: {}", purchaseOrderId);
 
-        PurchaseOrderHeaderEntity header = purchaseOrderRepository.findByPurchaseIdDetail(purchaseOrderId);
+        // 헤더 조회
+        PurchaseOrderHeaderEntity header =
+                purchaseOrderHeaderRepository.findById(purchaseOrderId)
+                        .orElseThrow(() -> new IllegalArgumentException("발주 정보 없음"));
+
+        // 라인 조회
+        List<PurchaseOrderEntity> lines =
+                purchaseOrderRepository.findByHeaderId(purchaseOrderId);
 
         List<PurchaseOrderLineDTO> lineDto =
-                header.getLines().stream()
-                        .map(purchaseOrderEntity -> new PurchaseOrderLineDTO(
-                                purchaseOrderEntity.getId(),
-                                purchaseOrderEntity.getItem().getItemId(),
-                                purchaseOrderEntity.getQuantity(),
-                                purchaseOrderEntity.getUnitPrice()
+                lines.stream()
+                        .map(line -> new PurchaseOrderLineDTO(
+                                line.getId(),
+                                line.getItem().getItemId(),
+                                line.getQuantity(),
+                                line.getUnitPrice()
                         ))
                         .toList();
 
-        PurchaseOrderDetailDTO detailDTO = PurchaseOrderDetailDTO.builder().
-                purchaseOrderLineDto(lineDto).
-                purchaseOrderCode(header.getPurchaseOrderCode()).
-                company(header.getCompany()).
-                companyManager(header.getCompanyManager()).
-                phone(header.getPhone()).
-                name(header.getMember().getName()).
-                status(header.getStatus()).
-                orderDate(String.valueOf(header.getOrderDate())).
-                amount(header.getAmount()).
-                build();
+        // 상세 DTO 생성
+        PurchaseOrderDetailDTO detailDTO = PurchaseOrderDetailDTO.builder()
+                .purchaseOrderLineDto(lineDto)
+                .purchaseOrderCode(header.getPurchaseOrderCode())
+                .company(header.getCompany())
+                .companyManager(header.getCompanyManager())
+                .phone(header.getPhone())
+                .name(header.getMember().getName())
+                .status(header.getStatus())
+                .orderDate(String.valueOf(header.getOrderDate()))
+                .amount(header.getAmount())
+                .build();
 
         log.info("발주 상세 조회 Service 결과 - 리스트: {}", detailDTO);
 
@@ -89,6 +103,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     @Override
     @Transactional
     public void savePurchaseOrder(PurchaseOrderInsertDTO purchaseOrderInsertDTO, Long userId){
+
+
 
         // 1. 유저 정보 확인
         Member member = memberRepository.findById(userId)
@@ -103,22 +119,30 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 member.getPhoneNumber(),
                 member,
                 LocalDate.now()
-
         );
 
+        purchaseOrderHeaderRepository.save(header);
+
+        Long totalAmount = 0L;
+
         // 3. 라인 엔티티 저장
-        for(PurchaseOrderLineDTO lineDTO : purchaseOrderInsertDTO.getLines()){
+        for (PurchaseOrderLineDTO lineDTO : purchaseOrderInsertDTO.getLines()) {
 
             ItemEntity item = itemRepository.findById(lineDTO.getItem())
                     .orElseThrow(() -> new IllegalArgumentException("품목정보가 없습니다."));
 
+            totalAmount += lineDTO.getTotalPrice();
+
             PurchaseOrderEntity line = PurchaseOrderEntity.create(
                     item,
                     lineDTO.getQuantity(),
-                    lineDTO.getUnitPrice());
+                    lineDTO.getTotalPrice()
+            );
+            line.setHeader(header);
 
-            header.saveLine(line);
+            purchaseOrderRepository.save(line);
         }
 
+        header.setAmount(totalAmount);
     }
 }

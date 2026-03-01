@@ -1,9 +1,4 @@
-package com.itwillbs.ilkwangtech.sales.entity;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import com.itwillbs.ilkwangtech.member.entity.Member;
+package com.itwillbs.ilkwangtech.sales.entity;import com.itwillbs.ilkwangtech.member.entity.Member;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

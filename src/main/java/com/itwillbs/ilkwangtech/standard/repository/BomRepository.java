@@ -13,6 +13,6 @@ import java.util.List;
 @Repository
 public interface BomRepository extends JpaRepository<BomEntity, Long> {
 
-    Page<BomEntity> findByBeforeItem_ItemId(Long itemId, Pageable pageable);
+    Page<BomEntity> findByChildItem(Long itemId, Pageable pageable);
 
 }

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>대시보드</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <th:block layout:fragment="style">
+        <style>
+            .page-container { background: #f8f9fa; border-radius: 12px; padding: 30px; }
+            .dash-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+            .stat-num { font-size: 2rem; font-weight: bold; color: #2c3e50; }
+            
+            /* 창고 랙 색상 범례 */
+            .rack-status-none { border: 2px solid #ddd; background-color: #fff; }
+            .rack-status-normal { background-color: #69b3f2; color: #fff; border-color: #69b3f2; }
+            .rack-status-full { background-color: #f26969; color: #fff; border-color: #f26969; }
+            
+            .zone-box { border: 1px solid #ddd; border-radius: 8px; padding: 0; background: #fff; }
+            .zone-header { background: #343a40; color: #fff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; font-weight: bold; }
+            /* 💡 display를 grid로 변경하여 한 줄에 무조건 3개씩(3열) 배치되도록 강제 고정합니다. */
+            .rack-container { display: grid; grid-template-columns: repeat(3, 55px); gap: 15px; justify-content: center; padding: 20px; }
+            /* 랙 박스: 9개가 적당히 들어가도록 크기 살짝 조정 */
+            .rack-box { width: 55px; height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+            
+            #chart-area { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px; }
+            
+            /* 클릭 가능한 카드 애니메이션 효과 (들썩임 및 레이아웃 밀림 방지) */
+            .clickable-card {
+                transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            }
+            .clickable-card:hover {
+                transform: translateY(-2px); 
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px #198754; 
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-container">
+            <h4 class="mb-4 text-secondary">재고 관리 / <span class="text-dark fw-bold">대시보드</span></h4>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="dash-card clickable-card" style="cursor: pointer;" onclick="showInboundScheduledModal()">
+                        <div class="text-muted mb-2">금일 입고 예정</div>
+                        <div class="stat-num" th:text="${inboundScheduled}">0</div>
+                        <div class="text-success mt-2 d-flex justify-content-between align-items-center">
+                            <span><i class="fa-solid fa-arrow-up"></i> 처리 : <span th:text="${inboundProcessed}">0</span></span>
+                            <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); processInbound()">입고 처리</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="dash-card">
+                        <div class="text-muted mb-2">금일 출고 지시</div>
+                        <div class="stat-num" th:text="${outboundOrdered}">0</div>
+                        <div class="text-danger mt-2">
+                            <i class="fa-solid fa-arrow-down"></i> 처리 : <span th:text="${outboundProcessed}">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="dash-card">
+                        <div class="text-muted mb-2">발주 필요</div>
+                        <div class="stat-num text-warning"><span th:text="${#lists.size(orderList)}">0</span> / 51</div>
+                        <div class="text-warning mt-2 fw-bold">발주 필요</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-card mb-4">
+                <h5 class="mb-3">창고</h5>
+                <div class="mb-3 small">
+                    <span class="me-3"><i class="fa-regular fa-circle text-muted"></i> 없음(0)</span>
+                    <span class="me-3"><i class="fa-solid fa-circle" style="color:#69b3f2;"></i> 보통(1K~3K)</span>
+                    <span><i class="fa-solid fa-circle" style="color:#f26969;"></i> 많음(4K↑)</span>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="zone-box">
+                            <div class="zone-header">ZONE A</div>
+                            <div class="rack-container">
+                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                    <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
+                                         th:class="'rack-box rack-status-' + ${warehouse['ZONE A_' + rackName]}" 
+                                         style="cursor: pointer;" 
+                                         data-zone="ZONE A"
+                                         th:data-rack="${rackName}"
+                                         onclick="showRackModal(this.getAttribute('data-zone'), this.getAttribute('data-rack'))">
+                                        Rack<br><span th:text="${rackNum}"></span>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="zone-box">
+                            <div class="zone-header">ZONE B</div>
+                            <div class="rack-container">
+                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                    <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
+                                         th:class="'rack-box rack-status-' + ${warehouse['ZONE B_' + rackName]}" 
+                                         style="cursor: pointer;" 
+                                         data-zone="ZONE B"
+                                         th:data-rack="${rackName}"
+                                         onclick="showRackModal(this.getAttribute('data-zone'), this.getAttribute('data-rack'))">
+                                        Rack<br><span th:text="${rackNum}"></span>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="zone-box">
+                            <div class="zone-header">ZONE C</div>
+                            <div class="rack-container">
+                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                    <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
+                                         th:class="'rack-box rack-status-' + ${warehouse['ZONE C_' + rackName]}" 
+                                         style="cursor: pointer;" 
+                                         data-zone="ZONE C"
+                                         th:data-rack="${rackName}"
+                                         onclick="showRackModal(this.getAttribute('data-zone'), this.getAttribute('data-rack'))">
+                                        Rack<br><span th:text="${rackNum}"></span>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chart-area" class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="btn-group btn-group-sm" id="chart-btn-group">
+                        <button class="btn btn-primary" onclick="loadChartData('month', this)">월</button>
+                        <button class="btn btn-outline-primary" onclick="loadChartData('week', this)">주</button>
+                        <button class="btn btn-outline-primary" onclick="loadChartData('day', this)">일</button>
+                    </div>
+                    <h5 class="m-0 text-center flex-grow-1">재고 현황 추적</h5>
+                </div>
+                <div id="stockChart" style="width: 100%; height: 400px;"></div>
+            </div>
+
+            <div class="dash-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>발주 필요 재고 리스트</h5>
+                    <button class="btn btn-info text-white" onclick="bulkOrder()">일괄 발주</button>
+                </div>
+                <table class="table table-bordered text-center align-middle">
+					<thead class="table-light">
+                        <tr>
+                            <th><input type="checkbox" id="checkAll"></th>
+                            <th>No.</th>
+                            <th>품목명</th>
+                            <th>재고</th>
+                            <th>입고예정</th>
+                            <th>생산계획</th>
+                            <th>예약재고</th>
+                            <th>안전재고수량</th>
+                            <th>필요 재고</th>
+                            <th>단위</th>
+                            <th>진행상태</th>
+                            <th>발주</th>
+                        </tr>
+                    </thead>
+					<tbody id="orderListBody">
+                        <tr th:each="item, stat : ${orderList}">
+                            <td>
+                                <input type="checkbox" class="chk-item" th:value="${item.itemId}"
+                                       th:data-name="${item.itemName}" th:data-req="${item.requiredStock}"
+                                       th:data-status="${item.status}" th:data-pending="${item.pendingRequestQty}">
+                            </td>
+                            <td th:text="${stat.count}">1</td>
+                            <td class="text-start" th:text="${item.itemName}">라벨</td>
+                            <td th:text="${item.currentStock}">1621</td>
+                            <td th:text="${item.incomingStock}">0</td>
+                            <td th:text="${item.productionPlan}">1000</td>
+                            <td th:text="${item.reservedStock}">1000</td>
+                            <td th:text="${item.safeStock}">3000</td>
+                            <td th:class="${item.requiredStock > 0 ? 'text-danger fw-bold' : 'text-muted'}" th:text="${item.requiredStock}">1379</td>
+                            <td th:text="${item.uom}">EA</td>
+                            <td>
+                                <span th:class="${item.status == '요청완료' ? 'badge bg-success' : 'badge bg-secondary'}" 
+                                      th:text="${item.status}">발주대기</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm" 
+                                        th:classappend="${item.status == '요청완료' ? 'btn-outline-success' : 'btn-outline-info'}"
+                                        th:data-id="${item.itemId}"
+                                        th:data-name="${item.itemName}"
+                                        th:data-req="${item.requiredStock}"
+                                        th:data-status="${item.status}"
+                                        th:data-pending="${item.pendingRequestQty}"
+                                        onclick="openSingleOrderModal(this)">발주</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-center mt-3">
+                    <ul class="pagination pagination-sm" id="paginationControls"></ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="rackModal" tabindex="-1" aria-labelledby="rackModalLabel" aria-hidden="true">
+		    <div class="modal-dialog modal-lg modal-dialog-centered">
+		        <div class="modal-content">
+		            <div class="modal-header bg-dark text-white">
+		                <h5 class="modal-title" id="rackModalLabel">창고 상세 정보</h5>
+		                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+		            </div>
+		            <div class="modal-body">
+		                <table class="table table-bordered text-center align-middle">
+		                    <thead class="table-light">
+		                        <tr>
+		                            <th>품목코드</th>
+		                            <th>품목명</th>
+		                            <th>LOT 번호</th>
+		                            <th>수량</th>
+		                            <th>관리</th>
+		                        </tr>
+		                    </thead>
+		                    <tbody id="rackModalBody">
+		                    </tbody>
+		                </table>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		<div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">재고 이동</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="trInventoryId">
+                        <div class="mb-3">
+                            <label class="form-label">최대 가능 수량</label>
+                            <input type="number" class="form-control" id="trMaxQty" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">이동할 수량</label>
+                            <input type="number" class="form-control" id="trQty" min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">이동할 ZONE</label>
+                            <select class="form-select" id="trZone">
+                                <option value="ZONE A">ZONE A</option>
+                                <option value="ZONE B">ZONE B</option>
+                                <option value="ZONE C">ZONE C</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">이동할 Rack</label>
+                            <select class="form-select" id="trRack">
+                                <option value="Rack 01">Rack 01</option>
+                                <option value="Rack 02">Rack 02</option>
+                                <option value="Rack 03">Rack 03</option>
+                                <option value="Rack 04">Rack 04</option>
+                                <option value="Rack 05">Rack 05</option>
+                                <option value="Rack 06">Rack 06</option>
+                                <option value="Rack 07">Rack 07</option>
+                                <option value="Rack 08">Rack 08</option>
+                                <option value="Rack 09">Rack 09</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" onclick="executeTransfer()">이동 실행</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="inboundModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">금일 입고 대기 품목 리스트</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>발주코드</th>
+                                    <th>거래처</th>
+                                    <th>품목코드</th>
+                                    <th>품목명</th>
+                                    <th>수량</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inboundModalBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="singleOrderModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">발주 요청 (단건)</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="soItemId">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">품목명</label>
+                            <input type="text" class="form-control" id="soItemName" readonly>
+                        </div>
+                        
+                        <div class="mb-3" id="soPendingGroup" style="display: none;">
+						    <label class="form-label text-primary fw-bold"><i class="fa-solid fa-clock"></i> 현재 발주 대기량 (진행중)</label>
+						    <input type="text" class="form-control bg-light text-primary fw-bold" id="soPendingQty" readonly>
+						</div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted">권장 발주량 (부족 재고)</label>
+                            <input type="text" class="form-control" id="soReqQty" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-danger fw-bold">실제 발주 수량 작성</label>
+                            <input type="number" class="form-control" id="soOrderQty" min="1">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-info text-white" onclick="executeSingleOrder()">발주 실행</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="bulkOrderModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">일괄 발주 요청</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-primary py-2" id="bulkOrderCountText">총 0개 제품이 선택되었습니다.</div>
+                        <table class="table table-bordered text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>품목명</th>
+                                    <th>권장 발주량</th>
+                                    <th style="width: 150px;">발주 수량 설정</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulkOrderModalBody">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" onclick="executeBulkOrder()">일괄 발주 실행</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<th:block layout:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+    let chartInstance = null;
+
+    function loadChartData(type, btnElement) {
+        if (btnElement) {
+            const buttons = document.getElementById('chart-btn-group').querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
+            btnElement.classList.remove('btn-outline-primary');
+            btnElement.classList.add('btn-primary');
+        }
+
+        fetch(`/inventorymg/chart-data?type=${type}`)
+            .then(response => response.json())
+            .then(res => {
+                const options = {
+                    series: [
+                        { name: '입고', type: 'column', data: res.inData },
+                        { name: '출고', type: 'line', data: res.outData },
+                        { name: '폐기', type: 'line', data: res.discardData }
+                    ],
+                    chart: { 
+                        height: 400, 
+                        type: 'line',
+                        toolbar: { show: false } 
+                    },
+                    colors: ['#2196F3', '#00E676', '#FF9800'],
+                    stroke: { 
+                        width: [0, 3, 3],
+                        curve: 'smooth'
+                    },
+                    labels: res.categories,
+                    markers: { size: 5 },
+                    legend: { position: 'right', offsetY: 40 },
+                    yaxis: {
+                        labels: {
+                            formatter: function (value) { return value ? Math.round(value).toLocaleString() : "0"; }
+                        }
+                    }
+                };
+
+                if (!chartInstance) {
+                    chartInstance = new ApexCharts(document.querySelector("#stockChart"), options);
+                    chartInstance.render();
+                } else {
+                    chartInstance.updateOptions(options);
+                }
+            })
+            .catch(error => console.error('차트 에러:', error));
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadChartData('month', document.querySelector('#chart-btn-group button'));
+
+        tableRows = Array.from(document.querySelectorAll('#orderListBody tr:not(.empty-row)'));
+        if(tableRows.length > 0) {
+            renderPagination();
+            displayPage(1);
+        }
+    });
+
+        document.getElementById('checkAll').addEventListener('change', function() {
+            const isChecked = this.checked;
+            document.querySelectorAll('.chk-item').forEach(chk => chk.checked = isChecked);
+        });
+        
+        function showRackModal(zone, rack) {
+            document.getElementById('rackModalLabel').innerText = `${zone} - ${rack} 상세 정보`;
+            const url = `/inventorymg/rack-info?zone=${encodeURIComponent(zone)}&rack=${encodeURIComponent(rack)}`;
+            
+            fetch(url)
+                .then(async response => {
+                    if (!response.ok) {
+                        const errText = await response.text();
+                        throw new Error(`서버 응답 오류 (${response.status}):\n${errText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('rackModalBody');
+                    tbody.innerHTML = ''; 
+                    
+                    if(data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-muted">해당 랙에 보관된 품목이 없습니다.</td></tr>';
+                    } else {
+                    	data.forEach(item => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${item.itemCode || '-'}</td>
+                                <td>${item.itemName || '-'}</td>
+                                <td>${item.lotNumber || '-'}</td>
+                                <td class="text-primary fw-bold">${item.quantity || 0}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="openTransferModal(${item.inventoryId}, ${item.quantity})">이동</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    
+                    try {
+                        const modalElement = document.getElementById('rackModal');
+                        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                        modal.show();
+                    } catch (e) {
+                        console.error('모달 실행 에러:', e);
+                        alert('모달 창을 띄울 수 없습니다. 화면 내에 Bootstrap JS가 로드되었는지 확인해주세요.\n' + e.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch 에러:', error);
+                    alert(`데이터 조회 실패:\n${error.message}`);
+                });
+        }
+     	
+        function processInbound() {
+            if(confirm('금일 입고 예정(COMPLETE) 항목들을 창고에 분배하여 입고 처리하시겠습니까?')) {
+                fetch('/inventorymg/process-inbound', {
+                    method: 'POST'
+                })
+                .then(response => response.text())
+                .then(msg => {
+                    alert(msg);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('입고 처리 중 오류가 발생했습니다.');
+                });
+            }
+        }
+     	
+        function openTransferModal(inventoryId, maxQty) {
+            document.getElementById('trInventoryId').value = inventoryId;
+            document.getElementById('trMaxQty').value = maxQty;
+            document.getElementById('trQty').value = maxQty;
+            
+            bootstrap.Modal.getInstance(document.getElementById('rackModal')).hide();
+            new bootstrap.Modal(document.getElementById('transferModal')).show();
+        }
+
+        function executeTransfer() {
+            const inventoryId = document.getElementById('trInventoryId').value;
+            const transferQty = parseInt(document.getElementById('trQty').value);
+            const maxQty = parseInt(document.getElementById('trMaxQty').value);
+            const targetZone = document.getElementById('trZone').value;
+            const targetRack = document.getElementById('trRack').value;
+
+            if(transferQty <= 0 || transferQty > maxQty) {
+                alert('올바른 수량을 입력해주세요.'); return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('inventoryId', inventoryId);
+            formData.append('targetZone', targetZone);
+            formData.append('targetRack', targetRack);
+            formData.append('transferQty', transferQty);
+
+            fetch('/inventorymg/transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+            .then(response => {
+                if(!response.ok) throw new Error('이동 실패');
+                return response.text();
+            })
+            .then(msg => {
+                alert(msg);
+                location.reload(); 
+            })
+            .catch(error => alert(error.message));
+        }
+        
+        function showInboundScheduledModal() {
+            fetch('/inventorymg/inbound-scheduled-list')
+                .then(response => {
+                    if(!response.ok) throw new Error('목록을 불러오는데 실패했습니다.');
+                    return response.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('inboundModalBody');
+                    tbody.innerHTML = ''; 
+                    
+                    if(data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-muted">입고 대기 중인 품목이 없습니다.</td></tr>';
+                    } else {
+                        data.forEach(item => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${item.purchaseOrderCode || '-'}</td>
+                                <td>${item.company || '-'}</td>
+                                <td>${item.itemCode || '-'}</td>
+                                <td>${item.itemName || '-'}</td>
+                                <td class="text-success fw-bold">${item.quantity || 0}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    
+                    new bootstrap.Modal(document.getElementById('inboundModal')).show();
+                })
+                .catch(error => alert(error.message));
+        }
+
+        const rowsPerPage = 10;
+        let currentPage = 1;
+        let tableRows = [];
+
+        function displayPage(page) {
+            currentPage = page;
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            tableRows.forEach((row, index) => {
+                if(index >= start && index < end) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            updatePaginationUI();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(tableRows.length / rowsPerPage);
+            const ul = document.getElementById('paginationControls');
+            ul.innerHTML = '';
+
+            for(let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="displayPage(${i})">${i}</a>`;
+                ul.appendChild(li);
+            }
+        }
+
+        function updatePaginationUI() {
+            const ul = document.getElementById('paginationControls');
+            if(!ul) return;
+            const items = ul.getElementsByTagName('li');
+            for(let i = 0; i < items.length; i++) {
+                items[i].classList.remove('active');
+                if(i + 1 === currentPage) {
+                    items[i].classList.add('active');
+                }
+            }
+        }
+        
+        // ===== 단건 발주 모달 열기 =====
+        function openSingleOrderModal(btn) {
+            const status = btn.getAttribute('data-status');
+            const pendingQty = btn.getAttribute('data-pending'); // 💡 대기량 추가
+
+            // 💡 이미 요청된 품목이면 수량과 함께 추가 발주 의사 묻기
+            if (status === '요청완료') {
+                if (!confirm(`현재 [${pendingQty}개]가 발주 진행 중입니다. 그래도 추가로 발주하시겠습니까?`)) {
+                    return; 
+                }
+                // 진행 시 모달 안의 '발주 대기량' 입력칸 보여주기
+                document.getElementById('soPendingGroup').style.display = 'block';
+                document.getElementById('soPendingQty').value = pendingQty + ' 개';
+            } else {
+                // 발주대기 상태면 숨기기
+                document.getElementById('soPendingGroup').style.display = 'none';
+            }
+
+            const itemId = btn.getAttribute('data-id');
+            const itemName = btn.getAttribute('data-name');
+            const reqQty = parseInt(btn.getAttribute('data-req'));
+
+            document.getElementById('soItemId').value = itemId;
+            document.getElementById('soItemName').value = itemName;
+            document.getElementById('soReqQty').value = reqQty;
+            document.getElementById('soOrderQty').value = reqQty > 0 ? reqQty : 1; 
+
+            new bootstrap.Modal(document.getElementById('singleOrderModal')).show();
+        }
+
+        // ===== 단건 발주 실행 =====
+        function executeSingleOrder() {
+            const itemId = document.getElementById('soItemId').value;
+            const qty = parseInt(document.getElementById('soOrderQty').value);
+
+            if (qty <= 0 || isNaN(qty)) {
+                alert('발주 수량을 1개 이상 입력해주세요.');
+                return;
+            }
+
+            if(confirm('해당 수량으로 발주 요청하시겠습니까?')) {
+                sendPurchaseRequest([{ itemId: itemId, quantity: qty }]);
+            }
+        }
+
+        // ===== 일괄 발주 모달 열기 =====
+        function bulkOrder() {
+            const checkedBoxes = document.querySelectorAll('.chk-item:checked');
+            if(checkedBoxes.length === 0) {
+                alert('발주할 품목을 선택해주세요.');
+                return;
+            }
+
+            // 💡 선택된 항목 중 '요청완료' 상태가 섞여 있는지 검사
+            let hasRequestedItem = false;
+            checkedBoxes.forEach(chk => {
+                if (chk.getAttribute('data-status') === '요청완료') {
+                    hasRequestedItem = true;
+                }
+            });
+
+            if (hasRequestedItem) {
+                if (!confirm('선택한 항목 중에 이미 발주 요청이 들어간 품목이 포함되어 있습니다. 계속해서 추가 발주하시겠습니까?')) {
+                    return; 
+                }
+            }
+
+            document.getElementById('bulkOrderCountText').innerText = `총 ${checkedBoxes.length}개 제품이 선택되었습니다. 아래에서 각 품목의 발주 수량을 확인하고 수정할 수 있습니다.`;
+            const tbody = document.getElementById('bulkOrderModalBody');
+            tbody.innerHTML = '';
+
+            checkedBoxes.forEach(chk => {
+                const itemId = chk.value;
+                const itemName = chk.getAttribute('data-name');
+                const reqQty = parseInt(chk.getAttribute('data-req'));
+                const defaultQty = reqQty > 0 ? reqQty : 1; 
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-start">${itemName}</td>
+                    <td class="text-danger fw-bold">${reqQty}</td>
+                    <td>
+                        <input type="number" class="form-control bulk-qty-input" data-id="${itemId}" value="${defaultQty}" min="1">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            new bootstrap.Modal(document.getElementById('bulkOrderModal')).show();
+        }
+
+        // ===== 일괄 발주 실행 =====
+        function executeBulkOrder() {
+            const inputs = document.querySelectorAll('.bulk-qty-input');
+            const requestData = [];
+
+            inputs.forEach(input => {
+                const itemId = input.getAttribute('data-id');
+                const qty = parseInt(input.value);
+                if (qty > 0) {
+                    requestData.push({ itemId: itemId, quantity: qty }); 
+                }
+            });
+
+            if (requestData.length === 0) {
+                alert('발주할 수량이 입력된 품목이 없습니다.');
+                return;
+            }
+
+            if(confirm('목록의 수량대로 일괄 발주 요청하시겠습니까?')) {
+                sendPurchaseRequest(requestData);
+            }
+        }
+
+        // ===== Fetch API 호출 (JSON 객체 배열 전송) =====
+        function sendPurchaseRequest(requestData) {
+            fetch('/inventorymg/purchase-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData) 
+            })
+            .then(response => response.text())
+            .then(msg => {
+                alert(msg);
+                location.reload(); 
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</th:block>
+</body>
+</html>

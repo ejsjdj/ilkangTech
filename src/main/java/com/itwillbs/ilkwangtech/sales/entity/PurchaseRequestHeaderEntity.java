@@ -3,13 +3,15 @@ package com.itwillbs.ilkwangtech.sales.entity;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
 
 // 구매요청 헤더 엔티티
 @Entity
-@Getter
+@Getter // 추가
+@Setter // 추가
 @Table(name = "purchase_request_header")
 public class PurchaseRequestHeaderEntity {
 

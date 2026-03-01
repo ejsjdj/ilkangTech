@@ -41,5 +41,9 @@ public interface ProductionPlaneRepository extends JpaRepository<ProductionPlane
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProductionInstructEntity i SET i.status = 'CAN' WHERE i.productionId.id = :planeId")
     int updateInstructStatusByPlaneId(@Param("planeId") Long planeId);
+    
+    // 특정 품목의 취소되지 않은(CAN) 생산계획 총 수량 조회
+    @Query("SELECT COALESCE(SUM(p.totalQty), 0) FROM ProductionPlaneEntity p WHERE p.item = :itemId AND p.status != 'CAN'")
+    Long sumProductionPlanQtyByItemId(@Param("itemId") Long itemId);
 
 }

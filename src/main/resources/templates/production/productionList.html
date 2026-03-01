@@ -1,0 +1,123 @@
+<!doctype html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layout/layout}"
+>
+  <head>
+    <title>생산계획 관리</title>
+
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background: white;
+        width: 900px;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 8px;
+      }
+
+      .close-btn {
+        float: right;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .form-row {
+        margin-bottom: 10px;
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/grid/latest/tui-grid.css"
+    />
+  </head>
+
+  <body layout:fragment="content">
+    <div style="padding: 20px">
+      <h2>생산계획 관리</h2>
+
+      <!-- 생산계획 검색 영역 -->
+      <h3>생산계획 검색</h3>
+
+      <input type="text" id="keyword" placeholder="계획코드 또는 품목명" />
+
+      <button id="searchBtn">검색</button>
+
+      <br /><br />
+
+      <button onclick="goRegister()" style="padding: 6px 12px">
+        신규 생산계획 등록
+      </button>
+
+      <div id="grid" style="margin-top: 20px"></div>
+    </div>
+
+    <!-- 상세보기 모달 -->
+    <div id="detailModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">X</span>
+
+        <h3>생산계획 상세</h3>
+
+        <!-- 상단 정보 -->
+        <div class="form-row">
+          계획코드 <input type="text" id="d_planeCode" readonly /> 계획일자
+          <input type="text" id="d_planeDate" readonly /> 등록자
+          <input type="text" id="d_memberName" readonly />
+        </div>
+
+        <div class="form-row">
+          품목명 <input type="text" id="d_itemName" readonly /> 총수량
+          <input type="text" id="d_totalQty" readonly /> 상태
+          <input type="text" id="d_status" readonly />
+        </div>
+
+        <div class="form-row">
+          메모 <input type="text" id="d_memo" readonly style="width: 400px" />
+        </div>
+
+        <hr />
+
+        <div style="text-align: right; margin-top: 15px">
+          <button
+            id="cancelBtn"
+            style="padding: 6px 12px; background: #e74c3c; color: white"
+          >
+            계획 취소
+          </button>
+          <button onclick="closeModal()" style="padding: 6px 12px">닫기</button>
+        </div>
+
+        <!-- 하단 상세 Grid -->
+        <div id="detailGrid"></div>
+      </div>
+    </div>
+  </body>
+
+  <th:block layout:fragment="script">
+    <script
+      src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"
+    ></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+    <script th:src="@{/js/production.js}"></script>
+  </th:block>
+</html>

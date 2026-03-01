@@ -26,9 +26,13 @@ public class QProductionPlaneDetailEntity extends EntityPathBase<ProductionPlane
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final com.itwillbs.ilkwangtech.standard.entity.QItemEntity item;
+
     public final StringPath memo = createString("memo");
 
     public final NumberPath<Long> orderId = createNumber("orderId", Long.class);
+
+    public final DateTimePath<java.time.LocalDateTime> planeDetailDate = createDateTime("planeDetailDate", java.time.LocalDateTime.class);
 
     public final NumberPath<Long> productQty = createNumber("productQty", Long.class);
 
@@ -51,6 +55,7 @@ public class QProductionPlaneDetailEntity extends EntityPathBase<ProductionPlane
     public QProductionPlaneDetailEntity(Class<? extends ProductionPlaneDetailEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.header = inits.isInitialized("header") ? new QProductionPlaneEntity(forProperty("header"), inits.get("header")) : null;
+        this.item = inits.isInitialized("item") ? new com.itwillbs.ilkwangtech.standard.entity.QItemEntity(forProperty("item")) : null;
     }
 
 }

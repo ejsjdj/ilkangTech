@@ -26,7 +26,7 @@ public class QProductionPlaneEntity extends EntityPathBase<ProductionPlaneEntity
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final NumberPath<Long> item = createNumber("item", Long.class);
+    public final com.itwillbs.ilkwangtech.standard.entity.QItemEntity item;
 
     public final com.itwillbs.ilkwangtech.member.entity.QMember member;
 
@@ -35,8 +35,6 @@ public class QProductionPlaneEntity extends EntityPathBase<ProductionPlaneEntity
     public final StringPath planeCode = createString("planeCode");
 
     public final DateTimePath<java.time.LocalDateTime> planeDate = createDateTime("planeDate", java.time.LocalDateTime.class);
-
-    public final com.itwillbs.ilkwangtech.standard.entity.QProcessRouteEntity route;
 
     public final StringPath status = createString("status");
 
@@ -60,8 +58,8 @@ public class QProductionPlaneEntity extends EntityPathBase<ProductionPlaneEntity
 
     public QProductionPlaneEntity(Class<? extends ProductionPlaneEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.item = inits.isInitialized("item") ? new com.itwillbs.ilkwangtech.standard.entity.QItemEntity(forProperty("item")) : null;
         this.member = inits.isInitialized("member") ? new com.itwillbs.ilkwangtech.member.entity.QMember(forProperty("member")) : null;
-        this.route = inits.isInitialized("route") ? new com.itwillbs.ilkwangtech.standard.entity.QProcessRouteEntity(forProperty("route"), inits.get("route")) : null;
     }
 
 }

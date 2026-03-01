@@ -38,9 +38,11 @@ public class ProcessRouteApiController {
     }
 
     // 라우팅 상세 조회
+    // TODO ::: 엔티티 재수정 필요!!!!!!!!!
     @GetMapping("/process_mst/detail")
     public List<ProcessRouteDetailDTO> getProcessDetail(@RequestParam(name = "routeId") String routeId){
-        return processRouteService.getProcessRouteDetail(routeId);
+        //  return processRouteService.getProcessRouteDetail(routeId);
+        return null;
     }
 
     // 신규 라우트 추가

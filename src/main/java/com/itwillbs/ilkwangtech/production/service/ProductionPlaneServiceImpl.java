@@ -9,7 +9,9 @@ import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneItemDTO;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneDetailEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
+import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ProcessRouteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
     private final ProductionPlaneRepository productionPlaneRepository;
     private final MemberRepository memberRepository;
     private final ProcessRouteRepository processRouteRepository;
+    private final ItemRepository itemRepository;
 
     // 1. 생산계획 목록 조회
     @Override
@@ -60,14 +63,16 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         ProcessRouteEntity routeCode = processRouteRepository.findById(productionPlaneInsertDTO.getRouteCode()).
                 orElseThrow(() -> new IllegalArgumentException("라우트 코드가 존재하지 않습니다."));
 
+        ItemEntity item = itemRepository.findById(productionPlaneInsertDTO.getItem())
+                .orElseThrow(() -> new IllegalArgumentException("품목 정보가 존재하지 않습니다."));
+
 
         // 2. 헤더 엔티티 저장
         ProductionPlaneEntity header = ProductionPlaneEntity.saveHeader(
-                routeCode,
                 productionPlaneInsertDTO.getPlaneCode(),
                 productionPlaneInsertDTO.getPlaneDate(),
                 member,
-                productionPlaneInsertDTO.getItem(),
+                item,
                 productionPlaneInsertDTO.getTotalQty(),
                 productionPlaneInsertDTO.getStatus(),
                 productionPlaneInsertDTO.getMemo()

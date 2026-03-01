@@ -28,7 +28,7 @@ public class QProcessRouteEntity extends EntityPathBase<ProcessRouteEntity> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final NumberPath<Long> itemId = createNumber("itemId", Long.class);
+    public final QItemEntity item;
 
     public final com.itwillbs.ilkwangtech.member.entity.QMember member;
 
@@ -36,7 +36,7 @@ public class QProcessRouteEntity extends EntityPathBase<ProcessRouteEntity> {
 
     public final QProcessEntity operation;
 
-    public final StringPath routeId = createString("routeId");
+    public final StringPath routeCode = createString("routeCode");
 
     public final StringPath routeName = createString("routeName");
 
@@ -60,6 +60,7 @@ public class QProcessRouteEntity extends EntityPathBase<ProcessRouteEntity> {
 
     public QProcessRouteEntity(Class<? extends ProcessRouteEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.item = inits.isInitialized("item") ? new QItemEntity(forProperty("item")) : null;
         this.member = inits.isInitialized("member") ? new com.itwillbs.ilkwangtech.member.entity.QMember(forProperty("member")) : null;
         this.operation = inits.isInitialized("operation") ? new QProcessEntity(forProperty("operation"), inits.get("operation")) : null;
     }

@@ -24,7 +24,7 @@ public class MyBatisConfig {
 //        factoryBean.setMapperLocations(applicationContext.getResources("classpath:mapper/salesMapper/*.xml"));
 //        factoryBean.setMapperLocations(applicationContext.getResources("classpath:mapper/itemMapper/*.xml"));
 
-        factoryBean.setMapperLocations(applicationContext.getResources("classpath:mapper/**/*.xml"));
+        factoryBean.setMapperLocations(applicationContext.getResources("classpath:mapper/*.xml"));
         return factoryBean.getObject();
     }
 }

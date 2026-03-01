@@ -400,8 +400,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        beforeItemId: Number(parentId),
-                        afterItemId: Number(childId),
+                        parentItemId: Number(parentId),
+                        childItemId: Number(childId),
                         requiredQty: Number(requiredQty)
                     })
                 });

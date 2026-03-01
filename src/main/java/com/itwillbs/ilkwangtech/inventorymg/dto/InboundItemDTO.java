@@ -11,4 +11,5 @@ public class InboundItemDTO {
     private String itemCode;          // 품목 코드
     private String itemName;          // 품목명
     private Long quantity;            // 수량
+
 }

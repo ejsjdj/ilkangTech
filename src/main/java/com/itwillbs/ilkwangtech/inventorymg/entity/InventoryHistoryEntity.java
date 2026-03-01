@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Table(name = "inventory_history")
 @Getter
 @Setter
-public class InventoryHistoryEntity { // 재고 수불 이력 - 그래프용
+public class InventoryHistoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,4 +28,5 @@ public class InventoryHistoryEntity { // 재고 수불 이력 - 그래프용
 
     @Column(name = "quantity")
     private Long quantity; // 변동 수량
+
 }

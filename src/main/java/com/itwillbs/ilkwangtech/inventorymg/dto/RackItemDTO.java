@@ -1,21 +1,22 @@
 package com.itwillbs.ilkwangtech.inventorymg.dto;
 
-import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor // 추가
+@AllArgsConstructor// 추가
 public class RackItemDTO {
-	private Long inventoryId; // 추가됨 (재고 고유 식별자)
-	private String itemCode;
-	private String itemName;
-	private String lotNumber;
-	private Long quantity;
-	private LocalDate expirationDate;
+	private Long inventoryId;  // 재고 고유 식별자
+    private String itemCode;   // 품목 코드
+    private String itemName;   // 품목명
+    private String lotNumber;  // LOT 번호
+    private Long quantity;     // 수량
+    private LocalDate expirationDate; // 유통기한
+
 }

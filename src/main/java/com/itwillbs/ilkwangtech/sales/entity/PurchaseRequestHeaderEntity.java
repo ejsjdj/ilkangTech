@@ -1,4 +1,6 @@
-package com.itwillbs.ilkwangtech.sales.entity;import com.itwillbs.ilkwangtech.member.entity.Member;
+package com.itwillbs.ilkwangtech.sales.entity;
+
+import com.itwillbs.ilkwangtech.member.entity.Member;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -12,6 +14,10 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.List;
+
 
 // 구매요청 헤더 엔티티
 @Entity

@@ -1,26 +1,16 @@
 package com.itwillbs.ilkwangtech.inventorymg.entity;
 
-import java.time.LocalDate;
-
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "inventory")
 @Getter
 @Setter
-public class InventoryEntity { // 실물 재고 관리
+public class InventoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,5 +34,4 @@ public class InventoryEntity { // 실물 재고 관리
 
     @Column(name = "expiration_date")
     private LocalDate expirationDate; // 유통기한 (임박 재고 파악용)
-
 }

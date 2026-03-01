@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class OrderNeededItemDTO { // 발주 필요 리스트용
+public class OrderNeededItemDTO {
     private Long itemId;
     private String itemName;
     private Long currentStock; // 현재고
@@ -15,4 +15,7 @@ public class OrderNeededItemDTO { // 발주 필요 리스트용
     private Long safeStock; // 안전재고 (더미)
     private Long requiredStock; // 필요재고 (더미 계산)
     private String uom; // 단위
+    private String status; // "발주대기" 또는 "요청완료"
+    private Long pendingRequestQty; // 현재 구매요청(PR) 진행 중인 수량
+
 }

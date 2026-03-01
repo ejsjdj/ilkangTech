@@ -43,4 +43,8 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
                                    @Param("instructCode") String instructCode,
                                    @Param("processId") Long processId
     );
+    
+    // 특정 품목의 완료(COM)되거나 취소(CAN)되지 않은 작업지시(예약재고) 총 수량 조회
+    @Query("SELECT COALESCE(SUM(p.instructQty), 0) FROM ProductionInstructEntity p WHERE p.item = :itemId AND p.status NOT IN ('COM', 'CAN')")
+    Long sumReservedQtyByItemId(@Param("itemId") Long itemId);
 }

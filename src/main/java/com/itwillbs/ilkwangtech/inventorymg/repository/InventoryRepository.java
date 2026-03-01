@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package com.itwillbs.ilkwangtech.inventorymg.repository;
 
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;

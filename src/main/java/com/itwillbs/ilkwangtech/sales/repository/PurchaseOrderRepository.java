@@ -28,19 +28,4 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrderEnti
            "WHERE po.item.itemId = :itemId AND po.header.status IN ('CONFIRMED', 'COMPLETE')")
     Long sumIncomingQuantityByItemId(@Param("itemId") Long itemId);
 
-    @Query("""
-        SELECT h
-        FROM PurchaseOrderHeaderEntity h
-        LEFT JOIN FETCH h.lines
-        WHERE h.id = :id
-    """)
-    PurchaseOrderHeaderEntity findByPurchaseIdDetail(@Param("purchaseOrderId") Long purchaseOrderId);
-    
-    @Query("SELECT COUNT(h) FROM PurchaseOrderHeaderEntity h WHERE h.status = 'COMPLETE'")
-    long countInboundScheduled();
-    
-    // 상태가 'COMPLETE'인 발주 목록과 상세 라인을 한 번에 조회
-    @Query("SELECT DISTINCT h FROM PurchaseOrderHeaderEntity h LEFT JOIN FETCH h.lines WHERE h.status = 'COMPLETE'")
-    List<PurchaseOrderHeaderEntity> findCompleteOrders();
-
 }

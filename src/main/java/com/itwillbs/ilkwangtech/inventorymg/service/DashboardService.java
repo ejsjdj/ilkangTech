@@ -267,7 +267,8 @@ public class DashboardService {
             if (itemId != null && quantity != null && quantity > 0) {
                 PurchaseRequestEntity line = new PurchaseRequestEntity();
                 line.setHeader(savedHeader);
-                line.setItemId(itemId);
+                ItemEntity findItem = itemRepository.findById(itemId).orElse(null);
+                line.setItem(findItem); 
                 line.setQuantity(quantity); 
                 prLineRepository.save(line);
             }

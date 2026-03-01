@@ -15,18 +15,21 @@ import java.util.List;
 public interface ProcessRouteRepository extends JpaRepository<ProcessRouteEntity, Long> {
 
     // 1. 라우트 전체 조회
-    @Query("SELECT p FROM ProcessRouteEntity p " +
-            "WHERE p.id IN (" +
-            "    SELECT MAX(p2.id) FROM ProcessRouteEntity p2 " +
-            "    WHERE (:routeName IS NULL OR p2.routeName LIKE %:routeName%) " +
-            "    AND (:itemId IS NULL OR p2.itemId = :itemId) " +
-            "    GROUP BY p2.routeId" +
-            ") " +
-            "ORDER BY p.routeId ASC")
-    Page<ProcessRouteEntity> findDistinctRouteIdBy(@Param("itemId") Long itemId,
-                                                   @Param("routeName") String routeName,
-                                                   Pageable pageable);
+    @Query("""
+                SELECT p FROM ProcessRouteEntity p
+                WHERE p.id IN (
+                SELECT MAX(p2.id)
+                FROM ProcessRouteEntity p2
+                WHERE (:routeName IS NULL OR p2.routeName LIKE %:routeName%)
+                AND (:itemId IS NULL OR p2.item.id = :itemId)
+                GROUP BY p2.routeCode
+                )
+                """)
+    Page<ProcessRouteEntity> findDistinctRouteIdBy(
+            @Param("itemId") Long itemId,
+            @Param("routeName") String routeName,
+            Pageable pageable
+    );
 
-    // 2. 라우트 상세 조회
-    List<ProcessRouteDetailDTO> findByRouteId(String routeId);
+    //List<ProcessRouteEntity> findByRouteCodeOrderBySequenceAsc(String routeCode);
 }

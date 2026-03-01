@@ -1,38 +1,86 @@
-<!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layout/layout}">
-<head>
-    <title>발주 등록 </title>
+<!doctype html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  layout:decorate="~{layout/layout}"
+>
+  <head>
+    <title>발주 등록</title>
+  </head>
 
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-</head>
+  <body>
+    <div layout:fragment="content">
+      <h2>발주 등록</h2>
 
-
-<body layout:fragment="content">
-
-<div style="padding:20px;">
-    <h2>발주 등록</h2>
-    <div style="padding:20px;">
-
-    <label for="purchaseRequestSelect">구매요청코드 선택</label>
-    <select id="purchaseRequestSelect">
+      <label for="purchaseRequestSelect">구매요청코드 선택</label>
+      <select id="purchaseRequestSelect">
         <option value="">-- 선택하세요 --</option>
-    </select>
-</div>
-</div>
+      </select>
 
-</body>
+      <!-- 구매요청 상세 -->
+      <h3>구매요청 상세</h3>
 
-<th:block layout:fragment="script">
-    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+      <div>
+        <label>구매요청코드</label>
+        <input type="text" id="prCode" readonly />
+      </div>
 
-    <script th:src="@{/js/purchaseRequest.js}"></script>
-</th:block>
+      <div>
+        <label>요청자</label>
+        <input type="text" id="memberName" readonly />
+      </div>
 
+      <div>
+        <label>요청일</label>
+        <input type="text" id="requestDate" readonly />
+      </div>
 
+      <div>
+        <label>납기일</label>
+        <input type="text" id="dueDate" readonly />
+      </div>
+
+      <div>
+        <label>납품장소</label>
+        <input type="text" id="deliveryLocate" readonly />
+      </div>
+
+      <div>
+        <label>계약구분</label>
+        <input type="text" id="contractType" readonly />
+      </div>
+
+      <div>
+        <label>제작구분</label>
+        <input type="text" id="produceType" readonly />
+      </div>
+
+      <hr />
+
+      <!-- 라인 테이블 -->
+      <table id="lineTable" border="1">
+        <thead>
+          <tr>
+            <th>NO</th>
+            <th>품목</th>
+            <th>수량</th>
+            <th>단위</th>
+            <th>금액</th>
+            <th>거래처</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <br />
+
+      <button id="saveProcurementBtn">발주 등록</button>
+    </div>
+  </body>
+
+  <th:block layout:fragment="script">
+    <script th:src="@{/js/purchaseOrderRegister.js}"></script>
+  </th:block>
 </html>

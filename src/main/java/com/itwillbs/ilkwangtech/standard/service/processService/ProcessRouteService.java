@@ -14,7 +14,7 @@ public interface ProcessRouteService {
     Page<ProcessRouteDTO> getProcessRouteList(Pageable pageable, Long itemId, String routeName);
 
     // 2. 라우트 상세 조회
-    List<ProcessRouteDetailDTO> getProcessRouteDetail(String routeId);
+    // List<ProcessRouteDetailDTO> getProcessRouteDetail(String routeId);
 
     // 3. 라우트 등록
     void saveProcessRoute(List<ProcessRouteInsertDTO> processRouteInsertDTO, Long userId);

@@ -1,15 +1,22 @@
-package com.itwillbs.ilkwangtech.sales.entity;
+package com.itwillbs.ilkwangtech.sales.entity;import com.itwillbs.ilkwangtech.member.entity.Member;
 
-import com.itwillbs.ilkwangtech.member.entity.Member;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
-
-import java.time.LocalDate;
-import java.util.List;
+import lombok.Setter;
 
 // 구매요청 헤더 엔티티
 @Entity
-@Getter
+@Getter // 추가
+@Setter // 추가
 @Table(name = "purchase_request_header")
 public class PurchaseRequestHeaderEntity {
 

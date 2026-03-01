@@ -174,55 +174,56 @@ public class DashboardService {
             }
         }
     }
+    
+    // DB에서 Object 배열로 가져온 결과를 자바 Map으로 예쁘게 변환하는 헬퍼 메서드
+    private Map<Long, Long> convertToMap(List<Object[]> list) {
+        Map<Long, Long> map = new HashMap<>();
+        for (Object[] obj : list) {
+            if (obj[0] != null && obj[1] != null) {
+                // DB마다 반환하는 숫자 타입(Integer, Long, BigInteger)이 다를 수 있어 Number로 안전하게 캐스팅
+                map.put(((Number) obj[0]).longValue(), ((Number) obj[1]).longValue());
+            }
+        }
+        return map;
+    }
 
-    // 완벽한 MRP(자재소요계획) 기반 발주 필요 리스트 로직
+ // 💡 (기존 메서드 교체) 초고속 MRP 기반 발주 필요 리스트 로직
     @Transactional(readOnly = true)
     public List<OrderNeededItemDTO> getOrderNeededList() {
-        // 1. DB에서 전체 품목을 가져옵니다.
-        List<ItemEntity> rawItems = itemRepository.findAll();
-        
-        // 💡 핵심 해결책: JPA 조인으로 인한 뻥튀기(중복) 데이터를 ItemId 기준으로 제거합니다.
-        Map<Long, ItemEntity> uniqueItems = new LinkedHashMap<>();
-        for (ItemEntity item : rawItems) {
-            uniqueItems.put(item.getItemId(), item); // Map의 특성상 동일한 ID는 덮어씌워져서 중복이 완벽히 사라짐!
-        }
+        // 1. 순수 아이템 82개 가져오기
+        List<ItemEntity> uniqueItems = itemRepository.findAllDistinct();
+
+        // 2. ⚡ [핵심 성능 최적화] 반복문 밖에서 단 7번의 쿼리로 전체 품목 데이터를 Map으로 퍼옵니다!
+        Map<Long, Long> currentStockMap = convertToMap(inventoryRepository.sumCurrentQuantityGrouped());
+        Map<Long, Long> incomingStockMap = convertToMap(purchaseOrderRepository.sumIncomingQuantityGrouped());
+        Map<Long, Long> directPlanMap = convertToMap(productionPlaneRepository.sumProductionPlanQtyGrouped());
+        Map<Long, Long> dependentPlanMap = convertToMap(bomRepository.sumDependentPlanQtyGrouped());
+        Map<Long, Long> directReservedMap = convertToMap(productionInstructRepository.sumReservedQtyGrouped());
+        Map<Long, Long> dependentReservedMap = convertToMap(bomRepository.sumDependentInstructQtyGrouped());
+        Map<Long, Long> pendingReqMap = convertToMap(prLineRepository.sumQuantityGrouped());
 
         List<OrderNeededItemDTO> resultList = new ArrayList<>();
         long safeStockThreshold = 3000L; 
 
-        // 💡 중복이 제거된 순수 82개의 아이템으로만 반복문을 실행합니다.
-        for (ItemEntity item : uniqueItems.values()) {
+        // 3. ⚡ 이제 반복문 안에서는 DB를 절대 호출하지 않고, 메모리(Map)에서 값만 쏙쏙 꺼냅니다!
+        for (ItemEntity item : uniqueItems) {
             Long itemId = item.getItemId();
 
-            // [현재고] & [입고예정]
-            Long currentStock = inventoryRepository.sumCurrentQuantityByItemId(itemId);
-            currentStock = (currentStock != null) ? currentStock : 0L;
-
-            Long incomingStock = purchaseOrderRepository.sumIncomingQuantityByItemId(itemId);
-            incomingStock = (incomingStock != null) ? incomingStock : 0L;
+            // Map에서 값 꺼내기 (값이 없으면 기본값 0L 반환)
+            long currentStock = currentStockMap.getOrDefault(itemId, 0L);
+            long incomingStock = incomingStockMap.getOrDefault(itemId, 0L);
+            long prodPlan = directPlanMap.getOrDefault(itemId, 0L) + dependentPlanMap.getOrDefault(itemId, 0L);
+            long reservedStock = directReservedMap.getOrDefault(itemId, 0L) + dependentReservedMap.getOrDefault(itemId, 0L);
+            long pendingReqQty = pendingReqMap.getOrDefault(itemId, 0L);
             
-            // [생산계획] & [예약재고] (BOM 전개 포함)
-            Long directPlan = productionPlaneRepository.sumProductionPlanQtyByItemId(itemId);
-            Long dependentPlan = bomRepository.sumDependentPlanQty(itemId);
-            long prodPlan = (directPlan != null ? directPlan : 0L) + (dependentPlan != null ? dependentPlan : 0L);
-
-            Long directReserved = productionInstructRepository.sumReservedQtyByItemId(itemId);
-            Long dependentReserved = bomRepository.sumDependentInstructQty(itemId);
-            long reservedStock = (directReserved != null ? directReserved : 0L) + (dependentReserved != null ? dependentReserved : 0L);
+            String currentStatus = pendingReqQty > 0 ? "요청완료" : "발주대기";
             
-            // 가용 재고 및 총 필요 수량 계산
             long availableStock = currentStock + incomingStock;
             long totalRequirement = safeStockThreshold + prodPlan + reservedStock; 
             
-            // 💡 발주 진행 중인 수량 조회 및 상태 변경
-            Long pendingReqQty = prLineRepository.sumQuantityByItemId(itemId);
-            String currentStatus = (pendingReqQty != null && pendingReqQty > 0) ? "요청완료" : "발주대기";
-            
-            // 부족한 만큼 필요 수량 계산 (재고가 충분하면 0으로 표시)
             long requiredQty = totalRequirement - availableStock; 
             if (requiredQty < 0) requiredQty = 0L; 
 
-            // 리스트에 추가
             resultList.add(OrderNeededItemDTO.builder()
                     .itemId(itemId)
                     .itemName(item.getItemName())
@@ -233,12 +234,11 @@ public class DashboardService {
                     .safeStock(safeStockThreshold)
                     .requiredStock(requiredQty)
                     .status(currentStatus)
-                    .pendingRequestQty(pendingReqQty != null ? pendingReqQty : 0L) // 대기 수량 담기
+                    .pendingRequestQty(pendingReqQty) 
                     .uom(item.getUom() != null ? item.getUom() : "EA")
                     .build());
         }
         
-        // 💡 필요 수량이 많은 순으로 정렬하되, 둘 다 0이면 품목 ID 순으로 깔끔하게 정렬
         resultList.sort((a, b) -> {
             int reqCompare = Long.compare(b.getRequiredStock(), a.getRequiredStock());
             return reqCompare != 0 ? reqCompare : a.getItemId().compareTo(b.getItemId());

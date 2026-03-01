@@ -14,10 +14,10 @@
 
     <select id="selectBomList" resultMap="BomResultMap">
         select
-            I.item_id as item_id,
-            I.item_code as code,
-            I.item_name as name,
-            B.require_qty as unit
+        I.item_id as item_id,
+        I.item_code as code,
+        I.item_name as name,
+        B.require_qty as unit
         from bom B
         join item I on B.parent_item_id = I.item_id
         where B.child_item_id = #{childItemId}

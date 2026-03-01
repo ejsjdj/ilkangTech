@@ -23,26 +23,31 @@ public class BomApiController {
     private final BomService bomService;
 
     // 부품의 BOM 목록 조회
-    @GetMapping("/parent/{id}")
+    @GetMapping("/child/{id}")
     public ResponseEntity<ApiResponseDTO<List<ParentItemDTO>>> getList(
             @PathVariable("id") Long itemId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sortBy", defaultValue = "bomId") String sortBy,
             @RequestParam(name = "direction", defaultValue = "DESC") Sort.Direction direction) {
 
-        log.info("😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁");
-        log.info("getList() itemId: {}", itemId);
-        log.info("😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁");
 
         Pageable pageable = PageRequest.of(page, 10, Sort.by(direction, sortBy));
         List<ParentItemDTO> result = bomService.getListByItemId(itemId, pageable);
+
+        for (ParentItemDTO dto : result) {
+            log.info("dto : {}", dto);
+        }
+
+        log.info("😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁");
+        log.info("resultSize() : {}", result.size());
+        log.info("childItemId() : {}", itemId);
+        log.info("😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁😁");
 
         return ResponseEntity.ok(ApiResponseDTO.success("BOM 목록 조회에 성공했습니다.", result));
     }
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponseDTO<Void>> create(@RequestBody BomDTO dto) {
-        log.info(dto.getChildItemId());
 
         bomService.create(dto);
         return ResponseEntity.ok(ApiResponseDTO.success("BOM이 성공적으로 생성되었습니다."));

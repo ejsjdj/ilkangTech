@@ -161,12 +161,12 @@
             <h4 style="color: #8A6D3B;">🎀 새 자재 추가</h4>
 
             <form id="bomAddForm">
-                <input type="hidden" id="parentItemId">
+                <input type="hidden" id="childItemId">
 
                 <div class="input-group-cute">
-                    <label>추가할 자재 (Child Item) <span class="text-danger">*</span></label>
-                    <select id="childItemId" required>
-                        <option value="">-- 자재 선택 --</option>
+                    <label>추가될 제품 (Parent Item) <span class="text-danger">*</span></label>
+                    <select id="parentItemId" required>
+                        <option value="">-- 제품 선택 --</option>
                     </select>
                 </div>
 
@@ -316,8 +316,8 @@
                     </div>
                 `;
 
-                document.getElementById('parentItemId').value = itemId;
-
+                document.getElementById('childItemId').value = itemId;
+                console.log(itemId);
                 await loadBomList(itemId);
                 openModal('detailModal');
             } catch (err) {
@@ -331,15 +331,11 @@
             bomTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">로딩 중... ☁️</td></tr>';
 
             try {
-                // 이전 코드의 /api/bom/${itemId} 호출
-                const res = await fetch(`/api/bom/parent/${itemId}`);
+                const res = await fetch(`/api/bom/child/${itemId}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const responseDto = await res.json();
 
-                let bomList = [];
-                if (responseDto.data && responseDto.data.content) bomList = responseDto.data.content;
-                else if (Array.isArray(responseDto.data)) bomList = responseDto.data;
-                else if (Array.isArray(responseDto)) bomList = responseDto;
+                let bomList = responseDto.data;
 
                 if (bomList.length === 0) {
                     bomTbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">등록된 하위 자재(BOM)가 없습니다 🍃</td></tr>';
@@ -348,9 +344,9 @@
                     bomList.forEach(bom => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td>${escapeHtml(bom.childItemCode || bom.itemCode || '-')}</td>
-                            <td>${escapeHtml(bom.childItemName || bom.itemName || '-')}</td>
-                            <td>${escapeHtml(bom.quantity || 1)}</td>
+                            <td>${escapeHtml(bom.code || '-')}</td>
+                            <td>${escapeHtml(bom.name || '-')}</td>
+                            <td>${escapeHtml(bom.unit || 1)}</td>
                         `;
                         bomTbody.appendChild(tr);
                     });
@@ -362,7 +358,7 @@
 
         // 5. BOM 자재 추가 모달
         async function openBomAddModal() {
-            const selectBox = document.getElementById('childItemId');
+            const selectBox = document.getElementById('parentItemId');
             selectBox.innerHTML = '<option value="">-- 자재 로딩 중... --</option>';
             openModal('bomAddModal');
 

@@ -53,6 +53,9 @@ CREATE TABLE order_item (
                             unit_price NUMBER(19) NOT NULL
 );
 
+
+
+
 INSERT INTO Item (ITEM_CODE, ITEM_NAME, ITEM_TYPE, UOM)
 VALUES ('SAM-001', '삼성 미니 건조기 DV90TA040WH(화이트)', 3, 'EA');
 
@@ -94,7 +97,6 @@ VALUES ('RW-005', 'Stainless Steel Coil', 1, 'KG');
 
 INSERT INTO ITEM (ITEM_CODE, ITEM_NAME, ITEM_TYPE, UOM)
 VALUES ('RW-006', 'Aluminum Coil', 1, 'KG');
-
 
 -- 분체 도장 도료
 
@@ -326,4 +328,10 @@ VALUES ('RW-503', 'packing', 1, 'EA');
 INSERT INTO ITEM (ITEM_CODE, ITEM_NAME, ITEM_TYPE, UOM)
 VALUES ('RW-504', 'board', 1, 'EA');
 
-select * from item;
+INSERT INTO Company (company_code, company_name, company_type, CEO_name, TEL_NO)
+VALUES ('C000000000000000001', '삼성전자', 3, '김철수', '010-1234-5678');
+
+INSERT INTO sales_order (company_id, order_date,EXPECTED_DELIVERY_DATE) VALUES (1, SYSDATE, SYSDATE + 100000);
+
+INSERT INTO order_item (sales_order_id, item_id, quantity, unit_price) VALUES (1, 1, 10, 10000);
+INSERT INTO order_item (sales_order_id, item_id, quantity, unit_price) VALUES (1, 2, 10, 10000);

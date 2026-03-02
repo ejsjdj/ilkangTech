@@ -31,6 +31,19 @@ public class ItemApiController {
         return ResponseEntity.ok(ApiResponseDTO.success("품목 목록 조회에 성공했습니다.", result));
     }
 
+    @GetMapping("/bomList")
+    public ResponseEntity<ApiResponseDTO<Page<ItemDTO>>> getBomList(
+            @RequestParam(name = "type", defaultValue = "") ItemType type,
+            @PageableDefault(page = 0, size = 10, sort = "itemId", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
+        log.info("bomList");
+        log.info("itemType: " + type);
+        log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
+        Page<ItemDTO> result = itemService.getBomList(type, pageable);
+
+        return ResponseEntity.ok(ApiResponseDTO.success("품목 목록 조회에 성공했습니다.", result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponseDTO<Void>> create(@RequestBody ItemDTO dto) {
         itemService.create(dto);

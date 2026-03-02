@@ -38,7 +38,6 @@ public class BomApiController {
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponseDTO<Void>> create(@RequestBody BomDTO dto) {
-
         bomService.create(dto);
         return ResponseEntity.ok(ApiResponseDTO.success("BOM이 성공적으로 생성되었습니다."));
     }

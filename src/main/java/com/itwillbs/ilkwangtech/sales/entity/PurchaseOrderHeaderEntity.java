@@ -25,6 +25,10 @@ public class PurchaseOrderHeaderEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 헤더 -> 라인 조회용 필드
+    @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PurchaseOrderEntity> lines;
+
     @Column(name = "purchase_order_Code")
     private String purchaseOrderCode; // 발주 코드
 
@@ -74,4 +78,9 @@ public class PurchaseOrderHeaderEntity {
     }
 
 
+    // 라인 필드 저장 메서드
+    public void saveLine(PurchaseOrderEntity line) {
+        this.lines.add(line);
+        line.setHeader(this);
+    }
 }

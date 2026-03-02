@@ -22,7 +22,7 @@ public interface BomRepository extends JpaRepository<BomEntity, Long> {
     // 💡 전체 작업지시 종속 소요량 그룹화 조회 (i.item은 숫자이므로 그냥 사용!)
     @Query("SELECT b.childItem.itemId, COALESCE(SUM(i.instructQty * b.requireQty), 0) " +
            "FROM ProductionInstructEntity i, BomEntity b " +
-           "WHERE i.item = b.parentItem.itemId AND i.status NOT IN ('COM', 'CAN') " +
+           "WHERE i.item.itemId = b.parentItem.itemId AND i.status NOT IN ('COM', 'CAN') " +
            "GROUP BY b.childItem.itemId")
     List<Object[]> sumDependentInstructQtyGrouped();
     

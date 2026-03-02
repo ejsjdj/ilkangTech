@@ -24,28 +24,27 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
                                                  @Param("keyword") String keyword);
 
     // 작업지시 특정 공정 작업 완료
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE ProductionInstructEntity p " +
-            "SET p.status = 'COM' " +
-            "WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')" +
-            "AND p.process = :processId")
-    int updateInstructCompleteStatus(@Param("planeId") String instructCode,
-                                     @Param("processId") Long processId);
-    // 재고 수량 업데이트
+//    @Modifying(clearAutomatically = true)
+//    @Query("UPDATE ProductionInstructEntity p " +
+//            "SET p.status = 'COM' " +
+//            "WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')" +
+//            "ANDp.process.id = :processId")
+//    int updateInstructCompleteStatus(@Param("planeId") String instructCode,
+//                                     @Param("processId") Long processId);
 
 
     // 불량 등록
-    @Modifying
-    @Query("""
-            UPDATE ProductionInstructEntity p
-            SET p.defective = :defectiveQty
-            WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')
-            AND p.process = :processId
-            """)
-    int updateInstructDefectiveQty(@Param("defectiveQty") Long defectiveQty,
-                                   @Param("instructCode") String instructCode,
-                                   @Param("processId") Long processId
-    );
+//    @Modifying
+//    @Query("""
+//            UPDATE ProductionInstructEntity p
+//            SET p.defective = :defectiveQty
+//            WHERE p.instructCode LIKE CONCAT('%', :instructCode, '%')
+//            AND p.process.id = :processId
+//            """)
+//    int updateInstructDefectiveQty(@Param("defectiveQty") Long defectiveQty,
+//                                   @Param("instructCode") String instructCode,
+//                                   @Param("processId") Long processId
+//    );
     
     // 예약재고(작업지시) 총 수량 조회
     @Query("SELECT COALESCE(SUM(p.instructQty), 0) FROM ProductionInstructEntity p WHERE p.item = :itemId AND p.status NOT IN ('COM', 'CAN')")

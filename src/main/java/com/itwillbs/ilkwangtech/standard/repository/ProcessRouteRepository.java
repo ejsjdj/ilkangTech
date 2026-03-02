@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.standard.repository;
 
+import com.itwillbs.ilkwangtech.production.dto.ProcessRegisterDTO;
 import com.itwillbs.ilkwangtech.standard.dto.ProcessRouteDetailDTO;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
 import org.springframework.data.domain.Page;
@@ -32,4 +33,18 @@ public interface ProcessRouteRepository extends JpaRepository<ProcessRouteEntity
     );
 
     //List<ProcessRouteEntity> findByRouteCodeOrderBySequenceAsc(String routeCode);
+
+    // 2. 생산계획으로 작업지시 등록 용
+    @Query("""
+            SELECT new com.itwillbs.ilkwangtech.production.dto.ProcessRegisterDTO(
+            pr.sequence,
+            pr.operation.id,
+            pr.operation.operationId,
+            pr.operation.name
+            )
+            FROM ProcessRouteEntity pr
+            WHERE pr.item.id = :itemId
+            ORDER BY pr.sequence ASC
+            """)
+    List<ProcessRegisterDTO> findProcessRegisterList(@Param("itemId") Long itemId);
 }

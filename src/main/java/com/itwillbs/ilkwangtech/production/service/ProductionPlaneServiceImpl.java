@@ -2,10 +2,7 @@ package com.itwillbs.ilkwangtech.production.service;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
-import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDTO;
-import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDetailDTO;
-import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneInsertDTO;
-import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneItemDTO;
+import com.itwillbs.ilkwangtech.production.dto.*;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneDetailEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
@@ -19,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 // 생산계획 서비스 구현체
@@ -99,6 +97,24 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
     public void cancelProductionPlane(Long planeId){
         productionPlaneRepository.updatePlaneStatus(planeId);
         productionPlaneRepository.updateInstructStatusByPlaneId(planeId);
+    }
+
+    @Override
+    @Transactional
+    public List<ProcessRegisterDTO> getProcessInstructList(Long planeId){
+        ProductionPlaneEntity plane = productionPlaneRepository.findById(planeId)
+                .orElseThrow();
+
+        return processRouteRepository.findProcessRegisterList(
+                plane.getItem().getItemId()
+        );
+    }
+
+    // 5. 생산계획 전체 조회
+    public List<ProductionPlaneAllDTO> getProductionPlaneAll(){
+
+        return productionPlaneRepository.findAllForSelect();
+
     }
 
 }

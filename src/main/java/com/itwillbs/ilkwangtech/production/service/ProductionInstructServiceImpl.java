@@ -10,7 +10,9 @@ import com.itwillbs.ilkwangtech.production.repository.ProductionInsturctReposito
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
+import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
+import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ProcessRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     private final MemberRepository memberRepository;
     private final ProcessRepository processRepository;
     private final ProductionPlaneRepository productionPlaneRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     @Transactional
@@ -56,7 +59,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     public void saveProductionInstruct(ProductionInstructInsertDTO productionInstructInsertDTO, Long userId){
 
         // 1. 공정정보 확인
-        ProcessEntity process = processRepository.findById(productionInstructInsertDTO.getProcessCode()).
+        ItemEntity item = itemRepository.findById(productionInstructInsertDTO.getItem()).
                 orElseThrow(() -> new IllegalArgumentException("공정 코드가 존재하지 않습니다."));
 
         // 2. 생산계획 확인
@@ -65,10 +68,8 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
 
         ProductionInstructEntity header = ProductionInstructEntity.saveHeader(
                 productionInstructInsertDTO.getInstructCode(),
-                productionInstructInsertDTO.getLotId(),
                 production,
-                productionInstructInsertDTO.getItem(),
-                process,
+                item,
                 productionInstructInsertDTO.getInstructQty(),
                 productionInstructInsertDTO.getStartDate(),
                 productionInstructInsertDTO.getEndDate(),
@@ -82,18 +83,19 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
             Member memberId = memberRepository.findById(lineDTO.getMemberId())
                     .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다."));
 
-            ProcessEntity processId = processRepository.findById(lineDTO.getOperationId()).
-                    orElseThrow(() -> new IllegalArgumentException("라우트 코드가 존재하지 않습니다."));
+            ProcessEntity processId = processRepository.findById(lineDTO.getProcessId()).
+                    orElseThrow(() -> new IllegalArgumentException("공정이 존재하지 않습니다."));
 
             ProductionWorkerEntity line = ProductionWorkerEntity.create(
                     processId,
-                    memberId
+                    memberId,
+                    "LOT-TEST-01"
             );
 
 
             header.saveLine(line);
         }
-
+        productionInsturctRepository.save(header);
     }
 
     // 4. 불량 등록
@@ -103,6 +105,6 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
 
     // 5. 작업지시 완료
     public void updateInstruct(String instructCode, Long processId){
-        productionInsturctRepository.updateInstructCompleteStatus(instructCode, processId);
+        //productionInsturctRepository.updateInstructCompleteStatus(instructCode, processId);
     }
 }

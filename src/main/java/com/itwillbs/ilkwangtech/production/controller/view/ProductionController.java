@@ -13,14 +13,19 @@ public class ProductionController {
             return "production/productionList";
         }
 
-    @GetMapping("/instruct")
+    @GetMapping("/production_register")
+    public String getProcessRegister() {
+        return "production/productionRegister";
+    }
+
+    @GetMapping("/instruct_list")
     public String getProcessInstructList() {
         return "production/productionInstruct";
     }
 
-    @GetMapping("/production_register")
-    public String getProcessRegister() {
-        return "production/productionRegister";
+    @GetMapping("/instruct_register")
+    public String getProcessInstructRegister() {
+        return "production/productionInstructRegister";
     }
 
 

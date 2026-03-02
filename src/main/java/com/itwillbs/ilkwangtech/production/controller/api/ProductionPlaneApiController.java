@@ -1,9 +1,7 @@
 package com.itwillbs.ilkwangtech.production.controller.api;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
-import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDTO;
-import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDetailDTO;
-import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneInsertDTO;
+import com.itwillbs.ilkwangtech.production.dto.*;
 import com.itwillbs.ilkwangtech.production.service.ProductionPlaneService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -13,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -33,20 +32,26 @@ public class ProductionPlaneApiController {
     public Page<ProductionPlaneDTO> getProductionPlane(Pageable pageable,
                                                        @RequestParam(required = false) String keyword){
 
-        log.info("생산계획 목록 조회 조건 - 페이지네이션: {}, 키워드: {}", pageable, keyword);
-
         Page<ProductionPlaneDTO> list = productionPlaneService.getProductionPlaneList(pageable, keyword);
 
-        log.info("생산계획 목록 조회 결과 - DTO: {}", list);
-
         return list;
+    }
+
+    // 생산계획 전체 조회
+    @GetMapping("/plane/all")
+    public List<ProductionPlaneAllDTO> getProductionPlaneAll(){
+
+        System.out.println("생산계획 전체 조회 실행됨!!!!!");
+
+        List<ProductionPlaneAllDTO> allList = productionPlaneService.getProductionPlaneAll();
+
+        return allList;
     }
 
     // 2. 생산계획 상세
     @GetMapping("/plane_detail")
     public Optional<ProductionPlaneDetailDTO> getProductionPlaneDetail(@RequestParam("productionId") Long productionId){
 
-        System.out.println("생산계획 상세 실행됨!!!!1");
         System.out.println("생산계획 ID : " + productionId);
 
 
@@ -57,7 +62,15 @@ public class ProductionPlaneApiController {
         return detail;
     }
 
-    // 3. 생산계획 등록
+    // 3. 작업지시 등록용 생산계획 목록 조회
+    @GetMapping("/{planeId}/processes")
+    public List<ProcessRegisterDTO> getProcessInstructList(@PathVariable Long planeId){
+        System.out.println("작업지시 등록용 : " + planeId);
+        System.out.println("작업지시 등록용 생산계획 목록 조회 실행됨!!!!");
+        return productionPlaneService.getProcessInstructList(planeId);
+    }
+
+    // 4. 생산계획 등록
     public void insertProductionPlane(@RequestBody ProductionPlaneInsertDTO productionPlaneInsertDTO,
                                       @AuthenticationPrincipal AccountLogin accountLogin){
 
@@ -66,7 +79,7 @@ public class ProductionPlaneApiController {
         productionPlaneService.saveProductionPlane(productionPlaneInsertDTO, userId);
     }
 
-    // 4. 생산계획 및 작업지시 취소
+    // 5. 생산계획 및 작업지시 취소
     @PostMapping("/plane_cancel")
     public void cancelProductionPlane(@RequestParam("planeId") Long planeId){
         productionPlaneService.cancelProductionPlane(planeId);

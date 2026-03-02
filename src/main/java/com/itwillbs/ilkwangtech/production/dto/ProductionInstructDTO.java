@@ -8,11 +8,14 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ProductionInstructDTO {
-
-    // 작업지시번호
+    // 기본키
+    private Long id;
+    //생산계획코드
+    private String planeCode;
+    // 작업지시코드
     private String instructCode;
-    // 품목코드
-    private Long item;
+    // 품목명
+    private String item;
     // 계획수량
     private Long instructQty;
     // 시작시간
@@ -24,8 +27,10 @@ public class ProductionInstructDTO {
 
     public static ProductionInstructDTO fromList(ProductionInstructEntity entity){
         return ProductionInstructDTO.builder().
+                id(entity.getId()).
+                planeCode(entity.getProductionId().getPlaneCode()).
                 instructCode(entity.getInstructCode()).
-                item(entity.getItem()).
+                item(entity.getItem().getItemName()).
                 instructQty(entity.getInstructQty()).
                 startDate(String.valueOf(entity.getStartDate())).
                 endDate(String.valueOf(entity.getEndDate())).

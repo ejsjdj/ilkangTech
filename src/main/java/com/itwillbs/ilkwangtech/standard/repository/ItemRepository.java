@@ -22,4 +22,7 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
     @Query("SELECT DISTINCT i FROM ItemEntity i")
     List<ItemEntity> findAllDistinct();
 
+    Page<ItemEntity> findByItemTypeNot(ItemType itemType, Pageable pageable);
+
+
 }

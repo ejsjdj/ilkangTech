@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.production.repository;
 
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneAllDTO;
 import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDTO;
 import com.itwillbs.ilkwangtech.production.entity.ProductionInstructEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
@@ -50,5 +51,15 @@ public interface ProductionPlaneRepository extends JpaRepository<ProductionPlane
     // 전체 생산계획량 그룹화 조회 (item이 단순 숫자형)
     @Query("SELECT p.item.itemId, COALESCE(SUM(p.totalQty), 0) FROM ProductionPlaneEntity p WHERE p.status != 'CAN' GROUP BY p.item.itemId")
     List<Object[]> sumProductionPlanQtyGrouped();
+
+    @Query("""
+SELECT new com.itwillbs.ilkwangtech.production.dto.ProductionPlaneAllDTO(
+    p.id,
+    p.planeCode
+)
+FROM ProductionPlaneEntity p
+ORDER BY p.planeDate DESC
+""")
+    List<ProductionPlaneAllDTO> findAllForSelect();
 
 }

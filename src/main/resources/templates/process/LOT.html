@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>LOT 추적 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .content-root { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            background-color: #f8fafc;
+        }
+        
+        .container-wrapper { 
+            max-width: 1400px; 
+            width: 100%; 
+            margin: 0 auto; 
+            padding: 20px 24px; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-title-area { display: flex; align-items: center; gap: 12px; }
+        .header-icon-bar { width: 4px; height: 22px; background: linear-gradient(to bottom, #4f46e5, #818cf8); border-radius: 2px; }
+        .page-header h1 { font-size: 24px; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.5px; }
+
+        .search-filter-area { 
+            background: #ffffff; padding: 16px 20px; border-radius: 12px; 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; 
+            display: flex; gap: 12px; align-items: center; margin-bottom: 20px;
+        }
+
+        .lot-main-content { 
+            display: flex; 
+            gap: 20px; 
+            min-height: 500px; /* 최소 높이만 지정하여 아래 여백 확보 */
+            margin-bottom: 40px; /* 페이지 하단 여백 추가 */
+        }
+        
+        .content-card { 
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column;
+        }
+
+        .card-header { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+        .card-header h3 { font-size: 15px; font-weight: 700; margin: 0; }
+        .tree-area { padding: 12px; max-height: 600px; overflow-y: auto; }
+        .tree-node { padding: 12px 16px; border-radius: 10px; margin-bottom: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+        .tree-node.active { background: #eef2ff; border: 1px solid #c7d2fe; }
+        .badge-status { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: auto; }
+        .bg-ing { background: #e0f2fe; color: #0369a1; }
+        .bg-done { background: #dcfce7; color: #15803d; }
+        
+        .btn-group .btn {
+	        border: 1px solid #e2e8f0;
+	        background-color: #fff;
+	        color: #64748b;
+	        transition: all 0.2s;
+	    }
+	    .btn-group .btn.active {
+	        background-color: #4f46e5 !important; /* 인디고 블루 적용 */
+	        color: #fff !important;
+	        border-color: #4f46e5 !important;
+	    }
+	    /* 검색 버튼도 DisposalList 스타일로 강제 고정 */
+	    .btn-indigo {
+	        background-color: #4f46e5;
+	        color: white;
+	        border: none;
+	    }
+	    .btn-indigo:hover {
+	        background-color: #4338ca;
+	        color: white;
+	    }
+    </style>
+</head>
+<body>
+
+<th:block layout:fragment="content">
+    <div class="content-root">
+        <div class="container-wrapper">
+            <div class="page-header">
+                <div class="header-title-area">
+                    <div class="header-icon-bar"></div>
+                    <h1>LOT 추적 관리</h1>
+                </div>
+                <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                    <button class="btn btn-sm btn-light active">완제품 LOT</button>
+                    <button class="btn btn-sm btn-light">자재 LOT</button>
+                </div>
+            </div>
+
+            <div class="search-filter-area">
+                <div style="flex: 1; position: relative;">
+                    <i class="bi bi-search" style="position: absolute; top: 10px; left: 12px; color: #94a3b8;"></i>
+                    <input type="text" class="form-control form-control-sm ps-5" style="border-radius: 8px;" placeholder="LOT 번호 또는 제품명 입력">
+                </div>
+                <select class="form-select form-select-sm" style="width: 140px; border-radius: 8px;">
+                    <option value="">전체 상태</option>
+                </select>
+                <button class="btn btn-sm btn-primary px-3" style="background: #4f46e5; border: none; border-radius: 8px; font-weight: 600;">검색</button>
+                <button class="btn btn-sm btn-outline-secondary px-3" style="border-radius: 8px;">초기화</button>
+            </div>
+
+            <div class="lot-main-content">
+                <div class="content-card" style="flex: 1;">
+                    <div class="card-header">
+                        <h3>LOT 계층구조</h3>
+                    </div>
+                    <div class="tree-area">
+                        <div class="tree-node active">
+                            <i class="bi bi-box-seam text-primary"></i>
+                            <span style="font-weight: 600;">WIP-HG005-2026</span>
+                            <span class="ms-2 text-muted">한결5g</span>
+                            <span class="badge-status bg-ing">진행중</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card" style="flex: 1.5;">
+                    <div class="card-header"><h3>LOT 상세 정보</h3></div>
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8; padding: 60px 0;">
+                        <i class="bi bi-info-circle mb-2" style="font-size: 32px; opacity: 0.5;"></i>
+                        <p style="font-size: 14px;">조회할 LOT를 리스트에서 선택해 주세요.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+</body>
+</html>

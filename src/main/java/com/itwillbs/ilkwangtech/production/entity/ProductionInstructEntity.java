@@ -10,6 +10,7 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 // 생산지시 엔티티
@@ -40,7 +41,7 @@ public class ProductionInstructEntity {
 
     // 작업자
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductionWorkerEntity> workers;
+    private List<ProductionWorkerEntity> workers = new ArrayList<>();
 
     // 지시 수량
     @Column(name = "instruct_qty")

@@ -30,7 +30,7 @@ public class PurchaseRequestApiController {
     @GetMapping("/purchase_request_detail")
     public PurchaseRequestDetailDTO getPruchaseRequestDetail(@RequestParam(required = true) Long requestId){
 
-        System.out.println("구매요청 상세조회 실행됨!!!!!!!!");
+        System.out.println("구매요청 상세조회 실행됨!!!!!!!! : " + requestId);
 
         PurchaseRequestDetailDTO detail = purchaseRequestService.getPurchaseReuqestDetail(requestId);;
 

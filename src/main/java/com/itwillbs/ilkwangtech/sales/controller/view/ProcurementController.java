@@ -17,4 +17,9 @@ public class ProcurementController {
     public String registCustomerList() {
         return "sales/customer/purchaseOrderRegister";
     }
+
+    @GetMapping("/return")
+    public String returnCustomerList(){
+        return "sales/customer/purchaseReturn";
+    }
 }

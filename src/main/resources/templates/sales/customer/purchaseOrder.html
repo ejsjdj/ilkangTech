@@ -9,6 +9,24 @@
   <head>
     <title>발주 관리</title>
 
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+      }
+      .modal-content {
+        background: #fff;
+        width: 600px;
+        margin: 80px auto;
+        padding: 20px;
+      }
+    </style>
+
     <link
       rel="stylesheet"
       href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css"
@@ -43,6 +61,69 @@
         신규 발주 등록
       </button>
       <div id="grid" style="margin-top: 20px"></div>
+    </div>
+
+    <!-- 상세 모달 -->
+    <div id="detailModal" class="modal">
+      <div class="modal-content">
+        <h3>발주 상세</h3>
+
+        <label>발주코드</label>
+        <input type="text" id="modalPurchaseOrderCode" readonly />
+
+        <label>거래처</label>
+        <input type="text" id="modalCompany" readonly />
+
+        <label>담당자</label>
+        <input type="text" id="modalManager" readonly />
+
+        <label>전화번호</label>
+        <input type="text" id="modalPhone" readonly />
+
+        <label>발주담당자</label>
+        <input type="text" id="modalName" readonly />
+
+        <label>발주일자</label>
+        <input type="text" id="modalOrderDate" readonly />
+
+        <label>총금액</label>
+        <input type="text" id="modalAmount" readonly />
+
+        <hr />
+
+        <table border="1" width="100%">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>품목</th>
+              <th>수량</th>
+              <th>금액</th>
+              <th>반품</th>
+            </tr>
+          </thead>
+          <tbody id="modalLineBody"></tbody>
+        </table>
+
+        <br />
+        <button onclick="closeDetailModal()">닫기</button>
+        <button onclick="openReturnModal()">반품</button>
+      </div>
+    </div>
+
+    <!-- 반품 사유 모달 -->
+    <div id="returnModal" class="modal">
+      <div class="modal-content">
+        <h3>반품 사유 등록</h3>
+        <label>반품수량</label>
+        <input type="number" id="returnQty" min="1" />
+        <textarea
+          id="returnReason"
+          style="width: 100%; height: 100px"
+        ></textarea>
+        <br /><br />
+        <button onclick="submitReturn()">확인</button>
+        <button onclick="closeReturnModal()">취소</button>
+      </div>
     </div>
   </body>
 

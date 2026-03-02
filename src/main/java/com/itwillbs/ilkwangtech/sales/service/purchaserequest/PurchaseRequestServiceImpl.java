@@ -44,6 +44,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                 header.getLines().stream()
                         .map(line -> PurchaseRequestLineDTO.builder()
                                 .id(line.getId())
+                                .purchaseRequestLineId(line.getId())
                                 .itemId(line.getItem().getItemId())
                                 .itemName(line.getItem().getItemName())
                                 .quantity(line.getQuantity())

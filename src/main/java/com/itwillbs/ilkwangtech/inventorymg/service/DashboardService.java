@@ -187,13 +187,13 @@ public class DashboardService {
         return map;
     }
 
- // 💡 (기존 메서드 교체) 초고속 MRP 기반 발주 필요 리스트 로직
+    // (기존 메서드 교체) 초고속 MRP 기반 발주 필요 리스트 로직
     @Transactional(readOnly = true)
     public List<OrderNeededItemDTO> getOrderNeededList() {
-        // 1. 순수 아이템 82개 가져오기
+        // 순수 아이템 82개 가져오기
         List<ItemEntity> uniqueItems = itemRepository.findAllDistinct();
 
-        // 2. ⚡ [핵심 성능 최적화] 반복문 밖에서 단 7번의 쿼리로 전체 품목 데이터를 Map으로 퍼옵니다!
+        // 반복문 밖에서 단 7번의 쿼리로 전체 품목 데이터를 Map으로 조회
         Map<Long, Long> currentStockMap = convertToMap(inventoryRepository.sumCurrentQuantityGrouped());
         Map<Long, Long> incomingStockMap = convertToMap(purchaseOrderRepository.sumIncomingQuantityGrouped());
         Map<Long, Long> directPlanMap = convertToMap(productionPlaneRepository.sumProductionPlanQtyGrouped());
@@ -205,8 +205,14 @@ public class DashboardService {
         List<OrderNeededItemDTO> resultList = new ArrayList<>();
         long safeStockThreshold = 3000L; 
 
-        // 3. ⚡ 이제 반복문 안에서는 DB를 절대 호출하지 않고, 메모리(Map)에서 값만 쏙쏙 꺼냅니다!
+        // 이제 반복문 안에서는 DB를 절대 호출하지 않고, 메모리(Map)에서 값만 조회
         for (ItemEntity item : uniqueItems) {
+        	
+        	// 품목 코드가 SAM으로 시작하는 완제품은 발주 리스트 제외
+            if (item.getItemCode() != null && item.getItemCode().toUpperCase().startsWith("SAM-")) {
+                continue; 
+            }
+        	
             Long itemId = item.getItemId();
 
             // Map에서 값 꺼내기 (값이 없으면 기본값 0L 반환)
@@ -252,17 +258,17 @@ public class DashboardService {
     public void createPurchaseRequests(List<Map<String, Long>> requestList) {
         if(requestList == null || requestList.isEmpty()) return;
 
-        // 1. 헤더 생성
+        // 헤더 생성
         PurchaseRequestHeaderEntity header = new PurchaseRequestHeaderEntity();
         String prCode = "PR-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(Math.random()*1000);
         header.setPurchaseRequestCode(prCode);
         header.setRequestDate(LocalDate.now());
         PurchaseRequestHeaderEntity savedHeader = prHeaderRepository.save(header);
 
-        // 2. 라인 생성 (100개 하드코딩 제거, 사용자가 입력한 값 적용)
+        // 라인 생성
         for (Map<String, Long> data : requestList) {
             Long itemId = data.get("itemId");
-            Long quantity = data.get("quantity"); // 화면에서 받아온 실제 갯수
+            Long quantity = data.get("quantity");
             
             if (itemId != null && quantity != null && quantity > 0) {
                 PurchaseRequestEntity line = new PurchaseRequestEntity();
@@ -298,7 +304,7 @@ public class DashboardService {
             String code = (inv.getItem() != null) ? inv.getItem().getItemCode() : "품목없음";
             String name = (inv.getItem() != null) ? inv.getItem().getItemName() : "이름없음";
             return RackItemDTO.builder()
-                .inventoryId(inv.getId()) // 👈 이 줄 추가!
+                .inventoryId(inv.getId())
                 .itemCode(code)
                 .itemName(name)
                 .lotNumber(inv.getLotNumber())
@@ -360,7 +366,7 @@ public class DashboardService {
         return list;
     }
     
-    // 💡 차트 데이터 집계 (월/주/일)
+    // 차트 데이터 집계 (월/주/일)
     public ChartDataDTO getChartData(String type) {
         ChartDataDTO dto = new ChartDataDTO();
         // 날짜 순서를 보장하기 위해 LinkedHashMap 사용 (값 배열: [입고, 출고, 폐기])

@@ -8,6 +8,7 @@ import lombok.Getter;
 public class PurchaseRequestLineDTO {
 
     private Long id;
+    private Long purchaseRequestLineId;
     private Long itemId;
     private String itemName;
     private Long quantity;

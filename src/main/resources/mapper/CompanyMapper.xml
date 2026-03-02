@@ -32,12 +32,12 @@
     <select id="selectByName" resultMap="CompanyResultMap">
         SELECT
         company_id AS companyId,
-        name,
-        email,
-        phone,
-        manager,
-        category,
-        valid
+            name,
+            email,
+            phone,
+            manager,
+            category,
+            valid
         FROM Company
         WHERE name = #{name}
     </select>

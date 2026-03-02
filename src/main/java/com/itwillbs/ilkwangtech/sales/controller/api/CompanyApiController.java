@@ -35,7 +35,6 @@ public class CompanyApiController {
         PageResponseDTO<CompanyDTO> pageData = new PageResponseDTO<>(
                 list, total, (int) Math.ceil((double) total / pageable.getPageSize())
         );
-
         return ResponseEntity.ok(ApiResponseDTO.success(pageData));
     }
 }

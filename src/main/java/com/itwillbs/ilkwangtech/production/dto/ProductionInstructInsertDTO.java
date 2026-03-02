@@ -40,7 +40,6 @@ public class ProductionInstructInsertDTO {
     // 생산완료일
     private LocalDateTime endDate;
 
-
     // 작업자
     private List<ProductionInstructWorkerInsertDTO> workers;
 }

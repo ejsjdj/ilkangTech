@@ -43,7 +43,7 @@ public class ProcurementApiController {
     }
 
     // 2. 발주 상세 조회
-    @GetMapping("/procurement_deail")
+    @GetMapping("/procurement_detail")
     public PurchaseOrderDetailDTO getProcurementDetail(@RequestParam("purchaseOrderId") Long purchaseOrderId){
 
         log.info("발주 상세 조회 - 발주 ID: {}", purchaseOrderId);
@@ -59,6 +59,8 @@ public class ProcurementApiController {
     @PostMapping("/procurement/register")
     public void saveProcurement(@RequestBody PurchaseOrderInsertDTO purchaseOrderInsertDTO,
                                 @AuthenticationPrincipal AccountLogin accountLogin){
+
+        log.info("발주 등록 리스트 조회 - 결과: {}", purchaseOrderInsertDTO);
 
         Long userId = accountLogin.getId();
 

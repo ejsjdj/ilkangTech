@@ -93,12 +93,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const processId = select.dataset.processId;
       const memberId = select.value;
 
-      if (memberId) {
-        workerData.push({
-          processId: Number(processId),
-          memberId: 1,
-        });
-      }
+      workerData.push({
+        processId: Number(processId),
+        memberId: 1, // 🔥 무조건 1
+      });
     });
 
     // if (workerData.length === 0) {

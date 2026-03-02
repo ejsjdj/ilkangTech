@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch(`/purchase_request_detail?requestId=${selectedId}`)
       .then((response) => response.json())
       .then((detail) => {
+        console.log(detail);
+
         // 🔹 input 값 세팅
         document.getElementById("prCode").value =
           detail.purchaseRequestCode ?? ""; // 구매요청 코드

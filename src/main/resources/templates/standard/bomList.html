@@ -161,7 +161,9 @@
             <h4 style="color: #8A6D3B;">🎀 새 자재 추가</h4>
 
             <form id="bomAddForm">
+                <!-- 추가: 현재 아이템 ID와 타입을 임시로 저장할 hidden 요소 -->
                 <input type="hidden" id="childItemId">
+                <input type="hidden" id="currentItemType">
 
                 <div class="input-group-cute">
                     <label>추가될 제품 (Parent Item) <span class="text-danger">*</span></label>
@@ -243,7 +245,6 @@
 
                 tbody.innerHTML = '';
                 items.forEach(item => {
-                    // ID 추출 시 다양한 변수명을 방어적으로 확인합니다.
                     const pk = item.itemId || item.id || item.item_id || '';
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -291,7 +292,6 @@
 
         // 3. 상세 조회 (400 에러 방어)
         async function loadDetail(itemId) {
-            // undefined가 문자열로 넘어오거나 빈 값인 경우를 차단
             if (!itemId || itemId === 'undefined' || itemId === 'null') {
                 alert('해당 제품의 고유 ID 값을 찾을 수 없습니다.');
                 return;
@@ -316,7 +316,10 @@
                     </div>
                 `;
 
+                // 수정됨: 현재 아이템 ID와 타입을 hidden 필드에 저장
                 document.getElementById('childItemId').value = itemId;
+                document.getElementById('currentItemType').value = item.itemType;
+
                 console.log(itemId);
                 await loadBomList(itemId);
                 openModal('detailModal');
@@ -363,7 +366,11 @@
             openModal('bomAddModal');
 
             try {
-                const res = await fetch('/api/item/list?type=RAW&page=0&size=100');
+                // 수정됨: 신규 등록 폼(newType)이 아니라 현재 상세 조회 중인 아이템의 타입을 가져옴
+                const currentType = document.getElementById('currentItemType').value;
+
+                // 가져온 currentType을 기준으로 API 요청을 보냄
+                const res = await fetch(`/api/item/bomList?type=${currentType}&page=0&size=100`);
                 const responseDto = await res.json();
 
                 let items = [];
@@ -376,6 +383,7 @@
                     const pk = item.itemId || item.id || item.item_id || '';
                     selectBox.innerHTML += `<option value="${pk}">[${item.itemCode}] ${item.itemName}</option>`;
                 });
+
             } catch (err) {
                 selectBox.innerHTML = '<option value="">목록 로드 실패</option>';
             }
@@ -407,7 +415,7 @@
                 alert('자재가 쏙! 추가되었어요 🎀');
                 closeModal('bomAddModal');
 
-                await loadBomList(parentId);
+                await loadBomList(childId);
 
             } catch (err) {
                 alert(err.message);

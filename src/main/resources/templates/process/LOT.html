@@ -4,7 +4,7 @@
       layout:decorate="~{layout/layout}">
 <head>
     <meta charset="UTF-8">
-    <title>LOT 추적 관리</title>
+    <title>LOT 추적</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -38,7 +38,7 @@
         .lot-main-content { 
             display: flex; 
             gap: 20px; 
-            min-height: 500px; /* 최소 높이만 지정하여 아래 여백 확보 */
+            min-height: 650px; 
             margin-bottom: 40px; /* 페이지 하단 여백 추가 */
         }
         
@@ -77,6 +77,70 @@
 	        background-color: #4338ca;
 	        color: white;
 	    }
+	    /* 확장된 행 스타일 */
+		.detail-row {
+		    background-color: #fcfdfe;
+		}
+		.detail-container {
+		    padding: 15px;
+		    border-left: 4px solid #4f46e5; /* 포인트 라인 */
+		    background: #f8fafc;
+		}
+		.detail-tabs {
+		    display: flex;
+		    gap: 10px;
+		    margin-bottom: 10px;
+		}
+		.detail-tabs button {
+		    border: 1px solid #e2e8f0;
+		    background: white;
+		    padding: 5px 12px;
+		    border-radius: 6px;
+		    font-size: 12px;
+		    cursor: pointer;
+		}
+		.detail-tabs button:hover { background: #eef2ff; color: #4f46e5; }
+		.sub-content-area {
+		    background: white;
+		    border-radius: 8px;
+		    padding: 10px;
+		    border: 1px solid #edf2f7;
+		    min-height: 100px;
+		}
+		/* 테이블 헤더 가운데 정렬 */
+		.lot-list-table th { 
+		    font-weight: 700; 
+		    color: #64748b; 
+		    border-bottom: 2px solid #f1f5f9; 
+		    padding: 12px 8px !important;
+		    text-align: center; /* 텍스트 가운데 정렬 */
+		    vertical-align: middle;
+		}
+		
+		/* 테이블 바디 셀 가운데 정렬 */
+		.lot-list-table td { 
+		    padding: 12px 8px !important; 
+		    vertical-align: middle; 
+		    text-align: center; /* 데이터 가운데 정렬 */
+		    cursor: pointer; 
+		}
+		
+		/* 날짜 텍스트 정렬 보정 */
+		.date-text { 
+		    color: #94a3b8; 
+		    font-size: 11px; 
+		    display: block; 
+		    text-align: center; 
+		}
+		
+		/* 상태 뱃지 가운데 정렬 유지 */
+		.badge-status {
+		    display: inline-block; /* 부모 td의 text-align: center 영향으로 가운데로 옴 */
+		    padding: 4px 8px;
+		    border-radius: 6px;
+		    font-size: 11px;
+		    font-weight: 700;
+		}
     </style>
 </head>
 <body>
@@ -87,7 +151,7 @@
             <div class="page-header">
                 <div class="header-title-area">
                     <div class="header-icon-bar"></div>
-                    <h1>LOT 추적 관리</h1>
+                    <h1>LOT 추적</h1>
                 </div>
                 <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
                     <button class="btn btn-sm btn-light active">완제품 LOT</button>
@@ -109,30 +173,165 @@
 
             <div class="lot-main-content">
                 <div class="content-card" style="flex: 1;">
-                    <div class="card-header">
-                        <h3>LOT 계층구조</h3>
-                    </div>
-                    <div class="tree-area">
-                        <div class="tree-node active">
-                            <i class="bi bi-box-seam text-primary"></i>
-                            <span style="font-weight: 600;">WIP-HG005-2026</span>
-                            <span class="ms-2 text-muted">한결5g</span>
-                            <span class="badge-status bg-ing">진행중</span>
-                        </div>
-                    </div>
-                </div>
+				    <div class="card-header">
+				        <h3>LOT 계층구조</h3>
+				        <span id="lot-count" class="badge bg-light text-dark" style="font-size: 11px;">Total 0</span>
+				    </div>
+				    <div class="table-responsive" style="flex: 1; overflow-y: auto; max-height: 600px;">
+				        <table class="table table-hover lot-list-table" style="font-size: 12px; margin-bottom: 0;">
+				            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+				                <tr>
+				                    <th style="width: 25%;">생성날짜</th>
+				                    <th style="width: 35%;">LOT 코드</th>
+				                    <th style="width: 25%;">제품명</th>
+				                    <th style="width: 15%;">상태</th>
+				                </tr>
+				            </thead>
+				            <tbody id="lot-tbody">
+				                </tbody>
+				        </table>
+				    </div>
+				</div>
 
                 <div class="content-card" style="flex: 1.5;">
-                    <div class="card-header"><h3>LOT 상세 정보</h3></div>
-                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8; padding: 60px 0;">
-                        <i class="bi bi-info-circle mb-2" style="font-size: 32px; opacity: 0.5;"></i>
-                        <p style="font-size: 14px;">조회할 LOT를 리스트에서 선택해 주세요.</p>
-                    </div>
-                </div>
+				    <div class="card-header">
+				        <h3>LOT 상세 정보</h3>
+				        <div id="selected-lot-id" class="text-primary fw-bold" style="font-size: 13px;"></div>
+				    </div>
+				    
+				    <div id="empty-detail" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8; padding: 60px 0;">
+				        <i class="bi bi-info-circle mb-2" style="font-size: 32px; opacity: 0.5;"></i>
+				        <p style="font-size: 14px;">조회할 LOT를 리스트에서 선택해 주세요.</p>
+				    </div>
+				
+				    <div id="detail-content" style="display: none; padding: 20px;">
+				        <ul class="nav nav-tabs mb-3" id="lotDetailTab" role="tablist">
+				            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#raw-material">원자재</button></li>
+				            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#production">생산공정</button></li>
+				            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#quality">품질검사</button></li>
+				        </ul>
+				        
+				        <div class="tab-content" id="lotDetailTabContent">
+				            <div class="tab-pane fade show active" id="raw-material">
+				                <table class="table table-sm emp-table">
+				                    <thead><tr><th>원자재명</th><th>공급업체</th><th>입고일자</th></tr></thead>
+				                    <tbody id="rm-tbody"></tbody>
+				                </table>
+				            </div>
+				            <div class="tab-pane fade" id="production">
+				                <table class="table table-sm emp-table">
+				                    <thead><tr><th>부품명</th><th>부품LOT</th><th>생산일자</th></tr></thead>
+				                    <tbody id="part-tbody"></tbody>
+				                </table>
+				            </div>
+				            <div class="tab-pane fade" id="quality">
+				                <table class="table table-sm emp-table">
+				                    <thead><tr><th>검사결과</th><th>검사자</th><th>검사일자</th></tr></thead>
+				                    <tbody id="qc-tbody"></tbody>
+				                </table>
+				            </div>
+				        </div>
+				    </div>
+				</div>
             </div>
         </div>
     </div>
+<script th:inline="javascript">
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("1. 스크립트 로드됨");
+    loadLotList();
+});
+
+// 1. 서버에서 LOT 리스트 가져오기
+async function loadLotList() {
+    console.log("fetch 요청 시작..."); 
+    try {
+        // 앞에 /process를 반드시 붙여주세요.
+        const response = await fetch('/process/api/lots'); 
+        console.log("응답 상태:", response.status);
+        
+        const data = await response.json();
+        console.log("받은 데이터:", data);
+        renderLotTable(data);
+    } catch (error) {
+        console.error('데이터 로드 실패:', error);
+    }
+}
+
+function renderLotTable(lots) {
+    const tbody = document.getElementById('lot-tbody');
+    tbody.innerHTML = ''; 
+
+    lots.forEach(lot => {
+        const date = new Date(lot.createdDate);
+        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+        // 1. 메인 정보 행
+        const mainTr = document.createElement('tr');
+        mainTr.className = 'main-row';
+        mainTr.innerHTML = `
+            <td><span class="date-text">${formattedDate}</span></td>
+            <td><span class="lot-code-text">${lot.lotId}</span></td>
+            <td>${lot.productId}</td>
+            <td><span class="badge-status ${lot.status === 'ING' ? 'bg-ing' : 'bg-done'}">${lot.status === 'ING' ? '진행중' : '완료'}</span></td>
+        `;
+
+        // 2. 상세 정보 행 (초기 hidden)
+        const detailTr = document.createElement('tr');
+        detailTr.className = 'detail-row';
+        detailTr.style.display = 'none'; // 숨김 처리
+        detailTr.innerHTML = `
+            <td colspan="4" class="p-0">
+                <div class="detail-container">
+                    <div class="detail-tabs">
+                        <button onclick="showSubDetail('${lot.lotId}', 'material', this)">자재이력</button>
+                        <button onclick="showSubDetail('${lot.lotId}', 'process', this)">공정단계</button>
+                        <button onclick="showSubDetail('${lot.lotId}', 'quality', this)">품질검사</button>
+                    </div>
+                    <div id="sub-content-${lot.lotId}" class="sub-content-area">
+                        <p class="text-muted">메뉴를 선택하면 상세 이력이 표시됩니다.</p>
+                    </div>
+                </div>
+            </td>
+        `;
+
+        // 클릭 이벤트: 행 확장/축소
+        mainTr.onclick = () => toggleRow(mainTr, detailTr);
+
+        tbody.appendChild(mainTr);
+        tbody.appendChild(detailTr);
+    });
+}
+
+function toggleRow(mainTr, detailTr) {
+    const isVisible = detailTr.style.display === 'table-row';
+    
+    // 모든 행 닫기 (선택 사항: 하나만 열리게 하고 싶을 때)
+    document.querySelectorAll('.detail-row').forEach(tr => tr.style.display = 'none');
+    document.querySelectorAll('.main-row').forEach(tr => tr.classList.remove('active'));
+
+    // 현재 행 토글
+    if (!isVisible) {
+        detailTr.style.display = 'table-row';
+        mainTr.classList.add('active');
+    }
+}
+
+async function loadLotDetail(lotId, element) {
+    document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('active'));
+    element.classList.add('active');
+
+    try {
+        const response = await fetch(`/process/api/lot/${lotId}`);
+        const data = await response.json();
+        console.log('상세 데이터:', data);
+    } catch (error) {
+        alert('상세 정보를 불러올 수 없습니다.');
+    }
+}
+</script>
 </th:block>
+
 
 </body>
 </html>

@@ -34,7 +34,7 @@ public class ProcessServiceImpl implements ProcessService{
 
         return processEntities.map(processEntity -> ProcessDTO.builder().
                 id(processEntity.getId()).
-                operationId(processEntity.getOperationId()).
+                operationCode(processEntity.getOperationCode()).
                 name(processEntity.getName()).
                 description(processEntity.getDescription()).
                 memberName(processEntity.getMember().getName()).
@@ -50,7 +50,7 @@ public class ProcessServiceImpl implements ProcessService{
 
         return entity.stream().map(processEntity -> ProcessDTO.builder().
                 id(processEntity.getId()).
-                operationId(processEntity.getOperationId()).
+                operationCode(processEntity.getOperationCode()).
                 name(processEntity.getName()).
                 description(processEntity.getDescription()).
                 memberName(processEntity.getMember().getName()).
@@ -68,7 +68,7 @@ public class ProcessServiceImpl implements ProcessService{
                     .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
 
             ProcessEntity process = ProcessEntity.builder().
-                    operationId(saveDTO.getOperationId()).
+                    operationCode(saveDTO.getOperationCode()).
                     name(saveDTO.getName()).
                     description(saveDTO.getDescription()).
                     member(member).

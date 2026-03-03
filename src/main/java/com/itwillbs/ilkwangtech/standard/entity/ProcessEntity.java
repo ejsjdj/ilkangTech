@@ -23,7 +23,7 @@ public class ProcessEntity {
     private Long id;
 
     @Column(name = "operation_id")
-    private String operationId;
+    private String operationCode;
 
     @Column(name = "name")
     private String name;
@@ -39,8 +39,8 @@ public class ProcessEntity {
     private LocalDate createdAt;
 
     @Builder
-    public ProcessEntity(String operationId, String name, String description, Member member, LocalDate createdAt){
-        this.operationId = operationId;
+    public ProcessEntity(String operationCode, String name, String description, Member member, LocalDate createdAt){
+        this.operationCode = operationCode;
         this.name = name;
         this.description = description;
         this.member = member;

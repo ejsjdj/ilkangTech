@@ -1,51 +1,261 @@
-<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{layout/layout}">
+<!doctype html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}"
+>
+  <head>
+    <title>공정라우팅 관리</title>
 
-<head>
-  <title>공정라우팅 관리</title>
+    <style>
+      /* 공통 버튼 스타일 */
+      .btn-primary {
+        background: #4f46e5;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-primary:hover {
+        background: #4338ca;
+      }
+      .btn-success {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-secondary {
+        background: #f1f5f9;
+        color: #64748b;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
 
-  <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-</head>
+      /* 모달 기본 스타일 (인디고 테마) */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(2px);
+      }
+      .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: none;
+      }
+      .modal-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .modal-title::before {
+        content: "";
+        width: 4px;
+        height: 20px;
+        background: #4f46e5;
+        border-radius: 2px;
+      }
 
-<body layout:fragment="content">
-  <div style="padding: 20px">
-    <h2>라우트 목록</h2>
-    <div id="grid"></div>
-  </div>
+      /* 폼 입력 스타일 */
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 6px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+      }
+      .form-control:focus {
+        outline: none;
+        border-color: #4f46e5;
+        ring: 2px solid #e0e7ff;
+      }
+      .form-control[readonly] {
+        background-color: #f8fafc;
+        color: #94a3b8;
+      }
 
-  <div id="detailModal"
-    style="display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%);
-              width:750px; background:white; border:2px solid #333; padding:20px; z-index:1000; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+      .input-grid-box {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+      }
 
-    <h3>상세 공정 정보</h3>
+      /* 공정 추가 영역 박스 */
+      .process-add-box {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+    </style>
 
-    <div
-      style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 4px; display: flex; align-items: center; gap: 10px;">
-      <label for="processSelect">공정 추가:</label>
-      <select id="processSelect" style="padding: 5px; min-width: 250px;">
-        <option value="">-- 공정을 선택하세요 --</option>
-      </select>
-      <button id="addProcessBtn"
-        style="background-color: #28a745; color: white; border: none; padding: 5px 12px; cursor: pointer;">리스트에
-        추가</button>
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/grid/latest/tui-grid.css"
+    />
+  </head>
+
+  <body layout:fragment="content">
+    <div style="padding: 30px">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        "
+      >
+        <h2 style="font-weight: 800; color: #1e293b; margin: 0">
+          공정라우팅 관리
+        </h2>
+        <button id="addRouteBtn" class="btn-primary">+ 신규 라우트 등록</button>
+      </div>
+
+      <div id="grid"></div>
     </div>
 
-    <div id="detailGrid"></div>
+    <div id="detailModal" class="modal">
+      <div class="modal-content" style="width: 800px">
+        <div class="modal-title">상세 공정 정보</div>
 
-    <div style="margin-top:15px; text-align: right;">
-      <button id="saveBtn"
-        style="background-color: #007bff; color: white; border: none; padding: 5px 15px; cursor: pointer;">저장</button>
-      <button onclick="document.getElementById('detailModal').style.display='none'">닫기</button>
+        <div class="process-add-box">
+          <label style="font-weight: 700; color: #475569">공정 추가</label>
+          <select id="processSelect" class="form-control" style="flex: 1">
+            <option value="">-- 공정을 선택하세요 --</option>
+          </select>
+          <button id="addProcessBtn" class="btn-success">리스트에 추가</button>
+        </div>
+
+        <div id="detailGrid"></div>
+
+        <div class="modal-footer">
+          <button id="saveBtn" class="btn-primary">저장</button>
+          <button
+            class="btn-secondary"
+            onclick="
+              document.getElementById('detailModal').style.display = 'none'
+            "
+          >
+            닫기
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</body>
 
-<th:block layout:fragment="script">
-  <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-  <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-  <script th:src="@{/js/processList.js}"></script>
-</th:block>
+    <div id="createRouteModal" class="modal">
+      <div class="modal-content" style="width: 900px">
+        <div class="modal-title">신규 라우트 생성</div>
 
+        <div class="input-grid-box">
+          <div class="form-group">
+            <label>라우트 코드</label>
+            <input
+              type="text"
+              id="newRouteCode"
+              class="form-control"
+              readonly
+              placeholder="자동 생성"
+            />
+          </div>
+          <div class="form-group">
+            <label>라우트명</label>
+            <input type="text" id="newRouteName" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>적용 품목</label>
+            <select id="newItemSelect" class="form-control">
+              <option value="">-- 품목을 선택하세요 --</option>
+              <option value="1">LG 트롬 오브제 건조기 RG19VN</option>
+              <option value="2">LG 트롬 오브제 건조기 RG18VN</option>
+              <option value="3">LG 트롬 오브제 건조기 RG20VN</option>
+              <option value="4">LG 트롬 AI 건조기 RD25TS</option>
+              <option value="5">LG 트롬 AI 건조기 RD19TS</option>
+              <option value="6">삼성 미니 건조기 DV90TA040KE</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2">
+            <label>라우트 설명</label>
+            <input type="text" id="newRouteDescription" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>비고</label>
+            <input type="text" id="newRouteNote" class="form-control" />
+          </div>
+        </div>
+
+        <div class="process-add-box">
+          <label style="font-weight: 700; color: #475569">공정 구성</label>
+          <select id="newProcessSelect" class="form-control" style="flex: 1">
+            <option value="">-- 공정을 선택하세요 --</option>
+          </select>
+          <button id="addNewProcessBtn" class="btn-success">공정 추가</button>
+        </div>
+
+        <div id="createRouteGrid"></div>
+
+        <div class="modal-footer" style="margin-top: 25px">
+          <button id="saveNewRouteBtn" class="btn-primary">라우트 저장</button>
+          <button
+            class="btn-secondary"
+            onclick="
+              document.getElementById('createRouteModal').style.display = 'none'
+            "
+          >
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <th:block layout:fragment="script">
+    <script
+      src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"
+    ></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <script th:src="@{/js/processList.js}"></script>
+  </th:block>
 </html>

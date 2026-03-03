@@ -8,10 +8,8 @@ import lombok.Setter;
 @Setter
 public class ProcessInsertDTO {
 
-    private String operationId;
+    private String operationCode;
     private String name;
     private String description;
-
-
 
 }

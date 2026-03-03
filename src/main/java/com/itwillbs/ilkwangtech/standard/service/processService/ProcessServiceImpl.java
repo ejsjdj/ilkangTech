@@ -20,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProcessServiceImpl implements ProcessService{
 
-    private ProcessRepository processRepository;
-    private MemberRepository memberRepository;
+    private final ProcessRepository processRepository;
+    private final MemberRepository memberRepository;
 
     // 1. 공정코드 리스트 조회
     @Override
@@ -33,7 +33,8 @@ public class ProcessServiceImpl implements ProcessService{
         Page<ProcessEntity> processEntities = processRepository.findByProcessId(processId, nameParam, pageable);
 
         return processEntities.map(processEntity -> ProcessDTO.builder().
-                opertaionId(processEntity.getOperationId()).
+                id(processEntity.getId()).
+                operationId(processEntity.getOperationId()).
                 name(processEntity.getName()).
                 description(processEntity.getDescription()).
                 memberName(processEntity.getMember().getName()).
@@ -41,7 +42,23 @@ public class ProcessServiceImpl implements ProcessService{
                 build());
     }
 
-    // 2. 신규 공정코드 등록
+    // 2. 공정코드 전체 조회
+    @Override
+    @Transactional
+    public List<ProcessDTO> getProcessListAll(){
+        List<ProcessEntity> entity = processRepository.findAll();
+
+        return entity.stream().map(processEntity -> ProcessDTO.builder().
+                id(processEntity.getId()).
+                operationId(processEntity.getOperationId()).
+                name(processEntity.getName()).
+                description(processEntity.getDescription()).
+                memberName(processEntity.getMember().getName()).
+                createdAt(String.valueOf(processEntity.getCreatedAt())).
+                build()).toList();
+    }
+
+    // 3. 신규 공정코드 등록
     @Override
     @Transactional
     public void saveProcessList(List<ProcessInsertDTO> processInsertDTO, Long userId){

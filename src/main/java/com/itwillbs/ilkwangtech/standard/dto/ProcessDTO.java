@@ -8,15 +8,17 @@ import lombok.*;
 @ToString
 public class ProcessDTO {
 
-    private String opertaionId;
+    private Long id;
+    private String operationId;
     private String name;
     private String description;
     private String memberName;
     private String createdAt;
 
     @Builder
-    public ProcessDTO(String opertaionId, String name, String description, String memberName, String createdAt){
-        this.opertaionId = opertaionId;
+    public ProcessDTO(Long id, String operationId, String name, String description, String memberName, String createdAt){
+        this.id = id;
+        this.operationId = operationId;
         this.name = name;
         this.description = description;
         this.memberName = memberName;

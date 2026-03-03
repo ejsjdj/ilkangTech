@@ -12,7 +12,9 @@ public interface ProcessService {
     // 1. 공정코드 리스트 조회
     Page<ProcessDTO> getProcessList(Pageable pageable, Long processId, String processName);
 
+    // 2. 공정코드 전체 조회
+    List<ProcessDTO> getProcessListAll();
 
-    // 2. 신규 공정코드 등록
+    // 3. 신규 공정코드 등록
     void saveProcessList(List<ProcessInsertDTO> processInsertDTO, Long userId);
 }

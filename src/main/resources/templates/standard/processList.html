@@ -1,102 +1,51 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}">
+
 <head>
   <title>공정라우팅 관리</title>
-  <th:block layout:fragment="css">
-    <style>
-      .nav-tabs { border-bottom: 2px solid #dee2e6; margin-bottom: 20px; display: flex; gap: 5px;}
-      .nav-tabs .nav-item {margin-bottom: -2px;}
-      .nav-tabs .nav-link {border: 1px solid transparent; border-top-left-radius: .25rem; border-top-right-radius: .25rem; padding: 10px 20px; background-color: #f8f9fa;color: #6c757d; transition: all 0.2s;}
-      .nav-tabs .nav-link.active {background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; color: #0d6efd; font-weight: bold;}
-      .tab-content-area { display: none; }
-      .tab-content-area.active { display: block; }
-      .search-bar { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
-      .modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-      .modal-content { background: white; margin: 50px auto; padding: 20px; width: 80%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-      .detail-table { width: 100%; margin-bottom: 20px; }
-      .detail-table td { padding: 10px; border: 1px solid #dee2e6; }
-      .detail-table td:nth-child(odd) { background-color: #f8f9fa; font-weight: bold; width: 15%; }
-      .tui-grid-cell { font-size: 13px; }
-    </style>
-  </th:block>
+
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 </head>
-<body>
 
-<div layout:fragment="content" class="container-fluid">
+<body layout:fragment="content">
+  <div style="padding: 20px">
+    <h2>라우트 목록</h2>
+    <div id="grid"></div>
+  </div>
 
-  <ul class="nav nav-tabs" id="managementTabs">
-    <li class="nav-item">
-      <button class="nav-link active" onclick="switchTab(event, 'routingTab', mainGrid)">공정라우팅 관리</button>
-    </li>
-    <li class="nav-item">
-      <button class="nav-link" onclick="switchTab(event, 'opCodeTab', opGrid)">공정코드 관리</button>
-    </li>
-  </ul>
+  <div id="detailModal"
+    style="display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%);
+              width:750px; background:white; border:2px solid #333; padding:20px; z-index:1000; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
 
-  <div id="routingTab" class="tab-content-area active">
-        <div class="search-bar d-flex align-items-center gap-3">
-            <span>라우트명:</span>
-            <input type="text" id="searchRouteName" class="form-control" style="width: 200px;" placeholder="라우트명 입력">
-            
-            <span>라우트타입:</span>
-            <select id="searchRouteType" class="form-select" style="width: 150px;">
-                <option value="">전체</option>
-                <option value="1">LG 트롬 오브제 건조기 RG19VN(릴리 화이트)</option>
-                <option value="2">LG 트롬 오브제 건조기 RG18VN(네이처 베이지)</option>
-                <option value="3">LG 트롬 오브제 건조기 RG20VN(모던 스테인레스)</option>
-                <option value="4">LG 트롬 AI 건조기 RD25TS(화이트)</option>
-                <option value="5">LG 트롬 AI 건조기 RD19TS(네이처 그린)</option>
-                <option value="6">삼성 미니 건조기 DV90TA040KE(화이트)</option>
-                <option value="7">삼성 미니 건조기 DV90TA041KE(다크 그레이)</option>
-                <option value="8">삼성 미니 건조기 DV90TA042KE(체리 레드)</option>
-                <option value="9">삼성 AI 건조기 대용량 DV21DG8601BV(그랜드 화이트)</option>
-                <option value="10">삼성 AI 건조기 대용량 DV21DG8602BV(스페이스 블랙)</option>
-                <option value="11">삼성 AI 건조기 대용량 DV21DG8603BV(사일런트 실버)</option>
-            </select>
-            <button class="btn btn-primary" onclick="loadMainGrid()">검색</button>
-        </div>
-        <div id="mainGrid"></div>
+    <h3>상세 공정 정보</h3>
+
+    <div
+      style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 4px; display: flex; align-items: center; gap: 10px;">
+      <label for="processSelect">공정 추가:</label>
+      <select id="processSelect" style="padding: 5px; min-width: 250px;">
+        <option value="">-- 공정을 선택하세요 --</option>
+      </select>
+      <button id="addProcessBtn"
+        style="background-color: #28a745; color: white; border: none; padding: 5px 12px; cursor: pointer;">리스트에
+        추가</button>
     </div>
 
-    <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <h4>공정 라우팅 상세</h4>
-            <table class="detail-table">
-                <tr>
-                    <td>라우트 ID</td>
-                    <td><input type="text" id="detailRouteId" class="form-control" readonly></td>
-                    <td>제품 코드</td>
-                    <td><input type="text" id="detailItemCode" class="form-control" readonly></td>
-                </tr>
-                <tr>
-                    <td>라우트명</td>
-                    <td colspan="3"><input type="text" id="detailRouteName" class="form-control"></td>
-                </tr>
-            </table>
+    <div id="detailGrid"></div>
 
-            <div class="mb-2 d-flex justify-content-between">
-                <h5>공정 단계 정보</h5>
-                <div>
-                    <button class="btn btn-success btn-sm" onclick="addStep()">행 추가</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteStep()">행 삭제</button>
-                </div>
-            </div>
-            
-            <div id="stepGrid"></div>
-
-            <div class="text-end mt-3">
-                <button class="btn btn-primary" onclick="saveData()">저장</button>
-                <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
-            </div>
-        </div>
+    <div style="margin-top:15px; text-align: right;">
+      <button id="saveBtn"
+        style="background-color: #007bff; color: white; border: none; padding: 5px 15px; cursor: pointer;">저장</button>
+      <button onclick="document.getElementById('detailModal').style.display='none'">닫기</button>
     </div>
-</div>
+  </div>
+</body>
 
 <th:block layout:fragment="script">
-  <script src="https://uicdn.toast.com/tui-grid/latest/tui-grid.js"></script>
+  <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+  <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
   <script th:src="@{/js/processList.js}"></script>
 </th:block>
-</body>
+
 </html>

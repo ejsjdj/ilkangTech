@@ -17,10 +17,9 @@ public class ProcessRouteDTO {
     private String description; // 공정라우트 설명
     private String createdAt; // 생성일시
     private String constructor; // 생성자
-    private List<String> item;
 
     @Builder
-    public ProcessRouteDTO(String routeCode, String description, Long itemId, String itemName, String createdAt, String routeName, String constructor, List<String> item){
+    public ProcessRouteDTO(String routeCode, String description, Long itemId, String itemName, String createdAt, String routeName, String constructor){
         super();
         this.routeCode = routeCode;
         this.itemId = itemId;
@@ -29,7 +28,6 @@ public class ProcessRouteDTO {
         this.description = description;
         this.createdAt = createdAt;
         this.constructor = constructor;
-        this.item = item;
 
     }
 }

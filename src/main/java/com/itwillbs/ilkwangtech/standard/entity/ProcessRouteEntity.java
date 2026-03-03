@@ -3,15 +3,13 @@ package com.itwillbs.ilkwangtech.standard.entity;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "operation_route_info")
 public class ProcessRouteEntity {
 
@@ -70,6 +68,18 @@ public class ProcessRouteEntity {
         this.description = description;
         this.note = note;
         this.createdAt = createdAt;
+        this.member = member;
+    }
+
+    public void update(Long sequence, String note, Member member){
+        if (sequence != null) {
+            this.sequence = sequence;
+        }
+
+        if (note != null) {
+            this.note = note;
+        }
+
         this.member = member;
     }
 

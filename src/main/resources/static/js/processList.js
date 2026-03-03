@@ -1,137 +1,169 @@
-/**
- * 공정 관리 그리드 모듈
- */
-const GridManager = {
-    mainGrid: null,
-    stepGrid: null,
+document.addEventListener("DOMContentLoaded", function () {
+    const Grid = tui.Grid;
+    let detailGrid = null;
+    let allProcessList = [];
+    let currentRouteCode = null;
 
-    init() {
-        try {
-            this.initMainGrid();
-            this.initStepGrid();
-            this.bindEvents();
-            console.log("그리드 초기화 완료");
-        } catch (e) {
-            console.error("그리드 초기화 중 치명적 에러:", e);
-        }
-    },
+    // 1. 메인 그리드 초기화
+    const grid = new Grid({
+        el: document.getElementById('grid'),
+        bodyHeight: 400,
+        columns: [
+            { header: '라우트코드', name: 'routeCode', align: 'center' },
+            { header: '라우트명', name: 'routeName', align: 'center' },
+            {
+                header: '상세',
+                name: 'detail',
+                align: 'center',
+                formatter: () => '<button type="button" class="btn-detail">상세보기</button>'
+            }
+        ]
+    });
 
-    initMainGrid() {
-        const el = document.getElementById('mainGrid');
-        if (!el) {
-            console.error("#mainGrid 요소를 찾을 수 없습니다.");
+    // 2. 메인 데이터 로드
+    function loadMainData() {
+        fetch('/api/process_mst?page=0&size=10')
+            .then(res => res.json())
+            .then(data => {
+                const list = data.content || data;
+                grid.resetData(list);
+            })
+            .catch(err => console.error("메인 로드 실패:", err));
+    }
+
+    // 3. 그리드 클릭 (상세보기)
+    grid.on('click', (ev) => {
+        if (ev.columnName !== 'detail') return;
+        const rowData = grid.getRow(ev.rowKey);
+
+        currentRouteCode = rowData.routeCode;
+
+        fetch(`/api/process_mst/detail?routeCode=${currentRouteCode}`)
+            .then(res => res.json())
+            .then(detailData => {
+                const list = Array.isArray(detailData) ? detailData : (detailData.content || []);
+                openSimpleModal(list);
+            })
+            .catch(err => console.error("상세 로드 실패:", err));
+    });
+
+    // 4. 공정 코드 전체 조회 (드롭다운용)
+    function fetchAllProcesses() {
+        fetch('/api/process_code_all')
+            .then(res => res.json())
+            .then(response => {
+                if (response.success === false) {
+                    console.error("서버 에러:", response.message);
+                    return;
+                }
+
+                allProcessList = Array.isArray(response) ? response : (response.data || []);
+
+                if (!Array.isArray(allProcessList)) {
+                    console.error("데이터 형식이 배열이 아닙니다:", response);
+                    return;
+                }
+
+                const select = document.getElementById('processSelect');
+                select.innerHTML = '<option value="">-- 공정을 선택하세요 --</option>';
+
+                allProcessList.forEach(proc => {
+                    const opt = document.createElement('option');
+                    opt.value = proc.id;
+                    opt.text = `[${proc.operationId}] ${proc.name}`;
+                    select.add(opt);
+                });
+            })
+            .catch(err => console.error("공정 목록 조회 실패:", err));
+    }
+
+    // 5. 리스트에 공정 추가 버튼
+    document.getElementById('addProcessBtn').addEventListener('click', () => {
+        const select = document.getElementById('processSelect');
+        const selectedId = select.value;
+
+        if (!selectedId) {
+            alert('공정을 선택해주세요.');
             return;
         }
 
-        this.mainGrid = new tui.Grid({
-            el: el,
-            // ... 나머지 설정 동일
-            data: {
-                api: { readData: { url: '/api/process_mst', method: 'GET' } },
-                serializer(params) {
-                    const searchParams = new URLSearchParams();
-                    searchParams.append('page', params.page - 1);
-                    searchParams.append('size', params.perPage);
+        const selectedProc = allProcessList.find(p => p.id === Number(selectedId));
+        const currentData = detailGrid.getData();
+        const maxSeq = currentData.length > 0
+            ? Math.max(...currentData.map(r => Number(r.sequence) || 0))
+            : 0;
 
-                    // Optional Chaining(?.)을 사용하여 요소가 없어도 에러 방지
-                    searchParams.append('routeName', document.getElementById('searchRouteName')?.value || '');
-                    searchParams.append('itemId', document.getElementById('searchRouteType')?.value || '');
-
-                    return searchParams.toString();
-                }
-            },
-            columns: [
-                { header: '라우트ID', name: 'routeId', align: 'center' },
-                { header: '제품코드', name: 'itemId', align: 'center' },
-                { header: '라우트명', name: 'routeName' },
-                {
-                    header: '상세보기',
-                    name: 'detail',
-                    formatter: () => '<button class="btn btn-sm btn-info text-white">상세</button>'
-                }
-            ]
+        detailGrid.appendRow({
+            id: selectedProc.id,
+            operationId: selectedProc.operationId,
+            name: selectedProc.name,
+            sequence: maxSeq + 1,
+            description: '',
+            note: ''
         });
-    },
+    });
 
-    initStepGrid() {
-        const el = document.getElementById('stepGrid');
-        if (!el) return;
-        this.stepGrid = new tui.Grid({ el: el, columns: [ /* ... */ ] });
-    },
+    // 6. 상세 모달 오픈
+    function openSimpleModal(list) {
+        const modal = document.getElementById('detailModal');
+        modal.style.display = 'block';
 
-    bindEvents() {
-        if (!this.mainGrid) return;
-        this.mainGrid.on('click', (ev) => {
-            if (ev.columnName === 'detail') {
-                this.openModal(this.mainGrid.getRow(ev.rowKey));
-            }
-        });
-    },
-
-    // 핵심: readData 호출 전 null 체크 로직 추가
-    search() {
-        if (this.mainGrid) {
-            this.mainGrid.readData(1);
-        } else {
-            console.error("메인 그리드가 초기화되지 않아 검색을 수행할 수 없습니다.");
-            // 사용자에게 알림
-            alert("그리드를 로딩 중입니다. 잠시만 기다려주세요.");
+        if (!detailGrid) {
+            detailGrid = new Grid({
+                el: document.getElementById('detailGrid'),
+                bodyHeight: 300,
+                rowHeaders: ['checkbox', 'rowNum'],
+                columns: [
+                    { header: '순번', name: 'sequence', width: 70, align: 'center', editor: 'text' },
+                    { header: '공정ID', name: 'id', align: 'center' },
+                    { header: '공정코드', name: 'operationId', align: 'center' },
+                    { header: '공정명', name: 'name' },
+                    { header: '공정설명', name: 'description', editor: 'text' },
+                    { header: '비고', name: 'note', editor: 'text' }
+                ]
+            });
         }
+
+        setTimeout(() => {
+            detailGrid.refreshLayout();
+            const sortedList = list.sort((a, b) => (Number(a.sequence) || 0) - (Number(b.sequence) || 0));
+            detailGrid.resetData(sortedList);
+        }, 100);
     }
-};
 
-// DOM 로드 완료 후 실행
-document.addEventListener('DOMContentLoaded', () => GridManager.init());
-
-// 전역 함수
-function loadMainGrid() { 
-    GridManager.search(); 
-}
-
-// 모달 열기 및 상세 데이터 fetch
-async function openModal(row) {
-    document.getElementById('detailModal').style.display = 'block';
-    document.getElementById('detailRouteId').value = row.routeId;
-    document.getElementById('detailItemCode').value = row.itemId;
-    document.getElementById('detailRouteName').value = row.routeName;
-
-    try {
-        // 상세 데이터 API 호출
-        const response = await fetch(`/api/process_mst/detail?routeId=${row.routeId}`);
-        const data = await response.json();
-        
-        stepGrid.resetData(data);
-        
-        // 레이아웃 새로고침
-        setTimeout(() => stepGrid.refreshLayout(), 50);
-    } catch (error) {
-        console.error("상세 데이터 로드 실패:", error);
-    }
-}
-
-function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
-
-function saveData() {
-    const rowData = stepGrid.getData();
-    const routeId = document.getElementById('detailRouteId').value;
-
-    // DTO 구조에 맞게 데이터 가공 필요 시 여기서 처리
-    const payload = {
-        routeId: routeId,
-        details: rowData
-    };
-
-    fetch('/api/process_mst/insert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(res => {
-        if(res.ok) {
-            alert("저장 성공!");
-            closeModal();
-            loadMainGrid();
+    // 7. 저장 버튼
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        if (!currentRouteCode) {
+            alert("라우트 정보가 없습니다.");
+            return;
         }
-    })
-    .catch(err => alert("저장 중 오류 발생"));
-}
+
+        detailGrid.finishEditing();
+
+        const updatedData = detailGrid.getData().map(row => ({
+            id: row.id || null,
+            operationId: row.operationId, // Number() 제거
+            sequence: Number(row.sequence),
+            description: row.description,
+            note: row.note
+        }));
+        fetch(`/api/process_mst/update?routeCode=${currentRouteCode}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert('변경사항이 저장되었습니다.');
+                    document.getElementById('detailModal').style.display = 'none';
+                    loadMainData();
+                } else {
+                    alert('저장에 실패했습니다.');
+                }
+            })
+            .catch(err => console.error(err));
+    });
+
+    loadMainData();
+    fetchAllProcesses();
+});

@@ -27,5 +27,7 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
     // 전체 재고량 그룹화 조회
     @Query("SELECT i.item.itemId, COALESCE(SUM(i.currentQuantity), 0) FROM InventoryEntity i GROUP BY i.item.itemId")
     List<Object[]> sumCurrentQuantityGrouped();
+
+	List<InventoryEntity> findByItemItemCodeOrderByExpirationDateAsc(String itemCode);
      
 }

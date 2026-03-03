@@ -53,4 +53,17 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
     // 전체 예약재고량 그룹화 조회 (item이 단순 숫자형)
     @Query("SELECT p.item, COALESCE(SUM(p.instructQty), 0) FROM ProductionInstructEntity p WHERE p.status NOT IN ('COM', 'CAN') GROUP BY p.item")
     List<Object[]> sumReservedQtyGrouped();
+    
+    // 출고 대기 중인 자재 목록 조회
+    @Query("SELECT i.instructCode, b.childItem.itemCode, b.childItem.itemName, SUM(i.instructQty * b.requireQty) " +
+           "FROM ProductionInstructEntity i, BomEntity b " +
+           "WHERE i.item.itemId = b.parentItem.itemId " +
+           "AND i.status = 'READY' " + // READY 상태인 작업지시만 대상
+           "GROUP BY i.instructCode, b.childItem.itemCode, b.childItem.itemName")
+    List<Object[]> findMaterialOutboundList();
+
+    // 작업지시 상태 변경
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ProductionInstructEntity p SET p.status = :status WHERE p.instructCode = :instructCode")
+    int updateInstructStatus(@Param("instructCode") String instructCode, @Param("status") String status);
 }

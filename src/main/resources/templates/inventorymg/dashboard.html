@@ -22,21 +22,16 @@
             
             .zone-box { border: 1px solid #ddd; border-radius: 8px; padding: 0; background: #fff; }
             .zone-header { background: #343a40; color: #fff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; font-weight: bold; }
-            /* 💡 display를 grid로 변경하여 한 줄에 무조건 3개씩(3열) 배치되도록 강제 고정합니다. */
-            .rack-container { display: grid; grid-template-columns: repeat(3, 55px); gap: 15px; justify-content: center; padding: 20px; }
-            /* 랙 박스: 9개가 적당히 들어가도록 크기 살짝 조정 */
-            .rack-box { width: 55px; height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
             
-            #chart-area { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px; }
+            /* 💡 5열(5x5) 배치로 변경하고 크기/간격을 조정합니다 */
+            .rack-container { display: grid; grid-template-columns: repeat(5, 45px); gap: 8px; justify-content: center; padding: 15px; }
+            .rack-box { width: 45px; height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
+           
+			#chart-area { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 20px; }
             
             /* 클릭 가능한 카드 애니메이션 효과 (들썩임 및 레이아웃 밀림 방지) */
-            .clickable-card {
-                transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            }
-            .clickable-card:hover {
-                transform: translateY(-2px); 
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px #198754; 
-            }
+            .clickable-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+            .clickable-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px #198754; }
         </style>
     </th:block>
 </head>
@@ -58,11 +53,12 @@
                 </div>
                 
                 <div class="col-md-4">
-                    <div class="dash-card">
-                        <div class="text-muted mb-2">금일 출고 지시</div>
+                    <div class="dash-card clickable-card" style="cursor: pointer;" onclick="showOutboundScheduledModal()">
+                        <div class="text-muted mb-2">금일 출고 지시 (대기)</div>
                         <div class="stat-num" th:text="${outboundOrdered}">0</div>
-                        <div class="text-danger mt-2">
-                            <i class="fa-solid fa-arrow-down"></i> 처리 : <span th:text="${outboundProcessed}">0</span>
+                        <div class="text-danger mt-2 d-flex justify-content-between align-items-center">
+                            <span><i class="fa-solid fa-arrow-down"></i> 처리 : <span th:text="${outboundProcessed}">0</span></span>
+                            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); processOutbound()">출고 처리</button>
                         </div>
                     </div>
                 </div>
@@ -80,15 +76,15 @@
                 <h5 class="mb-3">창고</h5>
                 <div class="mb-3 small">
                     <span class="me-3"><i class="fa-regular fa-circle text-muted"></i> 없음(0)</span>
-                    <span class="me-3"><i class="fa-solid fa-circle" style="color:#69b3f2;"></i> 보통(1K~3K)</span>
-                    <span><i class="fa-solid fa-circle" style="color:#f26969;"></i> 많음(4K↑)</span>
+                    <span class="me-3"><i class="fa-solid fa-circle" style="color:#69b3f2;"></i> 보통(~10K)</span>
+                    <span><i class="fa-solid fa-circle" style="color:#f26969;"></i> 많음(10K↑)</span>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="zone-box">
                             <div class="zone-header">ZONE A</div>
                             <div class="rack-container">
-                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                <th:block th:each="i : ${#numbers.sequence(1, 25)}">
                                     <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
                                          th:class="'rack-box rack-status-' + ${warehouse['ZONE A_' + rackName]}" 
                                          style="cursor: pointer;" 
@@ -106,7 +102,7 @@
                         <div class="zone-box">
                             <div class="zone-header">ZONE B</div>
                             <div class="rack-container">
-                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                <th:block th:each="i : ${#numbers.sequence(1, 25)}">
                                     <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
                                          th:class="'rack-box rack-status-' + ${warehouse['ZONE B_' + rackName]}" 
                                          style="cursor: pointer;" 
@@ -124,7 +120,7 @@
                         <div class="zone-box">
                             <div class="zone-header">ZONE C</div>
                             <div class="rack-container">
-                                <th:block th:each="i : ${#numbers.sequence(1, 9)}">
+                                <th:block th:each="i : ${#numbers.sequence(1, 25)}">
                                     <div th:with="rackNum=${i < 10 ? '0' + i : i}, rackName='Rack ' + ${rackNum}"
                                          th:class="'rack-box rack-status-' + ${warehouse['ZONE C_' + rackName]}" 
                                          style="cursor: pointer;" 
@@ -292,15 +288,10 @@
                         <div class="mb-3">
                             <label class="form-label">이동할 Rack</label>
                             <select class="form-select" id="trRack">
-                                <option value="Rack 01">Rack 01</option>
-                                <option value="Rack 02">Rack 02</option>
-                                <option value="Rack 03">Rack 03</option>
-                                <option value="Rack 04">Rack 04</option>
-                                <option value="Rack 05">Rack 05</option>
-                                <option value="Rack 06">Rack 06</option>
-                                <option value="Rack 07">Rack 07</option>
-                                <option value="Rack 08">Rack 08</option>
-                                <option value="Rack 09">Rack 09</option>
+                                <th:block th:each="i : ${#numbers.sequence(1, 25)}">
+                                    <option th:value="${i < 10 ? 'Rack 0' + i : 'Rack ' + i}"
+                                            th:text="${i < 10 ? 'Rack 0' + i : 'Rack ' + i}"></option>
+                                </th:block>
                             </select>
                         </div>
                     </div>
@@ -401,6 +392,35 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
                         <button type="button" class="btn btn-primary" onclick="executeBulkOrder()">일괄 발주 실행</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="outboundModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">금일 출고 대기 리스트</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>구분</th>
+                                    <th>관련문서번호</th>
+                                    <th>품목코드</th>
+                                    <th>품목명</th>
+                                    <th>출고 필요 수량</th>
+                                </tr>
+                            </thead>
+                            <tbody id="outboundModalBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
                     </div>
                 </div>
             </div>
@@ -867,6 +887,52 @@
                 location.reload(); 
             })
             .catch(error => console.error('Error:', error));
+        }
+        
+     // ===== 출고 모달 띄우기 =====
+        function showOutboundScheduledModal() {
+            fetch('/inventorymg/outbound-scheduled-list')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('outboundModalBody');
+                    tbody.innerHTML = ''; 
+                    
+                    if(data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-muted">출고 대기 중인 품목이 없습니다.</td></tr>';
+                    } else {
+                        data.forEach(item => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><span class="badge bg-secondary">${item.type}</span></td>
+                                <td>${item.refCode || '-'}</td>
+                                <td>${item.itemCode || '-'}</td>
+                                <td class="text-start">${item.itemName || '-'}</td>
+                                <td class="text-danger fw-bold">${item.requiredQty || 0}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    new bootstrap.Modal(document.getElementById('outboundModal')).show();
+                })
+                .catch(error => alert('출고 목록을 불러오지 못했습니다.'));
+        }
+
+        // ===== 출고 처리 실행 =====
+        function processOutbound() {
+            if(confirm('작업지시에 명시된 자재들을 창고에서 출고(차감) 처리하시겠습니까? (선입선출 적용)')) {
+                fetch('/inventorymg/process-outbound', {
+                    method: 'POST'
+                })
+                .then(async response => {
+                    const msg = await response.text();
+                    if (!response.ok) throw new Error(msg); // 재고 부족 시 에러 던짐
+                    alert(msg);
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('출고 실패: \n' + error.message);
+                });
+            }
         }
     </script>
 </th:block>

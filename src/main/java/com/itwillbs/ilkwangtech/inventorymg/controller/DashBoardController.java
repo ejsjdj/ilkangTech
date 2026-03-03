@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.inventorymg.controller;
 
 import com.itwillbs.ilkwangtech.inventorymg.dto.ChartDataDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.InboundItemDTO;
+import com.itwillbs.ilkwangtech.inventorymg.dto.OutboundItemDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.RackItemDTO;
 import com.itwillbs.ilkwangtech.inventorymg.service.DashboardService;
 import com.itwillbs.ilkwangtech.sales.repository.PurchaseOrderRepository;
@@ -36,7 +37,7 @@ public class DashBoardController {
         // 금일 출고 처리 완료 건수
         model.addAttribute("outboundProcessed", dashboardService.getOutboundProcessedToday());
         
-        model.addAttribute("imminentCount", dashboardService.getImminentStockCount());
+//        model.addAttribute("imminentCount", dashboardService.getImminentStockCount());
         
         // 창고 상태 & 발주 필요 리스트
         model.addAttribute("warehouse", dashboardService.getWarehouseStatus());
@@ -97,5 +98,24 @@ public class DashBoardController {
     public String purchaseRequest(@RequestBody List<Map<String, Long>> requestData) {
         dashboardService.createPurchaseRequests(requestData);
         return "발주 요청이 완료되었습니다.";
+    }
+    
+    // 금일 출고 대기 리스트 조회
+    @GetMapping("/outbound-scheduled-list")
+    @ResponseBody
+    public ResponseEntity<List<OutboundItemDTO>> getOutboundScheduledList() {
+        return ResponseEntity.ok(dashboardService.getOutboundScheduledList());
+    }
+
+    // 금일 출고 처리 실행
+    @PostMapping("/process-outbound")
+    @ResponseBody
+    public ResponseEntity<String> processOutbound() {
+        try {
+            String result = dashboardService.processOutbound();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

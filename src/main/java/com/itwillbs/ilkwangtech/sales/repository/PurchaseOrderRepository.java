@@ -29,7 +29,10 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrderEnti
     Long sumIncomingQuantityByItemId(@Param("itemId") Long itemId);
     
     // 전체 입고예정량 그룹화 조회
-    @Query("SELECT po.item.itemId, COALESCE(SUM(po.quantity), 0) FROM PurchaseOrderEntity po GROUP BY po.item.itemId")
+    @Query("SELECT po.item.itemId, COALESCE(SUM(po.quantity), 0) " +
+            "FROM PurchaseOrderEntity po " +
+            "WHERE po.header.status IN ('ORDERED', 'COMPLETE') " + 
+            "GROUP BY po.item.itemId")
     List<Object[]> sumIncomingQuantityGrouped();
 
 }

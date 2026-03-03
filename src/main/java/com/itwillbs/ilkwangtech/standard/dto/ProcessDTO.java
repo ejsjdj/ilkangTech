@@ -9,16 +9,16 @@ import lombok.*;
 public class ProcessDTO {
 
     private Long id;
-    private String operationId;
+    private String operationCode;
     private String name;
     private String description;
     private String memberName;
     private String createdAt;
 
     @Builder
-    public ProcessDTO(Long id, String operationId, String name, String description, String memberName, String createdAt){
+    public ProcessDTO(Long id, String operationCode, String name, String description, String memberName, String createdAt){
         this.id = id;
-        this.operationId = operationId;
+        this.operationCode = operationCode;
         this.name = name;
         this.description = description;
         this.memberName = memberName;

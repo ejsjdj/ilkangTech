@@ -23,7 +23,25 @@ document.addEventListener("DOMContentLoaded", function () {
       { header: "등록자", name: "memberName" },
       { header: "품목명", name: "itemName" },
       { header: "총생산수량", name: "totalQty" },
-      { header: "상태", name: "status" },
+      {
+        header: "상태",
+        name: "status",
+        align: "center",
+        formatter: ({ value }) => {
+          // 메인 그리드에서도 색상이 나오도록 포맷터 추가
+          const statusMap = {
+            PROGRESS: { text: "생산중", class: "status-progress" },
+            COMPLETE: { text: "생산완료", class: "status-complete" },
+            CANCEL: { text: "중단", class: "status-cancel" },
+            WAIT: { text: "대기중", class: "status-wait" },
+          };
+          const item = statusMap[value] || {
+            text: value,
+            class: "status-wait",
+          };
+          return `<span class="status-badge ${item.class}">${item.text}</span>`;
+        },
+      },
       {
         header: "상세",
         name: "detail",
@@ -54,15 +72,10 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((data) => {
         currentPlaneId = rowData.id;
 
-        // 상단 정보 세팅
-        setDetailForm(data);
-
-        // 상세 Grid 데이터 세팅
+        // 상세 Grid 데이터 세팅 및 모달 열기
         openModal();
-        setDetailForm(data);
+        setDetailForm(data); // 상단 정보 및 배지 업데이트
         detailGrid.resetData(data.details || []);
-
-        openModal();
       })
       .catch((err) => {
         console.error(err);
@@ -139,7 +152,6 @@ function goRegister() {
 function openModal() {
   document.getElementById("detailModal").style.display = "block";
 
-  // 상세 Grid 최초 1회만 생성
   if (!detailGrid) {
     detailGrid = new tui.Grid({
       el: document.getElementById("detailGrid"),
@@ -167,7 +179,7 @@ function closeModal() {
 }
 
 // ===========================
-// 상세 상단 폼 세팅 함수
+// 상세 상단 폼 세팅 및 상태 배지 업데이트
 // ===========================
 function setDetailForm(data) {
   document.getElementById("d_planeCode").value = data?.planeCode || "";
@@ -175,6 +187,40 @@ function setDetailForm(data) {
   document.getElementById("d_memberName").value = data?.memberName || "";
   document.getElementById("d_itemName").value = data?.itemName || "";
   document.getElementById("d_totalQty").value = data?.totalQty || "";
-  document.getElementById("d_status").value = data?.status || "";
   document.getElementById("d_memo").value = data?.memo || "";
+
+  // 상태값 세팅 (Hidden input)
+  if (document.getElementById("d_status")) {
+    document.getElementById("d_status").value = data?.status || "";
+  }
+
+  // 상태 배지 업데이트 로직
+  const badge = document.getElementById("d_status_badge");
+  if (badge) {
+    const status = data?.status || "WAIT";
+    let text = "";
+    let className = "status-badge ";
+
+    switch (status) {
+      case "COMPLETE":
+        text = "생산완료";
+        className += "status-complete";
+        break;
+      case "CANCEL":
+        text = "중단";
+        className += "status-cancel";
+        break;
+      case "PROGRESS":
+        text = "생산중";
+        className += "status-progress";
+        break;
+      case "WAIT":
+      default:
+        text = "대기중";
+        className += "status-wait";
+    }
+
+    badge.innerText = text;
+    badge.className = className;
+  }
 }

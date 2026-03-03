@@ -49,7 +49,7 @@ public class ProcessRouteApiController {
     }
 
     // 신규 라우트 추가
-    @PostMapping("/process_mst/insert")
+    @PostMapping("/process_mst/create")
     @ResponseBody
     public void insertProcess(@RequestBody List<ProcessRouteInsertDTO> processRouteInsertDTO,
                               @AuthenticationPrincipal AccountLogin accountLogin){

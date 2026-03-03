@@ -36,8 +36,6 @@ public class PurchaseReturnEntity {
     @Column(name = "return_date")
     private LocalDate returnDate;
 
-
-
     public static PurchaseReturnEntity create(PurchaseRequestEntity header,
                                               Long returnQty,
                                               Member member,

@@ -65,7 +65,8 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
         return entities.stream()
                 .map(processRouteEntity -> ProcessRouteDetailDTO.builder()
                         .id(processRouteEntity.getId())
-                        .operationCode(processRouteEntity.getOperation().getOperationId())
+                        .operationId(processRouteEntity.getOperation().getId())
+                        .operationCode(processRouteEntity.getOperation().getOperationCode())
                         .name(processRouteEntity.getOperation().getName())
                         .description(processRouteEntity.getOperation().getDescription())
                         .sequence(processRouteEntity.getSequence())
@@ -93,7 +94,6 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
 
             // 3. 엔티티에 등록
             ProcessRouteEntity process = ProcessRouteEntity.builder().
-                    id(saveDTO.getId()).
                     routeCode(saveDTO.getRouteCode()).
                     operation(processEntity).
                     item(item).
@@ -113,11 +113,14 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
     // 4. 라우트 업데이트
     @Override
     @Transactional
-    public void updateProcessList(List<ProcessUpdateDTO> processUpdateDTO, Long userId, String routeCode){
+    public void updateProcessList(List<ProcessUpdateDTO> dtoList,
+                                  Long userId,
+                                  String routeCode) {
 
         Member member = memberRepository.findById(userId)
                 .orElseThrow();
 
+        // 기존 라우트 단계 조회
         List<ProcessRouteEntity> existingList =
                 processRouteRepository.findByRouteCodeOrderBySequenceAsc(routeCode);
 
@@ -125,29 +128,38 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
                 existingList.stream()
                         .collect(Collectors.toMap(ProcessRouteEntity::getId, e -> e));
 
+        for (ProcessUpdateDTO dto : dtoList) {
 
-        for(ProcessUpdateDTO dto : processUpdateDTO){
+            if (dto.getId() != null) {
+                // =========================
+                // 1. 기존 단계 수정
+                // =========================
+                ProcessRouteEntity entity = existingMap.get(dto.getId());
 
-            if (dto.getId() == null) {
-                // 신규 라우트 항목 추가
+                if (entity != null) {
+                    entity.update(
+                            dto.getSequence(),
+                            dto.getNote(),
+                            member
+                    );
 
-                if (existingList.isEmpty()) {
-                    throw new IllegalStateException("기본 라우트 정보가 없어 신규 항목을 추가할 수 없습니다.");
+                    existingMap.remove(dto.getId());
                 }
 
-                ProcessRouteEntity template = existingList.get(0);
-
-                System.out.println("공정ID : " + dto.getOperationId());
-
-                ProcessEntity operation = processRepository.findById(dto.getOperationId())
+            } else {
+                // =========================
+                // 2. 신규 단계 추가
+                // =========================
+                ProcessEntity operation = processRepository
+                        .findById(dto.getOperationId())
                         .orElseThrow();
 
                 ProcessRouteEntity newEntity = ProcessRouteEntity.builder()
                         .routeCode(routeCode)
                         .operation(operation)
-                        .item(template.getItem())
+                        .item(existingList.get(0).getItem()) // 기존 라우트 기준 유지
+                        .routeName(existingList.get(0).getRouteName())
                         .sequence(dto.getSequence())
-                        .routeName(template.getRouteName())
                         .description(dto.getDescription())
                         .note(dto.getNote())
                         .createdAt(LocalDate.now())
@@ -155,18 +167,12 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
                         .build();
 
                 processRouteRepository.save(newEntity);
-
-            } else {
-                // 업데이트
-                ProcessRouteEntity entity = existingMap.get(dto.getId());
-                if (entity != null) {
-                    entity.update(dto.getSequence(), dto.getNote(), member);
-
-                    existingMap.remove(dto.getId());
-                }
             }
         }
-        // 삭제
+
+        // =========================
+        // 3. 삭제 처리
+        // =========================
         if (!existingMap.isEmpty()) {
             processRouteRepository.deleteAll(existingMap.values());
         }

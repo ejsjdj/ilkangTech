@@ -40,7 +40,7 @@ public interface ProcessRouteRepository extends JpaRepository<ProcessRouteEntity
             SELECT new com.itwillbs.ilkwangtech.production.dto.ProcessRegisterDTO(
             pr.sequence,
             pr.operation.id,
-            pr.operation.operationId,
+            pr.operation.operationCode,
             pr.operation.name
             )
             FROM ProcessRouteEntity pr

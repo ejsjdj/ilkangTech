@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.itwillbs.ilkwangtech.process.entity.LotMaster;
+import com.itwillbs.ilkwangtech.process.dto.LotDetailResponseDTO;
+import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
 import com.itwillbs.ilkwangtech.process.service.LotTraceService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,23 +24,38 @@ public class ProcessController {
 
 	private final LotTraceService lotTraceService;
 	
+	@GetMapping("/ProcessDashboard")
+    public String processDashboardPage() {
+        return "process/ProcessDashboard"; 
+    }
+	
+	@GetMapping("/ProcessStatus")
+    public String processStatusPage() {
+        return "process/ProcessStatus"; 
+    }
+	
+	@GetMapping("/api/processStatusList")
+	@ResponseBody
+    public String getProcessStatusList() {
+        return lotTraceService.getAllProcessStatusList(); 
+    }
+	
 	@GetMapping("/LOT")
     public String chaseLOTPage() {
         return "process/LOT"; 
     }
 	
 	// LOT 리스트 데이터 반환
-    @GetMapping("/api/lots")
-    @ResponseBody
-    public List<LotMaster> getLotList() {
-    	log.info(">>>>>>>>>>>>>>>> ProcessController - api/lots 호출");
-        return lotTraceService.getAllLots();
-    }
+	@GetMapping("/api/lots")
+	@ResponseBody
+	public List<LotResponseDTO> getLotList() { 
+	    return lotTraceService.getAllLotsWithItemName(); 
+	}
 
     // LOT 상세 데이터 반환
-    @GetMapping("/api/lot/{lotId}")
-    @ResponseBody
-    public Map<String, Object> getLotDetail(@PathVariable String lotId) {
-        return lotTraceService.getLotDetail(lotId);
-    }
+	@GetMapping("/api/lot/{lotId}")
+	@ResponseBody
+	public LotDetailResponseDTO getLotDetail(@PathVariable String lotId) {
+	    return lotTraceService.getLotDetail(lotId);
+	}
 }

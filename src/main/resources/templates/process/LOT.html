@@ -38,7 +38,7 @@
         .lot-main-content { 
             display: flex; 
             gap: 20px; 
-            min-height: 650px; 
+            min-height: 600px; 
             margin-bottom: 40px; /* 페이지 하단 여백 추가 */
         }
         
@@ -128,7 +128,7 @@
 		/* 날짜 텍스트 정렬 보정 */
 		.date-text { 
 		    color: #94a3b8; 
-		    font-size: 11px; 
+		    font-size: 15px; 
 		    display: block; 
 		    text-align: center; 
 		}
@@ -141,6 +141,35 @@
 		    font-size: 11px;
 		    font-weight: 700;
 		}
+		.acc-item {
+		    padding: 12px 20px 12px 40px;
+		    display: flex;
+		    align-items: center;
+		    font-size: 13px;
+		    font-weight: 600;
+		    color: #475569;
+		    cursor: pointer;
+		    border-bottom: 1px solid #edf2f7;
+		    transition: all 0.2s;
+		}
+		
+		.acc-item:hover {
+		    background: #eef2ff;
+		    color: #4f46e5;
+		    padding-left: 45px; /* 약간 밀리는 효과 */
+		}
+		
+		.acc-item i.bi-chevron-right {
+		    font-size: 10px;
+		    opacity: 0.5;
+		}
+		
+		.table-active {
+		    background-color: #f1f5f9 !important;
+		    border-left: 4px solid #4f46e5;
+		}
+		
+		.text-indigo { color: #4f46e5; }
     </style>
 </head>
 <body>
@@ -159,20 +188,49 @@
                 </div>
             </div>
 
-            <div class="search-filter-area">
-                <div style="flex: 1; position: relative;">
-                    <i class="bi bi-search" style="position: absolute; top: 10px; left: 12px; color: #94a3b8;"></i>
-                    <input type="text" class="form-control form-control-sm ps-5" style="border-radius: 8px;" placeholder="LOT 번호 또는 제품명 입력">
-                </div>
-                <select class="form-select form-select-sm" style="width: 140px; border-radius: 8px;">
-                    <option value="">전체 상태</option>
-                </select>
-                <button class="btn btn-sm btn-primary px-3" style="background: #4f46e5; border: none; border-radius: 8px; font-weight: 600;">검색</button>
-                <button class="btn btn-sm btn-outline-secondary px-3" style="border-radius: 8px;">초기화</button>
-            </div>
+            <div class="search-filter-area" style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1.2fr auto; gap: 10px; align-items: end; padding: 12px 16px;">
+    
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">검색어</label>
+			        <input type="text" id="searchKeyword" class="form-control form-control-sm" placeholder="번호 / 제품명" style="padding: 8px;">
+			    </div>
+			    
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">생산 상태</label>
+			        <select id="statusFilter" class="form-select form-select-sm" style="padding: 8px;">
+			            <option value="">전체</option>
+			            <option value="ING">진행중</option>
+			            <option value="DONE">완료</option>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">제품 유형</label>
+			        <select id="typeFilter" class="form-select form-select-sm" style="padding: 8px;">
+			            <option value="">전체</option>
+			            <option value="F">완제품</option>
+			            <option value="M">자재</option>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">시작일</label>
+			        <input type="date" id="startDate" class="form-control form-control-sm" style="padding: 7px;">
+			    </div>
+			
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">종료일</label>
+			        <input type="date" id="endDate" class="form-control form-control-sm" style="padding: 7px;">
+			    </div>
+			
+			    <div class="d-flex gap-1">
+			        <button class="btn btn-sm btn-primary" onclick="filterLotList()" style="background: #4f46e5; border: none; width: 60px; height: 35px; font-weight: 600;">검색</button>
+			        <button class="btn btn-sm btn-outline-secondary" onclick="resetFilters()" style="width: 60px; height: 35px;">초기화</button>
+			    </div>
+			</div>
 
             <div class="lot-main-content">
-                <div class="content-card" style="flex: 1;">
+                <div class="content-card" style="flex: 1.5;">
 				    <div class="card-header">
 				        <h3>LOT 계층구조</h3>
 				        <span id="lot-count" class="badge bg-light text-dark" style="font-size: 11px;">Total 0</span>
@@ -196,39 +254,25 @@
                 <div class="content-card" style="flex: 1.5;">
 				    <div class="card-header">
 				        <h3>LOT 상세 정보</h3>
-				        <div id="selected-lot-id" class="text-primary fw-bold" style="font-size: 13px;"></div>
+				        <div id="selected-lot-code" class="text-primary fw-bold" style="font-size: 13px;"></div>
 				    </div>
 				    
 				    <div id="empty-detail" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8; padding: 60px 0;">
-				        <i class="bi bi-info-circle mb-2" style="font-size: 32px; opacity: 0.5;"></i>
+				        <i class="bi bi-diagram-3 mb-2" style="font-size: 32px; opacity: 0.5;"></i>
 				        <p style="font-size: 14px;">조회할 LOT를 리스트에서 선택해 주세요.</p>
 				    </div>
 				
-				    <div id="detail-content" style="display: none; padding: 20px;">
-				        <ul class="nav nav-tabs mb-3" id="lotDetailTab" role="tablist">
-				            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#raw-material">원자재</button></li>
-				            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#production">생산공정</button></li>
-				            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#quality">품질검사</button></li>
-				        </ul>
+				    <div id="detail-display-area" style="display: none; padding: 20px;">
+				        <div class="summary-box mb-4" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+				            <h4 style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 10px;">기본 정보</h4>
+				            <div id="lot-summary-info" style="font-size: 13px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+				                </div>
+				        </div>
 				        
-				        <div class="tab-content" id="lotDetailTabContent">
-				            <div class="tab-pane fade show active" id="raw-material">
-				                <table class="table table-sm emp-table">
-				                    <thead><tr><th>원자재명</th><th>공급업체</th><th>입고일자</th></tr></thead>
-				                    <tbody id="rm-tbody"></tbody>
-				                </table>
-				            </div>
-				            <div class="tab-pane fade" id="production">
-				                <table class="table table-sm emp-table">
-				                    <thead><tr><th>부품명</th><th>부품LOT</th><th>생산일자</th></tr></thead>
-				                    <tbody id="part-tbody"></tbody>
-				                </table>
-				            </div>
-				            <div class="tab-pane fade" id="quality">
-				                <table class="table table-sm emp-table">
-				                    <thead><tr><th>검사결과</th><th>검사자</th><th>검사일자</th></tr></thead>
-				                    <tbody id="qc-tbody"></tbody>
-				                </table>
+				        <div id="sub-detail-grid">
+				            <h4 id="sub-detail-title" style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 10px;">상세 내역</h4>
+				            <div id="sub-detail-content" class="sub-content-area">
+				                <p class="text-muted" style="font-size: 12px;">왼쪽 아코디언 메뉴를 클릭하여 상세 내역을 확인하세요.</p>
 				            </div>
 				        </div>
 				    </div>
@@ -237,22 +281,19 @@
         </div>
     </div>
 <script th:inline="javascript">
+let allLotData = [];
+let selectedLotData = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("1. 스크립트 로드됨");
     loadLotList();
 });
 
-// 1. 서버에서 LOT 리스트 가져오기
 async function loadLotList() {
-    console.log("fetch 요청 시작..."); 
     try {
-        // 앞에 /process를 반드시 붙여주세요.
-        const response = await fetch('/process/api/lots'); 
-        console.log("응답 상태:", response.status);
-        
-        const data = await response.json();
-        console.log("받은 데이터:", data);
-        renderLotTable(data);
+        const response = await fetch('/process/api/lots');
+        allLotData = await response.json(); // 전체 데이터 저장
+        renderLotTable(allLotData); // 초기 렌더링
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
@@ -264,42 +305,40 @@ function renderLotTable(lots) {
 
     lots.forEach(lot => {
         const date = new Date(lot.createdDate);
-        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        const formattedDate = date.toLocaleDateString();
 
         // 1. 메인 정보 행
         const mainTr = document.createElement('tr');
         mainTr.className = 'main-row';
+        mainTr.dataset.lotId = lot.lotId;
         mainTr.innerHTML = `
             <td><span class="date-text">${formattedDate}</span></td>
-            <td><span class="lot-code-text">${lot.lotId}</span></td>
-            <td>${lot.productId}</td>
-            <td><span class="badge-status ${lot.status === 'ING' ? 'bg-ing' : 'bg-done'}">${lot.status === 'ING' ? '진행중' : '완료'}</span></td>
+            <td><span class="fw-bold text-indigo">${lot.lotId}</span></td>
+            <td>${lot.itemName}</td> <td><span class="badge-status ${lot.status === 'ING' ? 'bg-ing' : 'bg-done'}">${lot.status === 'ING' ? '진행중' : '완료'}</span></td>
         `;
 
-        // 2. 상세 정보 행 (초기 hidden)
-        const detailTr = document.createElement('tr');
-        detailTr.className = 'detail-row';
-        detailTr.style.display = 'none'; // 숨김 처리
-        detailTr.innerHTML = `
-            <td colspan="4" class="p-0">
-                <div class="detail-container">
-                    <div class="detail-tabs">
-                        <button onclick="showSubDetail('${lot.lotId}', 'material', this)">자재이력</button>
-                        <button onclick="showSubDetail('${lot.lotId}', 'process', this)">공정단계</button>
-                        <button onclick="showSubDetail('${lot.lotId}', 'quality', this)">품질검사</button>
+        // 2. 아코디언 행 (메뉴 등장)
+        const accordionTr = document.createElement('tr');
+        accordionTr.className = 'accordion-row';
+        accordionTr.id = `accordion-${lot.lotId}`;
+        accordionTr.style.display = 'none';
+        accordionTr.innerHTML = `
+            <td colspan="4" style="background: #f8fafc; padding: 0 !important;">
+                <div class="accordion-menu-list" style="display: flex; flex-direction: column;">
+                    <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'MATERIAL')">
+                        <i class="bi bi-box-seam me-2"></i> 투입 자재 이력 <i class="bi bi-chevron-right ms-auto"></i>
                     </div>
-                    <div id="sub-content-${lot.lotId}" class="sub-content-area">
-                        <p class="text-muted">메뉴를 선택하면 상세 이력이 표시됩니다.</p>
+                    <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'PROCESS')">
+                        <i class="bi bi-gear me-2"></i> 수행 공정 단계 <i class="bi bi-chevron-right ms-auto"></i>
                     </div>
                 </div>
             </td>
         `;
 
-        // 클릭 이벤트: 행 확장/축소
-        mainTr.onclick = () => toggleRow(mainTr, detailTr);
+        mainTr.onclick = () => selectLot(lot, mainTr, accordionTr);
 
         tbody.appendChild(mainTr);
-        tbody.appendChild(detailTr);
+        tbody.appendChild(accordionTr);
     });
 }
 
@@ -328,6 +367,113 @@ async function loadLotDetail(lotId, element) {
     } catch (error) {
         alert('상세 정보를 불러올 수 없습니다.');
     }
+}
+
+async function selectLot(lot, mainTr, accordionTr) {
+    const isVisible = accordionTr.style.display === 'table-row';
+    document.querySelectorAll('.accordion-row').forEach(tr => tr.style.display = 'none');
+    document.querySelectorAll('.main-row').forEach(tr => tr.classList.remove('table-active'));
+
+    if (!isVisible) {
+        accordionTr.style.display = 'table-row';
+        mainTr.classList.add('table-active');
+
+        // 서버에서 상세 DTO 정보를 가져옴
+        try {
+            const response = await fetch(`/process/api/lot/${lot.lotId}`);
+            const detailData = await response.json();
+            updateRightPanel(detailData); 
+        } catch (error) {
+            console.error("상세 정보 로드 실패", error);
+        }
+    }
+}
+
+function updateRightPanel(detail) {
+    document.getElementById('empty-detail').style.display = 'none';
+    const displayArea = document.getElementById('detail-display-area');
+    displayArea.style.display = 'block';
+
+    document.getElementById('selected-lot-code').innerText = `LOT: ${detail.lotId}`;
+    
+    const infoBox = document.getElementById('lot-summary-info');
+    infoBox.innerHTML = `
+        <div><span class="text-muted">LOT 코드:</span> <strong>${detail.lotId}</strong></div>
+        <div><span class="text-muted">제품명:</span> <strong>${detail.itemName}</strong></div>
+        <div><span class="text-muted">작업지시:</span> ${detail.instructCode}</div>
+        <div><span class="text-muted">생산 수량:</span> ${detail.instructQty || 0} EA</div>
+        <div><span class="text-muted">생산 상태:</span> <span class="badge-status ${detail.status === 'DONE' ? 'bg-done' : 'bg-ing'}">${detail.status || '-'}</span></div>
+        <div><span class="text-muted">불량 수량:</span> <span class="text-danger">${detail.defective || 0}</span> EA</div>
+        <div><span class="text-muted">시작일:</span> ${detail.startDate ? new Date(detail.startDate).toLocaleString() : '-'}</div>
+        <div><span class="text-muted">종료일:</span> ${detail.endDate ? new Date(detail.endDate).toLocaleString() : '-'}</div>
+    `;
+}
+
+async function loadSubDetail(lotId, type) {
+    const title = document.getElementById('sub-detail-title');
+    const content = document.getElementById('sub-detail-content');
+    
+    title.innerText = type === 'MATERIAL' ? '투입 자재 상세 내역' : '수행 공정 상세 내역';
+    content.innerHTML = '<div class="text-center p-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+
+    try {
+        const response = await fetch(`/process/api/lot/${lotId}/${type.toLowerCase()}`);
+        const data = await response.json();
+        
+        if (type === 'MATERIAL') {
+            content.innerHTML = renderMaterialTable(data);
+        } else {
+            content.innerHTML = renderProcessTable(data);
+        }
+    } catch (error) {
+        content.innerHTML = '<p class="text-danger p-3">데이터를 불러오지 못했습니다.</p>';
+    }
+}
+
+function filterLotList() {
+    const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+    const status = document.getElementById('statusFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    const startDate = document.getElementById('startDate').value; // 'YYYY-MM-DD' 형식
+    const endDate = document.getElementById('endDate').value;
+
+    const filtered = allLotData.filter(lot => {
+        // 1. 기존 필터 (검색어, 상태, 유형)
+        const keywordMatch = !keyword || lot.lotId.toLowerCase().includes(keyword) || lot.itemName.toLowerCase().includes(keyword);
+        const statusMatch = !status || lot.status === status;
+        const typeMatch = !type || lot.lotType === type;
+
+        // 2. 날짜 필터 추가
+        let dateMatch = true;
+        if (lot.createdDate) {
+            // 서버 날짜(ISO)를 비교를 위해 시간 제거한 숫자로 변환
+            const lotDate = new Date(lot.createdDate).setHours(0,0,0,0);
+            
+            if (startDate) {
+                const sDate = new Date(startDate).setHours(0,0,0,0);
+                if (lotDate < sDate) dateMatch = false;
+            }
+            if (endDate) {
+                const eDate = new Date(endDate).setHours(0,0,0,0);
+                if (lotDate > eDate) dateMatch = false;
+            }
+        }
+
+        return keywordMatch && statusMatch && typeMatch && dateMatch;
+    });
+
+    renderLotTable(filtered);
+    document.getElementById('lot-count').innerText = `Total ${filtered.length}`; // 검색 결과 수 업데이트
+}
+
+function resetFilters() {
+    document.getElementById('searchKeyword').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    renderLotTable(allLotData);
+    document.getElementById('lot-count').innerText = `Total ${allLotData.length}`;
 }
 </script>
 </th:block>

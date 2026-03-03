@@ -157,7 +157,7 @@
                 </button>
                 <ul class="nav-children" id="menu-standard">
                     <li><a class="nav-child" th:href="@{/bom/list}">BOM</a></li>
-                    <li><a class="nav-child" th:href="@{/account/list}">품질항목 기준</a></li>
+                    <li><a class="nav-child" th:href="@{/quality/QcItemList}">품질검사 항목</a></li>
                     <li><a class="nav-child" th:href="@{/account/list}">설비정보</a></li>
                     <li><a class="nav-child" th:href="@{/process/list}">공정라우트정보</a></li>
                 </ul>
@@ -186,8 +186,8 @@
                     <span class="nav-icon">🔁</span><span class="nav-menu">공정관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-process">
-                    <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
-                    <li><a class="nav-child" th:href="@{/account/list}">공정 현황</a></li>
+                    <li><a class="nav-child" th:href="@{/process/ProcessDashboard}">대시보드</a></li>
+                    <li><a class="nav-child" th:href="@{/process/ProcessStatus}">공정 현황</a></li>
                     <li><a class="nav-child" th:href="@{/process/LOT}">LOT 추적</a></li>
                 </ul>
 

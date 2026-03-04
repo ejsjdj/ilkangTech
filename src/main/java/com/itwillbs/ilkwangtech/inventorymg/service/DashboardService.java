@@ -106,7 +106,7 @@ public class DashboardService {
                 } else {
                     // 모든 조건 통과! 창고 입고 시작
                     String baseLotNumber = order.getPurchaseOrderCode() + "-L" + line.getId();
-                    receiveAndDistributeInventory(item, line.getQuantity(), baseLotNumber);
+                    receiveAndDistributeInventory(item, line.getQuantity());
 
                     InventoryHistoryEntity history = new InventoryHistoryEntity();
                     history.setItem(item);
@@ -130,49 +130,52 @@ public class DashboardService {
         }
     }
     
-    // 구매팀 제품 입고 시 품목 코드에 따라 타겟 창고를 지정하고 분산 저장하는 로직
+    // 파라미터에서 baseLotNumber를 제거하고 내부에서 LOT를 직접 생성
     @Transactional
-    public void receiveAndDistributeInventory(ItemEntity item, Long totalQuantity, String baseLotNumber) {
-    	
-    	String[] racks = new String[25];
+    public void receiveAndDistributeInventory(ItemEntity item, Long totalQuantity) {
+        
+        String[] racks = new String[25];
         for (int i = 0; i < 25; i++) {
             racks[i] = String.format("Rack %02d", i + 1);
         }
         Random random = new Random();
 
-        // 품목 코드(itemCode) 앞자리를 확인하여 타겟 창고(ZONE) 결정
-        String targetZone = "ZONE A"; // 예외 대비 기본값 (원자재)
-        String itemCode = item.getItemCode();
+        // 1. 타겟 창고(ZONE) 결정
+        String targetZone = "ZONE A"; 
+        String itemCode = item.getItemCode() != null ? item.getItemCode().toUpperCase() : "UNKNOWN";
         
-        if (itemCode != null) {
-            itemCode = itemCode.toUpperCase(); // 소문자로 들어올 경우를 대비해 대문자로 안전하게 변환
-            if (itemCode.startsWith("RW-")) {
-                targetZone = "ZONE A"; // 원자재
-            } else if (itemCode.startsWith("ST-") || itemCode.startsWith("IN-")) {
-                targetZone = "ZONE B"; // 반제품
-            } else if (itemCode.startsWith("SAM-")) {
-                targetZone = "ZONE C"; // 완제품
-            }
-        }
+        if (itemCode.startsWith("RW-")) targetZone = "ZONE A";
+        else if (itemCode.startsWith("ST-") || itemCode.startsWith("IN-")) targetZone = "ZONE B";
+        else if (itemCode.startsWith("SAM-")) targetZone = "ZONE C";
 
-        // 결정된 타겟 ZONE 안에서만 수량을 3등분하여 랜덤 Rack 3곳에 분산 저장
+        // 2. LOT 번호 Prefix 생성 (예: RW-001-20260304-)
+        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String lotPrefix = itemCode + "-" + dateStr + "-";
+        
+        // 3. DB에서 오늘 입고된 동일 품목의 LOT 개수를 조회하여 시작 순번 결정
+        long currentSeq = inventoryRepository.countByLotNumberStartingWith(lotPrefix);
+
+        // 4. 수량을 3등분하여 창고에 분배
         long partQuantity = totalQuantity / 3;
         long remainder = totalQuantity % 3;
 
         for (int i = 0; i < 3; i++) {
-            InventoryEntity inventory = new InventoryEntity();
-            inventory.setItem(item);
-            inventory.setLotNumber(baseLotNumber + "-" + (i + 1) + "-" + (System.currentTimeMillis() % 10000)); // 예: LOT-20260301-L123-1
+            long finalQuantity = partQuantity + (i == 2 ? remainder : 0); 
             
-            inventory.setZone(targetZone); // 조건문으로 찾은 타겟 창고(A, B, C 중 하나) 고정 배정
-            inventory.setRack(racks[random.nextInt(racks.length)]); // 해당 창고 내에서 랜덤으로 랙 번호 배정
-            
-            long finalQuantity = partQuantity + (i == 2 ? remainder : 0); // 마지막 분할 시 나머지 수량 짬처리
-            inventory.setCurrentQuantity(finalQuantity);
-            inventory.setExpirationDate(LocalDate.now().plusYears(1)); // 유통기한 임의 1년 뒤
-            
-            // 수량이 0보다 클 때만 실제로 창고에 저장
             if(finalQuantity > 0) {
+                currentSeq++; // 순번 증가 (1, 2, 3 ...)
+                
+                // 최종 LOT 번호 조립: Prefix + 4자리 숫자 (예: RW-001-20260304-0001)
+                String finalLotNumber = lotPrefix + String.format("%04d", currentSeq);
+                
+                InventoryEntity inventory = new InventoryEntity();
+                inventory.setItem(item);
+                inventory.setLotNumber(finalLotNumber); 
+                inventory.setZone(targetZone); 
+                inventory.setRack(racks[random.nextInt(racks.length)]); 
+                inventory.setCurrentQuantity(finalQuantity);
+                inventory.setExpirationDate(LocalDate.now().plusYears(1)); 
+                
                 inventoryRepository.save(inventory); 
             }
         }
@@ -450,8 +453,6 @@ public class DashboardService {
                     .requiredQty(((Number) obj[3]).longValue())
                     .build());
         }
-        
-        // TODO: 완제품 출고(수주 기반) 로직은 영업팀 Order 테이블 구조에 맞춰 이 아래에 추가하시면 됩니다!
         return list;
     }
 
@@ -484,7 +485,7 @@ public class DashboardService {
                 stock.setCurrentQuantity(currentQty - deductQty); // 재고 차감
                 remainingToDeduct -= deductQty;
 
-                // 💡 출고(OUT) 이력 저장 (차트에 반영됨!)
+                // 출고(OUT) 이력 저장 (차트에 반영됨!)
                 InventoryHistoryEntity history = new InventoryHistoryEntity();
                 history.setItem(stock.getItem());
                 history.setTransactionDate(LocalDate.now());

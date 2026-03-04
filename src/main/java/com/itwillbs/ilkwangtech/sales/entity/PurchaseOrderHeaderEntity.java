@@ -32,14 +32,9 @@ public class PurchaseOrderHeaderEntity {
     @Column(name = "purchase_order_Code")
     private String purchaseOrderCode; // 발주 코드
 
-    @Column(name = "company")
-    private String company;// 거래처명
-
-    @Column(name = "company_manager")
-    private String companyManager;// 담당자명
-
-    @Column(name = "phone")
-    private String phone;// 전화번호
+    @ManyToOne
+    @JoinColumn(name = "company")
+    private CompanyEntity company;// 거래처 ID
 
     @ManyToOne
     @JoinColumn(name = "member_id")
@@ -58,9 +53,7 @@ public class PurchaseOrderHeaderEntity {
     // 헤더 필드 저장 메서드
     public static PurchaseOrderHeaderEntity saveHeader(
             String purchaseOrderCode,
-            String company,
-            String companyManager,
-            String phone,
+            CompanyEntity company,
             Member member,
             LocalDate orderDate
             ) {
@@ -68,8 +61,6 @@ public class PurchaseOrderHeaderEntity {
 
         header.purchaseOrderCode = purchaseOrderCode;
         header.company = company;
-        header.companyManager =companyManager;
-        header.phone = phone;
         header.member = member;
         header.status = String.valueOf(PurchaseOrderStatus.CONFIRMED);
         header.orderDate = orderDate;

@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.sales.service.company;
 import com.itwillbs.ilkwangtech.sales.constant.CompanyCategory;
 import com.itwillbs.ilkwangtech.sales.constant.CompanyStatus;
 import com.itwillbs.ilkwangtech.sales.dto.CompanyDTO;
+import com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO;
 import com.itwillbs.ilkwangtech.sales.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,12 @@ public class CompanyServiceImpl implements CompanyService {
     @Transactional(readOnly = true)
     public long getTotalCount(CompanyCategory category) {
         return companyRepository.selectCount(category);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PurchaseCompanyDTO> selectPurchaseCompany() {
+        return companyRepository.selectCompanyType3();
     }
 
 }

@@ -88,7 +88,6 @@ public class ProcessServiceImpl implements ProcessService{
             ProcessEntity entity = processRepository.findById(dto.getProcessId())
                     .orElseThrow(() -> new IllegalArgumentException("공정을 찾을 수 없습니다."));
 
-
                 entity.setOperationCode(dto.getOperationCode());
                 entity.setName(dto.getName());
                 entity.setDescription(dto.getDescription());

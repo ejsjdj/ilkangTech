@@ -1,7 +1,6 @@
 package com.itwillbs.ilkwangtech.process.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +10,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.itwillbs.ilkwangtech.process.dto.LotDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
+import com.itwillbs.ilkwangtech.process.dto.ProcessDetailResponseDTO;
+import com.itwillbs.ilkwangtech.process.dto.ProcessStatusResponseDTO;
 import com.itwillbs.ilkwangtech.process.service.LotTraceService;
 
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,8 @@ public class ProcessController {
 	
 	@GetMapping("/api/processStatusList")
 	@ResponseBody
-    public String getProcessStatusList() {
+    public List<ProcessStatusResponseDTO> getProcessStatusList() {
+		log.info(">>>>>>>>>>>> processStatusList 리스트 호출");
         return lotTraceService.getAllProcessStatusList(); 
     }
 	
@@ -57,5 +59,13 @@ public class ProcessController {
 	@ResponseBody
 	public LotDetailResponseDTO getLotDetail(@PathVariable String lotId) {
 	    return lotTraceService.getLotDetail(lotId);
+	}
+	
+	@GetMapping("/api/processDetail/{instructCode}")
+	@ResponseBody
+	// @PathVariable 뒤에 ("instructCode")를 추가합니다. [cite: 2026-03-04]
+	public ProcessDetailResponseDTO getProcessDetail(@PathVariable("instructCode") String instructCode) {
+	    log.info(">>>>>>>>>>>> 상세 정보 호출: " + instructCode);
+	    return lotTraceService.getProcessDetailData(instructCode);
 	}
 }

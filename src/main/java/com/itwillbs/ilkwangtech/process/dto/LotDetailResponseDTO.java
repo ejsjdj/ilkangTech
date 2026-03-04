@@ -10,6 +10,7 @@ public class LotDetailResponseDTO {
     private String itemName;        // 제품명
     private String instructCode;    // 작업지시번호
     private Integer instructQty;    // 생산 수량
+    private String lotType;
     private String status;          // 생산 상태
     private LocalDateTime startDate; // 시작일
     private LocalDateTime endDate;   // 종료일

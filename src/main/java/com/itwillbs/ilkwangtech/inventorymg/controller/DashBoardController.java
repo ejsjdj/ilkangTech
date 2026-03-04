@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -95,8 +96,17 @@ public class DashBoardController {
     // 발주(구매 요청) AJAX 처리
     @PostMapping("/purchase-request")
     @ResponseBody
-    public String purchaseRequest(@RequestBody List<Map<String, Long>> requestData) {
-        dashboardService.createPurchaseRequests(requestData);
+    public String purchaseRequest(@RequestBody List<Map<String, Long>> requestData, Principal principal) {
+        
+        // 1. 로그인 상태 체크 (세션이 끊겼을 경우 방어)
+        if (principal == null) {
+            throw new RuntimeException("로그인 정보가 없습니다. 다시 로그인 해주세요.");
+        }
+        
+        // 2. principal.getName()으로 현재 로그인한 아이디(이메일 또는 사번)를 가져와서 서비스로 넘김
+        String loginId = principal.getName();
+        dashboardService.createPurchaseRequests(requestData, loginId);
+        
         return "발주 요청이 완료되었습니다.";
     }
     

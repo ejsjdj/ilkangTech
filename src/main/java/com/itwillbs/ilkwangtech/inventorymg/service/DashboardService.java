@@ -9,6 +9,8 @@ import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryHistoryEntity;
 import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryHistoryRepository;
 import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryRepository;
+import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.production.repository.ProductionInsturctRepository;
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
@@ -45,6 +47,7 @@ public class DashboardService {
     private final ProductionPlaneRepository productionPlaneRepository;
     private final ProductionInsturctRepository productionInstructRepository;
     private final BomRepository bomRepository;
+    private final MemberRepository memberRepository;
 
     // 창고 상태 확인 로직
     public Map<String, String> getWarehouseStatus() {
@@ -184,17 +187,14 @@ public class DashboardService {
     // DB에서 Object 배열로 가져온 결과를 자바 Map으로 예쁘게 변환하는 헬퍼 메서드
     private Map<Long, Long> convertToMap(List<Object[]> list) {
         Map<Long, Long> map = new HashMap<>();
-        for (Object[] obj : list) {
-        	if (obj[0] != null && obj[1] != null) {
-                Long itemId;
-                
-                if (obj[0] instanceof ItemEntity) {
-                    itemId = ((ItemEntity) obj[0]).getItemId(); // 객체면 ID만 꺼내오기!
-                } else {
-                    itemId = ((Number) obj[0]).longValue();     // 숫자면 그대로 쓰기!
-                }
-                
-                map.put(itemId, ((Number) obj[1]).longValue());
+        if (list == null) return map;
+        
+        for (Object[] row : list) {
+            if (row[0] != null && row[1] != null) {
+                // DB에서 Double이 오든 BigDecimal이 오든 Number로 받아서 Long으로 깔끔하게 변환!
+                Long key = ((Number) row[0]).longValue();
+                Long value = ((Number) row[1]).longValue();
+                map.put(key, value);
             }
         }
         return map;
@@ -220,12 +220,12 @@ public class DashboardService {
 
         // 이제 반복문 안에서는 DB를 절대 호출하지 않고, 메모리(Map)에서 값만 조회
         for (ItemEntity item : uniqueItems) {
-        	
-        	// 품목 코드가 SAM으로 시작하는 완제품은 발주 리스트 제외
+            
+            // 품목 코드가 SAM으로 시작하는 완제품은 발주 리스트 제외
             if (item.getItemCode() != null && item.getItemCode().toUpperCase().startsWith("SAM-")) {
                 continue; 
             }
-        	
+            
             Long itemId = item.getItemId();
 
             // Map에서 값 꺼내기 (값이 없으면 기본값 0L 반환)
@@ -241,7 +241,11 @@ public class DashboardService {
             long totalRequirement = safeStockThreshold + prodPlan + reservedStock; 
             
             long requiredQty = totalRequirement - availableStock; 
-            if (requiredQty < 0) requiredQty = 0L; 
+            
+            // 필요 재고가 0 이하(충분함)이면 리스트에 넣지 않고 건너뜀!
+            if (requiredQty <= 0) {
+                continue;
+            }
 
             resultList.add(OrderNeededItemDTO.builder()
                     .itemId(itemId)
@@ -258,6 +262,7 @@ public class DashboardService {
                     .build());
         }
         
+        // 필요 재고가 많은 순서대로 먼저 정렬
         resultList.sort((a, b) -> {
             int reqCompare = Long.compare(b.getRequiredStock(), a.getRequiredStock());
             return reqCompare != 0 ? reqCompare : a.getItemId().compareTo(b.getItemId());
@@ -266,9 +271,9 @@ public class DashboardService {
         return resultList;
     }
 
-    // 4. 발주 요청 처리 (구매팀 헤더 및 라인 인서트)
+    // 발주 요청 처리
     @Transactional
-    public void createPurchaseRequests(List<Map<String, Long>> requestList) {
+    public void createPurchaseRequests(List<Map<String, Long>> requestList, String loginId) {
         if(requestList == null || requestList.isEmpty()) return;
 
         // 헤더 생성
@@ -276,6 +281,12 @@ public class DashboardService {
         String prCode = "PR-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(Math.random()*1000);
         header.setPurchaseRequestCode(prCode);
         header.setRequestDate(LocalDate.now());
+
+        Member member = memberRepository.findByEmployeeNumber(loginId) 
+                .orElseThrow(() -> new RuntimeException("사원번호(" + loginId + ")에 해당하는 사용자 정보를 찾을 수 없습니다."));
+                
+        header.setMember(member); 
+
         PurchaseRequestHeaderEntity savedHeader = prHeaderRepository.save(header);
 
         // 라인 생성

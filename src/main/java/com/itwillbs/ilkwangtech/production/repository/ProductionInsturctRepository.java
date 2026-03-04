@@ -51,7 +51,7 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
     Long sumReservedQtyByItemId(@Param("itemId") Long itemId);
     
     // 전체 예약재고량 그룹화 조회 (item이 단순 숫자형)
-    @Query("SELECT p.item, COALESCE(SUM(p.instructQty), 0) FROM ProductionInstructEntity p WHERE p.status NOT IN ('COM', 'CAN') GROUP BY p.item")
+    @Query("SELECT p.item.itemId, COALESCE(SUM(p.instructQty), 0) FROM ProductionInstructEntity p WHERE p.status NOT IN ('COM', 'CAN') GROUP BY p.item.itemId")
     List<Object[]> sumReservedQtyGrouped();
     
     // 출고 대기 중인 자재 목록 조회

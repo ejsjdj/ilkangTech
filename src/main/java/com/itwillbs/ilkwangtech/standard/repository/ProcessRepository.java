@@ -12,11 +12,12 @@ import org.springframework.stereotype.Repository;
 public interface ProcessRepository extends JpaRepository<ProcessEntity, Long> {
 
 
-    @Query("SELECT p FROM ProcessEntity p " +
-            "WHERE (:processId IS NULL OR p.id = :processId)" +
-            "AND (:processName IS NULL OR p.name LIKE :processName) "
-            )
-    Page<ProcessEntity> findByProcessId(@Param("processId") Long processId,
-                                        @Param(value = "processName") String processName,
-                                        Pageable pageable);
+    @Query("""
+    SELECT p FROM ProcessEntity p
+    WHERE (:keyword IS NULL OR
+           p.operationCode LIKE CONCAT('%', :keyword, '%')
+           OR p.name LIKE CONCAT('%', :keyword, '%'))
+""")
+    Page<ProcessEntity> findByKeyword(@Param("keyword") String keyword,
+                                      Pageable pageable);
 }

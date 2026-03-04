@@ -53,7 +53,6 @@ public class EqController {
     }
     
 //  설비 가동 이력 데이터 반환
-    // URL: http://localhost:포트번호/equipment/api/history
     @GetMapping("/api/history")
     @ResponseBody
     public List<EqHistory> getHistoryList() {

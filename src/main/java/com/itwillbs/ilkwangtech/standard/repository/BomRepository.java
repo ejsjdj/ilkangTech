@@ -12,19 +12,21 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BomRepository extends JpaRepository<BomEntity, Long> {
 
-	// 💡 전체 생산계획 종속 소요량 그룹화 조회 (p.item은 객체이므로 .itemId 사용!)
-    @Query("SELECT b.childItem.itemId, COALESCE(SUM(p.totalQty * b.requireQty), 0) " +
-           "FROM ProductionPlaneEntity p, BomEntity b " +
-           "WHERE p.item.itemId = b.parentItem.itemId AND p.status != 'CAN' " +
-           "GROUP BY b.childItem.itemId")
-    List<Object[]> sumDependentPlanQtyGrouped();
+	// 전체 생산계획 종속 소요량 그룹화 조회 (p.item은 객체이므로 .itemId 사용!)
+	@Query("SELECT b.parentItem.itemId, COALESCE(SUM(p.totalQty * b.requireQty), 0) " +
+	       "FROM ProductionPlaneEntity p, BomEntity b " +
+	       "WHERE p.item.itemId = b.childItem.itemId " + // 생산계획 품목이 CHILD(결과물)인 것을 찾음
+	       "AND p.status != 'CAN' " +
+	       "GROUP BY b.parentItem.itemId") // 그에 해당하는 PARENT(재료)들의 합계를 구함
+	List<Object[]> sumDependentPlanQtyGrouped();
 
-    // 💡 전체 작업지시 종속 소요량 그룹화 조회 (i.item은 숫자이므로 그냥 사용!)
-    @Query("SELECT b.childItem.itemId, COALESCE(SUM(i.instructQty * b.requireQty), 0) " +
-           "FROM ProductionInstructEntity i, BomEntity b " +
-           "WHERE i.item.itemId = b.parentItem.itemId AND i.status NOT IN ('COM', 'CAN') " +
-           "GROUP BY b.childItem.itemId")
-    List<Object[]> sumDependentInstructQtyGrouped();
+    // 전체 작업지시 종속 소요량 그룹화 조회 (i.item은 숫자이므로 그냥 사용!)
+    @Query("SELECT b.parentItem.itemId, COALESCE(SUM(i.instructQty * b.requireQty), 0) " +
+	       "FROM ProductionInstructEntity i, BomEntity b " +
+	       "WHERE i.item.itemId = b.childItem.itemId " + // 작업지시 품목이 CHILD(결과물)인 것을 찾음
+	       "AND i.status NOT IN ('COM', 'CAN') " +
+	       "GROUP BY b.parentItem.itemId") // 그에 해당하는 PARENT(재료)들의 합계를 구함
+	List<Object[]> sumDependentInstructQtyGrouped();
     
     
 }

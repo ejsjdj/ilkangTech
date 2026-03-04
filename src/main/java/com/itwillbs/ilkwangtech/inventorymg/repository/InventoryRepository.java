@@ -29,5 +29,9 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
     List<Object[]> sumCurrentQuantityGrouped();
 
 	List<InventoryEntity> findByItemItemCodeOrderByExpirationDateAsc(String itemCode);
+	
+	// 특정 프리픽스(품목코드-날짜)로 시작하는 LOT 번호 개수 조회 (순번 생성용)
+    @Query("SELECT COUNT(i) FROM InventoryEntity i WHERE i.lotNumber LIKE :prefix%")
+    long countByLotNumberStartingWith(@Param("prefix") String prefix);
      
 }

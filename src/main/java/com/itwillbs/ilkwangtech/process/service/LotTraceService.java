@@ -1,8 +1,6 @@
 package com.itwillbs.ilkwangtech.process.service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -39,14 +37,13 @@ public class LotTraceService {
 
     public List<LotResponseDTO> getAllLotsWithItemName() {
         List<LotMasterRepository.LotSummaryMapping> results = lotMasterRepository.findAllWithItemName();
-
-        log.info(">>>>>>>>>>>>>>>>>> LotTraceService - LOT 상세 리스트 정보 호출");
         return results.stream().map(res -> {
             LotResponseDTO dto = new LotResponseDTO();
             dto.setLotId(res.getLotId());
-            dto.setItemName(res.getItemName() != null ? res.getItemName() : "N/A"); //
+            dto.setItemName(res.getItemName() != null ? res.getItemName() : "N/A");
             dto.setStatus(res.getStatus());
             dto.setCreatedDate(res.getCreatedDate());
+            dto.setLotType(res.getLotType()); 
             return dto;
         }).collect(Collectors.toList());
     }
@@ -61,6 +58,7 @@ public class LotTraceService {
         dto.setInstructCode(res.getInstructCode() != null ? res.getInstructCode() : "-");
         dto.setInstructQty(res.getInstructQty());
         dto.setStatus(res.getStatus());
+        dto.setLotType(res.getLotType());
         dto.setStartDate(res.getStartDate());
         dto.setEndDate(res.getEndDate());
         dto.setDefective(res.getDefective());
@@ -77,7 +75,7 @@ public class LotTraceService {
             dto.setInstructQty(res.getInstructQty());
             dto.setDefective(res.getDefective());
             dto.setStatus(res.getStatus());
-            dto.setOperationName(res.getOperationName() != null ? res.getOperationName() : "대기 중"); // 공정명 매핑 [cite: 2026-03-04]
+            dto.setOperationName(res.getOperationName() != null ? res.getOperationName() : "대기 중"); // 공정명 매핑 
             dto.setStartDate(res.getStartDate());
             dto.setEndDate(res.getEndDate());
             return dto;
@@ -89,7 +87,7 @@ public class LotTraceService {
         ProductionInstructRepository.HeaderMapping header = productionInstructRepository.findHeaderByCode(instructCode);
         if (header == null) return null;
 
-        // 1. 전체 불량 수량 파악 (p.defective) [cite: 2026-03-04]
+        // 1. 전체 불량 수량 파악 (p.defective)
         int totalDefective = header.getDefectiveQty() != null ? header.getDefectiveQty() : 0;
 
         ProcessDetailResponseDTO dto = new ProcessDetailResponseDTO();
@@ -100,20 +98,19 @@ public class LotTraceService {
         // 2. 공정 상세 데이터 조회
         List<ProductionInstructRepository.DetailMapping> stepMappings = productionInstructRepository.findStepsByInstructCode(instructCode);
         
-        // 3. 데이터를 변환하면서 일단 모든 불량 수량을 0으로 초기화 [cite: 2026-03-04]
         List<ProcessDetailResponseDTO.StepDetail> steps = stepMappings.stream().map(res -> {
             ProcessDetailResponseDTO.StepDetail step = new ProcessDetailResponseDTO.StepDetail();
             step.setProcessName(res.getProcessName());
             step.setStatus(res.getStatus());
             step.setStartDate(res.getStartDate());
             step.setEndDate(res.getEndDate());
-            step.setDefectiveQty(0); // 모든 행을 0으로 세팅 [cite: 2026-03-04]
+            step.setDefectiveQty(0); 
             return step;
         }).collect(Collectors.toList());
 
         if (totalDefective > 0 && !steps.isEmpty()) {
             Random rand = new Random();
-            int randomIndex = rand.nextInt(steps.size()); // 공정 단계 중 하나를 랜덤 선택
+            int randomIndex = rand.nextInt(steps.size()); 
             steps.get(randomIndex).setDefectiveQty(totalDefective);
         }
 

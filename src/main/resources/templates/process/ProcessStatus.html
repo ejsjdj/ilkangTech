@@ -32,7 +32,7 @@
 		    border: 1px solid #e2e8f0; 
 		    margin-bottom: 20px; 
 		    display: grid; 
-		    grid-template-columns: 1fr 1fr 2fr auto; 
+		    grid-template-columns: 1fr 1fr 1fr 2fr auto; 
 		    gap: 15px; 
 		    align-items: end;
 		}
@@ -95,29 +95,45 @@
 
             <div class="search-filter-area">
 			    <div class="filter-group">
-			        <label id="dateLabel">작업지시일자</label>
-			        <input type="date" id="dateFilter" class="form-control form-control-sm">
+			        <label>작업지시일자</label>
+			        <input type="date" id="dateFilter" class="form-control form-control-sm" onchange="filterData()">
 			    </div>
 			
-			    <div class="filter-group">
-			        <label id="statusLabel">상태</label>
-			        <select id="statusFilter" class="form-select form-select-sm">
-			            <option value="">전체</option>
-			            <option value="ING">진행중</option>
-			            <option value="DONE">완료</option>
+			    <div class="filter-group" id="opFilterGroup">
+			        <label>공정</label>
+			        <select id="opFilter" class="form-select form-select-sm" onchange="filterData()">
+			            <option value="">전체 공정</option>
+			            <option value="프레스">프레스</option>
+			            <option value="사출">사출</option>
+			            <option value="도장">도장</option>
+			            <option value="조립">조립</option>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group" id="statusFilterGroup">
+			        <label>상태</label>
+			        <select id="statusFilter" class="form-select form-select-sm" onchange="filterData()">
+			            <option value="">전체 상태</option>
+			            <option value="PROGRESS">진행중</option>
+			            <option value="WAITING">대기 중</option>
+			            <option value="COMPLETE">완료</option>
 			        </select>
 			    </div>
 			
 			    <div class="filter-group">
 			        <label>검색어</label>
-			        <input type="text" id="keywordFilter" class="form-control form-control-sm" placeholder="지시번호 / 제품명 검색">
+			        <input type="text" id="keywordFilter" class="form-control form-control-sm" 
+			               placeholder="지시번호 / 제품명 검색" oninput="filterData()">
 			    </div>
-			
+			    
 			    <div class="d-flex gap-2">
-			        <button class="btn btn-sm btn-primary px-4" onclick="filterData()" style="background:#4f46e5; border:none; height:38px; font-weight: 600;">검색</button>
-			        <button class="btn btn-sm btn-outline-secondary px-3" onclick="location.reload()" style="height:38px;">초기화</button>
+			        <button class="btn btn-sm btn-primary px-4" onclick="filterData()" 
+			                style="background:#4f46e5; border:none; height:38px; font-weight: 600;">검색</button>
+			        <button class="btn btn-sm btn-outline-secondary px-3" onclick="location.reload()" 
+			                style="height:38px;">초기화</button>
 			    </div>
 			</div>
+			
 
             <div class="table-card">
 			    <table class="table status-table mb-0">
@@ -196,28 +212,41 @@
 	    });
 	
 	    // 상단 탭 전환 함수
-	    function switchTab(status) {
-	        currentStatusTab = status; 
-	        
-	        const navLinks = document.querySelectorAll('.nav-link');
-	        navLinks.forEach(link => link.classList.remove('active'));
-	        
-	        if (status === 'ING') {
-	            navLinks[0].classList.add('active');
-	        } else {
-	            navLinks[1].classList.add('active');
-	        }
-	        
-	        document.getElementById('status-thead').innerHTML = HEADERS[status];
-	        
-	        const filteredData = allData.filter(d => {
-	            if (status === 'ING') return d.status === 'PROGRESS' || d.status === 'WAITING';
-	            if (status === 'DONE') return d.status === 'COMPLETE';
-	            return false;
-	        });
-	        
-	        renderTable(filteredData);
-	    }
+		function switchTab(status) {
+		    currentStatusTab = status; 
+		    
+		    // 탭 UI 활성화 처리
+		    const navLinks = document.querySelectorAll('.nav-link');
+		    navLinks.forEach(link => link.classList.remove('active'));
+		    if (status === 'ING') navLinks[0].classList.add('active');
+		    else navLinks[1].classList.add('active');
+		    
+		    const opGroup = document.getElementById('opFilterGroup');
+		    const statusGroup = document.getElementById('statusFilterGroup');
+		    const filterArea = document.querySelector('.search-filter-area');
+		
+		    if (status === 'DONE') {
+		        // 1. 공정, 상태 필터 숨기기 및 값 초기화
+		        opGroup.style.display = 'none';
+		        statusGroup.style.display = 'none';
+		        document.getElementById('opFilter').value = "";
+		        document.getElementById('statusFilter').value = "";
+		        
+		        // 2. 완료 내역 그리드
+		        filterArea.style.gridTemplateColumns = '1fr 2fr auto'; 
+		    } else {
+		        // 1. 모든 필터 표시
+		        opGroup.style.display = 'block';
+		        statusGroup.style.display = 'block';
+		        
+		        // 2. 진행 현황 그리드
+		        filterArea.style.gridTemplateColumns = '1fr 1fr 1fr 2fr auto'; 
+		    }
+		    
+		    // 테이블 헤더 교체 및 데이터 필터링 실행
+		    document.getElementById('status-thead').innerHTML = HEADERS[status];
+		    filterData();
+		}
 	    
 	    async function fetchData() {
 	        try {
@@ -286,55 +315,53 @@
 	        return `${hours}시간 ${mins}분`;
 	    }
 	
-	 // ProcessStatus.html 내 goDetail 함수 수정 [cite: 2026-03-04]
-	    async function goDetail(code) {
-	        try {
-	            const response = await fetch(`/process/api/processDetail/${code}`);
-	            const data = await response.json();
-
-	            // 헤더 정보 세팅
-	            document.getElementById('modalInstructCode').innerText = data.instructCode || '-';
-	            document.getElementById('modalItemName').innerText = data.itemName || '-';
-	            document.getElementById('modalInstructQty').innerText = (data.instructQty || 0) + ' EA';
-
-	            const tbody = document.getElementById('detail-tbody');
-	            const steps = data.steps || [];
-
-	            if (steps.length === 0) {
-	                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">등록된 공정 이력이 없습니다.</td></tr>';
-	            } else {
-	                tbody.innerHTML = steps.map((s, i) => {
-	                    const goodQty = (data.instructQty || 0) - (s.defectiveQty || 0);
-	                    const isScrapped = s.defectiveQty > 0 ? '<span class="text-danger modal-detail-text">폐기완료</span>' : '-';
-	                    
-	                    // 상태별 글자색 클래스 지정 [cite: 2026-03-04]
-	                    let statusColorClass = 'status-text-waiting';
-	                    if (s.status === 'COMPLETE') statusColorClass = 'status-text-complete';
-	                    else if (s.status === 'PROGRESS') statusColorClass = 'status-text-progress';
-
-	                    return `
-	                        <tr>
-	                            <td class="modal-detail-text">${i + 1}</td>
-	                            
-	                            <td><span class="modal-detail-text text-process-name">${s.processName || '-'}</span></td>
-	                            
-	                            <td><span class="modal-detail-text ${statusColorClass}">${s.status}</span></td>
-	                            
-	                            <td class="modal-detail-text">${s.startDate ? s.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-	                            <td class="modal-detail-text">${s.endDate ? s.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-	                            <td class="fw-bold text-primary modal-detail-text">${s.status === 'COMPLETE' ? goodQty : '-'}</td>
-	                            <td class="text-danger modal-detail-text">${s.defectiveQty || 0}</td>
-	                            <td class="modal-detail-text">${isScrapped}</td>
-	                        </tr>`;
-	                }).join('');
-	            }
-
-	            const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
-	            detailModal.show();
-	        } catch (e) {
-	            console.error("상세 정보 로드 실패", e);
-	        }
-	    }
+		async function goDetail(code) {
+		    try {
+		        const response = await fetch(`/process/api/processDetail/${code}`);
+		        const data = await response.json();
+		
+		        // 헤더 정보 세팅 생략...
+		        const tbody = document.getElementById('detail-tbody');
+		        const steps = data.steps || [];
+		
+		        if (steps.length === 0) {
+		            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">등록된 공정 이력이 없습니다.</td></tr>';
+		        } else {
+		            tbody.innerHTML = steps.map((s, i) => {
+		                const goodQty = (data.instructQty || 0) - (s.defectiveQty || 0);
+		                const isScrapped = s.defectiveQty > 0 ? '<span class="text-danger modal-detail-text">폐기완료</span>' : '-';
+		                
+		                // 1. 상태에 따른 불량 수량 표시 처리 추가 [cite: 2026-03-04]
+		                // 상태가 COMPLETE일 때만 숫자를 보여주고, 아니면 '-'를 표시합니다.
+		                const displayDefective = s.status === 'COMPLETE' ? (s.defectiveQty || 0) : '-';
+		                
+		                let statusColorClass = 'status-text-waiting';
+		                if (s.status === 'COMPLETE') statusColorClass = 'status-text-complete';
+		                else if (s.status === 'PROGRESS') statusColorClass = 'status-text-progress';
+		
+		                return `
+		                    <tr>
+		                        <td class="modal-detail-text">${i + 1}</td>
+		                        <td><span class="modal-detail-text text-process-name">${s.processName || '-'}</span></td>
+		                        <td><span class="modal-detail-text ${statusColorClass}">${s.status}</span></td>
+		                        <td class="modal-detail-text">${s.startDate ? s.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+		                        <td class="modal-detail-text">${s.endDate ? s.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+		                        
+		                        <td class="fw-bold text-primary modal-detail-text">${s.status === 'COMPLETE' ? goodQty : '-'}</td>
+		                        
+		                        <td class="text-danger modal-detail-text">${displayDefective}</td>
+		                        
+		                        <td class="modal-detail-text">${isScrapped}</td>
+		                    </tr>`;
+		            }).join('');
+		        }
+		
+		        const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+		        detailModal.show();
+		    } catch (e) {
+		        console.error("상세 정보 로드 실패", e);
+		    }
+		}
 	    
 	    function formatOperationName(name) {
 	        if (!name || name === '-') return '-';
@@ -345,6 +372,52 @@
 	        if (name.includes('조립')) return '조립';
 	        
 	        return name; // 매칭되는 키워드 없으면 원본 표시
+	    }
+	    
+	 // ProcessStatus.html 내 filterData 함수 수정
+	    function filterData() {
+	        const dateVal = document.getElementById('dateFilter').value;      // 통합 날짜
+	        const opVal = document.getElementById('opFilter').value;          // 공정 선택
+	        const statusVal = document.getElementById('statusFilter').value;  // 상태 선택
+	        const keyword = document.getElementById('keywordFilter').value.toLowerCase().trim();
+
+	        const filtered = allData.filter(d => {
+	            // 1. 탭 필터링 (기존 유지)
+	            const isIngTab = currentStatusTab === 'ING';
+	            const matchesTab = isIngTab ? 
+	                (d.status === 'PROGRESS' || d.status === 'WAITING') : 
+	                (d.status === 'COMPLETE');
+	            if (!matchesTab) return false;
+
+	            // 2. 통합 날짜 필터링 (시작 시간 기준)
+	            if (dateVal) {
+	                if (!d.startDate || !d.startDate.startsWith(dateVal)) return false;
+	            }
+
+	            // 3. 공정 필터링 
+	            if (opVal) {
+	                const opName = d.operationName || "";
+	                if (opVal === '도장') {
+	                    if (!opName.includes('도장') && !opName.includes('도색')) return false;
+	                } else if (!opName.includes(opVal)) {
+	                    return false;
+	                }
+	            }
+
+	            // 4. 상태 필터링 (이전 수정사항 적용)
+	            if (statusVal && d.status !== statusVal) return false;
+
+	            // 5. 검색어 필터링
+	            if (keyword) {
+	                const code = (d.instructCode || "").toLowerCase();
+	                const name = (d.itemName || "").toLowerCase();
+	                if (!code.includes(keyword) && !name.includes(keyword)) return false;
+	            }
+
+	            return true;
+	        });
+
+	        renderTable(filtered);
 	    }
 	</script>
 </th:block>

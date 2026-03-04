@@ -158,7 +158,7 @@
                 <ul class="nav-children" id="menu-standard">
                     <li><a class="nav-child" th:href="@{/bom/list}">BOM</a></li>
                     <li><a class="nav-child" th:href="@{/quality/QcItemList}">품질검사 항목</a></li>
-                    <li><a class="nav-child" th:href="@{/account/list}">설비정보</a></li>
+                    <li><a class="nav-child" th:href="@{/equipment/equipmentList}">설비정보</a></li>
                     <li><a class="nav-child" th:href="@{/process/list}">공정라우트정보</a></li>
                 </ul>
 
@@ -195,7 +195,6 @@
                     <span class="nav-icon">🛠️</span><span class="nav-menu">설비관리</span><span class="nav-arrow">▸</span>
                 </button>
                 <ul class="nav-children" id="menu-eq">
-                    <li><a class="nav-child" th:href="@{/equipment/equipmentList}">설비 현황</a></li>
                     <li><a class="nav-child" th:href="@{/equipment/equipmentHistory}">설비 가동 이력</a></li>
                     <li><a class="nav-child" th:href="@{/equipment/failure-history}">설비 고장 이력</a></li>
                 </ul>
@@ -205,7 +204,6 @@
                 </button>
                 <ul class="nav-children" id="menu-qc">
                     <li><a class="nav-child" th:href="@{/quality/QcDashboard}">대시보드</a></li>
-                    <li><a class="nav-child" th:href="@{/quality/QcItemList}">품질검사 항목</a></li>
                     <li><a class="nav-child" th:href="@{/quality/QcHistory}">품질관리 현황</a></li>
                     <li><a class="nav-child" th:href="@{/quality/DisposalList}">폐기 이력</a></li>
                 </ul>

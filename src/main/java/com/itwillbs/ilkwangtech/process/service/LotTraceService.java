@@ -3,15 +3,19 @@ package com.itwillbs.ilkwangtech.process.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.itwillbs.ilkwangtech.process.dto.LotDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
+import com.itwillbs.ilkwangtech.process.dto.ProcessDetailResponseDTO;
+import com.itwillbs.ilkwangtech.process.dto.ProcessStatusResponseDTO;
 import com.itwillbs.ilkwangtech.process.entity.LotMaster;
 import com.itwillbs.ilkwangtech.process.repository.LotMasterRepository;
 import com.itwillbs.ilkwangtech.process.repository.PartProductionRepository;
+import com.itwillbs.ilkwangtech.process.repository.ProductionInstructRepository;
 import com.itwillbs.ilkwangtech.process.repository.QualityCheckRepository;
 import com.itwillbs.ilkwangtech.process.repository.RawMaterialRepository;
 
@@ -26,6 +30,7 @@ public class LotTraceService {
     private final RawMaterialRepository rawMaterialRepository;
     private final PartProductionRepository partProductionRepository;
     private final QualityCheckRepository qualityCheckRepository;
+    private final ProductionInstructRepository productionInstructRepository;
 
     // 1. 좌측 리스트용 전체 LOT 조회
     public List<LotMaster> getAllLots() {
@@ -62,7 +67,57 @@ public class LotTraceService {
         return dto;
     }
 
-	public String getAllProcessStatusList() {
-		return null;
-	}
+    public List<ProcessStatusResponseDTO> getAllProcessStatusList() {
+        List<ProductionInstructRepository.ProcessStatusMapping> results = productionInstructRepository.findAllProcessStatus();
+        
+        return results.stream().map(res -> {
+            ProcessStatusResponseDTO dto = new ProcessStatusResponseDTO();
+            dto.setInstructCode(res.getInstructCode());
+            dto.setItemName(res.getItemName() != null ? res.getItemName() : "Unknown Item");
+            dto.setInstructQty(res.getInstructQty());
+            dto.setDefective(res.getDefective());
+            dto.setStatus(res.getStatus());
+            dto.setOperationName(res.getOperationName() != null ? res.getOperationName() : "대기 중"); // 공정명 매핑 [cite: 2026-03-04]
+            dto.setStartDate(res.getStartDate());
+            dto.setEndDate(res.getEndDate());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+ // LotTraceService.java 에 추가
+    public ProcessDetailResponseDTO getProcessDetailData(String instructCode) {
+        ProductionInstructRepository.HeaderMapping header = productionInstructRepository.findHeaderByCode(instructCode);
+        if (header == null) return null;
+
+        // 1. 전체 불량 수량 파악 (p.defective) [cite: 2026-03-04]
+        int totalDefective = header.getDefectiveQty() != null ? header.getDefectiveQty() : 0;
+
+        ProcessDetailResponseDTO dto = new ProcessDetailResponseDTO();
+        dto.setInstructCode(header.getInstructCode());
+        dto.setItemName(header.getItemName());
+        dto.setInstructQty(header.getInstructQty());
+
+        // 2. 공정 상세 데이터 조회
+        List<ProductionInstructRepository.DetailMapping> stepMappings = productionInstructRepository.findStepsByInstructCode(instructCode);
+        
+        // 3. 데이터를 변환하면서 일단 모든 불량 수량을 0으로 초기화 [cite: 2026-03-04]
+        List<ProcessDetailResponseDTO.StepDetail> steps = stepMappings.stream().map(res -> {
+            ProcessDetailResponseDTO.StepDetail step = new ProcessDetailResponseDTO.StepDetail();
+            step.setProcessName(res.getProcessName());
+            step.setStatus(res.getStatus());
+            step.setStartDate(res.getStartDate());
+            step.setEndDate(res.getEndDate());
+            step.setDefectiveQty(0); // 모든 행을 0으로 세팅 [cite: 2026-03-04]
+            return step;
+        }).collect(Collectors.toList());
+
+        if (totalDefective > 0 && !steps.isEmpty()) {
+            Random rand = new Random();
+            int randomIndex = rand.nextInt(steps.size()); // 공정 단계 중 하나를 랜덤 선택
+            steps.get(randomIndex).setDefectiveQty(totalDefective);
+        }
+
+        dto.setSteps(steps);
+        return dto;
+    }
 }

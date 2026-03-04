@@ -13,7 +13,7 @@ public class PurchaseOrderInsertDTO {
 
     private List<PurchaseOrderLineDTO> lines;
     private String purchaseOrderCode;
-    private String company;
+    private Long companyId;
     private String companyManager;
     private String phone;
     private String status;

@@ -17,6 +17,13 @@
                 typeHandler="com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler"/>
     </resultMap>
 
+    <resultMap id="PurchaseCompanyResultMap" type="com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO">
+        <id property="companyId" column="companyId"/>
+        <result property="name" column="company_name"/>
+        <result property="phone" column="tel_no"/>
+        <result property="manager" column="ceo_name"/>
+    </resultMap>
+
     <insert id="insertCompany" useGeneratedKeys="true" keyProperty="companyId" keyColumn="company_id">
         INSERT INTO Company (name, email, phone, valid, manager, category)
         VALUES (
@@ -46,11 +53,8 @@
         SELECT
         company_id AS companyId,
         name,
-        email,
         phone,
-        manager,
-        category,
-        valid
+        manager
         FROM Company
         WHERE
         category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
@@ -68,6 +72,17 @@
                 category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
             </if>
         </where>
+    </select>
+
+    <select id="selectCompanyType3" resultMap="PurchaseCompanyResultMap">
+        SELECT
+        company_id AS companyId,
+        company_name,
+        tel_no,
+        ceo_name
+        FROM Company
+        WHERE company_type  = 3
+        ORDER BY company_id ASC
     </select>
 
 </mapper>

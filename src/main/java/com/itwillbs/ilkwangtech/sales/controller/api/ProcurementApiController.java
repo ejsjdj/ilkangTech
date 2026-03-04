@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sales")
@@ -25,20 +27,29 @@ public class ProcurementApiController {
 
     // 1. 발주 리스트 조회
     @GetMapping("/procurement")
-    public Page<PurchaseOrderDTO> getProcurement(Pageable pageable,
-                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-                                                 @RequestParam(required = false) String searchType,
-                                                 @RequestParam(required = false) String keyword
-                                               ){
+    public Map<String, Object> getProcurement(Pageable pageable,
+                                              @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+                                              @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+                                              @RequestParam(required = false) String searchType,
+                                              @RequestParam(required = false) String keyword) {
 
-        log.info("발주 리스트 조회 - 발주 시작일: {}, 발주 종료일: {}, 검색필터: {}, 검색어: {}",startDate, endDate, searchType, keyword);
+        Page<PurchaseOrderDTO> page =
+                purchaseOrderService.getPurchaseOrderList(pageable, startDate, endDate, searchType, keyword);
 
-        Page<PurchaseOrderDTO> purchaseOrderDTO = purchaseOrderService.getPurchaseOrderList(pageable, startDate, endDate, searchType, keyword);
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> pagination = new HashMap<>();
 
-        log.info("발주 리스트 조회 - 결과: {}", purchaseOrderDTO );
+        pagination.put("page", page.getNumber() + 1); // 1부터 시작
+        pagination.put("totalCount", page.getTotalElements());
 
-        return purchaseOrderDTO;
+        data.put("contents", page.getContent());
+        data.put("pagination", pagination);
+
+        response.put("result", true);
+        response.put("data", data);
+
+        return response;
     }
 
     // 2. 발주 상세 조회
@@ -90,5 +101,9 @@ public class ProcurementApiController {
 
     }
 
-
+    // 7. 검수 완료 처리
+    @PostMapping("procurement/complete_qc")
+    public void completeQcProcurement(@RequestParam(required = true) Long purchaseOrderId){
+        purchaseOrderService.completeQcPurchase(purchaseOrderId);
+    }
 }

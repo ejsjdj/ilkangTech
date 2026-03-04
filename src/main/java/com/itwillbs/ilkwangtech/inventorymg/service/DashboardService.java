@@ -365,7 +365,7 @@ public class DashboardService {
                 if (line.getItem() != null) {
                     list.add(InboundItemDTO.builder()
                             .purchaseOrderCode(order.getPurchaseOrderCode())
-                            .company(order.getCompany())
+                            .company(order.getCompany().getCompanyName())
                             .itemCode(line.getItem().getItemCode())
                             .itemName(line.getItem().getItemName())
                             .quantity(line.getQuantity())

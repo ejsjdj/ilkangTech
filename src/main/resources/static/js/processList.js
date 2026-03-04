@@ -1,336 +1,272 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const Grid = tui.Grid;
+    const Grid = tui.Grid;
 
-  let detailGrid = null;
-  let createGrid = null;
-  let allProcessList = [];
-  let currentRouteCode = null;
+    const modal = document.getElementById("processModal");
+    const openBtn = document.getElementById("openModalBtn");
+    const closeBtn = document.getElementById("closeModalBtn");
+    const saveBtn = document.getElementById("saveProcessBtn");
+    const backdrop = document.querySelector('.modal-backdrop');
 
-  /* ==========================
-     1. 메인 그리드
-  ========================== */
-  const gridEl = document.getElementById("grid");
-  if (!gridEl) return;
+    const operationCodeInput = document.getElementById("operationCode");
+    const nameInput = document.getElementById("processName");
+    const descriptionInput = document.getElementById("description");
 
-  const grid = new Grid({
-    el: gridEl,
-    bodyHeight: 400,
-    columns: [
-      { header: "라우트코드", name: "routeCode", align: "center" },
-      { header: "라우트명", name: "routeName", align: "center" },
-      { header: "생성자", name: "constructor", align: "center" },
-      { header: "생성일", name: "createdAt", align: "center" },
-      {
-        header: "상세",
-        name: "detail",
-        align: "center",
-        formatter: () =>
-          '<button type="button" class="btn-detail">상세보기</button>',
-      },
-    ],
-  });
+    const searchKeywordInput = document.getElementById("searchKeyword");
+    const searchBtn = document.getElementById("searchBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
-  /* ==========================
-     2. 메인 데이터 로드
-  ========================== */
-  function loadMainData() {
-    fetch("/api/process_mst?page=0&size=10")
-      .then((res) => res.json())
-      .then((data) => {
-        const list = data.content || data;
-        grid.resetData(list);
-      })
-      .catch((err) => console.error("메인 로드 실패:", err));
-  }
+    const saveStatusBtn = document.getElementById("saveStatusBtn");
 
-  /* ==========================
-     3. 상세 클릭
-  ========================== */
-  grid.on("click", (ev) => {
-    if (ev.columnName !== "detail") return;
+    const state = {
+        page: 1,
+        perPage: 10,
+        keyword: ""
+    };
 
-    const rowData = grid.getRow(ev.rowKey);
-    if (!rowData) return;
+    class StatusSelectRenderer {
+        constructor(props) {
+            const el = document.createElement("select");
 
-    currentRouteCode = rowData.routeCode;
+            el.innerHTML = `
+            <option value="ACTIVE">활성화</option>
+            <option value="INACTIVE">비활성화</option>
+        `;
 
-    fetch(`/api/process_mst/detail?routeCode=${currentRouteCode}`)
-      .then((res) => res.json())
-      .then((detailData) => {
-        const list = Array.isArray(detailData)
-          ? detailData
-          : detailData.content || [];
-        openDetailModal(list);
-      })
-      .catch((err) => console.error("상세 로드 실패:", err));
-  });
+            el.value = props.value;
 
-  /* ==========================
-     4. 공정 목록 조회
-  ========================== */
-  function fetchAllProcesses() {
-    fetch("/api/process_code_all")
-      .then((res) => res.json())
-      .then((response) => {
-        allProcessList = Array.isArray(response)
-          ? response
-          : response.data || [];
+            el.addEventListener("mousedown", (e) => {
+                e.stopPropagation();
+            });
 
-        console.log("공정정보 리스트: ", response);
+            el.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
 
-        if (!Array.isArray(allProcessList)) return;
+            el.addEventListener("change", () => {
+                props.grid.setValue(props.rowKey, props.columnInfo.name, el.value);
+            });
 
-        const selectIds = ["processSelect", "newProcessSelect"];
+            this.el = el;
+        }
 
-        selectIds.forEach((id) => {
-          const select = document.getElementById(id);
-          if (!select) return;
+        getElement() {
+            return this.el;
+        }
 
-          select.innerHTML =
-            '<option value="">-- 공정을 선택하세요 --</option>';
+        render(props) {
+            this.el.value = props.value;
+        }
+    }
 
-          allProcessList.forEach((proc) => {
-            const opt = document.createElement("option");
-            opt.value = proc.id;
-            opt.text = `[${proc.operationCode}] ${proc.name}`;
-            select.add(opt);
-          });
-        });
-      })
-      .catch((err) => console.error("공정 목록 조회 실패:", err));
-  }
-
-  /* ==========================
-     5. 상세 모달
-  ========================== */
-  function openDetailModal(list) {
-    const modal = document.getElementById("detailModal");
-    if (!modal) return;
-
-    modal.style.display = "block";
-
-    if (!detailGrid) {
-      detailGrid = new Grid({
-        el: document.getElementById("detailGrid"),
-        bodyHeight: 300,
-        rowHeaders: ["checkbox", "rowNum"],
+    const grid = new Grid({
+        el: document.getElementById("grid"),
+        scrollX: false,
+        scrollY: false,
+        rowHeaders: ["rowNum"],
+        pageOptions: {
+            useClient: false,
+            perPage: 10
+        },
         columns: [
-          { header: "순번", name: "sequence", editor: "text" },
-          { name: "id", hidden: true },
-          { name: "operationId", hidden: true },
-          { header: "공정코드", name: "operationCode" },
-          { header: "공정명", name: "name" },
-          { header: "공정설명", name: "description", editor: "text" },
-          { header: "비고", name: "note", editor: "text" },
-        ],
-      });
+            { header: "ID", name: "id", align: "center", hidden: "true" },
+            { header: "공정코드", name: "operationCode", align: "center", editor: "text" },
+            { header: "공정명", name: "name", align: "center", editor: "text" },
+            { header: "설명", name: "description", align: "center", editor: "text" },
+            { header: "등록자", name: "memberName", align: "center" },
+            { header: "등록일", name: "createdAt", align: "center" },
+            {
+                header: "상태",
+                name: "status",
+                align: "center",
+                renderer: {
+                    type: StatusSelectRenderer
+                }
+            }
+        ]
+    });
+
+    saveStatusBtn.addEventListener("click", async function () {
+
+        const modifiedRows = grid.getModifiedRows();
+        const updatedRows = modifiedRows.updatedRows;
+
+        if (!updatedRows || updatedRows.length === 0) {
+            alert("변경된 내용이 없습니다.");
+            return;
+        }
+
+        try {
+
+            const requestBody = updatedRows.map(row => ({
+                processId: row.id,
+                operationCode: row.operationCode,
+                name: row.name,
+                description: row.description,
+                status: row.status
+            }));
+
+            const response = await fetch("/api/update_process_code/status", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error("저장 실패");
+            }
+
+            alert("저장 완료");
+            loadData();
+
+        } catch (error) {
+            console.error(error);
+            alert("저장 중 오류 발생");
+        }
+    });
+
+    // 데이터 로드 함수
+    async function loadData() {
+        try {
+            const response = await fetch(
+                `/api/process_code?page=${state.page - 1}&size=${state.perPage}`
+                + `&keyword=${encodeURIComponent(state.keyword)}`,
+                {
+                    method: "GET"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("서버 통신 실패");
+            }
+
+            const result = await response.json();
+
+            grid.resetData(result.content);
+            grid.setPaginationTotalCount(result.totalElements);
+
+        } catch (error) {
+            console.error("데이터 조회 실패:", error);
+        }
     }
 
-    const sorted = list.sort(
-      (a, b) => (Number(a.sequence) || 0) - (Number(b.sequence) || 0),
-    );
+    loadData();
 
-    detailGrid.resetData(sorted);
-    detailGrid.refreshLayout();
-  }
-
-  /* ==========================
-     6. 상세 공정 추가
-  ========================== */
-  const addProcessBtn = document.getElementById("addProcessBtn");
-  if (addProcessBtn) {
-    addProcessBtn.addEventListener("click", () => {
-      if (!detailGrid) return;
-
-      const select = document.getElementById("processSelect");
-      if (!select) return;
-
-      const selectedId = select.value;
-      if (!selectedId) return alert("공정을 선택해주세요.");
-
-      const selectedProc = allProcessList.find(
-        (p) => p.id === Number(selectedId),
-      );
-      if (!selectedProc) return;
-
-      const currentData = detailGrid.getData();
-
-      // 🔥 중복 방지
-      if (currentData.some((r) => r.operationId === selectedProc.id)) {
-        return alert("이미 추가된 공정입니다.");
-      }
-
-      const maxSeq =
-        currentData.length > 0
-          ? Math.max(...currentData.map((r) => Number(r.sequence) || 0))
-          : 0;
-
-      detailGrid.appendRow({
-        id: null,
-        operationId: selectedProc.id,
-        operationCode: selectedProc.operationCode,
-        name: selectedProc.name,
-        sequence: maxSeq + 1,
-        description: "",
-        note: "",
-      });
+    // 페이지 변경 이벤트
+    grid.on("afterPageMove", function (ev) {
+        state.page = ev.page;
+        state.perPage = ev.perPage;
+        loadData();
     });
-  }
 
-  /* ==========================
-     7. 신규 라우트
-  ========================== */
-  const addRouteBtn = document.getElementById("addRouteBtn");
-  if (addRouteBtn) {
-    addRouteBtn.addEventListener("click", () => {
-      const modal = document.getElementById("createRouteModal");
-      if (!modal) return;
-
-      modal.style.display = "block";
-
-      document.getElementById("newRouteCode").value = "RT-" + Date.now();
-
-      initCreateGrid();
+    // 행 회색처리
+    grid.on("onGridUpdated", function () {
+        grid.getData().forEach(row => {
+            if (row.status === "INACTIVE") {
+                grid.addRowClassName(row.rowKey, "inactive-row");
+            }
+        });
     });
-  }
 
-  function initCreateGrid() {
-    if (createGrid) {
-      createGrid.resetData([]);
-      return;
-    }
 
-    createGrid = new Grid({
-      el: document.getElementById("createRouteGrid"),
-      bodyHeight: 300,
-      rowHeaders: ["rowNum"],
-      columns: [
-        { header: "순번", name: "sequence", width: 80 },
-        { name: "operationId", hidden: true },
-        { header: "공정코드", name: "operationCode" },
-        { header: "공정명", name: "name" },
-      ],
+    // 검색 버튼
+    searchBtn.addEventListener("click", function () {
+        state.keyword = searchKeywordInput.value.trim();
+        state.page = 1;   // 검색하면 1페이지로
+        loadData();
     });
-  }
 
-  /* 신규 공정 추가 */
-  const addNewProcessBtn = document.getElementById("addNewProcessBtn");
-  if (addNewProcessBtn) {
-    addNewProcessBtn.addEventListener("click", () => {
-      if (!createGrid) return;
-
-      const select = document.getElementById("newProcessSelect");
-      if (!select) return;
-
-      const selectedId = select.value;
-      if (!selectedId) return alert("공정을 선택하세요.");
-
-      const selectedProc = allProcessList.find(
-        (p) => p.id === Number(selectedId),
-      );
-      if (!selectedProc) return;
-
-      const currentData = createGrid.getData();
-
-      // 🔥 중복 방지
-      if (currentData.some((r) => r.operationId === selectedProc.id)) {
-        return alert("이미 추가된 공정입니다.");
-      }
-
-      const maxSeq =
-        currentData.length > 0
-          ? Math.max(...currentData.map((r) => Number(r.sequence)))
-          : 0;
-
-      createGrid.appendRow({
-        sequence: maxSeq + 1,
-        operationId: selectedProc.id,
-        operationCode: selectedProc.operationCode,
-        name: selectedProc.name,
-      });
+    // 초기화 버튼
+    resetBtn.addEventListener("click", function () {
+        searchKeywordInput.value = "";
+        state.keyword = "";
+        state.page = 1;
+        loadData();
     });
-  }
 
-  /* 신규 저장 */
-  const saveNewRouteBtn = document.getElementById("saveNewRouteBtn");
-  if (saveNewRouteBtn) {
-    saveNewRouteBtn.addEventListener("click", () => {
-      if (!createGrid) return;
-
-      createGrid.finishEditing();
-
-      const itemId = document.getElementById("newItemSelect").value;
-      const routeCode = document.getElementById("newRouteCode").value;
-      const routeName = document.getElementById("newRouteName").value;
-      const description = document.getElementById("newRouteDescription").value;
-      const note = document.getElementById("newRouteNote").value;
-
-      if (!itemId) return alert("적용할 품목을 선택해주세요.");
-      if (!routeName) return alert("라우트명을 입력하세요.");
-
-      const gridData = createGrid.getData();
-      if (gridData.length === 0)
-        return alert("최소 1개 이상의 공정을 추가하세요.");
-
-      const payload = gridData.map((row) => ({
-        routeCode,
-        routeName,
-        description,
-        note,
-        operationId: row.operationId,
-        sequence: row.sequence,
-        itemId: Number(itemId),
-      }));
-
-      fetch("/api/process_mst/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }).then((res) => {
-        if (res.ok) {
-          alert("신규 라우트가 생성되었습니다.");
-          document.getElementById("createRouteModal").style.display = "none";
-          loadMainData();
-        } else {
-          alert("저장 실패");
+    // 엔터키
+    searchKeywordInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            state.keyword = searchKeywordInput.value.trim();
+            state.page = 1;
+            loadData();
         }
-      });
     });
-  }
 
-  /* 상세 저장 */
-  const saveBtn = document.getElementById("saveBtn");
-  if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
-      if (!detailGrid || !currentRouteCode)
-        return alert("라우트 정보가 없습니다.");
+    // 모달 열기
+    openBtn.addEventListener("click", function () {
+        modal.style.display = "block";
+        backdrop.style.display = "block";
+        operationCodeInput.value = "OP-";
+        operationCodeInput.focus();
+    });
 
-      detailGrid.finishEditing();
+    // 모달 닫기
+    closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+        backdrop.style.display = "none"; // 배경 사라짐
+    });
 
-      const updatedData = detailGrid.getData().map((row) => ({
-        id: row.id || null,
-        operationId: row.operationId,
-        sequence: Number(row.sequence),
-        description: row.description,
-        note: row.note,
-      }));
-
-      fetch(`/api/process_mst/update?routeCode=${currentRouteCode}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
-      }).then((res) => {
-        if (res.ok) {
-          alert("변경사항이 저장되었습니다.");
-          document.getElementById("detailModal").style.display = "none";
-          loadMainData();
-        } else {
-          alert("저장 실패");
+    // OP- 강제 유지
+    operationCodeInput.addEventListener("input", function () {
+        if (!operationCodeInput.value.startsWith("OP-")) {
+            operationCodeInput.value = "OP-";
         }
-      });
     });
-  }
 
-  loadMainData();
-  fetchAllProcesses();
+    // 저장 버튼
+    saveBtn.addEventListener("click", async function () {
+
+        const operationCode = operationCodeInput.value.trim();
+        const name = nameInput.value.trim();
+        const description = descriptionInput.value.trim();
+
+        if (!operationCode || operationCode === "OP-") {
+            alert("공정코드를 입력하세요.");
+            return;
+        }
+
+        if (!name) {
+            alert("공정명을 입력하세요.");
+            return;
+        }
+
+        const requestBody = {
+            operationCode: operationCode,
+            name: name,
+            description: description
+        };
+
+        try {
+            const response = await fetch("/api/insert_process_code", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error("저장 실패");
+            }
+
+            alert("저장 완료");
+
+            modal.style.display = "none";
+
+            operationCodeInput.value = "";
+            nameInput.value = "";
+            descriptionInput.value = "";
+
+            if (typeof loadData === "function") {
+                loadData(1, 10);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("저장 중 오류 발생");
+        }
+    });
+
 });

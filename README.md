@@ -56,7 +56,5 @@ Bootstrap
 
 CSS 프레임워크: Bootstrap
 
-HTTP 클라이언트: Axios
-
 Git
 버전관리: Git / GitHub

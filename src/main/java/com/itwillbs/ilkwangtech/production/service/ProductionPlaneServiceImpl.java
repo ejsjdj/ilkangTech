@@ -188,7 +188,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
 
     private Map<Long, Long> explodeBom(Long itemId, Long qty) {
 
-        System.out.println("BOM 전개 시작 → childItemId: " + itemId + ", qty: " + qty);
+        //System.out.println("BOM 전개 시작 → childItemId: " + itemId + ", qty: " + qty);
 
         Map<Long, Long> result = new HashMap<>();
 
@@ -201,17 +201,17 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
 
             Long requiredQty = bom.getRequireQty() * qty;
 
-            System.out.println(
-                    "BOM 조회 → parent: " + material.getItemId()
-                            + ", 타입: " + material.getItemType()
-                            + ", 필요수량: " + bom.getRequireQty()
-                            + ", 계산수량: " + requiredQty
-            );
+//            System.out.println(
+//                    "BOM 조회 → parent: " + material.getItemId()
+//                            + ", 타입: " + material.getItemType()
+//                            + ", 필요수량: " + bom.getRequireQty()
+//                            + ", 계산수량: " + requiredQty
+//            );
 
             // 원자재 → 종료
             if (material.getItemType() == ItemType.RAW) {
 
-                System.out.println("RAW 발견 → ID: " + material.getItemId());
+                //System.out.println("RAW 발견 → ID: " + material.getItemId());
 
                 result.merge(material.getItemId(), requiredQty, Long::sum);
 
@@ -221,7 +221,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
                     || material.getItemType() == ItemType.WIP
                     || material.getItemType() == ItemType.FG) {
 
-                System.out.println("재귀 BOM 전개 → ID: " + material.getItemId());
+                //System.out.println("재귀 BOM 전개 → ID: " + material.getItemId());
 
                 Map<Long, Long> childMap =
                         explodeBom(material.getItemId(), requiredQty);
@@ -230,7 +230,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
             }
         }
 
-        System.out.println("BOM 전개 결과 → " + result);
+        //System.out.println("BOM 전개 결과 → " + result);
 
         return result;
     }

@@ -27,7 +27,6 @@ import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +44,7 @@ public class DashboardService {
     private final PurchaseRequestHeaderRepository prHeaderRepository;
     private final PurchaseRequestRepository prLineRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
-    private final InventoryHistoryRepository historyRepository; // 이력 레포지토리 추가
+    private final InventoryHistoryRepository historyRepository; 
     private final ProductionPlaneRepository productionPlaneRepository;
     private final ProductionInsturctRepository productionInstructRepository;
     private final BomRepository bomRepository;
@@ -57,7 +56,6 @@ public class DashboardService {
         Map<String, String> statusMap = new HashMap<>();
         String[] zones = {"ZONE A", "ZONE B", "ZONE C"};
         
-        // 랙 개수를 25개로 자동 생성
         String[] racks = new String[25];
         for (int i = 0; i < 25; i++) {
             racks[i] = String.format("Rack %02d", i + 1);
@@ -66,8 +64,6 @@ public class DashboardService {
         for (String zone : zones) {
             for (String rack : racks) {
                 Long qty = inventoryRepository.sumQuantityByZoneAndRack(zone, rack);
-                
-                // 수용치 10,000 미만은 보통(normal), 10,000 이상은 많음(full)
                 String status = (qty == null || qty == 0) ? "none" : (qty < 10000 ? "normal" : "full");
                 statusMap.put(zone + "_" + rack, status);
             }
@@ -81,37 +77,18 @@ public class DashboardService {
         List<PurchaseOrderHeaderEntity> completeOrders = purchaseOrderRepository.findCompleteOrders();
 
         if (completeOrders.isEmpty()) {
-            System.out.println("========== [입고 처리] COMPLETE 상태인 발주 데이터가 없습니다. ==========");
             return;
         }
 
         for (PurchaseOrderHeaderEntity order : completeOrders) {
-            System.out.println("========== [발주서 확인] 발주서 ID: " + order.getId() + " / 상세 품목 개수: " + order.getLines().size() + " ==========");
-
-            if (order.getLines().isEmpty()) {
-                System.out.println("  -> [건너뜀] 이 발주서에 등록된 상세 품목(Line) 데이터가 아예 없습니다! (DB 확인 필요)");
-            }
-
-            int successCount = 0; // 실제 창고에 들어간 횟수 카운트
+            int successCount = 0; 
 
             for (PurchaseOrderEntity line : order.getLines()) {
-                System.out.println("  -> [품목 확인] 라인 ID: " + line.getId() + " / 품목 ID: " + line.getItem() + " / 수량: " + line.getQuantity());
+                if (line.getItem() == null) continue;
 
-                if (line.getItem() == null) {
-                    System.out.println("    -> [건너뜀] 품목 ID가 NULL 입니다.");
-                    continue;
-                }
-
-                // 실제 Item 테이블에 존재하는지 확인
                 ItemEntity item = line.getItem();
 
-                if (item == null) {
-                    System.out.println("    -> [건너뜀] Item 테이블에 ID가 " + line.getItem() + "인 품목이 존재하지 않습니다.");
-                } else if (line.getQuantity() == null || line.getQuantity() <= 0) {
-                    System.out.println("    -> [건너뜀] 입고 수량이 0이거나 NULL 입니다.");
-                } else {
-                    // 모든 조건 통과! 창고 입고 시작
-                    String baseLotNumber = order.getPurchaseOrderCode() + "-L" + line.getId();
+                if (item != null && line.getQuantity() != null && line.getQuantity() > 0) {
                     receiveAndDistributeInventory(item, line.getQuantity());
 
                     InventoryHistoryEntity history = new InventoryHistoryEntity();
@@ -121,22 +98,16 @@ public class DashboardService {
                     history.setQuantity(line.getQuantity());
                     historyRepository.save(history);
 
-                    System.out.println("    -> [입고 완료] 창고 분배 및 이력 저장 성공!");
                     successCount++;
                 }
             }
 
-            // 물건이 단 하나라도 정상적으로 창고에 들어갔을 때만 STORED로 변경
             if (successCount > 0) {
                 order.setStatus("STORED");
-                System.out.println("========== [상태 변경] 발주서 ID " + order.getId() + " 입고 완료(STORED) ==========");
-            } else {
-                System.out.println("========== [상태 유지] 정상 입고된 품목이 없어 COMPLETE 상태를 유지합니다. ==========");
-            }
+            } 
         }
     }
     
-    // 파라미터에서 baseLotNumber를 제거하고 내부에서 LOT를 직접 생성
     @Transactional
     public void receiveAndDistributeInventory(ItemEntity item, Long totalQuantity) {
         
@@ -146,7 +117,6 @@ public class DashboardService {
         }
         Random random = new Random();
 
-        // 1. 타겟 창고(ZONE) 결정
         String targetZone = "ZONE A"; 
         String itemCode = item.getItemCode() != null ? item.getItemCode().toUpperCase() : "UNKNOWN";
         
@@ -154,14 +124,10 @@ public class DashboardService {
         else if (itemCode.startsWith("ST-") || itemCode.startsWith("IN-")) targetZone = "ZONE B";
         else if (itemCode.startsWith("SAM-")) targetZone = "ZONE C";
 
-        // 2. LOT 번호 Prefix 생성 (예: RW-001-20260304-)
         String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String lotPrefix = itemCode + "-" + dateStr + "-";
         
-        // 3. DB에서 오늘 입고된 동일 품목의 LOT 개수를 조회하여 시작 순번 결정
         long currentSeq = inventoryRepository.countByLotNumberStartingWith(lotPrefix);
-
-        // 4. 수량을 3등분하여 창고에 분배
         long partQuantity = totalQuantity / 3;
         long remainder = totalQuantity % 3;
 
@@ -169,9 +135,7 @@ public class DashboardService {
             long finalQuantity = partQuantity + (i == 2 ? remainder : 0); 
             
             if(finalQuantity > 0) {
-                currentSeq++; // 순번 증가 (1, 2, 3 ...)
-                
-                // 최종 LOT 번호 조립: Prefix + 4자리 숫자 (예: RW-001-20260304-0001)
+                currentSeq++; 
                 String finalLotNumber = lotPrefix + String.format("%04d", currentSeq);
                 
                 InventoryEntity inventory = new InventoryEntity();
@@ -187,14 +151,12 @@ public class DashboardService {
         }
     }
     
-    // DB에서 Object 배열로 가져온 결과를 자바 Map으로 예쁘게 변환하는 헬퍼 메서드
     private Map<Long, Long> convertToMap(List<Object[]> list) {
         Map<Long, Long> map = new HashMap<>();
         if (list == null) return map;
         
         for (Object[] row : list) {
             if (row[0] != null && row[1] != null) {
-                // DB에서 Double이 오든 BigDecimal이 오든 Number로 받아서 Long으로 깔끔하게 변환!
                 Long key = ((Number) row[0]).longValue();
                 Long value = ((Number) row[1]).longValue();
                 map.put(key, value);
@@ -203,13 +165,10 @@ public class DashboardService {
         return map;
     }
 
-    // (기존 메서드 교체) 초고속 MRP 기반 발주 필요 리스트 로직
     @Transactional(readOnly = true)
     public List<OrderNeededItemDTO> getOrderNeededList() {
-        // 순수 아이템 82개 가져오기
         List<ItemEntity> uniqueItems = itemRepository.findAllDistinct();
 
-        // 반복문 밖에서 단 7번의 쿼리로 전체 품목 데이터를 Map으로 조회
         Map<Long, Long> currentStockMap = convertToMap(inventoryRepository.sumCurrentQuantityGrouped());
         Map<Long, Long> incomingStockMap = convertToMap(purchaseOrderRepository.sumIncomingQuantityGrouped());
         Map<Long, Long> directPlanMap = convertToMap(productionPlaneRepository.sumProductionPlanQtyGrouped());
@@ -221,17 +180,12 @@ public class DashboardService {
         List<OrderNeededItemDTO> resultList = new ArrayList<>();
         long safeStockThreshold = 3000L; 
 
-        // 이제 반복문 안에서는 DB를 절대 호출하지 않고, 메모리(Map)에서 값만 조회
         for (ItemEntity item : uniqueItems) {
-            
-            // 품목 코드가 SAM으로 시작하는 완제품은 발주 리스트 제외
             if (item.getItemCode() != null && item.getItemCode().toUpperCase().startsWith("SAM-")) {
                 continue; 
             }
             
             Long itemId = item.getItemId();
-
-            // Map에서 값 꺼내기 (값이 없으면 기본값 0L 반환)
             long currentStock = currentStockMap.getOrDefault(itemId, 0L);
             long incomingStock = incomingStockMap.getOrDefault(itemId, 0L);
             long prodPlan = directPlanMap.getOrDefault(itemId, 0L) + dependentPlanMap.getOrDefault(itemId, 0L);
@@ -242,10 +196,8 @@ public class DashboardService {
             
             long availableStock = currentStock + incomingStock;
             long totalRequirement = safeStockThreshold + prodPlan + reservedStock; 
-            
             long requiredQty = totalRequirement - availableStock; 
             
-            // 필요 재고가 0 이하(충분함)이면 리스트에 넣지 않고 건너뜀!
             if (requiredQty <= 0) {
                 continue;
             }
@@ -265,7 +217,6 @@ public class DashboardService {
                     .build());
         }
         
-        // 필요 재고가 많은 순서대로 먼저 정렬
         resultList.sort((a, b) -> {
             int reqCompare = Long.compare(b.getRequiredStock(), a.getRequiredStock());
             return reqCompare != 0 ? reqCompare : a.getItemId().compareTo(b.getItemId());
@@ -274,12 +225,10 @@ public class DashboardService {
         return resultList;
     }
 
-    // 발주 요청 처리
     @Transactional
     public void createPurchaseRequests(List<Map<String, Long>> requestList, String loginId) {
         if(requestList == null || requestList.isEmpty()) return;
 
-        // 헤더 생성
         PurchaseRequestHeaderEntity header = new PurchaseRequestHeaderEntity();
         String prCode = "PR-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(Math.random()*1000);
         header.setPurchaseRequestCode(prCode);
@@ -292,7 +241,6 @@ public class DashboardService {
 
         PurchaseRequestHeaderEntity savedHeader = prHeaderRepository.save(header);
 
-        // 라인 생성
         for (Map<String, Long> data : requestList) {
             Long itemId = data.get("itemId");
             Long quantity = data.get("quantity");
@@ -308,23 +256,18 @@ public class DashboardService {
         }
     }
     
-    // 금일 입고 예정 갯수 가져오기
     public long getInboundScheduledCount() {
-        // 실제 DB에서 출하완료/검수완료 상태인 발주 건수를 가져옵니다.
         return purchaseOrderRepository.countInboundScheduled();
     }
     
-    // 금일 입고 처리 완료 건수
     public long getInboundProcessedToday() {
         return historyRepository.countProcessedToday(LocalDate.now(), "IN");
     }
 
-    // 금일 출고 처리 완료 건수
     public long getOutboundProcessedToday() {
         return historyRepository.countProcessedToday(LocalDate.now(), "OUT");
     }
     
-    // 랙 상세 정보 가져오기
     public List<RackItemDTO> getRackDetails(String zone, String rack) {
         List<InventoryEntity> inventoryList = inventoryRepository.findByZoneAndRack(zone, rack);
         return inventoryList.stream().map(inv -> {
@@ -341,7 +284,6 @@ public class DashboardService {
         }).collect(Collectors.toList());
     }
     
-    // 새로운 재고 이동 메서드 추가 (파일 맨 아래에 추가)
     @Transactional
     public void transferInventory(Long inventoryId, String targetZone, String targetRack, Long transferQty) {
         InventoryEntity source = inventoryRepository.findById(inventoryId)
@@ -352,16 +294,13 @@ public class DashboardService {
         }
 
         if (source.getCurrentQuantity().equals(transferQty)) {
-            // 전량 이동: 구역과 랙 번호만 바꿈
             source.setZone(targetZone);
             source.setRack(targetRack);
         } else {
-            // 부분 이동(분할): 기존 수량을 줄이고, 이동할 랙에 새 데이터를 생성
             source.setCurrentQuantity(source.getCurrentQuantity() - transferQty);
             
             InventoryEntity target = new InventoryEntity();
             target.setItem(source.getItem());
-            // LOT 번호 중복 방지를 위해 꼬리표(-M) 붙임
             target.setLotNumber(source.getLotNumber() + "-M" + System.currentTimeMillis() % 1000); 
             target.setZone(targetZone);
             target.setRack(targetRack);
@@ -371,9 +310,7 @@ public class DashboardService {
         }
     }
     
-    // 금일 입고 예정 상세 리스트(모달용) 조회
     public List<InboundItemDTO> getInboundScheduledList() {
-        // COMPLETE 상태인 헤더와 라인들을 가져옴
         List<PurchaseOrderHeaderEntity> completeOrders = purchaseOrderRepository.findCompleteOrders();
         List<InboundItemDTO> list = new ArrayList<>();
         
@@ -393,37 +330,32 @@ public class DashboardService {
         return list;
     }
     
-    // 차트 데이터 집계 (월/주/일)
     public ChartDataDTO getChartData(String type) {
         ChartDataDTO dto = new ChartDataDTO();
-        // 날짜 순서를 보장하기 위해 LinkedHashMap 사용 (값 배열: [입고, 출고, 폐기])
         Map<String, long[]> dataMap = new LinkedHashMap<>(); 
         LocalDate now = LocalDate.now();
         LocalDate startDate;
 
-        // 1. 선택된 기간(월/주/일)에 맞춰 X축 빈 껍데기(0 세팅) 먼저 생성
         if ("day".equals(type)) {
-            startDate = now.minusDays(14); // 최근 15일
+            startDate = now.minusDays(14); 
             for (int i = 14; i >= 0; i--) {
                 dataMap.put(now.minusDays(i).format(DateTimeFormatter.ofPattern("MM-dd")), new long[]{0, 0, 0});
             }
         } else if ("week".equals(type)) {
-            startDate = now.minusWeeks(10); // 최근 11주
+            startDate = now.minusWeeks(10); 
             for (int i = 10; i >= 0; i--) {
-                LocalDate weekDate = now.minusWeeks(i).with(java.time.DayOfWeek.MONDAY); // 해당 주의 월요일 기준
+                LocalDate weekDate = now.minusWeeks(i).with(java.time.DayOfWeek.MONDAY); 
                 dataMap.put(weekDate.format(DateTimeFormatter.ofPattern("MM-dd")) + "주", new long[]{0, 0, 0});
             }
-        } else { // 기본값: month
-            startDate = now.minusMonths(11); // 최근 12개월
+        } else { 
+            startDate = now.minusMonths(11); 
             for (int i = 11; i >= 0; i--) {
                 dataMap.put(now.minusMonths(i).format(DateTimeFormatter.ofPattern("yyyy-MM")), new long[]{0, 0, 0});
             }
         }
 
-        // 2. DB에서 기간 내 데이터 가져오기
         List<InventoryHistoryEntity> histories = historyRepository.findByTransactionDateAfter(startDate.minusDays(1));
 
-        // 3. 가져온 데이터를 빈 껍데기에 매핑하여 누적합(SUM) 계산
         for (InventoryHistoryEntity h : histories) {
             String label = "";
             if ("day".equals(type)) {
@@ -443,7 +375,6 @@ public class DashboardService {
             }
         }
 
-        // 4. DTO에 결과 담기
         dto.setCategories(new ArrayList<>(dataMap.keySet()));
         dto.setInData(dataMap.values().stream().map(v -> v[0]).collect(Collectors.toList()));
         dto.setOutData(dataMap.values().stream().map(v -> v[1]).collect(Collectors.toList()));
@@ -452,39 +383,41 @@ public class DashboardService {
         return dto;
     }
     
-    // 최근 출고 내역 통합 조회 (생산팀 + 영업팀)
+    // 💡 [수정됨] 최근 출고 내역 통합 조회 (에러 해결)
     public List<OutboundItemDTO> getOutboundScheduledList() {
         List<OutboundItemDTO> list = new ArrayList<>();
         
-        // 1. 자재 출고 실적 (생산팀 - PROGRESS, COM 상태인 것들)
+        // 1. 자재 출고 실적 (생산팀)
         List<Object[]> materials = productionInstructRepository.findMaterialOutboundList();
         
         for (Object[] obj : materials) {
             String instructCode = (String) obj[0]; 
-            String itemCode = (String) obj[1];     
+            // 💡 에러 방지: Number로 받아서 longValue()로 변환
+            Long itemId = ((Number) obj[1]).longValue();     
             String itemName = (String) obj[2];     
             Long requiredQty = ((Number) obj[3]).longValue(); 
             
-            Long currentStock = inventoryRepository.sumQuantityByItemCode(itemCode);
+            Long currentStock = inventoryRepository.getTotalQuantityByItemId(itemId);
             currentStock = (currentStock == null) ? 0L : currentStock;
 
             list.add(OutboundItemDTO.builder()
-                    .type("생산 투입") // 출고 사유 명확화
+                    .type("생산 투입") 
                     .refCode(instructCode)
-                    .itemCode(itemCode)
+                    .itemCode(itemId) // DTO 이름은 itemCode지만 내부적으로 ID(Long) 저장
                     .itemName(itemName)
                     .requiredQty(requiredQty)
                     .currentStock(currentStock)
                     .requestDept("생산팀")
                     .dueDate(LocalDate.now().toString()) 
-                    .status("출고 완료") // 💡 무조건 출고 완료로 고정!
+                    .status("출고 완료") 
                     .build());
         }
         
         // 2. 완제품 출하 실적 (영업팀)
+        // 💡 쿼리 수정: i.item_code -> i.item_id 로 변경하여 Long 타입 반환 유도
         String sql = "SELECT " +
                      "  'SO-' || so.sales_order_id, " +  
-                     "  i.item_code, " +                 
+                     "  i.item_id, " + // 수정 완료                 
                      "  i.item_name, " +                 
                      "  oi.quantity, " +                 
                      "  so.expected_delivery_date " +    
@@ -497,19 +430,20 @@ public class DashboardService {
 
         for (Object[] obj : salesList) {
             String orderCode = (String) obj[0];
-            String itemCode = (String) obj[1];
+            // 💡 에러 방지: Number로 받아서 longValue()로 변환
+            Long itemId = ((Number) obj[1]).longValue();
             String itemName = (String) obj[2];
             Long requiredQty = ((Number) obj[3]).longValue();
             
             String dueDate = (obj[4] != null) ? obj[4].toString().substring(0, 10) : "";
 
-            Long currentStock = inventoryRepository.sumQuantityByItemCode(itemCode);
+            Long currentStock = inventoryRepository.getTotalQuantityByItemId(itemId);
             currentStock = (currentStock == null) ? 0L : currentStock;
 
             list.add(OutboundItemDTO.builder()
-                    .type("영업 출하") // 출고 사유 명확화
+                    .type("영업 출하") 
                     .refCode(orderCode)
-                    .itemCode(itemCode)
+                    .itemCode(itemId) // DTO 이름은 itemCode지만 내부적으로 ID(Long) 저장
                     .itemName(itemName)
                     .requiredQty(requiredQty)
                     .currentStock(currentStock)
@@ -522,7 +456,7 @@ public class DashboardService {
         return list;
     }
 
-    // 출고 처리 실행 (재고 차감 및 이력 저장)
+    // 💡 [수정됨] 출고 처리 실행 (재고 차감)
     @Transactional
     public String processOutbound() {
         List<Object[]> pendingMaterials = productionInstructRepository.findMaterialOutboundList();
@@ -533,25 +467,25 @@ public class DashboardService {
 
         for (Object[] obj : pendingMaterials) {
             String instructCode = (String) obj[0];
-            String itemCode = (String) obj[1];
+            // 💡 여기도 동일하게 ID(Long) 기반으로 변경
+            Long itemId = ((Number) obj[1]).longValue();
             Long requiredQty = ((Number) obj[3]).longValue();
 
-            // 출고할 자재의 현재 창고 재고들을 유통기한(또는 ID) 빠른 순서대로 가져옴 (FIFO: 선입선출)
-            List<InventoryEntity> stocks = inventoryRepository.findByItemItemCodeOrderByExpirationDateAsc(itemCode);
+            // 💡 수정 완료: ItemCode가 아닌 ItemId를 기반으로 재고를 조회하도록 레포지토리 메서드 변경
+            List<InventoryEntity> stocks = inventoryRepository.findByItemItemIdOrderByExpirationDateAsc(itemId);
             
             long remainingToDeduct = requiredQty;
 
             for (InventoryEntity stock : stocks) {
-                if (remainingToDeduct <= 0) break; // 다 차감했으면 종료
+                if (remainingToDeduct <= 0) break; 
 
                 long currentQty = stock.getCurrentQuantity();
                 if (currentQty == 0) continue;
 
                 long deductQty = Math.min(currentQty, remainingToDeduct);
-                stock.setCurrentQuantity(currentQty - deductQty); // 재고 차감
+                stock.setCurrentQuantity(currentQty - deductQty); 
                 remainingToDeduct -= deductQty;
 
-                // 출고(OUT) 이력 저장 (차트에 반영됨!)
                 InventoryHistoryEntity history = new InventoryHistoryEntity();
                 history.setItem(stock.getItem());
                 history.setTransactionDate(LocalDate.now());
@@ -561,10 +495,9 @@ public class DashboardService {
             }
 
             if (remainingToDeduct > 0) {
-                throw new RuntimeException("재고가 부족하여 출고할 수 없습니다: " + itemCode + " (부족수량: " + remainingToDeduct + ")");
+                throw new RuntimeException("재고가 부족하여 출고할 수 없습니다: 품목 ID " + itemId + " (부족수량: " + remainingToDeduct + ")");
             }
 
-            // 재고가 모두 정상 출고되었다면, 작업지시 상태를 'PROGRESS(진행중)'로 변경!
             productionInstructRepository.updateInstructStatus(instructCode, "PROGRESS");
         }
         

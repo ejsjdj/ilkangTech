@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
       { header: "제품ID", name: "itemId", align: "center" },
       { header: "생산수량", name: "productionQty", align: "center" },
       { header: "재고검증", name: "result", align: "center" },
-      { header: "재고여부", name: "hasStock" }
+      { header: "재고여부", name: "hasStock", align: "center" }
     ],
   });
 
@@ -41,14 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     fetch(`/api/production/check?itemId=${itemId}&productionQty=${productionQty}`)
-      .then(res => {
-
-        if (!res.ok) {
-          throw new Error("재고 부족");
-        }
-
-        return res;
-      })
+      .then(res => res.json())
       .then(() => {
 
         analysisGrid.resetData([
@@ -90,6 +83,74 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+
+function goRegister() {
+
+  const rows = analysisGrid.getData();
+
+  if (rows.length === 0) {
+    alert("생산 분석 데이터가 없습니다.");
+    return;
+  }
+
+  const row = rows[0];
+
+  if (row.result === "재고 부족") {
+    alert("재고 부족으로 생산계획 등록 불가");
+    return;
+  }
+
+  // 더미 ProductionPlaneInsertDTO 생성
+  const requestData = {
+    routeCode: 1,
+    planeCode: "PLAN-001",
+    planeDate: new Date().toISOString(),
+    member: 1,
+    item: row.itemId,
+    totalQty: row.productionQty,
+    status: "READY",
+    memo: "테스트 생산계획",
+
+    details: [
+      {
+        id: null,
+        itemName: "테스트제품",
+        orderId: 1,
+        productQty: row.productionQty,
+        memo: "테스트 상세",
+        productionDetailDate: new Date().toISOString()
+      }
+    ]
+  };
+
+  console.log("보낼 데이터:", requestData);
+
+  fetch("/api/production/plan", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(requestData)
+  })
+    .then(res => res.json())
+    .then(data => {
+
+      console.log(data);
+
+      alert("생산계획 등록 완료");
+
+      location.href = "/production/production_list";
+
+    })
+    .catch(err => {
+
+      console.error(err);
+
+      alert("생산계획 등록 실패");
+
+    });
+}
 
 // 4️⃣ 모달 표시 함수 (가상 원자재 계산 포함)
 function showShortageModal(data) {

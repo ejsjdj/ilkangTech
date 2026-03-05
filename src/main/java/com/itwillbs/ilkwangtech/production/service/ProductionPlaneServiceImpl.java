@@ -127,12 +127,11 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
     // 6. 재고검증
     @Override
     @Transactional
-    public void checkStock(Long itemId, Long productionQty) {
+    public List<StockRequirementDTO> checkStock(Long itemId, Long productionQty) {
 
         System.out.println("===== 재고 검증 시작 =====");
         System.out.println("생산 품목 ID: " + itemId);
         System.out.println("생산 수량: " + productionQty);
-
 
         // 1. BOM 전개 → 원자재 필요수량 Map
         Map<Long, Long> requiredRawMaterials =
@@ -141,7 +140,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         System.out.println("BOM 전개 결과 (원자재 필요수량): " + requiredRawMaterials);
 
         // 2. 재고 비교
-        List<String> shortageMessages = new ArrayList<>();
+        List<StockRequirementDTO> shortageList = new ArrayList<>();
 
         for (Map.Entry<Long, Long> entry : requiredRawMaterials.entrySet()) {
 
@@ -162,28 +161,19 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
 
                 System.out.println("⚠ 재고 부족 발생 → 부족수량: " + shortage);
 
-
-                shortageMessages.add(
-                        "품목ID: " + rawItemId +
-                                " 부족수량: " + shortage
+                shortageList.add(
+                        new StockRequirementDTO(rawItemId, shortage)
                 );
 
-                // TODO: shortage 테이블 저장
             } else {
                 System.out.println("재고 충분");
             }
         }
 
-        // 3. 하나라도 부족하면 생산계획 등록 불가
-        if (!shortageMessages.isEmpty()) {
-
-            System.out.println("===== 재고 부족으로 생산 불가 =====");
-
-            throw new IllegalStateException(
-                    "재고 부족:\n" + String.join("\n", shortageMessages)
-            );
-        }
         System.out.println("===== 재고 검증 통과 =====");
+
+        return shortageList;
+
     }
 
     private Map<Long, Long> explodeBom(Long itemId, Long qty) {

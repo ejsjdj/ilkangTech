@@ -55,6 +55,7 @@ public class ProductionPlaneApiController {
 
         System.out.println("생산계획 ID : " + productionId);
 
+
         Optional<ProductionPlaneDetailDTO> detail = productionPlaneService.getProductionPlaneDetail(productionId);
 
         log.info("생산계획 목록 상세조회 결과 - DTO: {}", detail);
@@ -88,12 +89,11 @@ public class ProductionPlaneApiController {
 
     // 6. 재고 검증
     @GetMapping("/check")
-    public List<StockRequirementDTO> checkProcurement(
-            @RequestParam("itemId") Long itemId,
-            @RequestParam("productionQty") Long productionQty){
+    public void checkProcurement(
+    		@RequestParam("itemId") Long itemId,
+    		@RequestParam("productionQty") Long productionQty){
 
-        List<StockRequirementDTO> list = productionPlaneService.checkStock(itemId, productionQty);
-
-        return list;
+        productionPlaneService.checkStock(itemId, productionQty);
     }
+
 }

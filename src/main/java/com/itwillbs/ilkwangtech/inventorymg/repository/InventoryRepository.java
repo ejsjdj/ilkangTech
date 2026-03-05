@@ -45,6 +45,8 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
         from InventoryEntity i
         where i.item.itemId = :itemId
         """)
-    Long getTotalQuantityByItemId(Long itemId);
+    Long getTotalQuantityByItemId(@Param("itemId") Long itemId);
+
+	List<InventoryEntity> findByItemItemIdOrderByExpirationDateAsc(Long itemId);
 
 }

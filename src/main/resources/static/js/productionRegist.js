@@ -1,7 +1,6 @@
 let analysisGrid; // 전역 선언
 
 document.addEventListener("DOMContentLoaded", function () {
-
   const Grid = tui.Grid;
 
   analysisGrid = new Grid({
@@ -13,71 +12,67 @@ document.addEventListener("DOMContentLoaded", function () {
       { header: "제품ID", name: "itemId", align: "center" },
       { header: "생산수량", name: "productionQty", align: "center" },
       { header: "재고검증", name: "result", align: "center" },
-      { header: "재고여부", name: "hasStock", align: "center" }
+      { header: "재고여부", name: "hasStock", align: "center" },
     ],
   });
 
   // 수주 선택
-  document.getElementById("orderSelect").addEventListener("change", function () {
+  document
+    .getElementById("orderSelect")
+    .addEventListener("change", function () {
+      const orderId = this.value;
 
-    const orderId = this.value;
+      if (!orderId) {
+        analysisGrid.resetData([]);
+        return;
+      }
 
-    if (!orderId) {
-      analysisGrid.resetData([]);
-      return;
-    }
+      let itemId = 1;
+      let productionQty = 100;
 
-    let itemId = 1;
-    let productionQty = 100;
+      if (orderId === "2") {
+        itemId = 2;
+        productionQty = 200;
+      }
 
-    if (orderId === "2") {
-      itemId = 2;
-      productionQty = 200;
-    }
+      if (orderId === "3") {
+        itemId = 3;
+        productionQty = 50;
+      }
 
-    if (orderId === "3") {
-      itemId = 3;
-      productionQty = 50;
-    }
+      fetch(
+        `/api/production/check?itemId=${itemId}&productionQty=${productionQty}`,
+      )
+        .then((res) => res.json())
+        .then(() => {
+          analysisGrid.resetData([
+            {
+              itemId: itemId,
+              productionQty: productionQty,
+              result: "생산 가능",
+              hasStock: "O",
+            },
+          ]);
+        })
+        .catch(() => {
+          analysisGrid.resetData([
+            {
+              itemId: itemId,
+              productionQty: productionQty,
+              result: "재고 부족",
+              hasStock: "X",
+            },
+          ]);
 
-    fetch(`/api/production/check?itemId=${itemId}&productionQty=${productionQty}`)
-      .then(res => res.json())
-      .then(() => {
-
-        analysisGrid.resetData([
-          {
-            itemId: itemId,
-            productionQty: productionQty,
-            result: "생산 가능",
-            hasStock: "O"
-          }
-        ]);
-
-      })
-      .catch(() => {
-
-        analysisGrid.resetData([
-          {
-            itemId: itemId,
-            productionQty: productionQty,
-            result: "재고 부족",
-            hasStock: "X"
-          }
-        ]);
-
-        alert("재고 부족으로 생산 불가");
-
-      });
-
-  });
+          alert("재고 부족으로 생산 불가");
+        });
+    });
 
   // 🔥 Grid 클릭 이벤트도 여기 안에 넣어야 함
   analysisGrid.on("click", (ev) => {
-
     if (ev.targetType !== "cell") return;
 
     if (ev.columnName === "hasStock") {
-
       const rowData = analysisGrid.getRow(ev.rowKey);
 
       if (rowData.hasStock === "X") {
@@ -87,9 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-
 function goRegister() {
-
   const rows = analysisGrid.getData();
 
   if (rows.length === 0) {
@@ -123,8 +116,8 @@ function goRegister() {
         productQty: row.productionQty,
         memo: "테스트 상세",
         //productionDetailDate: new Date().toISOString()
-      }
-    ]
+      },
+    ],
   };
 
   console.log("보낼 데이터:", requestData);
@@ -132,26 +125,22 @@ function goRegister() {
   fetch("/api/production/regist_production", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(requestData)
+    body: JSON.stringify(requestData),
   })
-    .then(res => res.json())
-    .then(data => {
-
+    .then((res) => res.json())
+    .then((data) => {
       console.log(data);
 
       alert("생산계획 등록 완료");
 
       location.href = "/production/production_list";
-
     })
-    .catch(err => {
-
+    .catch((err) => {
       console.error(err);
 
       alert("생산계획 등록 실패");
-
     });
 }
 

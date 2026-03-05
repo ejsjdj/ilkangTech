@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -61,6 +62,8 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     // 3. 작업지시 등록
     public void saveProductionInstruct(ProductionInstructInsertDTO productionInstructInsertDTO, Long userId){
 
+
+
         // 1. 공정정보 확인
         ItemEntity item = itemRepository.findById(productionInstructInsertDTO.getItem()).
                 orElseThrow(() -> new IllegalArgumentException("공정 코드가 존재하지 않습니다."));
@@ -74,8 +77,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
                 production,
                 item,
                 productionInstructInsertDTO.getInstructQty(),
-                productionInstructInsertDTO.getStartDate(),
-                productionInstructInsertDTO.getEndDate(),
+                LocalDateTime.now(),
                 productionInstructInsertDTO.getStatus(),
                 productionInstructInsertDTO.getDefective()
         );
@@ -83,18 +85,31 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         // 2. 작업자 엔티티 저장
         for(ProductionInstructWorkerInsertDTO lineDTO : productionInstructInsertDTO.getWorkers()){
 
+            System.out.println("processId = " + lineDTO.getProcessId());
+            System.out.println("memberId = " + lineDTO.getMemberId());
+            System.out.println("outputItemId = " + lineDTO.getOutputItemId());
+
             Member memberId = memberRepository.findById(lineDTO.getMemberId())
                     .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다."));
 
             ProcessEntity processId = processRepository.findById(lineDTO.getProcessId()).
                     orElseThrow(() -> new IllegalArgumentException("공정이 존재하지 않습니다."));
 
+            ItemEntity outputItem = itemRepository.findById(lineDTO.getOutputItemId())
+                    .orElseThrow(() -> new IllegalArgumentException("품목정보가 없습니다."));
+
+            System.out.println("작업자 엔티티 item_id : " + lineDTO.getOutputItemId());
+
             ProductionWorkerEntity line = ProductionWorkerEntity.create(
                     processId,
                     memberId,
-                    "LOT-TEST-01"
+                    "LOT-TEST-01",
+                    lineDTO.getStartTime(),
+                    lineDTO.getEndTime(),
+                    lineDTO.getProductionQty(),
+                    lineDTO.getAdditionQty(),
+                    outputItem
             );
-
 
             header.saveLine(line);
         }

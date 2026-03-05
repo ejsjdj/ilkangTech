@@ -69,7 +69,6 @@ public class ProductionInstructEntity {
             ItemEntity item,
             Long instructQty,
             LocalDateTime startDate,
-            LocalDateTime endDate,
             String status,
             Long defective
     ){
@@ -79,7 +78,6 @@ public class ProductionInstructEntity {
         header.item = item;
         header.instructQty = instructQty;
         header.startDate = startDate;
-        header.endDate = endDate;
         header.status = status;
         header.defective = defective;
 

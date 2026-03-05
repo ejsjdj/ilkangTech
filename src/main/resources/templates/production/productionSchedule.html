@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>생산 대시보드</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+      body {
+        background-color: #f4f6f9;
+      }
+      .card {
+        border-radius: 12px;
+      }
+      .stat-value {
+        font-size: 24px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container mt-4">
+      <h3 class="mb-4">📊 생산 대시보드</h3>
+
+      <!-- KPI 카드 -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3 text-center">
+            <h6>이번주 생산계획</h6>
+            <div id="weeklyPlan" class="stat-value"></div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3 text-center">
+            <h6>설비 가동률</h6>
+            <div id="utilizationRate" class="stat-value"></div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3 text-center">
+            <h6>납기까지 남은일</h6>
+            <div id="deadlineRemain" class="stat-value"></div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3 text-center">
+            <h6>지연 건수</h6>
+            <div id="delayCount" class="stat-value text-danger"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 차트 -->
+      <div class="card shadow-sm p-4">
+        <h6 class="mb-3">주간 계획 vs 실적</h6>
+        <div id="productionChart"></div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // =========================
+        // 🔥 더미 데이터
+        // =========================
+        const dummyData = {
+          weeklyPlan: {
+            A: 120,
+            B: 200,
+          },
+          utilizationRate: 78, // %
+          deadlineRemain: 5, // days
+          delayCount: 2,
+          weeklyChart: {
+            categories: ["월", "화", "수", "목", "금"],
+            plan: [50, 60, 70, 80, 60],
+            actual: [45, 55, 65, 70, 58],
+          },
+        };
+
+        // =========================
+        // KPI 표시
+        // =========================
+        document.getElementById("weeklyPlan").innerText =
+          `A ${dummyData.weeklyPlan.A}개 / B ${dummyData.weeklyPlan.B}개`;
+
+        document.getElementById("utilizationRate").innerText =
+          dummyData.utilizationRate + "%";
+
+        document.getElementById("deadlineRemain").innerText =
+          dummyData.deadlineRemain + "일";
+
+        document.getElementById("delayCount").innerText =
+          dummyData.delayCount + "건";
+
+        // 색상 조건 처리
+        if (dummyData.deadlineRemain <= 3) {
+          document
+            .getElementById("deadlineRemain")
+            .classList.add("text-danger");
+        }
+
+        if (dummyData.utilizationRate < 60) {
+          document
+            .getElementById("utilizationRate")
+            .classList.add("text-danger");
+        }
+
+        // =========================
+        // 차트 생성
+        // =========================
+        const options = {
+          series: [
+            { name: "계획", type: "column", data: dummyData.weeklyChart.plan },
+            { name: "실적", type: "line", data: dummyData.weeklyChart.actual },
+          ],
+          chart: {
+            height: 350,
+            type: "line",
+            toolbar: { show: false },
+          },
+          stroke: {
+            width: [0, 3],
+            curve: "smooth",
+          },
+          labels: dummyData.weeklyChart.categories,
+          markers: {
+            size: 4,
+          },
+        };
+
+        const chart = new ApexCharts(
+          document.querySelector("#productionChart"),
+          options,
+        );
+
+        chart.render();
+      });
+    </script>
+  </body>
+</html>

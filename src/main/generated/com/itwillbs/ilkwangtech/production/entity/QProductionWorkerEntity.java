@@ -22,15 +22,25 @@ public class QProductionWorkerEntity extends EntityPathBase<ProductionWorkerEnti
 
     public static final QProductionWorkerEntity productionWorkerEntity = new QProductionWorkerEntity("productionWorkerEntity");
 
+    public final NumberPath<Long> additionQty = createNumber("additionQty", Long.class);
+
+    public final TimePath<java.time.LocalTime> endTime = createTime("endTime", java.time.LocalTime.class);
+
     public final QProductionInstructEntity header;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    public final com.itwillbs.ilkwangtech.standard.entity.QItemEntity item;
 
     public final StringPath lot = createString("lot");
 
     public final com.itwillbs.ilkwangtech.member.entity.QMember member;
 
     public final com.itwillbs.ilkwangtech.standard.entity.QProcessEntity process;
+
+    public final NumberPath<Long> productionQty = createNumber("productionQty", Long.class);
+
+    public final TimePath<java.time.LocalTime> startTime = createTime("startTime", java.time.LocalTime.class);
 
     public final StringPath status = createString("status");
 
@@ -53,6 +63,7 @@ public class QProductionWorkerEntity extends EntityPathBase<ProductionWorkerEnti
     public QProductionWorkerEntity(Class<? extends ProductionWorkerEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.header = inits.isInitialized("header") ? new QProductionInstructEntity(forProperty("header"), inits.get("header")) : null;
+        this.item = inits.isInitialized("item") ? new com.itwillbs.ilkwangtech.standard.entity.QItemEntity(forProperty("item")) : null;
         this.member = inits.isInitialized("member") ? new com.itwillbs.ilkwangtech.member.entity.QMember(forProperty("member")) : null;
         this.process = inits.isInitialized("process") ? new com.itwillbs.ilkwangtech.standard.entity.QProcessEntity(forProperty("process"), inits.get("process")) : null;
     }

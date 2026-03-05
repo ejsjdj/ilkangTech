@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return res.json();
       })
       .then((data) => {
+        console.log(data);
         tbody.innerHTML = "";
 
         data.forEach((process) => {
@@ -54,12 +55,22 @@ document.addEventListener("DOMContentLoaded", function () {
           const tr = document.createElement("tr");
 
           tr.innerHTML = `
-            <td>${process.sequence}</td>
-            <td>${process.processCode}</td>
-            <td>${process.processName}</td>
-            <td>
+              <td>${process.sequence}</td>
+              <td>${process.outPutItemId}</td>
+              <td>${process.processCode}</td>
+              <td>${process.processName}</td>
+              <td>${process.productionQty}</td>
+              <td>
+                <input type="number"
+                class="additionQty"
+                value="0"
+                min="0" />
+                </td>
+              <td>
               <select class="memberSelect"
-                      data-process-id="${process.processId}">
+                data-process-id="${process.processId}"
+                data-production-qty="${process.productionQty}"
+                data-output-item-id="${process.outPutItemId}">
                 ${memberOptions}
               </select>
             </td>
@@ -77,48 +88,52 @@ document.addEventListener("DOMContentLoaded", function () {
     const instructCode = instructCodeInput.value;
     const instructQty = document.getElementById("instructQty").value;
 
-    if (!planeId) {
-      alert("생산계획을 선택하세요.");
-      return;
-    }
-
-    if (!instructQty || instructQty <= 0) {
-      alert("지시 수량을 입력하세요.");
-      return;
-    }
+    const startTime = document.getElementById("startTime")?.value || null;
+    const endTime = document.getElementById("endTime")?.value || null;
 
     const workerData = [];
 
-    document.querySelectorAll(".memberSelect").forEach((select) => {
-      const processId = select.dataset.processId;
-      const memberId = select.value;
+    const rows = document.querySelectorAll("#processTableBody tr");
+
+    rows.forEach((row) => {
+      const select = row.querySelector(".memberSelect");
+      const additionInput = row.querySelector(".additionQty");
+      const outPutItemId = Number(select.dataset.outputItemId);
+
+      const processId = Number(select.dataset.processId);
+      const productionQty = Number(select.dataset.productionQty);
+
+      const memberId = 1;
+      const additionQty = Number(additionInput.value || 0);
 
       workerData.push({
-        processId: Number(processId),
-        memberId: 1, // 🔥 무조건 1
+        processId: processId,
+        memberId: memberId,
+        productionQty: productionQty,
+        additionQty: additionQty,
+        startTime: startTime,
+        endTime: endTime,
+        outputItemId: outPutItemId,
       });
     });
 
-    // if (workerData.length === 0) {
-    //   alert("담당자를 선택하세요.");
-    //   return;
-    // }
-
-    // 🔥 DTO 구조에 맞게 생성
     const requestData = {
       instructCode: instructCode,
       productionId: Number(planeId),
       item: 1,
       instructQty: Number(instructQty),
+      defective: 0,
       status: "READY",
       workers: workerData,
     };
 
-    console.log("전송 데이터:", requestData);
+    console.log("전송 데이터", requestData);
 
     fetch("/api/production_instruct/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(requestData),
     })
       .then((res) => {
@@ -126,12 +141,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return res.json();
       })
       .then(() => {
-        alert("작업지시가 등록되었습니다.");
+        alert("작업지시 등록 완료");
         location.reload();
       })
-      .catch((error) => {
-        console.error(error);
-        alert("등록 중 오류 발생");
+      .catch((err) => {
+        console.error(err);
+        alert("등록 오류");
       });
   });
 });

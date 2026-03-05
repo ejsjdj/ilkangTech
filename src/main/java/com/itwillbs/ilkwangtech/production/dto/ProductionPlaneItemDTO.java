@@ -10,8 +10,8 @@ import lombok.Getter;
 public class ProductionPlaneItemDTO {
 
     private Long id;
-    private String itemName;
-    private Long orderId;
+    private Long itemId;
+    private Long orderId; // 수주 ID
     private Long productQty;
     private String memo;
     private String productionDetailDate;
@@ -19,7 +19,7 @@ public class ProductionPlaneItemDTO {
     public static ProductionPlaneItemDTO from(ProductionPlaneDetailEntity entity) {
         return ProductionPlaneItemDTO.builder()
                 .id(entity.getId())
-                .itemName(entity.getItem().getItemName())
+                .itemId(entity.getItem().getItemId())
                 .orderId(entity.getOrderId())
                 .productQty(entity.getProductQty())
                 .memo(entity.getMemo())

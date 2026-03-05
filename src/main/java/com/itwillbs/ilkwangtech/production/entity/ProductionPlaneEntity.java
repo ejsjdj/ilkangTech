@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.One;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 // 생산 계획 엔티티
@@ -25,7 +26,7 @@ public class ProductionPlaneEntity {
 
     // 헤더 -> 상세 조회 전용 필드
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductionPlaneDetailEntity> details;
+    private List<ProductionPlaneDetailEntity> details = new ArrayList<>();
 
     // 계획 코드
     @Column(name = "plane_code")

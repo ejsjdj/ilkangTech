@@ -59,10 +59,6 @@ public class ProcessApiController {
 
     }
 
-    // 4. 공정코드 상세 조회
-
-    // 5. 공정코드 업데이트
-
     // 6. 공정코드 활성/비활성화
     @PostMapping("/update_process_code/status")
     public ResponseEntity<?> updateProcessStatus(@RequestBody List<ProcessStatusUpdateDTO> requestList){

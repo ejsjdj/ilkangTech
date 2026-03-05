@@ -11,6 +11,7 @@ public class ProductionPlaneItemDTO {
 
     private Long id;
     private Long itemId;
+    private String itemName;
     private Long orderId; // 수주 ID
     private Long productQty;
     private String memo;
@@ -20,6 +21,7 @@ public class ProductionPlaneItemDTO {
         return ProductionPlaneItemDTO.builder()
                 .id(entity.getId())
                 .itemId(entity.getItem().getItemId())
+                .itemName(entity.getItem().getItemName())
                 .orderId(entity.getOrderId())
                 .productQty(entity.getProductQty())
                 .memo(entity.getMemo())

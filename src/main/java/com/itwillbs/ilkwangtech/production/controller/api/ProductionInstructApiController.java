@@ -27,7 +27,7 @@ public class ProductionInstructApiController {
 
     @GetMapping("/list")
     public Page<ProductionInstructDTO> getProductionInstructList(Pageable pageable,
-                                                                 @RequestParam("keyword") String keyword){
+                                                                 @RequestParam(value = "keyword") String keyword){
 
         Page<ProductionInstructDTO> list = productionInstructService.getProductionInstructList(pageable, keyword);
 
@@ -36,7 +36,7 @@ public class ProductionInstructApiController {
 
     // 2. 작업지시 상세
     @GetMapping("/detail")
-    public Optional<ProductionInstructDetailDTO> getProductionInstructDetail(@RequestParam("instructId") Long instructId){
+    public Optional<ProductionInstructDetailDTO> getProductionInstructDetail(@RequestParam(value = "instructId") Long instructId){
 
         Optional<ProductionInstructDetailDTO> detail = productionInstructService.getProductionInstructDetail(instructId);
 
@@ -47,7 +47,7 @@ public class ProductionInstructApiController {
     // 3. 작업지시 등록
     @PostMapping("/register")
     public  ResponseEntity<?> insertProductionInstruct(@RequestBody ProductionInstructInsertDTO productionInstructInsertDTO,
-                                         @AuthenticationPrincipal AccountLogin accountLogin){
+                                                        @AuthenticationPrincipal AccountLogin accountLogin){
         System.out.println("작업지시 등록 컨트롤러 실행됨!!!!!!");
 
         Long userId = accountLogin.getId();

@@ -182,6 +182,7 @@ function closeModal() {
 // 상세 상단 폼 세팅 및 상태 배지 업데이트
 // ===========================
 function setDetailForm(data) {
+  console.log("상세보기 데이터 : ", data);
   document.getElementById("d_planeCode").value = data?.planeCode || "";
   document.getElementById("d_planeDate").value = data?.planeDate || "";
   document.getElementById("d_memberName").value = data?.memberName || "";

@@ -32,10 +32,10 @@ public class ProductionInstructDetailDTO {
                 planeCode(entity.getProductionId().getPlaneCode()).
                 itemName(entity.getItem().getItemName()).
                 startDate(String.valueOf(entity.getStartDate())).
-                instructQty(entity.getInstructQty())
-                .worker(entity.getWorkers().stream()
-                .map(ProductionWorkerDTO::fromList)
-                .toList()).
+                instructQty(entity.getInstructQty()).
+                worker(entity.getWorkers().stream()
+                        .map(ProductionWorkerDTO::fromList)
+                        .toList()).
                 build();
     }
 }

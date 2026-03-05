@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -83,6 +84,16 @@ public class ProductionPlaneApiController {
     @PostMapping("/plane_cancel")
     public void cancelProductionPlane(@RequestParam("planeId") Long planeId){
         productionPlaneService.cancelProductionPlane(planeId);
+    }
+
+
+    // 6. 재고 검증
+    @GetMapping("/check")
+    public void checkProcurement(
+            Long itemId,
+            Long productionQty){
+
+        productionPlaneService.checkStock(itemId, productionQty);
     }
 
 }

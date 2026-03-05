@@ -69,10 +69,10 @@ public class ProductionInstructApiController {
     }
 
     // 5. 작업 완료
-    public void updateProductionInstruct(@RequestParam("instructCode") String instructCode,
-                                         @RequestParam("processId") Long processId){
-
-        productionInstructService.updateInstruct(instructCode, processId);
-
-    }
+//    public void updateProductionInstruct(@RequestParam("instructCode") String instructCode,
+//                                         @RequestParam("processId") Long processId){
+//
+//        productionInstructService.updateInstruct(instructCode, processId);
+//
+//    }
 }

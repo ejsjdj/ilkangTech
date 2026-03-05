@@ -28,5 +28,5 @@ public interface ProductionPlaneService {
     List<ProductionPlaneAllDTO> getProductionPlaneAll();
 
     // 7. 재고 검증
-    void checkStock(Long itemId, Long productionQty);
+    List<StockRequirementDTO> checkStock(Long itemId, Long productionQty);
 }

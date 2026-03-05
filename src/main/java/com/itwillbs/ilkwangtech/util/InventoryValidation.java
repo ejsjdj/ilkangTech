@@ -1,6 +1,6 @@
 package com.itwillbs.ilkwangtech.util;
 
-import com.itwillbs.ilkwangtech.production.dto.NetRequirementDTO;
+import com.itwillbs.ilkwangtech.production.dto.StockRequirementDTO;
 import com.itwillbs.ilkwangtech.production.dto.ProductRequirementDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -45,7 +45,7 @@ public class InventoryValidation {
     }
 
     // 2. 원자재 재고 확인
-    public List<NetRequirementDTO> calculateAvailableMaterial() {
+    public List<StockRequirementDTO> calculateAvailableMaterial() {
 
         /* *
          *

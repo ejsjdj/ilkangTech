@@ -216,9 +216,9 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
                 result.merge(material.getItemId(), requiredQty, Long::sum);
 
             }
-            // 반자재 / 재공품 / 완제품 → 재귀
-            else if (material.getItemType() == ItemType.SEMI
-                    || material.getItemType() == ItemType.WIP
+            // 반자재(아직 타입 없음!) / 재공품 / 완제품 → 재귀
+            // material.getItemType() == ItemType.SEMI
+            else if ( material.getItemType() == ItemType.WIP
                     || material.getItemType() == ItemType.FG) {
 
                 //System.out.println("재귀 BOM 전개 → ID: " + material.getItemId());

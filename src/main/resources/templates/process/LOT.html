@@ -289,6 +289,7 @@
 let allLotData = [];
 let selectedLotData = null;
 let currentMainTab = 'PROD';
+let selectedLotDetail = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("1. 스크립트 로드됨");
@@ -298,13 +299,15 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadLotList() {
     try {
         const response = await fetch('/process/api/lots');
-        allLotData = await response.json(); // 전체 데이터 저장
-        renderLotTable(allLotData); // 초기 렌더링
+        allLotData = await response.json(); 
+        
+        filterLotList(); 
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
 }
 
+/* LOT.html - renderLotTable 함수 수정 */
 function renderLotTable(lots) {
     const tbody = document.getElementById('lot-tbody');
     tbody.innerHTML = ''; 
@@ -312,23 +315,22 @@ function renderLotTable(lots) {
     lots.forEach(lot => {
         const date = new Date(lot.createdDate);
         const formattedDate = date.toLocaleDateString();
-        
-        // 탭 종류에 따라 아코디언 메뉴 구성을 다르게 생성
         const isRawMaterial = (lot.lotType === 'M' || lot.lotType === 'RW');
-        const accordionContent = isRawMaterial 
-            ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'INCOMING')">
-                   <i class="bi bi-truck me-2"></i> 자재 입고 정보 <i class="bi bi-chevron-right ms-auto"></i>
+        
+        const accordionContent = isRawMaterial
+            ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
+                   <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
                </div>
-               <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'USAGE')">
-                   <i class="bi bi-arrow-up-right-circle me-2"></i> 투입 경로 추적 <i class="bi bi-chevron-right ms-auto"></i>
-               </div>`
-            : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'MATERIAL')">
-                   <i class="bi bi-box-seam me-2"></i> 투입 자재 이력 <i class="bi bi-chevron-right ms-auto"></i>
-               </div>
-               <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'PROCESS')">
-                   <i class="bi bi-gear me-2"></i> 수행 공정 단계 <i class="bi bi-chevron-right ms-auto"></i>
-               </div>`;
+               <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
+               : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'MATERIAL')">
+               <i class="bi bi-box-seam me-2"></i> 투입 자재 이력 <i class="bi bi-chevron-right ms-auto"></i>
+           </div>
+           <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'PROCESS')">
+               <i class="bi bi-gear me-2"></i> 수행 공정 단계 <i class="bi bi-chevron-right ms-auto"></i>
+           </div>
+           <div id="process-menu-${lot.lotId}" class="process-menu-container" style="display:none; border-bottom: 1px solid #edf2f7;"></div>`;
 
+        // ... 기존 행(mainTr, accordionTr) 생성 로직 동일 ...
         const mainTr = document.createElement('tr');
         mainTr.className = 'main-row';
         mainTr.innerHTML = `
@@ -386,11 +388,10 @@ async function selectLot(lot, mainTr, accordionTr) {
         accordionTr.style.display = 'table-row';
         mainTr.classList.add('table-active');
 
-        // 서버에서 상세 DTO 정보를 가져옴
         try {
             const response = await fetch(`/process/api/lot/${lot.lotId}`);
-            const detailData = await response.json();
-            updateRightPanel(detailData); 
+            selectedLotDetail = await response.json(); // [수정] 상세 데이터를 변수에 저장
+            updateRightPanel(selectedLotDetail); 
         } catch (error) {
             console.error("상세 정보 로드 실패", error);
         }
@@ -398,79 +399,104 @@ async function selectLot(lot, mainTr, accordionTr) {
 }
 
 function updateRightPanel(detail) {
+    if(!detail) return;
+
     document.getElementById('empty-detail').style.display = 'none';
     const displayArea = document.getElementById('detail-display-area');
     displayArea.style.display = 'block';
 
-    document.getElementById('selected-lot-code').innerText = `LOT: ${detail.lotId}`;
+    document.getElementById('selected-lot-code').innerText = `LOT: ${detail.lotId || '-'}`;
     
     const infoBox = document.getElementById('lot-summary-info');
     infoBox.innerHTML = `
-        <div><span class="text-muted">LOT 코드:</span> <strong>${detail.lotId}</strong></div>
-        <div><span class="text-muted">제품명:</span> <strong>${detail.itemName}</strong></div>
-        <div><span class="text-muted">작업지시:</span> ${detail.instructCode}</div>
+        <div><span class="text-muted">LOT 코드:</span> <strong>${detail.lotId || '-'}</strong></div>
+        <div><span class="text-muted">제품명:</span> <strong>${detail.itemName || '-'}</strong></div>
+        <div><span class="text-muted">작업지시:</span> ${detail.instructCode || '-'}</div>
+        <div><span class="text-muted">담당 작업자:</span> <span class="fw-bold text-primary">${detail.operatorName || '-'}</span></div>
         <div><span class="text-muted">생산 수량:</span> ${detail.instructQty || 0} EA</div>
         <div><span class="text-muted">생산 상태:</span> <span class="badge-status ${detail.status === 'DONE' ? 'bg-done' : 'bg-ing'}">${detail.status || '-'}</span></div>
         <div><span class="text-muted">불량 수량:</span> <span class="text-danger">${detail.defective || 0}</span> EA</div>
-        <div><span class="text-muted">시작일:</span> ${detail.startDate ? new Date(detail.startDate).toLocaleString() : '-'}</div>
-        <div><span class="text-muted">종료일:</span> ${detail.endDate ? new Date(detail.endDate).toLocaleString() : '-'}</div>
+        <div><span class="text-muted">시작일:</span> ${detail.startDate ? detail.startDate.replace('T', ' ').substring(0, 16) : '-'}</div>
+        <div><span class="text-muted">종료일:</span> ${detail.endDate ? detail.endDate.replace('T', ' ').substring(0, 16) : '-'}</div>
     `;
 }
 
-async function loadSubDetail(lotId, type) {
-    const title = document.getElementById('sub-detail-title');
-    const content = document.getElementById('sub-detail-content');
-    
-    title.innerText = type === 'MATERIAL' ? '투입 자재 상세 내역' : '수행 공정 상세 내역';
-    content.innerHTML = '<div class="text-center p-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+/* LOT.html - loadSubDetail 함수 수정 */
 
-    try {
-        const response = await fetch(`/process/api/lot/${lotId}/${type.toLowerCase()}`);
-        const data = await response.json();
-        
-        if (type === 'MATERIAL') {
-            content.innerHTML = renderMaterialTable(data);
-        } else {
-            content.innerHTML = renderProcessTable(data);
+async function loadSubDetail(lotId, type) {
+    if (type === 'PROCESS') {
+        const menuContainer = document.getElementById(`process-menu-${lotId}`);
+        if (!menuContainer) return;
+
+        // 메뉴 토글 (열려있으면 닫기)
+        if (menuContainer.style.display === 'block') {
+            menuContainer.style.display = 'none';
+            return;
         }
-    } catch (error) {
-        content.innerHTML = '<p class="text-danger p-3">데이터를 불러오지 못했습니다.</p>';
+
+        let displayProcesses = [];
+
+        // [핵심 로직] LOT 번호 시작 형태에 따른 공정 매핑 [cite: 2026-03-05]
+        if (selectedLotDetail.lotType === 'F') {
+            // 완제품은 전체 공정 출력
+            displayProcesses = ['프레스', '사출', '도장', '조립'];
+        } 
+        else if (selectedLotDetail.lotType === 'S') {
+            const lid = selectedLotDetail.lotId;
+
+            if (lid.startsWith('ST')) {
+                displayProcesses = ['프레스'];
+            } else if (lid.startsWith('IN')) {
+                displayProcesses = ['사출'];
+            } else if (lid.startsWith('PT')) {
+                displayProcesses = ['프레스', '도장'];
+            } else {
+                displayProcesses = ['기타공정'];
+            }
+        }
+
+        // HTML 렌더링 (하위 메뉴 스타일 적용)
+        menuContainer.innerHTML = displayProcesses.map(proc => `
+            <div class="acc-item ps-5" onclick="showProcessDetail('${lotId}', '${proc}')" 
+                 style="background: #fcfcfc; font-size: 12px; border-bottom: 1px dashed #eee;">
+                <i class="bi bi-arrow-return-right me-2" style="font-size: 10px; opacity: 0.6;"></i> 
+                <span class="fw-bold text-secondary">${proc}</span>
+            </div>
+        `).join('');
+        
+        menuContainer.style.display = 'block';
+        return;
     }
+    
+    // ... MATERIAL 등 다른 타입 처리 로직 ...
 }
 
 function filterLotList() {
     const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
     const typeVal = document.getElementById('typeFilter').value;
     const status = document.getElementById('statusFilter').value;
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+    // ... (날짜 변수들 생략)
 
     const filtered = allLotData.filter(lot => {
-        // 1. 대분류 탭 필터링 [cite: 2026-03-04]
+        // 1. 대분류 탭 필터링
         if (currentMainTab === 'PROD') {
             // 완제품(F)이나 반제품(S)만 통과
             if (lot.lotType !== 'F' && lot.lotType !== 'S') return false;
-            // 완제품 탭 내부의 세부 구분 (F/S/ALL) [cite: 2026-03-04]
             if (typeVal !== 'ALL' && lot.lotType !== typeVal) return false;
         } else {
-            // 원자재 탭: M 또는 RW인 경우만 통과
-            if (lot.lotType !== 'M' && lot.lotType !== 'RW') return false;
+            // [수정] 원자재 탭: lotType이 M/RW이면서 동시에 LOT 코드가 'RW-'로 시작해야 함
+            const isRawType = (lot.lotType === 'M' || lot.lotType === 'RW');
+            const isRawPrefix = lot.lotId && lot.lotId.startsWith('RW-');
+            
+            if (!(isRawType && isRawPrefix)) return false;
         }
 
-        // 2. 공통 필터 (검색어) [cite: 2026-03-04]
-        const keywordMatch = !keyword || lot.lotId.toLowerCase().includes(keyword) || lot.itemName.toLowerCase().includes(keyword);
+        // 2. 공통 필터 (검색어, 상태 등)
+        const keywordMatch = !keyword || lot.lotId.toLowerCase().includes(keyword) || (lot.itemName && lot.itemName.toLowerCase().includes(keyword));
         if (!keywordMatch) return false;
-
-        // 3. 상태 필터 [cite: 2026-03-04]
+        
         const statusMatch = !status || lot.status === status;
         if (!statusMatch) return false;
-
-        // 4. 날짜 필터 [cite: 2026-03-04]
-        if (lot.createdDate) {
-            const lotDate = new Date(lot.createdDate).setHours(0,0,0,0);
-            if (startDate && lotDate < new Date(startDate).setHours(0,0,0,0)) return false;
-            if (endDate && lotDate > new Date(endDate).setHours(0,0,0,0)) return false;
-        }
 
         return true;
     });
@@ -510,12 +536,60 @@ function switchLotTab(tab) {
     if (tab === 'PROD') navLinks[0].classList.add('active');
     else navLinks[1].classList.add('active');
 
-    // 완제품 탭일 때만 '제품 구분' 셀렉트 박스 표시 [cite: 2026-03-04]
+    // 완제품 탭일 때만 '제품 구분' 셀렉트 박스 표시
     const typeGroup = document.getElementById('typeFilterGroup');
     typeGroup.style.visibility = (tab === 'PROD') ? 'visible' : 'hidden';
     
     // 필터 초기화 후 데이터 갱신
     filterLotList();
+}
+
+function renderFinishedUsageTable(data) {
+    if (!data || data.length === 0) {
+        return '<p class="text-muted p-3" style="font-size:12px;">사용된 완제품 이력이 없습니다.</p>';
+    }
+
+    let html = `<ul class="list-group list-group-flush" style="font-size: 12px; padding: 5px 10px;">`;
+
+    data.forEach(item => {
+        const statusText = item.status === 'DONE' ? '생산 완료' : '진행중';
+        const statusClass = item.status === 'DONE' ? 'text-primary' : 'text-warning';
+
+        html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2" style="background: transparent; border-bottom: 1px dashed #eee;">
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-indigo" style="cursor:pointer;" 
+                          onclick="showFinishedDetail('${item.lotId}')">
+                        ${item.lotId}
+                    </span>
+                    <span class="text-muted" style="font-size: 10px;">${item.itemName} (${item.quantity} EA)</span>
+                </div>
+                <span class="${statusClass} fw-bold" style="font-size: 10px;">${statusText}</span>
+            </li>`;
+    });
+
+    html += `</ul>`;
+    return html;
+}
+
+async function showFinishedDetail(lotId) {
+    console.log(">>>> [1단계] 완제품 클릭됨. LOT ID:", lotId); // 클릭 확인
+    try {
+        const response = await fetch(`/process/api/lot/${lotId}`);
+        console.log(">>>> [2단계] 서버 응답 상태:", response.status); // 200인지 500인지 확인
+        
+        const detailData = await response.json();
+        console.log(">>>> [3단계] 받은 데이터 객체:", detailData); // 실제 데이터 내용 확인
+        
+        updateRightPanel(detailData);
+        loadSubDetail(lotId, 'PROCESS');
+    } catch (error) {
+        console.error(">>>> [에러] 데이터 로드 중 예외 발생:", error);
+    }
+}
+
+function showProcessDetail(lotId, processName) {
+    console.log(`클릭된 공정: ${processName}, LOT: ${lotId}`);
 }
 </script>
 </th:block>

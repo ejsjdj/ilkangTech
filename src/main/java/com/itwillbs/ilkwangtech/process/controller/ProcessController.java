@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.process.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +58,7 @@ public class ProcessController {
     // LOT 상세 데이터 반환
 	@GetMapping("/api/lot/{lotId}")
 	@ResponseBody
-	public LotDetailResponseDTO getLotDetail(@PathVariable String lotId) {
+	public LotDetailResponseDTO getLotDetail(@PathVariable("lotId") String lotId) {
 	    return lotTraceService.getLotDetail(lotId);
 	}
 	
@@ -67,5 +68,25 @@ public class ProcessController {
 	public ProcessDetailResponseDTO getProcessDetail(@PathVariable("instructCode") String instructCode) {
 	    log.info(">>>>>>>>>>>> 상세 정보 호출: " + instructCode);
 	    return lotTraceService.getProcessDetailData(instructCode);
+	}
+	
+	@GetMapping("/api/lot/{lotId}/{type}")
+	@ResponseBody
+	public List<?> getLotSubDetail(
+		    @PathVariable("lotId") String lotId,
+		    @PathVariable("type") String type  
+		) {
+	    log.info(">>>>>>>>>>>> LOT 서브 상세 호출: " + lotId + ", 타입: " + type);
+	    
+	    if ("finished_usage".equals(type)) {
+	        return lotTraceService.getFinishedUsageList(lotId);
+	    }
+	    return null;
+	}
+	
+	@GetMapping("/api/lot/{lotId}/finished_usage") // JS에서 호출하는 경로와 일치해야 함
+	@ResponseBody
+	public List<Map<String, Object>> getFinishedUsage(@PathVariable("lotId") String lotId) {
+	    return lotTraceService.getFinishedUsageList(lotId);
 	}
 }

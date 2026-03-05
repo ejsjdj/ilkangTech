@@ -32,7 +32,7 @@ public class ProductionPlaneApiController {
      */
     @GetMapping("/plane")
     public Page<ProductionPlaneDTO> getProductionPlane(Pageable pageable,
-                                                       @RequestParam(required = false) String keyword){
+                                                       @RequestParam(value = "keyword", required = false) String keyword){
 
         Page<ProductionPlaneDTO> list = productionPlaneService.getProductionPlaneList(pageable, keyword);
 
@@ -66,7 +66,7 @@ public class ProductionPlaneApiController {
 
     // 3. 작업지시 등록용 생산계획 목록 조회
     @GetMapping("/{planeId}/processes")
-    public List<ProcessRegisterDTO> getProcessInstructList(@PathVariable Long planeId){
+    public List<ProcessRegisterDTO> getProcessInstructList(@PathVariable(value = "planeId") Long planeId){
         System.out.println("작업지시 등록용 : " + planeId);
         System.out.println("작업지시 등록용 생산계획 목록 조회 실행됨!!!!");
         return productionPlaneService.getProcessInstructList(planeId);

@@ -33,5 +33,9 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
 	// 특정 프리픽스(품목코드-날짜)로 시작하는 LOT 번호 개수 조회 (순번 생성용)
     @Query("SELECT COUNT(i) FROM InventoryEntity i WHERE i.lotNumber LIKE :prefix%")
     long countByLotNumberStartingWith(@Param("prefix") String prefix);
+
+    // 재고들의 현재 수량
+    @Query("SELECT COALESCE(SUM(i.currentQuantity), 0) FROM InventoryEntity i WHERE i.item.itemCode = :itemCode")
+    Long sumQuantityByItemCode(@Param("itemCode") String itemCode);
      
 }

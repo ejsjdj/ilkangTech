@@ -23,6 +23,8 @@ import com.itwillbs.ilkwangtech.sales.repository.PurchaseRequestRepository;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.repository.BomRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
+
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 import org.jspecify.annotations.Nullable;
@@ -48,6 +50,7 @@ public class DashboardService {
     private final ProductionInsturctRepository productionInstructRepository;
     private final BomRepository bomRepository;
     private final MemberRepository memberRepository;
+    private final EntityManager entityManager;
 
     // 창고 상태 확인 로직
     public Map<String, String> getWarehouseStatus() {
@@ -449,21 +452,73 @@ public class DashboardService {
         return dto;
     }
     
-    // 금일 출고 대기 리스트 조회
+    // 최근 출고 내역 통합 조회 (생산팀 + 영업팀)
     public List<OutboundItemDTO> getOutboundScheduledList() {
         List<OutboundItemDTO> list = new ArrayList<>();
         
-        // 자재 출고 (작업지시 기반)
+        // 1. 자재 출고 실적 (생산팀 - PROGRESS, COM 상태인 것들)
         List<Object[]> materials = productionInstructRepository.findMaterialOutboundList();
+        
         for (Object[] obj : materials) {
+            String instructCode = (String) obj[0]; 
+            String itemCode = (String) obj[1];     
+            String itemName = (String) obj[2];     
+            Long requiredQty = ((Number) obj[3]).longValue(); 
+            
+            Long currentStock = inventoryRepository.sumQuantityByItemCode(itemCode);
+            currentStock = (currentStock == null) ? 0L : currentStock;
+
             list.add(OutboundItemDTO.builder()
-                    .type("자재출고")
-                    .refCode((String) obj[0])
-                    .itemCode((String) obj[1])
-                    .itemName((String) obj[2])
-                    .requiredQty(((Number) obj[3]).longValue())
+                    .type("생산 투입") // 출고 사유 명확화
+                    .refCode(instructCode)
+                    .itemCode(itemCode)
+                    .itemName(itemName)
+                    .requiredQty(requiredQty)
+                    .currentStock(currentStock)
+                    .requestDept("생산팀")
+                    .dueDate(LocalDate.now().toString()) 
+                    .status("출고 완료") // 💡 무조건 출고 완료로 고정!
                     .build());
         }
+        
+        // 2. 완제품 출하 실적 (영업팀)
+        String sql = "SELECT " +
+                     "  'SO-' || so.sales_order_id, " +  
+                     "  i.item_code, " +                 
+                     "  i.item_name, " +                 
+                     "  oi.quantity, " +                 
+                     "  so.expected_delivery_date " +    
+                     "FROM sales_order so " +
+                     "JOIN order_item oi USING (sales_order_id) " +
+                     "JOIN Item i USING (item_id) ";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> salesList = entityManager.createNativeQuery(sql).getResultList();
+
+        for (Object[] obj : salesList) {
+            String orderCode = (String) obj[0];
+            String itemCode = (String) obj[1];
+            String itemName = (String) obj[2];
+            Long requiredQty = ((Number) obj[3]).longValue();
+            
+            String dueDate = (obj[4] != null) ? obj[4].toString().substring(0, 10) : "";
+
+            Long currentStock = inventoryRepository.sumQuantityByItemCode(itemCode);
+            currentStock = (currentStock == null) ? 0L : currentStock;
+
+            list.add(OutboundItemDTO.builder()
+                    .type("영업 출하") // 출고 사유 명확화
+                    .refCode(orderCode)
+                    .itemCode(itemCode)
+                    .itemName(itemName)
+                    .requiredQty(requiredQty)
+                    .currentStock(currentStock)
+                    .requestDept("영업팀")
+                    .dueDate(dueDate)
+                    .status("출고 완료")
+                    .build());
+        }
+
         return list;
     }
 

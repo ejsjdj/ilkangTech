@@ -20,6 +20,10 @@ public class ProductionWorkerDTO {
     private String name;
     private String status;
     private String lot;
+    private String startTime;
+    private String endTime;
+    private Long productionQty;
+    private Long additionQty;
 
     public static ProductionWorkerDTO fromList(ProductionWorkerEntity entity){
         return ProductionWorkerDTO.builder().
@@ -27,6 +31,10 @@ public class ProductionWorkerDTO {
                 name(entity.getMember().getName()).
                 status(entity.getStatus()).
                 lot(entity.getLot()).
+                startTime(String.valueOf(entity.getStartTime())).
+                endTime(String.valueOf(entity.getEndTime())).
+                productionQty(entity.getProductionQty()).
+                additionQty(entity.getAdditionQty()).
                 build();
 
     }

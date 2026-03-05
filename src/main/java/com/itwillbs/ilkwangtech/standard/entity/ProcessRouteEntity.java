@@ -29,6 +29,10 @@ public class ProcessRouteEntity {
     @JoinColumn(name = "item_id")
     private ItemEntity item;
 
+    @ManyToOne
+    @JoinColumn(name = "out_item_id")
+    private ItemEntity outItem;
+
     @Column(name = "sequence")
     private Long sequence;
 
@@ -53,6 +57,7 @@ public class ProcessRouteEntity {
                               String routeCode,
                               ProcessEntity operation,
                               ItemEntity item,
+                              ItemEntity outItem,
                               Long sequence,
                               String routeName,
                               String description,
@@ -63,6 +68,7 @@ public class ProcessRouteEntity {
         this.routeCode = routeCode;
         this.operation = operation;
         this.item = item;
+        this.outItem = outItem;
         this.sequence = sequence;
         this.routeName = routeName;
         this.description = description;

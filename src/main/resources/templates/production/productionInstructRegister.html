@@ -38,8 +38,23 @@
       <br />
 
       <div>
-        <label>지시 수량</label>
+        <label>계획수량</label>
         <input type="number" id="instructQty" min="1" />
+      </div>
+
+      <div>
+        <label>지시일자</label>
+        <input type="number" id="instructQty" min="1" />
+      </div>
+
+      <div>
+        <label>시작시간</label>
+        <input type="time" id="startTime" />
+      </div>
+
+      <div>
+        <label>종료시간</label>
+        <input type="time" id="endTime" />
       </div>
 
       <br /><br />
@@ -50,8 +65,11 @@
           <thead>
             <tr>
               <th>순번</th>
+              <th>생산 품목 ID</th>
               <th>공정코드</th>
               <th>공정명</th>
+              <th>최소 생산수량</th>
+              <th>추가 생산수량</th>
               <th>담당자</th>
             </tr>
           </thead>

@@ -109,18 +109,6 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         productionPlaneRepository.updateInstructStatusByPlaneId(planeId);
     }
 
-    // 작업지시 리스트
-    @Override
-    @Transactional
-    public List<ProcessRegisterDTO> getProcessInstructList(Long planeId){
-        ProductionPlaneEntity plane = productionPlaneRepository.findById(planeId)
-                .orElseThrow();
-
-        return processRouteRepository.findProcessRegisterList(
-                plane.getItem().getItemId()
-        );
-    }
-
     // 5. 생산계획 전체 조회
     public List<ProductionPlaneAllDTO> getProductionPlaneAll(){
 
@@ -128,7 +116,41 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
 
     }
 
-    // 6. 재고검증
+    // 6. 작업지시 리스트
+    @Override
+    @Transactional
+    public List<ProcessRegisterDTO> getProcessInstructList(Long planeId){
+        ProductionPlaneEntity plane = productionPlaneRepository.findById(planeId)
+                .orElseThrow();
+
+        Long productItemId = plane.getItem().getItemId();
+        Long planQty = plane.getTotalQty();
+
+        // 1. 공정 ROUTE 조회
+        List<ProcessRegisterDTO> processes =
+                processRouteRepository.findProcessRegisterList(productItemId);
+
+        // 2. BOM 한번 전개
+        Map<Long, Long> bomResult =
+                explodeBomFull(productItemId, planQty);
+
+        // 3. 공정별 생산수량 계산
+        for(ProcessRegisterDTO dto : processes){
+
+
+            Long outputItemId = dto.getOutPutItemId();
+
+            if(outputItemId.equals(productItemId)){
+                dto.setProductionQty(planQty);
+            }else{
+                Long qty = bomResult.getOrDefault(outputItemId, 0L);
+                dto.setProductionQty(qty);
+            }
+        }
+        return processes;
+    }
+
+    // 7. 재고검증
     @Override
     @Transactional
     public List<StockRequirementDTO> checkStock(Long itemId, Long productionQty) {
@@ -139,7 +161,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
 
         // 1. BOM 전개 → 원자재 필요수량 Map
         Map<Long, Long> requiredRawMaterials =
-                explodeBom(itemId, productionQty);
+                explodeBomRaw(itemId, productionQty);
 
         System.out.println("BOM 전개 결과 (원자재 필요수량): " + requiredRawMaterials);
 
@@ -180,9 +202,35 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
 
     }
 
-    private Map<Long, Long> explodeBom(Long itemId, Long qty) {
+    private Map<Long, Long> explodeBomRaw(Long itemId, Long qty){
 
-        //System.out.println("BOM 전개 시작 → childItemId: " + itemId + ", qty: " + qty);
+        Map<Long, Long> result = new HashMap<>();
+
+        List<BomEntity> bomList =
+                bomRepository.findByChildItem_ItemId(itemId);
+
+        for (BomEntity bom : bomList){
+
+            ItemEntity material = bom.getParentItem();
+            Long requiredQty = bom.getRequireQty() * qty;
+
+            if(material.getItemType() == ItemType.RAW){
+
+                result.merge(material.getItemId(), requiredQty, Long::sum);
+
+            }else{
+
+                Map<Long, Long> childMap =
+                        explodeBomRaw(material.getItemId(), requiredQty);
+
+                childMap.forEach((k,v) -> result.merge(k,v,Long::sum));
+            }
+        }
+
+        return result;
+    }
+
+    private Map<Long, Long> explodeBomFull(Long itemId, Long qty) {
 
         Map<Long, Long> result = new HashMap<>();
 
@@ -192,39 +240,22 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         for (BomEntity bom : bomList) {
 
             ItemEntity material = bom.getParentItem();
-
             Long requiredQty = bom.getRequireQty() * qty;
 
-//            System.out.println(
-//                    "BOM 조회 → parent: " + material.getItemId()
-//                            + ", 타입: " + material.getItemType()
-//                            + ", 필요수량: " + bom.getRequireQty()
-//                            + ", 계산수량: " + requiredQty
-//            );
+            ItemType type = material.getItemType();
 
-            // 원자재 → 종료
-            if (material.getItemType() == ItemType.RAW) {
+            // WIP / RAW 기록
+            result.merge(material.getItemId(), requiredQty, Long::sum);
 
-                //System.out.println("RAW 발견 → ID: " + material.getItemId());
-
-                result.merge(material.getItemId(), requiredQty, Long::sum);
-
-            }
-            // 반자재(아직 타입 없음!) / 재공품 / 완제품 → 재귀
-            // material.getItemType() == ItemType.SEMI
-            else if ( material.getItemType() == ItemType.WIP
-                    || material.getItemType() == ItemType.FG) {
-
-                //System.out.println("재귀 BOM 전개 → ID: " + material.getItemId());
+            // WIP 계속 전개
+            if (type == ItemType.WIP) {
 
                 Map<Long, Long> childMap =
-                        explodeBom(material.getItemId(), requiredQty);
+                        explodeBomFull(material.getItemId(), requiredQty);
 
                 childMap.forEach((k, v) -> result.merge(k, v, Long::sum));
             }
         }
-
-        //System.out.println("BOM 전개 결과 → " + result);
 
         return result;
     }

@@ -71,7 +71,7 @@ function openDetailModal(instructId) {
       document.getElementById("detailInfo").innerHTML = `
         <p><b>작업지시코드:</b> ${data.instructCode}</p>
         <p><b>생산계획코드:</b> ${data.planeCode}</p>
-        <p><b>품목:</b> ${data.item}</p>
+        <p><b>품목:</b> ${data.itemName}</p>
         <p><b>지시수량:</b> ${data.instructQty}</p>
       `;
 
@@ -84,6 +84,10 @@ function openDetailModal(instructId) {
           <tr>
             <td>${w.operationName}</td>
             <td>${w.name}</td>
+            <td>${w.startTime}</td>
+            <td>${w.endTime}</td>
+            <td>${w.productionQty}</td>
+            <td>${w.additionQty}</td>
             <td>${w.status}</td>
           </tr>
         `;

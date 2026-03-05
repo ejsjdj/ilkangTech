@@ -8,6 +8,7 @@ import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Getter
@@ -32,13 +33,7 @@ public class ProductionInstructInsertDTO {
     // 상태
     private String status;
 
-    // 지시등록일
-    private LocalDateTime startDate;
-
     //==================================//
-
-    // 생산완료일
-    private LocalDateTime endDate;
 
     // 작업자
     private List<ProductionInstructWorkerInsertDTO> workers;

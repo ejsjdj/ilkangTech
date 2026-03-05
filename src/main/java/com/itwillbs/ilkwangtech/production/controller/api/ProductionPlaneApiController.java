@@ -90,8 +90,8 @@ public class ProductionPlaneApiController {
     // 6. 재고 검증
     @GetMapping("/check")
     public void checkProcurement(
-            Long itemId,
-            Long productionQty){
+    		@RequestParam("itemId") Long itemId,
+    		@RequestParam("productionQty") Long productionQty){
 
         productionPlaneService.checkStock(itemId, productionQty);
     }

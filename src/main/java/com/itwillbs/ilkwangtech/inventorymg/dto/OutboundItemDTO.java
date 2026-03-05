@@ -10,7 +10,7 @@ import lombok.Setter;
 public class OutboundItemDTO {
     private String type;          // 구분 ("자재출고" or "제품출고") -> (출고 사유)
     private String refCode;       // 관련 문서번호 (작업지시번호 등)
-    private String itemCode;      // 품목코드
+    private Long itemCode;      // 품목코드
     private String itemName;      // 품목명    
     private String requestDept;   // 요청팀 (생산팀/영업팀 등)
     private String dueDate;       // 출고일

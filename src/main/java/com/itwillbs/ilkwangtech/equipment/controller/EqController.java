@@ -73,4 +73,10 @@ public class EqController {
     	log.info(">>>>>>>>>>>>>>>>> failure 리스트 controller 접속");
         return eqService.getAllFailures();
     }
+    
+// 설비 현황(대시보드) 페이지 접속    
+    @GetMapping("/equipmentDashboard")
+    public String equipmentDashboardPage() {
+        return "equipment/equipmentDashboard"; 
+    }
 }

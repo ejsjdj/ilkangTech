@@ -39,8 +39,8 @@ public class EqService {
         String equipCode = "EQ-" + String.format("%03d", id);
         equipment.setEquipCode(equipCode);
 
-        if (equipment.getUseYn() == null || equipment.getUseYn().isBlank()) {
-            equipment.setUseYn("Y"); 
+        if (equipment.getStatus() == null || equipment.getStatus().isBlank()) {
+            equipment.setStatus("WAITING"); 
         }
 
         log.info(">>>>>>>>>>>>>>>>>>>>>> equipment-service : " + equipment);

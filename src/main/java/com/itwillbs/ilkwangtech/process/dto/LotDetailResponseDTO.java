@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter @Setter
 public class LotDetailResponseDTO {
     private String lotId;           // LOT 코드
+    private String itemCode;
     private String itemName;        // 제품명
     private String instructCode;    // 작업지시번호
     private Integer instructQty;    // 생산 수량

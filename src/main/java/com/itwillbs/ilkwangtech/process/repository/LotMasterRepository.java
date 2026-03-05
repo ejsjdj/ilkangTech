@@ -26,34 +26,39 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
 	 String getLotType();
 	 java.time.LocalDateTime getCreatedDate();
 	}
-	
-	@Query(value = "SELECT * FROM ( " +
-	            "    SELECT lm.lot_id AS lotId, i.item_name AS itemName, lm.lot_type AS lotType, " +
-	            "           pi.instruct_code AS instructCode, pi.instruct_qty AS instructQty, " +
-	            "           lm.status AS status, lm.created_date AS startDate, pi.end_date AS endDate, " +
-	            "           pi.defective AS defective, m.name AS operatorName " +
-	            "    FROM lot_master lm " +
-	            "    JOIN item i ON lm.product_id = i.item_id " +
-	            "    LEFT JOIN production_worker pw ON lm.lot_id = pw.lot_id " +
-	            "    LEFT JOIN production_instruct pi ON pw.instruct_id = pi.id " + // [확인] pi.id가 기본키임
-	            "    LEFT JOIN members m ON pw.member_id = m.id " + 
-	            "    WHERE lm.lot_id = :lotId " +
-	            "    ORDER BY pw.id DESC " +
-	            ") WHERE ROWNUM = 1", nativeQuery = true)
-	LotDetailMapping findLotDetailByLotId(@Param("lotId") String lotId);
 
 	interface LotDetailMapping {
 	    String getLotId();
+	    String getItemCode();   // 추가됨
 	    String getItemName();
-	    String getLotType();
 	    String getInstructCode();
 	    Integer getInstructQty();
-	    String getStatus();
 	    LocalDateTime getStartDate();
 	    LocalDateTime getEndDate();
 	    Integer getDefective();
-	    String getOperatorName(); // 추가
 	}
+	
+	@Query(value = "SELECT lm.lot_id AS lotId, i.item_name AS itemName, " +
+	            "lm.quantity AS quantity, lm.status AS status " +
+	            "FROM ( " +
+	            "    SELECT lot_id, product_id, quantity, status, lot_type " +
+	            "    FROM LOT_MASTER " +
+	            "    START WITH lot_id = :rawLotId " + // 입력받은 LOT부터 시작
+	            "    CONNECT BY PRIOR lot_id = parent_lot_id " + // 자식 방향으로 전개
+	            ") lm " +
+	            "JOIN item i ON lm.product_id = i.item_id " +
+	            "WHERE lm.lot_type = 'F'", nativeQuery = true) // 최종 완제품만 필터링
+	List<FinishedUsageMapping> findFinishedLotsByRawLotId(@Param("rawLotId") String rawLotId);
+	
+	@Query(value = "SELECT lm.lot_id AS lotId, i.item_code AS itemCode, i.item_name AS itemName, " +
+	            "pi.instruct_code AS instructCode, pi.instruct_qty AS instructQty, " +
+	            "pi.start_date AS startDate, pi.end_date AS endDate, pi.defective AS defective " +
+	            "FROM lot_master lm " +
+	            "JOIN item i ON lm.product_id = i.item_id " +
+	            "JOIN production_worker pw ON lm.lot_id = pw.lot_id " + // PW를 거점으로 연결
+	            "JOIN production_instruct pi ON pw.instruct_id = pi.id " +
+	            "WHERE lm.lot_id = :lotId", nativeQuery = true)
+	LotDetailMapping findSemiLotDetail(@Param("lotId") String lotId);
 	
 	@Query(value = "SELECT iv.lot_number AS lotId, it.item_name AS itemName, " +
             "'DONE' AS status, iv.expiration_date AS createdDate, 'M' AS lotType " +
@@ -61,16 +66,15 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
             "JOIN item it ON iv.item_id = it.item_id", nativeQuery = true)
 	List<LotMasterRepository.LotSummaryMapping> findAllInventoryAsLots();
 	
-	@Query(value = "SELECT lot_id AS lotId, i.item_name AS itemName, " +
-	            "quantity AS quantity, status AS status " +
-	            "FROM ( " +
-	            "    SELECT * FROM lot_master " +
-	            "    START WITH lot_id = :rawLotId " + // [수정] 부모ID가 아닌 선택한 LOT_ID부터 시작
-	            "    CONNECT BY PRIOR lot_id = parent_lot_id " + 
-	            ") lm " +
+	@Query(value = "SELECT lm.lot_id AS lotId, i.item_code AS itemCode, i.item_name AS itemName, " +
+	            "pi.instruct_code AS instructCode, pi.instruct_qty AS instructQty, " +
+	            "pi.start_date AS startDate, pi.end_date AS endDate, pi.defective AS defective " +
+	            "FROM lot_master lm " +
 	            "JOIN item i ON lm.product_id = i.item_id " +
-	            "WHERE lm.lot_type = 'F'", nativeQuery = true) // 최종 결과물(F)만 필터링
-	List<FinishedUsageMapping> findFinishedLotsByRawLotId(@Param("rawLotId") String rawLotId);
+	            "JOIN production_worker pw ON lm.lot_id = pw.lot_id " +
+	            "JOIN production_instruct pi ON pw.instruct_id = pi.id " +
+	            "WHERE lm.lot_id = :lotId", nativeQuery = true)
+	LotDetailMapping findFinishedLotDetail(@Param("lotId") String lotId);
 	
 	interface FinishedUsageMapping {
 	 String getLotId();
@@ -96,7 +100,33 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
             "ORDER BY createdDate DESC", nativeQuery = true)
 	List<LotSummaryMapping> findAllProdAndSemiLots();
 	
-	
+	/* LotMasterRepository.java */
+
+	@Query(value = "SELECT oi.description AS operationName, " +
+	               "       oi.operation_id AS operationId, " +
+	               "       oi.member_id AS memberId, " +
+	               "       m.name AS memberName, " +
+	               "       pi.operation_qty AS operationQty, " +
+	               "       pi.defective AS defectiveQty, " +
+	               "       e.equip_name AS equipName, " +
+	               "       e.equip_code AS equipCode " +
+	               "FROM production_instruct pi " +
+	               "JOIN operation_info oi ON pi.operation_id = oi.operation_id " +
+	               "LEFT JOIN members m ON oi.member_id = m.id " + 
+	               "LEFT JOIN equipment e ON pi.equip_id = e.equip_id " + 
+	               "WHERE pi.instruct_code = :instructCode", nativeQuery = true)
+	ProcessStepDetailMapping findStepDetailByInstructCode(@Param("instructCode") String instructCode);
+
+	interface ProcessStepDetailMapping {
+	    String getOperationName();
+	    String getOperationId();
+	    String getMemberId();
+	    String getMemberName();
+	    Integer getOperationQty();
+	    Integer getDefectiveQty();
+	    String getEquipName();
+	    String getEquipCode();
+	}
 	
 	
 }

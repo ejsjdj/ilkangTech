@@ -13,6 +13,7 @@ import com.itwillbs.ilkwangtech.process.dto.LotDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessStatusResponseDTO;
+import com.itwillbs.ilkwangtech.process.dto.ProcessStepDetailDTO;
 import com.itwillbs.ilkwangtech.process.entity.LotMaster;
 import com.itwillbs.ilkwangtech.process.repository.LotMasterRepository;
 import com.itwillbs.ilkwangtech.process.repository.PartProductionRepository;
@@ -67,27 +68,37 @@ public class LotTraceService {
         return combinedList;
     }
     
+    /* LotTraceService.java */
+
     public LotDetailResponseDTO getLotDetail(String lotId) {
-    	log.info(">>>> [백엔드] 상세 조회 요청 시작. LOT ID: " + lotId);
-        LotMasterRepository.LotDetailMapping res = lotMasterRepository.findLotDetailByLotId(lotId);
-        
-        if(res == null) {
-        	log.warn(">>>> [백엔드] DB 결과가 NULL입니다. 쿼리 조건(Join)을 확인하세요.");
-        	return null;
+        // 1. 먼저 기본 LOT 정보를 가져와서 타입을 확인합니다.
+        LotMaster master = lotMasterRepository.findById(lotId)
+                .orElseThrow(() -> new RuntimeException("LOT를 찾을 수 없습니다."));
+
+        LotMasterRepository.LotDetailMapping res;
+
+        // 2. 타입에 따라 다른 레포지토리 메소드 호출
+        if ("F".equals(master.getLotType())) {
+            res = lotMasterRepository.findFinishedLotDetail(lotId);
+        } else {
+            // 반제품(S, ST, IN 등)일 경우
+            res = lotMasterRepository.findSemiLotDetail(lotId);
         }
 
-        log.info(">>>> [백엔드] DB 조회 성공. 제품명: " + res.getItemName() + ", 작업자: " + res.getOperatorName());
+        // 데이터가 없는 경우를 대비한 예외 처리
+        if (res == null) return new LotDetailResponseDTO(); 
+
+        // 3. DTO 매핑 (이 부분은 동일)
         LotDetailResponseDTO dto = new LotDetailResponseDTO();
         dto.setLotId(res.getLotId());
+        dto.setItemCode(res.getItemCode());
         dto.setItemName(res.getItemName());
-        dto.setInstructCode(res.getInstructCode() != null ? res.getInstructCode() : "-");
+        dto.setInstructCode(res.getInstructCode());
         dto.setInstructQty(res.getInstructQty());
-        dto.setStatus(res.getStatus());
-        dto.setLotType(res.getLotType());
         dto.setStartDate(res.getStartDate());
         dto.setEndDate(res.getEndDate());
         dto.setDefective(res.getDefective());
-        dto.setOperatorName(res.getOperatorName() != null ? res.getOperatorName() : "미지정"); 
+        
         return dto;
     }
 
@@ -108,7 +119,6 @@ public class LotTraceService {
         }).collect(Collectors.toList());
     }
 
- // LotTraceService.java 에 추가
     public ProcessDetailResponseDTO getProcessDetailData(String instructCode) {
         ProductionInstructRepository.HeaderMapping header = productionInstructRepository.findHeaderByCode(instructCode);
         if (header == null) return null;
@@ -160,10 +170,27 @@ public class LotTraceService {
     
     public DashboardSummaryDTO getDashboardSummary() {
         DashboardSummaryDTO dto = new DashboardSummaryDTO();
-        // 실제 구현 시 Repository에서 countByStatus 등을 호출하세요.
         dto.setTodayInstructCount(0); 
         dto.setInProgressCount(3);
         dto.setQcFailedCount(0);
+        return dto;
+    }
+    
+    public ProcessStepDetailDTO getProcessStepDetail(String instructCode) {
+        LotMasterRepository.ProcessStepDetailMapping res = lotMasterRepository.findStepDetailByInstructCode(instructCode);
+        
+        if (res == null) return null;
+
+        ProcessStepDetailDTO dto = new ProcessStepDetailDTO();
+        dto.setOperationName(res.getOperationName());
+        dto.setOperationId(res.getOperationId());
+        dto.setMemberId(res.getMemberId());
+        dto.setMemberName(res.getMemberName());
+        dto.setOperationQty(res.getOperationQty());
+        dto.setDefectiveQty(res.getDefectiveQty());
+        dto.setEquipName(res.getEquipName());
+        dto.setEquipCode(res.getEquipCode());
+        
         return dto;
     }
 }

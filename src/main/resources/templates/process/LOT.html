@@ -4,7 +4,7 @@
       layout:decorate="~{layout/layout}">
 <head>
     <meta charset="UTF-8">
-    <title>LOT 추적 관리</title>
+    <title>LOT 추적</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -38,7 +38,7 @@
         .lot-main-content { 
             display: flex; 
             gap: 20px; 
-            min-height: 500px; /* 최소 높이만 지정하여 아래 여백 확보 */
+            min-height: 600px; 
             margin-bottom: 40px; /* 페이지 하단 여백 추가 */
         }
         
@@ -77,6 +77,99 @@
 	        background-color: #4338ca;
 	        color: white;
 	    }
+	    /* 확장된 행 스타일 */
+		.detail-row {
+		    background-color: #fcfdfe;
+		}
+		.detail-container {
+		    padding: 15px;
+		    border-left: 4px solid #4f46e5; /* 포인트 라인 */
+		    background: #f8fafc;
+		}
+		.detail-tabs {
+		    display: flex;
+		    gap: 10px;
+		    margin-bottom: 10px;
+		}
+		.detail-tabs button {
+		    border: 1px solid #e2e8f0;
+		    background: white;
+		    padding: 5px 12px;
+		    border-radius: 6px;
+		    font-size: 12px;
+		    cursor: pointer;
+		}
+		.detail-tabs button:hover { background: #eef2ff; color: #4f46e5; }
+		.sub-content-area {
+		    background: white;
+		    border-radius: 8px;
+		    padding: 10px;
+		    border: 1px solid #edf2f7;
+		    min-height: 100px;
+		}
+		/* 테이블 헤더 가운데 정렬 */
+		.lot-list-table th { 
+		    font-weight: 700; 
+		    color: #64748b; 
+		    border-bottom: 2px solid #f1f5f9; 
+		    padding: 12px 8px !important;
+		    text-align: center; /* 텍스트 가운데 정렬 */
+		    vertical-align: middle;
+		}
+		
+		/* 테이블 바디 셀 가운데 정렬 */
+		.lot-list-table td { 
+		    padding: 12px 8px !important; 
+		    vertical-align: middle; 
+		    text-align: center; /* 데이터 가운데 정렬 */
+		    cursor: pointer; 
+		}
+		
+		/* 날짜 텍스트 정렬 보정 */
+		.date-text { 
+		    color: #94a3b8; 
+		    font-size: 15px; 
+		    display: block; 
+		    text-align: center; 
+		}
+		
+		/* 상태 뱃지 가운데 정렬 유지 */
+		.badge-status {
+		    display: inline-block; /* 부모 td의 text-align: center 영향으로 가운데로 옴 */
+		    padding: 4px 8px;
+		    border-radius: 6px;
+		    font-size: 11px;
+		    font-weight: 700;
+		}
+		.acc-item {
+		    padding: 12px 20px 12px 40px;
+		    display: flex;
+		    align-items: center;
+		    font-size: 13px;
+		    font-weight: 600;
+		    color: #475569;
+		    cursor: pointer;
+		    border-bottom: 1px solid #edf2f7;
+		    transition: all 0.2s;
+		}
+		
+		.acc-item:hover {
+		    background: #eef2ff;
+		    color: #4f46e5;
+		    padding-left: 45px; /* 약간 밀리는 효과 */
+		}
+		
+		.acc-item i.bi-chevron-right {
+		    font-size: 10px;
+		    opacity: 0.5;
+		}
+		
+		.table-active {
+		    background-color: #f1f5f9 !important;
+		    border-left: 4px solid #4f46e5;
+		}
+		
+		.text-indigo { color: #4f46e5; }
     </style>
 </head>
 <body>
@@ -85,54 +178,422 @@
     <div class="content-root">
         <div class="container-wrapper">
             <div class="page-header">
-                <div class="header-title-area">
-                    <div class="header-icon-bar"></div>
-                    <h1>LOT 추적 관리</h1>
-                </div>
-                <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
-                    <button class="btn btn-sm btn-light active">완제품 LOT</button>
-                    <button class="btn btn-sm btn-light">자재 LOT</button>
-                </div>
-            </div>
+			    <div class="header-title-area">
+			        <div class="header-icon-bar"></div>
+			        <h1>LOT 추적</h1>
+			    </div>
+			</div>
 
-            <div class="search-filter-area">
-                <div style="flex: 1; position: relative;">
-                    <i class="bi bi-search" style="position: absolute; top: 10px; left: 12px; color: #94a3b8;"></i>
-                    <input type="text" class="form-control form-control-sm ps-5" style="border-radius: 8px;" placeholder="LOT 번호 또는 제품명 입력">
-                </div>
-                <select class="form-select form-select-sm" style="width: 140px; border-radius: 8px;">
-                    <option value="">전체 상태</option>
-                </select>
-                <button class="btn btn-sm btn-primary px-3" style="background: #4f46e5; border: none; border-radius: 8px; font-weight: 600;">검색</button>
-                <button class="btn btn-sm btn-outline-secondary px-3" style="border-radius: 8px;">초기화</button>
-            </div>
+			<ul class="nav nav-tabs">
+			    <li class="nav-item">
+			        <a class="nav-link active" href="#" onclick="switchLotTab('PROD')">완제품 / 반제품 LOT</a>
+			    </li>
+			    <li class="nav-item">
+			        <a class="nav-link" href="#" onclick="switchLotTab('M')">원자재 LOT</a>
+			    </li>
+			</ul>
+
+            <div class="search-filter-area" style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1.2fr auto; gap: 10px; align-items: end; padding: 12px 16px;">
+    
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">검색어</label>
+			        <input type="text" id="searchKeyword" class="form-control form-control-sm" placeholder="번호 / 제품명" oninput="filterLotList()">
+			    </div>
+			    
+			    <div class="filter-group" id="typeFilterGroup">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">제품 구분</label>
+			        <select id="typeFilter" class="form-select form-select-sm" onchange="filterLotList()">
+			            <option value="ALL">전체</option>
+			            <option value="F">완제품 (Finished)</option>
+			            <option value="S">반제품 (Semi-finished)</option>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">생산 상태</label>
+			        <select id="statusFilter" class="form-select form-select-sm" onchange="filterLotList()">
+			            <option value="">전체 상태</option>
+			            <option value="PROGRESS">진행중</option>
+			            <option value="DONE">완료</option>
+			        </select>
+			    </div>
+			
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">시작일</label>
+			        <input type="date" id="startDate" class="form-control form-control-sm" onchange="filterLotList()">
+			    </div>
+			
+			    <div class="filter-group">
+			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">종료일</label>
+			        <input type="date" id="endDate" class="form-control form-control-sm" onchange="filterLotList()">
+			    </div>
+			
+			    <div class="d-flex gap-1">
+			        <button class="btn btn-sm btn-indigo" onclick="filterLotList()" style="width: 60px; height: 35px; font-weight: 600;">검색</button>
+			        <button class="btn btn-sm btn-outline-secondary" onclick="resetFilters()" style="width: 60px; height: 35px;">초기화</button>
+			    </div>
+			</div>
 
             <div class="lot-main-content">
-                <div class="content-card" style="flex: 1;">
-                    <div class="card-header">
-                        <h3>LOT 계층구조</h3>
-                    </div>
-                    <div class="tree-area">
-                        <div class="tree-node active">
-                            <i class="bi bi-box-seam text-primary"></i>
-                            <span style="font-weight: 600;">WIP-HG005-2026</span>
-                            <span class="ms-2 text-muted">한결5g</span>
-                            <span class="badge-status bg-ing">진행중</span>
-                        </div>
-                    </div>
-                </div>
+                <div class="content-card" style="flex: 1.5;">
+				    <div class="card-header">
+				        <h3>LOT 계층구조</h3>
+				        <span id="lot-count" class="badge bg-light text-dark" style="font-size: 11px;">Total 0</span>
+				    </div>
+				    <div class="table-responsive" style="flex: 1; overflow-y: auto; max-height: 600px;">
+				        <table class="table table-hover lot-list-table" style="font-size: 12px; margin-bottom: 0;">
+				            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+				                <tr>
+				                    <th style="width: 25%;">생성날짜</th>
+				                    <th style="width: 35%;">LOT 코드</th>
+				                    <th style="width: 25%;">제품명</th>
+				                    <th style="width: 15%;">상태</th>
+				                </tr>
+				            </thead>
+				            <tbody id="lot-tbody">
+				                </tbody>
+				        </table>
+				    </div>
+				</div>
 
                 <div class="content-card" style="flex: 1.5;">
-                    <div class="card-header"><h3>LOT 상세 정보</h3></div>
-                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8; padding: 60px 0;">
-                        <i class="bi bi-info-circle mb-2" style="font-size: 32px; opacity: 0.5;"></i>
-                        <p style="font-size: 14px;">조회할 LOT를 리스트에서 선택해 주세요.</p>
-                    </div>
-                </div>
+				    <div class="card-header">
+				        <h3>LOT 상세 정보</h3>
+				        <div id="selected-lot-code" class="text-primary fw-bold" style="font-size: 13px;"></div>
+				    </div>
+				    
+				    <div id="empty-detail" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8; padding: 60px 0;">
+				        <i class="bi bi-diagram-3 mb-2" style="font-size: 32px; opacity: 0.5;"></i>
+				        <p style="font-size: 14px;">조회할 LOT를 리스트에서 선택해 주세요.</p>
+				    </div>
+				
+				    <div id="detail-display-area" style="display: none; padding: 20px;">
+				        <div class="summary-box mb-4" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+				            <h4 style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 10px;">기본 정보</h4>
+				            <div id="lot-summary-info" style="font-size: 13px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+				                </div>
+				        </div>
+				        
+				        <div id="sub-detail-grid">
+				            <h4 id="sub-detail-title" style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 10px;">상세 내역</h4>
+				            <div id="sub-detail-content" class="sub-content-area">
+				                <p class="text-muted" style="font-size: 12px;">왼쪽 아코디언 메뉴를 클릭하여 상세 내역을 확인하세요.</p>
+				            </div>
+				        </div>
+				    </div>
+				</div>
             </div>
         </div>
     </div>
+<script th:inline="javascript">
+let allLotData = [];
+let selectedLotData = null;
+let currentMainTab = 'PROD';
+let selectedLotDetail = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("1. 스크립트 로드됨");
+    loadLotList();
+});
+
+async function loadLotList() {
+    try {
+        const response = await fetch('/process/api/lots');
+        allLotData = await response.json(); 
+        
+        filterLotList(); 
+    } catch (error) {
+        console.error('데이터 로드 실패:', error);
+    }
+}
+
+/* LOT.html - renderLotTable 함수 수정 */
+function renderLotTable(lots) {
+    const tbody = document.getElementById('lot-tbody');
+    tbody.innerHTML = ''; 
+
+    lots.forEach(lot => {
+        const date = new Date(lot.createdDate);
+        const formattedDate = date.toLocaleDateString();
+        const isRawMaterial = (lot.lotType === 'M' || lot.lotType === 'RW');
+        
+        const accordionContent = isRawMaterial
+            ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
+                   <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
+               </div>
+               <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
+               : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'MATERIAL')">
+               <i class="bi bi-box-seam me-2"></i> 투입 자재 이력 <i class="bi bi-chevron-right ms-auto"></i>
+           </div>
+           <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'PROCESS')">
+               <i class="bi bi-gear me-2"></i> 수행 공정 단계 <i class="bi bi-chevron-right ms-auto"></i>
+           </div>
+           <div id="process-menu-${lot.lotId}" class="process-menu-container" style="display:none; border-bottom: 1px solid #edf2f7;"></div>`;
+
+        // ... 기존 행(mainTr, accordionTr) 생성 로직 동일 ...
+        const mainTr = document.createElement('tr');
+        mainTr.className = 'main-row';
+        mainTr.innerHTML = `
+            <td><span class="date-text">${formattedDate}</span></td>
+            <td><span class="fw-bold text-indigo">${lot.lotId}</span></td>
+            <td>${lot.itemName}</td> 
+            <td><span class="badge-status ${lot.status === 'DONE' ? 'bg-done' : 'bg-ing'}">${lot.status === 'DONE' ? '완료' : '진행중'}</span></td>
+        `;
+
+        const accordionTr = document.createElement('tr');
+        accordionTr.className = 'accordion-row';
+        accordionTr.id = `accordion-${lot.lotId}`;
+        accordionTr.style.display = 'none';
+        accordionTr.innerHTML = `<td colspan="4" style="background: #f8fafc; padding: 0 !important;"><div class="accordion-menu-list">${accordionContent}</div></td>`;
+
+        mainTr.onclick = () => selectLot(lot, mainTr, accordionTr);
+        tbody.appendChild(mainTr);
+        tbody.appendChild(accordionTr);
+    });
+}
+
+function toggleRow(mainTr, detailTr) {
+    const isVisible = detailTr.style.display === 'table-row';
+    
+    // 모든 행 닫기 (선택 사항: 하나만 열리게 하고 싶을 때)
+    document.querySelectorAll('.detail-row').forEach(tr => tr.style.display = 'none');
+    document.querySelectorAll('.main-row').forEach(tr => tr.classList.remove('active'));
+
+    // 현재 행 토글
+    if (!isVisible) {
+        detailTr.style.display = 'table-row';
+        mainTr.classList.add('active');
+    }
+}
+
+async function loadLotDetail(lotId, element) {
+    document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('active'));
+    element.classList.add('active');
+
+    try {
+        const response = await fetch(`/process/api/lot/${lotId}`);
+        const data = await response.json();
+        console.log('상세 데이터:', data);
+    } catch (error) {
+        alert('상세 정보를 불러올 수 없습니다.');
+    }
+}
+
+async function selectLot(lot, mainTr, accordionTr) {
+    const isVisible = accordionTr.style.display === 'table-row';
+    document.querySelectorAll('.accordion-row').forEach(tr => tr.style.display = 'none');
+    document.querySelectorAll('.main-row').forEach(tr => tr.classList.remove('table-active'));
+
+    if (!isVisible) {
+        accordionTr.style.display = 'table-row';
+        mainTr.classList.add('table-active');
+
+        try {
+            const response = await fetch(`/process/api/lot/${lot.lotId}`);
+            selectedLotDetail = await response.json(); // [수정] 상세 데이터를 변수에 저장
+            updateRightPanel(selectedLotDetail); 
+        } catch (error) {
+            console.error("상세 정보 로드 실패", error);
+        }
+    }
+}
+
+function updateRightPanel(detail) {
+    if(!detail) return;
+
+    document.getElementById('empty-detail').style.display = 'none';
+    const displayArea = document.getElementById('detail-display-area');
+    displayArea.style.display = 'block';
+
+    document.getElementById('selected-lot-code').innerText = `LOT: ${detail.lotId || '-'}`;
+    
+    const infoBox = document.getElementById('lot-summary-info');
+    infoBox.innerHTML = `
+        <div><span class="text-muted">LOT 코드:</span> <strong>${detail.lotId || '-'}</strong></div>
+        <div><span class="text-muted">제품명:</span> <strong>${detail.itemName || '-'}</strong></div>
+        <div><span class="text-muted">작업지시:</span> ${detail.instructCode || '-'}</div>
+        <div><span class="text-muted">담당 작업자:</span> <span class="fw-bold text-primary">${detail.operatorName || '-'}</span></div>
+        <div><span class="text-muted">생산 수량:</span> ${detail.instructQty || 0} EA</div>
+        <div><span class="text-muted">생산 상태:</span> <span class="badge-status ${detail.status === 'DONE' ? 'bg-done' : 'bg-ing'}">${detail.status || '-'}</span></div>
+        <div><span class="text-muted">불량 수량:</span> <span class="text-danger">${detail.defective || 0}</span> EA</div>
+        <div><span class="text-muted">시작일:</span> ${detail.startDate ? detail.startDate.replace('T', ' ').substring(0, 16) : '-'}</div>
+        <div><span class="text-muted">종료일:</span> ${detail.endDate ? detail.endDate.replace('T', ' ').substring(0, 16) : '-'}</div>
+    `;
+}
+
+/* LOT.html - loadSubDetail 함수 수정 */
+
+async function loadSubDetail(lotId, type) {
+    if (type === 'PROCESS') {
+        const menuContainer = document.getElementById(`process-menu-${lotId}`);
+        if (!menuContainer) return;
+
+        // 메뉴 토글 (열려있으면 닫기)
+        if (menuContainer.style.display === 'block') {
+            menuContainer.style.display = 'none';
+            return;
+        }
+
+        let displayProcesses = [];
+
+        // [핵심 로직] LOT 번호 시작 형태에 따른 공정 매핑 [cite: 2026-03-05]
+        if (selectedLotDetail.lotType === 'F') {
+            // 완제품은 전체 공정 출력
+            displayProcesses = ['프레스', '사출', '도장', '조립'];
+        } 
+        else if (selectedLotDetail.lotType === 'S') {
+            const lid = selectedLotDetail.lotId;
+
+            if (lid.startsWith('ST')) {
+                displayProcesses = ['프레스'];
+            } else if (lid.startsWith('IN')) {
+                displayProcesses = ['사출'];
+            } else if (lid.startsWith('PT')) {
+                displayProcesses = ['프레스', '도장'];
+            } else {
+                displayProcesses = ['기타공정'];
+            }
+        }
+
+        // HTML 렌더링 (하위 메뉴 스타일 적용)
+        menuContainer.innerHTML = displayProcesses.map(proc => `
+            <div class="acc-item ps-5" onclick="showProcessDetail('${lotId}', '${proc}')" 
+                 style="background: #fcfcfc; font-size: 12px; border-bottom: 1px dashed #eee;">
+                <i class="bi bi-arrow-return-right me-2" style="font-size: 10px; opacity: 0.6;"></i> 
+                <span class="fw-bold text-secondary">${proc}</span>
+            </div>
+        `).join('');
+        
+        menuContainer.style.display = 'block';
+        return;
+    }
+    
+    // ... MATERIAL 등 다른 타입 처리 로직 ...
+}
+
+function filterLotList() {
+    const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+    const typeVal = document.getElementById('typeFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    // ... (날짜 변수들 생략)
+
+    const filtered = allLotData.filter(lot => {
+        // 1. 대분류 탭 필터링
+        if (currentMainTab === 'PROD') {
+            // 완제품(F)이나 반제품(S)만 통과
+            if (lot.lotType !== 'F' && lot.lotType !== 'S') return false;
+            if (typeVal !== 'ALL' && lot.lotType !== typeVal) return false;
+        } else {
+            // [수정] 원자재 탭: lotType이 M/RW이면서 동시에 LOT 코드가 'RW-'로 시작해야 함
+            const isRawType = (lot.lotType === 'M' || lot.lotType === 'RW');
+            const isRawPrefix = lot.lotId && lot.lotId.startsWith('RW-');
+            
+            if (!(isRawType && isRawPrefix)) return false;
+        }
+
+        // 2. 공통 필터 (검색어, 상태 등)
+        const keywordMatch = !keyword || lot.lotId.toLowerCase().includes(keyword) || (lot.itemName && lot.itemName.toLowerCase().includes(keyword));
+        if (!keywordMatch) return false;
+        
+        const statusMatch = !status || lot.status === status;
+        if (!statusMatch) return false;
+
+        return true;
+    });
+
+    renderLotTable(filtered);
+    document.getElementById('lot-count').innerText = `Total ${filtered.length}`;
+}
+
+
+function resetFilters() {
+    document.getElementById('searchKeyword').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    renderLotTable(allLotData);
+    document.getElementById('lot-count').innerText = `Total ${allLotData.length}`;
+}
+
+function setLotTypeFilter(typeValue, btnElement) {
+    // 1. 모든 버튼의 active 클래스 제거 및 현재 버튼에 추가
+    document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    // 2. 하단 셀렉트박스 값 변경 및 필터 실행
+    const typeFilter = document.getElementById('typeFilter');
+    typeFilter.value = typeValue; // 'F', 'S', 'M' 등
+    filterLotList();
+}
+
+function switchLotTab(tab) {
+    currentMainTab = tab;
+    
+    // 탭 UI 활성화 처리
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => link.classList.remove('active'));
+    if (tab === 'PROD') navLinks[0].classList.add('active');
+    else navLinks[1].classList.add('active');
+
+    // 완제품 탭일 때만 '제품 구분' 셀렉트 박스 표시
+    const typeGroup = document.getElementById('typeFilterGroup');
+    typeGroup.style.visibility = (tab === 'PROD') ? 'visible' : 'hidden';
+    
+    // 필터 초기화 후 데이터 갱신
+    filterLotList();
+}
+
+function renderFinishedUsageTable(data) {
+    if (!data || data.length === 0) {
+        return '<p class="text-muted p-3" style="font-size:12px;">사용된 완제품 이력이 없습니다.</p>';
+    }
+
+    let html = `<ul class="list-group list-group-flush" style="font-size: 12px; padding: 5px 10px;">`;
+
+    data.forEach(item => {
+        const statusText = item.status === 'DONE' ? '생산 완료' : '진행중';
+        const statusClass = item.status === 'DONE' ? 'text-primary' : 'text-warning';
+
+        html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2" style="background: transparent; border-bottom: 1px dashed #eee;">
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-indigo" style="cursor:pointer;" 
+                          onclick="showFinishedDetail('${item.lotId}')">
+                        ${item.lotId}
+                    </span>
+                    <span class="text-muted" style="font-size: 10px;">${item.itemName} (${item.quantity} EA)</span>
+                </div>
+                <span class="${statusClass} fw-bold" style="font-size: 10px;">${statusText}</span>
+            </li>`;
+    });
+
+    html += `</ul>`;
+    return html;
+}
+
+async function showFinishedDetail(lotId) {
+    console.log(">>>> [1단계] 완제품 클릭됨. LOT ID:", lotId); // 클릭 확인
+    try {
+        const response = await fetch(`/process/api/lot/${lotId}`);
+        console.log(">>>> [2단계] 서버 응답 상태:", response.status); // 200인지 500인지 확인
+        
+        const detailData = await response.json();
+        console.log(">>>> [3단계] 받은 데이터 객체:", detailData); // 실제 데이터 내용 확인
+        
+        updateRightPanel(detailData);
+        loadSubDetail(lotId, 'PROCESS');
+    } catch (error) {
+        console.error(">>>> [에러] 데이터 로드 중 예외 발생:", error);
+    }
+}
+
+function showProcessDetail(lotId, processName) {
+    console.log(`클릭된 공정: ${processName}, LOT: ${lotId}`);
+}
+</script>
 </th:block>
+
 
 </body>
 </html>

@@ -27,5 +27,26 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
     // 전체 재고량 그룹화 조회
     @Query("SELECT i.item.itemId, COALESCE(SUM(i.currentQuantity), 0) FROM InventoryEntity i GROUP BY i.item.itemId")
     List<Object[]> sumCurrentQuantityGrouped();
+
+	List<InventoryEntity> findByItemItemCodeOrderByExpirationDateAsc(String itemCode);
+	
+	// 특정 프리픽스(품목코드-날짜)로 시작하는 LOT 번호 개수 조회 (순번 생성용)
+    @Query("SELECT COUNT(i) FROM InventoryEntity i WHERE i.lotNumber LIKE :prefix%")
+    long countByLotNumberStartingWith(@Param("prefix") String prefix);
+
+
+    // 재고들의 현재 수량
+    @Query("SELECT COALESCE(SUM(i.currentQuantity), 0) FROM InventoryEntity i WHERE i.item.itemCode = :itemCode")
+    Long sumQuantityByItemCode(@Param("itemCode") String itemCode);
      
+    // 현재 재고 확인
+    @Query("""
+        select coalesce(sum(i.currentQuantity),0)
+        from InventoryEntity i
+        where i.item.itemId = :itemId
+        """)
+    Long getTotalQuantityByItemId(@Param("itemId") Long itemId);
+
+	List<InventoryEntity> findByItemItemIdOrderByExpirationDateAsc(Long itemId);
+
 }

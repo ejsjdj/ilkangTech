@@ -1,57 +1,434 @@
 <!doctype html>
-<html
-  lang="ko"
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-  layout:decorate="~{layout/layout}"
->
-  <head>
-    <title>발주 관리</title>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/layout}">
 
-    <link
-      rel="stylesheet"
-      href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://uicdn.toast.com/grid/latest/tui-grid.css"
-    />
-  </head>
+<head>
+  <title>발주 관리</title>
 
-  <body layout:fragment="content">
-    <div style="padding: 20px">
-      <h2>발주 관리</h2>
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
 
-      <!-- 발주 검색 영역 -->
-      <h3>발주 검색</h3>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800;900&display=swap");
 
-      <label>시작일</label>
-      <input type="date" id="startDate" />
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      <label>종료일</label>
-      <input type="date" id="endDate" />
+    body {
+      background-color: #f8fafc;
+      font-family: "Noto Sans KR", sans-serif;
+      color: #1e293b;
+    }
 
-      <label>검색어</label>
-      <input type="text" id="keyword" placeholder="회사명 또는 발주코드" />
+    .content-root {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-      <button id="searchBtn">검색</button>
+    .container-wrapper {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 24px;
+    }
 
-      <br /><br />
+    /* 페이지 헤더 */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-      <button onclick="goRegister()" style="padding: 6px 12px">
-        신규 발주 등록
-      </button>
-      <div id="grid" style="margin-top: 20px"></div>
+    .header-title-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon-bar {
+      width: 4px;
+      height: 22px;
+      background: linear-gradient(to bottom, #4f46e5, #818cf8);
+      border-radius: 2px;
+    }
+
+    .page-header h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    /* 검색 영역 */
+    .search-filter-area {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .search-box input,
+    .filter-group input[type="date"] {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-box input {
+      padding-left: 38px;
+      width: 100%;
+    }
+
+    .btn-search {
+      padding: 8px 20px;
+      background: #4f46e5;
+      color: #ffffff;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      border: none;
+    }
+
+    .btn-create {
+      padding: 8px 20px;
+      background: #ffffff;
+      color: #4f46e5;
+      border: 1.5px solid #4f46e5;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* 그리드 컨테이너 */
+    .grid-wrapper {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      padding: 15px;
+    }
+
+    /* 모달 스타일 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 28px;
+      width: 700px;
+      border-radius: 16px;
+      border: none;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-title::before {
+      content: "";
+      width: 3px;
+      height: 18px;
+      background: #4f46e5;
+      border-radius: 2px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .form-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-item label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .form-item input {
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: #f8fafc;
+      font-size: 13px;
+    }
+
+    .detail-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .detail-table th {
+      background: #f8fafc;
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    .detail-table td {
+      padding: 10px;
+      font-size: 13px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-close-modal {
+      padding: 8px 16px;
+      background: #f1f5f9;
+      color: #64748b;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+    }
+
+    .btn-action-modal {
+      padding: 8px 16px;
+      background: #4f46e5;
+      color: #fff;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+    }
+
+    /* 상태별 배지 색상 */
+    .bg-ready {
+      background-color: #64748b;
+    }
+
+    /* 대기 */
+    .bg-confirmed {
+      background-color: #4f46e5;
+    }
+
+    /* 확정 */
+    .bg-delivery {
+      background-color: #f59e0b;
+    }
+
+    /* 배송중 */
+    .bg-inspection {
+      background-color: #8b5cf6;
+    }
+
+    /* 검수중 */
+    .bg-complete {
+      background-color: #10b981;
+    }
+
+    /* 검수완료 */
+    .bg-stored {
+      background-color: #0ea5e9;
+    }
+
+    /* 입고완료 */
+    .bg-return {
+      background-color: #ef4444;
+    }
+
+    /* 반송 */
+  </style>
+</head>
+
+<body layout:fragment="content">
+  <div class="content-root">
+    <div class="container-wrapper">
+      <div class="page-header">
+        <div class="header-title-area">
+          <div class="header-icon-bar"></div>
+          <h2>발주 관리</h2>
+        </div>
+        <button class="btn-create" onclick="goRegister()">
+          <i class="bi bi-plus-lg me-1"></i>신규 발주 등록
+        </button>
+      </div>
+
+      <div class="search-filter-area">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>시작일</label>
+            <input type="date" id="startDate" />
+          </div>
+          <div class="filter-group">
+            <label>종료일</label>
+            <input type="date" id="endDate" />
+          </div>
+          <div class="search-box">
+            <i class="bi bi-search" style="
+                  position: absolute;
+                  top: 10px;
+                  left: 12px;
+                  color: #94a3b8;
+                "></i>
+            <input type="text" id="keyword" placeholder="회사명 또는 발주코드 입력" />
+          </div>
+          <button class="btn-search" id="searchBtn">검색</button>
+        </div>
+      </div>
+
+      <div class="grid-wrapper">
+        <div id="grid"></div>
+      </div>
     </div>
-  </body>
+  </div>
 
-  <th:block layout:fragment="script">
-    <script
-      src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"
-    ></script>
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+  <div id="detailModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">발주 상세 정보</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <label>발주코드</label><input type="text" id="modalPurchaseOrderCode" readonly />
+        </div>
+        <div class="form-item">
+          <label>거래처</label><input type="text" id="modalCompany" readonly />
+        </div>
+        <div class="form-item">
+          <label>담당자</label><input type="text" id="modalManager" readonly />
+        </div>
+        <div class="form-item">
+          <label>전화번호</label><input type="text" id="modalPhone" readonly />
+        </div>
+        <div class="form-item">
+          <label>발주담당자</label><input type="text" id="modalName" readonly />
+        </div>
+        <div class="form-item">
+          <label>발주일자</label><input type="text" id="modalOrderDate" readonly />
+        </div>
+        <div class="form-item" style="grid-column: span 2">
+          <label>총금액</label><input type="text" id="modalAmount" readonly />
+        </div>
+      </div>
 
-    <script th:src="@{/js/purchaseOrder.js}"></script>
-  </th:block>
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>발주 상세 ID</th>
+            <th>품목</th>
+            <th>수량</th>
+            <th>금액</th>
+            <th>반품</th>
+          </tr>
+        </thead>
+        <tbody id="modalLineBody"></tbody>
+      </table>
+
+      <div class="modal-footer">
+        <button class="btn-close-modal" onclick="closeDetailModal()">
+          닫기
+        </button>
+        <button id="completeQcBtn" class="btn-action-modal" style="background: #10b981;">
+          검수 완료
+        </button>
+        <button class="btn-action-modal" onclick="openReturnModal()">
+          반품 등록
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="returnModal" class="modal">
+    <div class="modal-content" style="width: 500px">
+      <div class="modal-title">반품 사유 등록</div>
+      <div class="form-item mb-3">
+        <label>반품수량</label>
+        <input type="number" id="returnQty" min="1" class="form-control form-control-sm" />
+      </div>
+      <div class="form-item">
+        <label>반품 사유</label>
+        <textarea id="returnReason" class="form-control" style="height: 120px; font-size: 13px"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-close-modal" onclick="closeReturnModal()">
+          취소
+        </button>
+        <button class="btn-action-modal" onclick="submitReturn()">
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+
+<th:block layout:fragment="script">
+  <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+  <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+  <script th:src="@{/js/purchaseOrder.js}"></script>
+</th:block>
+
 </html>

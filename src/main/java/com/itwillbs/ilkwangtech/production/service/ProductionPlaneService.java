@@ -26,4 +26,7 @@ public interface ProductionPlaneService {
 
     // 6. 생산계획 전체 조회
     List<ProductionPlaneAllDTO> getProductionPlaneAll();
+
+    // 7. 재고 검증
+    List<StockRequirementDTO> checkStock(Long itemId, Long productionQty);
 }

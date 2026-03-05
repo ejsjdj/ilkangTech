@@ -1,13 +1,18 @@
 package com.itwillbs.ilkwangtech.production.service;
 
+import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
+import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryRepository;
+import com.itwillbs.ilkwangtech.item.constant.ItemType;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.production.dto.*;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneDetailEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
+import com.itwillbs.ilkwangtech.standard.entity.BomEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
+import com.itwillbs.ilkwangtech.standard.repository.BomRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ProcessRouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
 
 // 생산계획 서비스 구현체
 @Service
@@ -28,6 +34,8 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
     private final MemberRepository memberRepository;
     private final ProcessRouteRepository processRouteRepository;
     private final ItemRepository itemRepository;
+    private final BomRepository bomRepository;
+    private final InventoryRepository inventoryRepository;
 
     // 1. 생산계획 목록 조회
     @Override
@@ -58,8 +66,8 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
 
-        ProcessRouteEntity routeCode = processRouteRepository.findById(productionPlaneInsertDTO.getRouteCode()).
-                orElseThrow(() -> new IllegalArgumentException("라우트 코드가 존재하지 않습니다."));
+//        ProcessRouteEntity routeCode = processRouteRepository.findById(productionPlaneInsertDTO.getRouteCode()).
+//                orElseThrow(() -> new IllegalArgumentException("라우트 코드가 존재하지 않습니다."));
 
         ItemEntity item = itemRepository.findById(productionPlaneInsertDTO.getItem())
                 .orElseThrow(() -> new IllegalArgumentException("품목 정보가 존재하지 않습니다."));
@@ -68,7 +76,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         // 2. 헤더 엔티티 저장
         ProductionPlaneEntity header = ProductionPlaneEntity.saveHeader(
                 productionPlaneInsertDTO.getPlaneCode(),
-                productionPlaneInsertDTO.getPlaneDate(),
+                LocalDateTime.now(),
                 member,
                 item,
                 productionPlaneInsertDTO.getTotalQty(),
@@ -76,11 +84,11 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
                 productionPlaneInsertDTO.getMemo()
                 );
 
-
         // 3. 상세 엔티티 저장
         for(ProductionPlaneItemDTO itemDTO : productionPlaneInsertDTO.getDetails()){
 
             ProductionPlaneDetailEntity detail = ProductionPlaneDetailEntity.create(
+                    item,
                     itemDTO.getOrderId(),
                     itemDTO.getProductQty(),
                     itemDTO.getMemo()
@@ -89,6 +97,8 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
             header.saveDetails(detail);
 
         }
+        productionPlaneRepository.save(header);
+
     }
 
     @Override
@@ -99,6 +109,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         productionPlaneRepository.updateInstructStatusByPlaneId(planeId);
     }
 
+    // 작업지시 리스트
     @Override
     @Transactional
     public List<ProcessRegisterDTO> getProcessInstructList(Long planeId){
@@ -116,5 +127,107 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         return productionPlaneRepository.findAllForSelect();
 
     }
+
+    // 6. 재고검증
+    @Override
+    @Transactional
+    public List<StockRequirementDTO> checkStock(Long itemId, Long productionQty) {
+
+        System.out.println("===== 재고 검증 시작 =====");
+        System.out.println("생산 품목 ID: " + itemId);
+        System.out.println("생산 수량: " + productionQty);
+
+        // 1. BOM 전개 → 원자재 필요수량 Map
+        Map<Long, Long> requiredRawMaterials =
+                explodeBom(itemId, productionQty);
+
+        System.out.println("BOM 전개 결과 (원자재 필요수량): " + requiredRawMaterials);
+
+        // 2. 재고 비교
+        List<StockRequirementDTO> shortageList = new ArrayList<>();
+
+        for (Map.Entry<Long, Long> entry : requiredRawMaterials.entrySet()) {
+
+            Long rawItemId = entry.getKey();
+            Long requiredQty = entry.getValue();
+
+            Long stockQty =
+                    inventoryRepository.getTotalQuantityByItemId(rawItemId);
+
+            System.out.println("--------------------------------");
+            System.out.println("원자재 ID: " + rawItemId);
+            System.out.println("필요 수량: " + requiredQty);
+            System.out.println("현재 재고: " + stockQty);
+
+            if (stockQty < requiredQty) {
+
+                Long shortage = requiredQty - stockQty;
+
+                System.out.println("⚠ 재고 부족 발생 → 부족수량: " + shortage);
+
+                shortageList.add(
+                        new StockRequirementDTO(rawItemId, shortage)
+                );
+
+            } else {
+                System.out.println("재고 충분");
+            }
+        }
+
+        System.out.println("===== 재고 검증 통과 =====");
+
+        return shortageList;
+
+    }
+
+    private Map<Long, Long> explodeBom(Long itemId, Long qty) {
+
+        //System.out.println("BOM 전개 시작 → childItemId: " + itemId + ", qty: " + qty);
+
+        Map<Long, Long> result = new HashMap<>();
+
+        List<BomEntity> bomList =
+                bomRepository.findByChildItem_ItemId(itemId);
+
+        for (BomEntity bom : bomList) {
+
+            ItemEntity material = bom.getParentItem();
+
+            Long requiredQty = bom.getRequireQty() * qty;
+
+//            System.out.println(
+//                    "BOM 조회 → parent: " + material.getItemId()
+//                            + ", 타입: " + material.getItemType()
+//                            + ", 필요수량: " + bom.getRequireQty()
+//                            + ", 계산수량: " + requiredQty
+//            );
+
+            // 원자재 → 종료
+            if (material.getItemType() == ItemType.RAW) {
+
+                //System.out.println("RAW 발견 → ID: " + material.getItemId());
+
+                result.merge(material.getItemId(), requiredQty, Long::sum);
+
+            }
+            // 반자재(아직 타입 없음!) / 재공품 / 완제품 → 재귀
+            // material.getItemType() == ItemType.SEMI
+            else if ( material.getItemType() == ItemType.WIP
+                    || material.getItemType() == ItemType.FG) {
+
+                //System.out.println("재귀 BOM 전개 → ID: " + material.getItemId());
+
+                Map<Long, Long> childMap =
+                        explodeBom(material.getItemId(), requiredQty);
+
+                childMap.forEach((k, v) -> result.merge(k, v, Long::sum));
+            }
+        }
+
+        //System.out.println("BOM 전개 결과 → " + result);
+
+        return result;
+    }
+
 
 }

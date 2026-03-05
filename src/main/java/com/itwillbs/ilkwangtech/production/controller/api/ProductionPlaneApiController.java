@@ -7,11 +7,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -30,7 +32,7 @@ public class ProductionPlaneApiController {
      */
     @GetMapping("/plane")
     public Page<ProductionPlaneDTO> getProductionPlane(Pageable pageable,
-                                                       @RequestParam(required = false) String keyword){
+                                                       @RequestParam(value = "keyword", required = false) String keyword){
 
         Page<ProductionPlaneDTO> list = productionPlaneService.getProductionPlaneList(pageable, keyword);
 
@@ -64,19 +66,25 @@ public class ProductionPlaneApiController {
 
     // 3. 작업지시 등록용 생산계획 목록 조회
     @GetMapping("/{planeId}/processes")
-    public List<ProcessRegisterDTO> getProcessInstructList(@PathVariable Long planeId){
+    public List<ProcessRegisterDTO> getProcessInstructList(@PathVariable(value = "planeId") Long planeId){
         System.out.println("작업지시 등록용 : " + planeId);
         System.out.println("작업지시 등록용 생산계획 목록 조회 실행됨!!!!");
         return productionPlaneService.getProcessInstructList(planeId);
     }
 
     // 4. 생산계획 등록
-    public void insertProductionPlane(@RequestBody ProductionPlaneInsertDTO productionPlaneInsertDTO,
+    @PostMapping("/regist_production")
+    public ResponseEntity<?> insertProductionPlane(@RequestBody ProductionPlaneInsertDTO productionPlaneInsertDTO,
                                       @AuthenticationPrincipal AccountLogin accountLogin){
 
         Long userId = accountLogin.getId();
 
         productionPlaneService.saveProductionPlane(productionPlaneInsertDTO, userId);
+
+        return ResponseEntity.ok().body(Map.of(
+                "success", true,
+                "message", "등록 성공"
+        ));
     }
 
     // 5. 생산계획 및 작업지시 취소
@@ -85,4 +93,17 @@ public class ProductionPlaneApiController {
         productionPlaneService.cancelProductionPlane(planeId);
     }
 
+
+    // 6. 재고 검증
+    @GetMapping("/check")
+    public ResponseEntity<List<StockRequirementDTO>> checkProcurement(
+            @RequestParam("itemId") Long itemId,
+            @RequestParam("productionQty") Long productionQty){
+
+        // 1. 서비스가 계산한 '부족한 재고 리스트'를 변수에 담습니다.
+        List<StockRequirementDTO> shortageList = productionPlaneService.checkStock(itemId, productionQty);
+
+        // 2. 그 리스트를 프론트엔드(화면)로 돌려보냅니다!
+        return ResponseEntity.ok(shortageList);
+    }
 }

@@ -1,86 +1,218 @@
 <!doctype html>
-<html
-  lang="ko"
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-  layout:decorate="~{layout/layout}"
->
-  <head>
-    <title>발주 등록</title>
-  </head>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/layout}">
 
-  <body>
-    <div layout:fragment="content">
-      <h2>발주 등록</h2>
+<head>
+  <title>발주 등록</title>
+  <style>
+    /* 페이지 전체 */
+    .page-container {
+      padding: 30px;
+    }
 
-      <label for="purchaseRequestSelect">구매요청코드 선택</label>
-      <select id="purchaseRequestSelect">
-        <option value="">-- 선택하세요 --</option>
-      </select>
+    /* 제목 */
+    .page-title {
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
 
-      <!-- 구매요청 상세 -->
-      <h3>구매요청 상세</h3>
+    /* 카드 */
+    .card {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
+    }
 
-      <div>
-        <label>구매요청코드</label>
-        <input type="text" id="prCode" readonly />
+    /* 섹션 제목 */
+    .section-title {
+      margin: 20px 0 15px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    /* form 정렬 */
+    .form-row {
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    .form-input {
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #f9f9f9;
+    }
+
+    /* 테이블 */
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .custom-table th {
+      background: #f1f3f7;
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    .custom-table td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+    }
+
+    /* 버튼 영역 */
+    .button-area {
+      margin-top: 20px;
+      text-align: right;
+    }
+
+    /* 기본 버튼 */
+    .primary-btn {
+      background-color: #111827;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .primary-btn:hover {
+      opacity: 0.9;
+    }
+
+    .page-container {
+      overflow-y: auto;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <div layout:fragment="content" class="page-container">
+
+    <h2 class="page-title">발주 등록</h2>
+
+    <!-- 카드 영역 -->
+    <div class="card">
+
+      <div class="form-row">
+        <label>구매요청코드 선택</label>
+        <select id="purchaseRequestSelect" class="form-input">
+          <option value="">-- 선택하세요 --</option>
+        </select>
       </div>
 
-      <div>
-        <label>요청자</label>
-        <input type="text" id="memberName" readonly />
+      <h3 class="section-title">구매요청 상세</h3>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>구매요청코드</label>
+          <input type="text" id="prCode" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>거래처 선택</label>
+          <select id="companySelect" class="form-input">
+            <option value="">-- 거래처 선택 --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>담당자</label>
+          <input type="text" id="companyManager" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>연락처</label>
+          <input type="text" id="companyPhone" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>요청자</label>
+          <input type="text" id="memberName" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>요청일</label>
+          <input type="text" id="requestDate" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>납기일</label>
+          <input type="text" id="dueDate" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>납품장소</label>
+          <input type="text" id="deliveryLocate" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>계약구분</label>
+          <input type="text" id="contractType" readonly class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>제작구분</label>
+          <input type="text" id="produceType" readonly class="form-input" />
+        </div>
+
       </div>
 
-      <div>
-        <label>요청일</label>
-        <input type="text" id="requestDate" readonly />
-      </div>
-
-      <div>
-        <label>납기일</label>
-        <input type="text" id="dueDate" readonly />
-      </div>
-
-      <div>
-        <label>납품장소</label>
-        <input type="text" id="deliveryLocate" readonly />
-      </div>
-
-      <div>
-        <label>계약구분</label>
-        <input type="text" id="contractType" readonly />
-      </div>
-
-      <div>
-        <label>제작구분</label>
-        <input type="text" id="produceType" readonly />
-      </div>
-
-      <hr />
-
-      <!-- 라인 테이블 -->
-      <table id="lineTable" border="1">
-        <thead>
-          <tr>
-            <th>NO</th>
-            <th>품목</th>
-            <th>수량</th>
-            <th>단위</th>
-            <th>금액</th>
-            <th>거래처</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <br />
-
-      <button id="saveProcurementBtn">발주 등록</button>
     </div>
-  </body>
 
-  <th:block layout:fragment="script">
-    <script th:src="@{/js/purchaseOrderRegister.js}"></script>
-  </th:block>
+    <!-- 라인 카드 -->
+    <div class="card">
+
+      <h3 class="section-title">구매요청 품목</h3>
+
+      <div class="table-wrapper">
+        <table id="lineTable" class="custom-table">
+          <thead>
+            <tr>
+              <th>NO</th>
+              <th>품목</th>
+              <th>수량</th>
+              <th>단위</th>
+              <th>금액</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="button-area">
+        <button id="saveProcurementBtn" class="primary-btn">발주 등록</button>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+
+<th:block layout:fragment="script">
+  <script th:src="@{/js/purchaseOrderRegister.js}"></script>
+</th:block>
+
 </html>

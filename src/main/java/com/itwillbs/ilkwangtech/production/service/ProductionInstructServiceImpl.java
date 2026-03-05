@@ -1,5 +1,7 @@
 package com.itwillbs.ilkwangtech.production.service;
 
+import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
+import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.production.dto.*;
@@ -31,6 +33,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     private final ProcessRepository processRepository;
     private final ProductionPlaneRepository productionPlaneRepository;
     private final ItemRepository itemRepository;
+    private final InventoryRepository inventoryRepository;
 
     @Override
     @Transactional
@@ -103,8 +106,8 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
 
     }
 
-    // 5. 작업지시 완료
-    public void updateInstruct(String instructCode, Long processId){
-        //productionInsturctRepository.updateInstructCompleteStatus(instructCode, processId);
-    }
+//    // 5. 작업지시 완료
+//    public void updateInstruct(String instructCode, Long itemId, Long completeQty){
+//        //productionInsturctRepository.updateInstructCompleteStatus(instructCode, processId, completeQty);
+//    }
 }

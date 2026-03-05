@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.standard.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
+import com.itwillbs.ilkwangtech.standard.constant.ProcessStatus;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 // 공정정보 엔티티
 @Entity
@@ -23,7 +26,7 @@ public class ProcessEntity {
     private Long id;
 
     @Column(name = "operation_id")
-    private String operationId;
+    private String operationCode;
 
     @Column(name = "name")
     private String name;
@@ -38,13 +41,18 @@ public class ProcessEntity {
     @Column(name = "created_at")
     private LocalDate createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ProcessStatus status;
+
     @Builder
-    public ProcessEntity(String operationId, String name, String description, Member member, LocalDate createdAt){
-        this.operationId = operationId;
+    public ProcessEntity(String operationCode, String name, String description, Member member, LocalDate createdAt, ProcessStatus status){
+        this.operationCode = operationCode;
         this.name = name;
         this.description = description;
         this.member = member;
         this.createdAt = createdAt;
+        this.status = status;
     }
 
 }

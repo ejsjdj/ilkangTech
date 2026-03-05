@@ -222,11 +222,12 @@
 					</div>
 					
 					<div class="form-row">
-					    <label for="useYn">사용여부</label>
-					    <select id="useYn" name="useYn" required>
-					        <option value="Y" selected>가동중</option>
-					        <option value="N">중단</option>
-				  	    </select>
+					    <label for="status" class="form-label">설비상태</label>
+					    <select class="form-select" id="status"> <option value="RUNNING">가동 중</option>
+					        <option value="STOP">정지</option>
+					        <option value="WAITING" selected>대기</option>
+					        <option value="REPAIR">수리 중</option>
+					    </select>
 					</div>
 					
 					<div class="modal-footer">
@@ -279,17 +280,7 @@
 				  return cell.value.split('T')[0]; // 날짜만 표시
 				}
 			},
-			{
-				header: '사용여부',
-				name: 'useYn',
-				align: 'center',
-				formatter: function (cell) { 
-				  var value = cell && cell.value ? cell.value : cell.value; 
-				  if (value === 'Y') return '가동중';
-				  if (value === 'N') return '중단';
-				  return value;
-				}
-			}]
+			{ header: '상태', name: 'status', align: 'center' }]
 	  });
 	
 	  /* 2) 설비 목록 API 호출: 서버에서 JSON 받아서 그리드 데이터로 세팅 */
@@ -369,7 +360,7 @@
 		    maker: (document.getElementById('maker').value || '').trim(),
 		    price: document.getElementById('price').value,
 		    instDate: document.getElementById('instDate').value,
-		    useYn: document.getElementById('useYn').value
+		    status: document.getElementById('status').value
 		  };
 		
 		  fetch('/equipment/api/equipment', {

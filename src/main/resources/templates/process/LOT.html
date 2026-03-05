@@ -277,7 +277,7 @@
 				        <div id="sub-detail-grid">
 				            <h4 id="sub-detail-title" style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 10px;">상세 내역</h4>
 				            <div id="sub-detail-content" class="sub-content-area">
-				                <p class="text-muted" style="font-size: 12px;">왼쪽 아코디언 메뉴를 클릭하여 상세 내역을 확인하세요.</p>
+				                <p class="text-muted" style="font-size: 12px;">왼쪽 공정 메뉴를 클릭하여 상세 내역을 확인하세요.</p>
 				            </div>
 				        </div>
 				    </div>
@@ -322,11 +322,11 @@ function renderLotTable(lots) {
                    <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
                </div>
                <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
-               : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'MATERIAL')">
-               <i class="bi bi-box-seam me-2"></i> 투입 자재 이력 <i class="bi bi-chevron-right ms-auto"></i>
-           </div>
-           <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'PROCESS')">
+               : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'PROCESS')">
                <i class="bi bi-gear me-2"></i> 수행 공정 단계 <i class="bi bi-chevron-right ms-auto"></i>
+           </div>
+           <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'MATERIAL')">
+          	<i class="bi bi-box-seam me-2"></i> 투입 자재 이력 <i class="bi bi-chevron-right ms-auto"></i>
            </div>
            <div id="process-menu-${lot.lotId}" class="process-menu-container" style="display:none; border-bottom: 1px solid #edf2f7;"></div>`;
 
@@ -405,70 +405,90 @@ function updateRightPanel(detail) {
     const displayArea = document.getElementById('detail-display-area');
     displayArea.style.display = 'block';
 
-    document.getElementById('selected-lot-code').innerText = `LOT: ${detail.lotId || '-'}`;
+    document.getElementById('selected-lot-code').innerText = `LOT: ${detail.lotId}`;
     
     const infoBox = document.getElementById('lot-summary-info');
+    
+    // 날짜 포맷팅 및 종료일 계산 로직 (종료일이 없을 경우 시작일 + 2시간 예시)
+    const startStr = detail.startDate ? detail.startDate.replace('T', ' ').substring(0, 16) : '-';
+    let endStr = detail.endDate ? detail.endDate.replace('T', ' ').substring(0, 16) : '-';
+    
+    if (detail.startDate && (!detail.endDate || detail.endDate === '-')) {
+        // 종료일이 DB에 없을 경우 로직으로 계산 (예: 시작일로부터 2시간 뒤)
+        let calcEnd = new Date(detail.startDate);
+        calcEnd.setHours(calcEnd.getHours() + 2);
+        endStr = calcEnd.toLocaleString();
+    }
+
     infoBox.innerHTML = `
-        <div><span class="text-muted">LOT 코드:</span> <strong>${detail.lotId || '-'}</strong></div>
+        <div><span class="text-muted">LOT 코드:</span> <strong class="text-indigo">${detail.lotId || '-'}</strong></div>
+        <div><span class="text-muted">제품코드:</span> <strong>${detail.itemCode || '-'}</strong></div>
         <div><span class="text-muted">제품명:</span> <strong>${detail.itemName || '-'}</strong></div>
-        <div><span class="text-muted">작업지시:</span> ${detail.instructCode || '-'}</div>
-        <div><span class="text-muted">담당 작업자:</span> <span class="fw-bold text-primary">${detail.operatorName || '-'}</span></div>
-        <div><span class="text-muted">생산 수량:</span> ${detail.instructQty || 0} EA</div>
-        <div><span class="text-muted">생산 상태:</span> <span class="badge-status ${detail.status === 'DONE' ? 'bg-done' : 'bg-ing'}">${detail.status || '-'}</span></div>
-        <div><span class="text-muted">불량 수량:</span> <span class="text-danger">${detail.defective || 0}</span> EA</div>
-        <div><span class="text-muted">시작일:</span> ${detail.startDate ? detail.startDate.replace('T', ' ').substring(0, 16) : '-'}</div>
-        <div><span class="text-muted">종료일:</span> ${detail.endDate ? detail.endDate.replace('T', ' ').substring(0, 16) : '-'}</div>
+        <div><span class="text-muted">작업지시번호:</span> ${detail.instructCode || '-'}</div>
+        <div><span class="text-muted">생산수량:</span> <span class="fw-bold">${detail.instructQty || 0}</span> EA</div>
+        <div><span class="text-muted">불량수량:</span> <span class="text-danger fw-bold">${detail.defective || 0}</span> EA</div>
+        <div><span class="text-muted">시작일시:</span> ${startStr}</div>
+        <div><span class="text-muted">종료일시:</span> ${endStr}</div>
     `;
 }
 
-/* LOT.html - loadSubDetail 함수 수정 */
-
 async function loadSubDetail(lotId, type) {
-    if (type === 'PROCESS') {
-        const menuContainer = document.getElementById(`process-menu-${lotId}`);
-        if (!menuContainer) return;
+    const container = document.getElementById('sub-detail-content');
+    container.innerHTML = '<div class="p-4 text-center"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
 
-        // 메뉴 토글 (열려있으면 닫기)
-        if (menuContainer.style.display === 'block') {
-            menuContainer.style.display = 'none';
-            return;
+    try {
+        const response = await fetch(`/process/api/lot/${lotId}/${type}`);
+        const data = await response.json();
+
+        switch (type) {
+            case 'PROCESS':
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="p-4 text-center text-muted">진행된 공정 정보가 없습니다.</div>';
+                } else {
+                    let html = '<ul class="list-group list-group-flush">';
+                    data.forEach((step, index) => {
+                        // [수정 포인트] onclick 이벤트 추가 및 스타일 부여
+                        html += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-3" 
+                                onclick="fetchStepDetail('${step.instructCode}')" 
+                                style="cursor: pointer; transition: all 0.2s ease;"
+                                onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                                onmouseout="this.style.backgroundColor='transparent'">
+                                
+                                <div class="d-flex align-items-center">
+                                    <div class="step-badge me-3" style="width:24px; height:24px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">
+                                        ${index + 1}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">${step.operationName || '알 수 없는 공정'}</div>
+                                        <div class="text-muted small">${step.instructCode || '-'}</div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge rounded-pill bg-label-primary mb-1" style="background-color: #e0e7ff; color: #4338ca;">${step.status || '대기'}</span>
+                                    <div class="text-muted small" style="font-size: 11px;">
+                                        ${step.startDate ? step.startDate.replace('T', ' ').substring(0, 16) : '-'}
+                                    </div>
+                                </div>
+                            </li>`;
+                    });
+                    html += '</ul>';
+                    container.innerHTML = html;
+                }
+                break;
+
+            case 'MATERIALS':
+                container.innerHTML = renderMaterials(data);
+                break;
+                
+            case 'FINISHED_USAGE':
+                container.innerHTML = renderFinishedUsage(data);
+                break;
         }
-
-        let displayProcesses = [];
-
-        // [핵심 로직] LOT 번호 시작 형태에 따른 공정 매핑 [cite: 2026-03-05]
-        if (selectedLotDetail.lotType === 'F') {
-            // 완제품은 전체 공정 출력
-            displayProcesses = ['프레스', '사출', '도장', '조립'];
-        } 
-        else if (selectedLotDetail.lotType === 'S') {
-            const lid = selectedLotDetail.lotId;
-
-            if (lid.startsWith('ST')) {
-                displayProcesses = ['프레스'];
-            } else if (lid.startsWith('IN')) {
-                displayProcesses = ['사출'];
-            } else if (lid.startsWith('PT')) {
-                displayProcesses = ['프레스', '도장'];
-            } else {
-                displayProcesses = ['기타공정'];
-            }
-        }
-
-        // HTML 렌더링 (하위 메뉴 스타일 적용)
-        menuContainer.innerHTML = displayProcesses.map(proc => `
-            <div class="acc-item ps-5" onclick="showProcessDetail('${lotId}', '${proc}')" 
-                 style="background: #fcfcfc; font-size: 12px; border-bottom: 1px dashed #eee;">
-                <i class="bi bi-arrow-return-right me-2" style="font-size: 10px; opacity: 0.6;"></i> 
-                <span class="fw-bold text-secondary">${proc}</span>
-            </div>
-        `).join('');
-        
-        menuContainer.style.display = 'block';
-        return;
+    } catch (error) {
+        console.error("서브 상세 조회 실패:", error);
+        container.innerHTML = '<div class="p-4 text-center text-danger">데이터를 불러오는 중 오류가 발생했습니다.</div>';
     }
-    
-    // ... MATERIAL 등 다른 타입 처리 로직 ...
 }
 
 function filterLotList() {
@@ -588,8 +608,69 @@ async function showFinishedDetail(lotId) {
     }
 }
 
-function showProcessDetail(lotId, processName) {
-    console.log(`클릭된 공정: ${processName}, LOT: ${lotId}`);
+async function showProcessDetail(instructCode) {
+    if(!instructCode) return;
+    
+    try {
+        const response = await fetch(`/process/api/processDetail/${instructCode}`);
+        const data = await response.json();
+        
+        // 우측 하단 상세 영역 ID (HTML 구조에 맞게 조정하세요)
+        const detailContent = document.getElementById('process-detail-display');
+        
+        detailContent.innerHTML = `
+            <div class="row g-3">
+                <div class="col-6">
+                    <label class="text-muted small">공정명/코드</label>
+                    <div><strong>${data.operationName}</strong> <span class="text-secondary">(${data.operationId})</span></div>
+                </div>
+                <div class="col-6">
+                    <label class="text-muted small">담당자(사번)</label>
+                    <div><strong>${data.memberName}</strong> <span class="text-secondary">(${data.memberId})</span></div>
+                </div>
+                <div class="col-6">
+                    <label class="text-muted small">생산/불량 수량</label>
+                    <div><span class="text-primary fw-bold">${data.operationQty}</span> / <span class="text-danger">${data.defectiveQty}</span> EA</div>
+                </div>
+                <div class="col-6">
+                    <label class="text-muted small">설비명(코드)</label>
+                    <div><strong>${data.equipName || '-'}</strong> <span class="text-secondary">(${data.equipCode || '-'})</span></div>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("공정 상세 로드 실패:", error);
+    }
+}
+
+async function fetchStepDetail(instructCode) {
+    if(!instructCode || instructCode === '-') {
+        alert("상세 정보가 없는 공정입니다.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/process/api/processStepDetail/${instructCode}`);
+        const data = await response.json();
+
+        // 오른쪽 하단 상세 영역 업데이트
+        const detailBox = document.getElementById('process-detail-content'); // 해당 영역의 ID
+        detailBox.innerHTML = `
+            <div class="p-3 border rounded bg-white shadow-sm">
+                <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>공정 상세 정보</h6>
+                <div class="row g-3">
+                    <div class="col-6"><strong>공정명:</strong> ${data.operationName}</div>
+                    <div class="col-6"><strong>공정코드:</strong> ${data.operationId}</div>
+                    <div class="col-6"><strong>담당자:</strong> ${data.memberName} (${data.memberId})</div>
+                    <div class="col-6"><strong>생산량:</strong> ${data.operationQty} / <strong>불량:</strong> ${data.defectiveQty}</div>
+                    <div class="col-6"><strong>설비명:</strong> ${data.equipName || '-'}</div>
+                    <div class="col-6"><strong>설비코드:</strong> ${data.equipCode || '-'}</div>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("공정 상세 조회 중 오류:", error);
+    }
 }
 </script>
 </th:block>

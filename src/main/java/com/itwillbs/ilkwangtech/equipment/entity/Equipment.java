@@ -42,8 +42,8 @@ public class Equipment {
     @Column(name = "inst_date")
     private LocalDate instDate; // 설치일
 
-    @Column(name = "use_yn", length = 1)
-    private String useYn = "Y"; // 사용 여부 (가동/점검 등)
+    @Column(name = "status", length = 20)
+    private String status; // 사용 여부 (가동/점검 등)
 
     @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate = LocalDateTime.now(); // 등록 일시

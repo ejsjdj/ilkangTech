@@ -1,11 +1,14 @@
 package com.itwillbs.ilkwangtech.process.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.itwillbs.ilkwangtech.process.dto.DashboardSummaryDTO;
 import com.itwillbs.ilkwangtech.process.dto.LotDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessDetailResponseDTO;
@@ -25,9 +28,6 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class LotTraceService {
     private final LotMasterRepository lotMasterRepository;
-    private final RawMaterialRepository rawMaterialRepository;
-    private final PartProductionRepository partProductionRepository;
-    private final QualityCheckRepository qualityCheckRepository;
     private final ProductionInstructRepository productionInstructRepository;
 
     // 1. 좌측 리스트용 전체 LOT 조회
@@ -36,22 +36,47 @@ public class LotTraceService {
     }
 
     public List<LotResponseDTO> getAllLotsWithItemName() {
-        List<LotMasterRepository.LotSummaryMapping> results = lotMasterRepository.findAllWithItemName();
-        return results.stream().map(res -> {
+        // 1. PART_PRODUCTION 및 ASSEMBLY에서 완제품/반제품 정보 가져오기 (최신순 정렬됨)
+        List<LotMasterRepository.LotSummaryMapping> prodResults = lotMasterRepository.findAllProdAndSemiLots();
+        
+        // 2. INVENTORY에서 원자재 정보 가져오기 (M)
+        List<LotMasterRepository.LotSummaryMapping> inventoryResults = lotMasterRepository.findAllInventoryAsLots();
+
+        // 3. DTO 변환 및 합치기
+        List<LotResponseDTO> combinedList = prodResults.stream().map(res -> {
             LotResponseDTO dto = new LotResponseDTO();
             dto.setLotId(res.getLotId());
             dto.setItemName(res.getItemName() != null ? res.getItemName() : "N/A");
             dto.setStatus(res.getStatus());
             dto.setCreatedDate(res.getCreatedDate());
-            dto.setLotType(res.getLotType()); 
+            dto.setLotType(res.getLotType());
             return dto;
         }).collect(Collectors.toList());
+
+        // 원자재 데이터 추가
+        inventoryResults.forEach(res -> {
+            LotResponseDTO dto = new LotResponseDTO();
+            dto.setLotId(res.getLotId());
+            dto.setItemName(res.getItemName() != null ? res.getItemName() : "N/A");
+            dto.setStatus(res.getStatus());
+            dto.setCreatedDate(res.getCreatedDate());
+            dto.setLotType("M");
+            combinedList.add(dto);
+        });
+
+        return combinedList;
     }
     
     public LotDetailResponseDTO getLotDetail(String lotId) {
+    	log.info(">>>> [백엔드] 상세 조회 요청 시작. LOT ID: " + lotId);
         LotMasterRepository.LotDetailMapping res = lotMasterRepository.findLotDetailByLotId(lotId);
-        if(res == null) return null;
+        
+        if(res == null) {
+        	log.warn(">>>> [백엔드] DB 결과가 NULL입니다. 쿼리 조건(Join)을 확인하세요.");
+        	return null;
+        }
 
+        log.info(">>>> [백엔드] DB 조회 성공. 제품명: " + res.getItemName() + ", 작업자: " + res.getOperatorName());
         LotDetailResponseDTO dto = new LotDetailResponseDTO();
         dto.setLotId(res.getLotId());
         dto.setItemName(res.getItemName());
@@ -62,6 +87,7 @@ public class LotTraceService {
         dto.setStartDate(res.getStartDate());
         dto.setEndDate(res.getEndDate());
         dto.setDefective(res.getDefective());
+        dto.setOperatorName(res.getOperatorName() != null ? res.getOperatorName() : "미지정"); 
         return dto;
     }
 
@@ -109,12 +135,35 @@ public class LotTraceService {
         }).collect(Collectors.toList());
 
         if (totalDefective > 0 && !steps.isEmpty()) {
-            Random rand = new Random();
+            Random rand = new Random(instructCode.hashCode()); 
             int randomIndex = rand.nextInt(steps.size()); 
             steps.get(randomIndex).setDefectiveQty(totalDefective);
         }
 
         dto.setSteps(steps);
+        return dto;
+    }
+    
+    public List<Map<String, Object>> getFinishedUsageList(String rawLotId) {
+        List<LotMasterRepository.FinishedUsageMapping> results = lotMasterRepository.findFinishedLotsByRawLotId(rawLotId);
+        log.info(">>>> 역추적 결과 개수: " + results.size()); // 로그 추가로 데이터 유무 확인
+        
+        return results.stream().map(res -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("lotId", res.getLotId());
+            map.put("itemName", res.getItemName());
+            map.put("quantity", res.getQuantity());
+            map.put("status", res.getStatus());
+            return map;
+        }).collect(Collectors.toList());
+    }
+    
+    public DashboardSummaryDTO getDashboardSummary() {
+        DashboardSummaryDTO dto = new DashboardSummaryDTO();
+        // 실제 구현 시 Repository에서 countByStatus 등을 호출하세요.
+        dto.setTodayInstructCount(0); 
+        dto.setInProgressCount(3);
+        dto.setQcFailedCount(0);
         return dto;
     }
 }

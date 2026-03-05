@@ -15,4 +15,5 @@ public class LotDetailResponseDTO {
     private LocalDateTime startDate; // 시작일
     private LocalDateTime endDate;   // 종료일
     private Integer defective;      // 불량 수량
+    private String operatorName;
 }

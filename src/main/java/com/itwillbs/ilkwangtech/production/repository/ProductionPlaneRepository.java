@@ -53,13 +53,13 @@ public interface ProductionPlaneRepository extends JpaRepository<ProductionPlane
     List<Object[]> sumProductionPlanQtyGrouped();
 
     @Query("""
-SELECT new com.itwillbs.ilkwangtech.production.dto.ProductionPlaneAllDTO(
-    p.id,
-    p.planeCode
-)
-FROM ProductionPlaneEntity p
-ORDER BY p.planeDate DESC
-""")
+            SELECT new com.itwillbs.ilkwangtech.production.dto.ProductionPlaneAllDTO(
+            p.id,
+            p.planeCode
+            )
+            FROM ProductionPlaneEntity p
+            ORDER BY p.planeDate DESC
+            """)
     List<ProductionPlaneAllDTO> findAllForSelect();
 
 }

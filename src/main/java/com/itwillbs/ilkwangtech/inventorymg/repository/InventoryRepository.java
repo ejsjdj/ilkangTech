@@ -34,8 +34,17 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
     @Query("SELECT COUNT(i) FROM InventoryEntity i WHERE i.lotNumber LIKE :prefix%")
     long countByLotNumberStartingWith(@Param("prefix") String prefix);
 
+
     // 재고들의 현재 수량
     @Query("SELECT COALESCE(SUM(i.currentQuantity), 0) FROM InventoryEntity i WHERE i.item.itemCode = :itemCode")
     Long sumQuantityByItemCode(@Param("itemCode") String itemCode);
      
+    // 현재 재고 확인
+    @Query("""
+        select coalesce(sum(i.currentQuantity),0)
+        from InventoryEntity i
+        where i.item.itemId = :itemId
+        """)
+    Long getTotalQuantityByItemId(Long itemId);
+
 }

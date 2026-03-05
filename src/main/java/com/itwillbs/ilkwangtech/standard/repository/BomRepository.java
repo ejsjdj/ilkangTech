@@ -4,6 +4,7 @@ import com.itwillbs.ilkwangtech.standard.entity.BomEntity;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +28,16 @@ public interface BomRepository extends JpaRepository<BomEntity, Long> {
 	       "AND i.status NOT IN ('COM', 'CAN') " +
 	       "GROUP BY b.parentItem.itemId") // 그에 해당하는 PARENT(재료)들의 합계를 구함
 	List<Object[]> sumDependentInstructQtyGrouped();
+
+	// 특정 제품의 필요 원자재 및 수량 조회
+//	@Query("SELECT b.parentItemId, b.requireQty " +
+//			"FROM Bom b " +
+//			"WHERE b.childItemId = :childId")
+//	List<Object[]> findParentItemsByChildId(@Param("childId") Long childId);
+
+	@EntityGraph(attributePaths = {"childItem"})
+	List<BomEntity> findByChildItem_ItemId(Long childItemId);
+
     
     
 }

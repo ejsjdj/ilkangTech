@@ -48,14 +48,17 @@ public class ProductionPlaneDetailEntity {
 
 
     public static ProductionPlaneDetailEntity create(
+            ItemEntity item,
             Long orderId,
             Long productQty,
             String memo){
         ProductionPlaneDetailEntity detail = new ProductionPlaneDetailEntity();
 
+        detail.item = item;
         detail.orderId = orderId;
         detail.productQty = productQty;
         detail.memo = memo;
+        detail.planeDetailDate = LocalDateTime.now();
 
         return detail;
     }

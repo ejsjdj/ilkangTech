@@ -48,7 +48,8 @@ document.addEventListener("DOMContentLoaded", function () {
           {
             itemId: itemId,
             productionQty: productionQty,
-            result: "생산 가능"
+            result: "생산 가능",
+            hasStock: "O"
           }
         ]);
 
@@ -59,11 +60,13 @@ document.addEventListener("DOMContentLoaded", function () {
           {
             itemId: itemId,
             productionQty: productionQty,
-            result: "재고 부족"
+            result: "재고 부족",
+            hasStock: "X"
           }
         ]);
 
         alert("재고 부족으로 생산 불가");
+
       });
 
   });
@@ -115,18 +118,18 @@ function goRegister() {
     details: [
       {
         id: null,
-        itemName: "테스트제품",
+        itemId: row.itemId,
         orderId: 1,
         productQty: row.productionQty,
         memo: "테스트 상세",
-        productionDetailDate: new Date().toISOString()
+        //productionDetailDate: new Date().toISOString()
       }
     ]
   };
 
   console.log("보낼 데이터:", requestData);
 
-  fetch("/api/production/plan", {
+  fetch("/api/production/regist_production", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

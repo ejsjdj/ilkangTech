@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 // 생산계획 서비스 구현체
@@ -65,8 +66,8 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
 
-        ProcessRouteEntity routeCode = processRouteRepository.findById(productionPlaneInsertDTO.getRouteCode()).
-                orElseThrow(() -> new IllegalArgumentException("라우트 코드가 존재하지 않습니다."));
+//        ProcessRouteEntity routeCode = processRouteRepository.findById(productionPlaneInsertDTO.getRouteCode()).
+//                orElseThrow(() -> new IllegalArgumentException("라우트 코드가 존재하지 않습니다."));
 
         ItemEntity item = itemRepository.findById(productionPlaneInsertDTO.getItem())
                 .orElseThrow(() -> new IllegalArgumentException("품목 정보가 존재하지 않습니다."));
@@ -75,7 +76,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         // 2. 헤더 엔티티 저장
         ProductionPlaneEntity header = ProductionPlaneEntity.saveHeader(
                 productionPlaneInsertDTO.getPlaneCode(),
-                productionPlaneInsertDTO.getPlaneDate(),
+                LocalDateTime.now(),
                 member,
                 item,
                 productionPlaneInsertDTO.getTotalQty(),
@@ -87,6 +88,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         for(ProductionPlaneItemDTO itemDTO : productionPlaneInsertDTO.getDetails()){
 
             ProductionPlaneDetailEntity detail = ProductionPlaneDetailEntity.create(
+                    item,
                     itemDTO.getOrderId(),
                     itemDTO.getProductQty(),
                     itemDTO.getMemo()
@@ -95,6 +97,8 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
             header.saveDetails(detail);
 
         }
+        productionPlaneRepository.save(header);
+
     }
 
     @Override

@@ -193,83 +193,93 @@
                         </tr>
                     </thead>
 					<tbody id="orderListBody">
-                        <tr th:each="item, stat : ${orderList}">
-                            <td>
-                                <input type="checkbox" class="chk-item" th:value="${item.itemId}"
-                                       th:data-name="${item.itemName}" th:data-req="${item.requiredStock}"
-                                       th:data-status="${item.status}" th:data-pending="${item.pendingRequestQty}">
-                            </td>
-                            <td th:text="${stat.count}">1</td>
-                            <td class="text-start" th:text="${item.itemName}">라벨</td>
-                            <td th:text="${item.currentStock}">1621</td>
-                            <td th:text="${item.incomingStock}">0</td>
-                            <td th:text="${item.productionPlan}">1000</td>
-                            <td th:text="${item.reservedStock}">1000</td>
-                            <td th:text="${item.safeStock}">3000</td>
-                            <td th:class="${item.requiredStock > 0 ? 'text-danger fw-bold' : 'text-muted'}" th:text="${item.requiredStock}">1379</td>
-                            <td th:text="${item.uom}">EA</td>
-                            <td>
-                                <span th:class="${item.status == '요청완료' ? 'badge bg-success' : 'badge bg-secondary'}" 
-                                      th:text="${item.status}">발주대기</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm" 
-                                        th:classappend="${item.status == '요청완료' ? 'btn-outline-success' : 'btn-outline-info'}"
-                                        th:data-id="${item.itemId}"
-                                        th:data-name="${item.itemName}"
-                                        th:data-req="${item.requiredStock}"
-                                        th:data-status="${item.status}"
-                                        th:data-pending="${item.pendingRequestQty}"
-                                        onclick="openSingleOrderModal(this)">발주</button>
-                            </td>
-                        </tr>
-                    </tbody>
+					    <tr th:each="item, stat : ${orderList}">
+					        <td>
+					            <input type="checkbox" class="chk-item" th:value="${item.itemId}"
+					                   th:data-name="${item.itemName}" th:data-req="${item.requiredStock}"
+					                   th:data-status="${item.status}" th:data-pending="${item.pendingRequestQty}">
+					        </td>
+					        <td th:text="${stat.count}">1</td>
+					        <td class="text-start" th:text="${item.itemName}">라벨</td>
+					        <td th:text="${item.currentStock}">1621</td>
+					        <td th:text="${item.incomingStock}">0</td>
+					        <td th:text="${item.productionPlan}">1000</td>
+					        <td th:text="${item.reservedStock}">1000</td>
+					        <td th:text="${item.safeStock}">3000</td>
+					        <td th:class="${item.requiredStock > 0 ? 'text-danger fw-bold' : 'text-muted'}" th:text="${item.requiredStock}">1379</td>
+					        <td th:text="${item.uom}">EA</td>
+					        <td>
+					            <span th:class="${item.status == '요청완료' ? 'badge bg-success' : 'badge bg-secondary'}" 
+					                  th:text="${item.status}">발주대기</span>
+					        </td>
+					        <td>
+					            <button class="btn btn-sm" 
+					                    th:classappend="${item.status == '요청완료' ? 'btn-outline-success' : 'btn-outline-info'}"
+					                    th:data-id="${item.itemId}"
+					                    th:data-name="${item.itemName}"
+					                    th:data-req="${item.requiredStock}"
+					                    th:data-status="${item.status}"
+					                    th:data-pending="${item.pendingRequestQty}"
+					                    onclick="openSingleOrderModal(this)">발주</button>
+					        </td>
+					    </tr>
+					    
+					    <tr th:if="${#lists.isEmpty(orderList)}" class="empty-row">
+					        <td colspan="12" class="text-muted py-5 text-center fw-bold">
+					            
+					            현재 발주(구매 요청)가 필요한 품목이 없습니다.
+					        </td>
+					    </tr>
+					</tbody>
                 </table>
                 <div class="d-flex justify-content-center mt-3">
                     <ul class="pagination pagination-sm" id="paginationControls"></ul>
                 </div>
             </div>
             
-            <div class="card mt-4 shadow-sm">
-			    <div class="card-header bg-white">
-			        <h5 class="m-0 font-weight-bold text-dark">최근 출고 내역 (생산 / 영업)</h5>
-			    </div>
-			    <div class="card-body p-0">
-			        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-			            <table class="table table-bordered table-hover m-0 text-center align-middle">
-			                <thead class="table-light sticky-top">
-			                    <tr>
-			                        <th>No (전표번호)</th>
-			                        <th>품목명</th>
-			                        <th>현재 재고</th>
-			                        <th>출고 수량</th> <th>출고일</th>
-			                        <th>요청팀</th>
-			                        <th>출고 사유</th>
-			                        <th>상태</th>
-			                    </tr>
-			                </thead>
-			                <tbody id="outboundListBody">
-			                    <tr th:each="outbound : ${outboundList}">
-			                        <td th:text="${outbound.refCode}">SO-1234</td>
-			                        <td th:text="${outbound.itemName}">SAMSUNG-MINI DOOR</td>
-			                        <td th:text="${outbound.currentStock}">1000</td>
-			                        <td class="text-primary font-weight-bold" th:text="${outbound.requiredQty}">50</td>
-			                        <td th:text="${outbound.dueDate}">2026-03-05</td>
-			                        <td th:text="${outbound.requestDept}">생산팀</td>
-			                        <td th:text="${outbound.type}">자재출고</td>
-			                        <td>
-			                            <span class="badge bg-secondary">출고 완료</span>
-			                        </td>
-			                    </tr>
-			                    
-			                    <tr th:if="${#lists.isEmpty(outboundList)}">
-			                        <td colspan="8" class="text-muted py-4">최근 출고된 내역이 없습니다.</td>
-			                    </tr>
-			                </tbody>
-			            </table>
-			        </div>
-			    </div>
-			</div>
+            <div class="dash-card mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>최근 출고 내역 (생산 / 영업)</h5>
+                </div>
+                
+                <table class="table table-bordered text-center align-middle" style="table-layout: fixed; width: 100%;">
+                    <colgroup>
+                        <col style="width: 15%;"> <col style="width: 30%;"> <col style="width: 10%;"> <col style="width: 10%;"> <col style="width: 12%;"> <col style="width: 8%;">  <col style="width: 7%;">  <col style="width: 8%;">  </colgroup>
+                    <thead class="table-light">
+                        <tr>
+                            <th>No (전표번호)</th>
+                            <th>품목명</th>
+                            <th>현재 재고</th>
+                            <th>출고 수량</th>
+                            <th>출고일</th>
+                            <th>요청팀</th>
+                            <th>출고 사유</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody id="outboundListBody">
+                        <tr th:each="outbound : ${outboundList}">
+                            <td th:text="${outbound.refCode}">SO-1234</td>
+                            <td class="text-start" th:text="${outbound.itemName}">SAMSUNG-MINI DOOR</td>
+                            <td th:text="${outbound.currentStock}">1000</td>
+                            <td class="text-primary fw-bold" th:text="${outbound.requiredQty}">50</td>
+                            <td th:text="${outbound.dueDate}">2026-03-05</td>
+                            <td th:text="${outbound.requestDept}">생산팀</td>
+                            <td th:text="${outbound.type}">자재출고</td>
+                            <td>
+                                <span class="badge bg-secondary">출고 완료</span>
+                            </td>
+                        </tr>
+                        
+                        <tr th:if="${#lists.isEmpty(outboundList)}" class="empty-row">
+                            <td colspan="8" class="text-muted py-5 text-center fw-bold">
+                                
+                                최근 출고된 내역이 없습니다.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <div class="modal fade" id="rackModal" tabindex="-1" aria-labelledby="rackModalLabel" aria-hidden="true">

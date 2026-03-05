@@ -184,242 +184,271 @@
 	    </div>
 	</div>
 	
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:inline="javascript">
-	    let allData = [];
-	    let currentStatusTab = 'ING';
-	
-	    // 1. 헤더 정의 (순서: No, 지시번호, 제품명, 수량, [가변컬럼], 비고) [cite: 2026-03-04]
-	    const HEADERS = {
-		    ING: `<tr>
-		            <th style="width: 50px;">No.</th>
-		            <th>작업지시번호</th><th>제품명</th><th>계획수량</th>
-		            <th>시작시간</th><th>상태</th><th>현재공정</th>
-		            <th style="width: 130px;">경과시간</th><th style="width: 100px;">비고</th>
-		          </tr>`,
-		    DONE: `<tr>
-		            <th style="width: 50px;">No.</th>
-		            <th>작업지시번호</th><th>제품명</th><th>계획수량</th>
-		            <th>생산량</th><th>불량</th><th>완료일시</th>
-		            <th style="width: 130px;">경과시간</th><th style="width: 100px;">비고</th>
-		          </tr>` // 처리결과 삭제 후 경과시간 추가 [cite: 2026-03-04]
-		};
-	
-	    document.addEventListener('DOMContentLoaded', () => {
-	        // 초기 헤더 설정
-	        document.getElementById('status-thead').innerHTML = HEADERS.ING;
-	        fetchData();
-	    });
-	
-	    // 상단 탭 전환 함수
-		function switchTab(status) {
-		    currentStatusTab = status; 
-		    
-		    // 탭 UI 활성화 처리
-		    const navLinks = document.querySelectorAll('.nav-link');
-		    navLinks.forEach(link => link.classList.remove('active'));
-		    if (status === 'ING') navLinks[0].classList.add('active');
-		    else navLinks[1].classList.add('active');
-		    
-		    const opGroup = document.getElementById('opFilterGroup');
-		    const statusGroup = document.getElementById('statusFilterGroup');
-		    const filterArea = document.querySelector('.search-filter-area');
-		
-		    if (status === 'DONE') {
-		        // 1. 공정, 상태 필터 숨기기 및 값 초기화
-		        opGroup.style.display = 'none';
-		        statusGroup.style.display = 'none';
-		        document.getElementById('opFilter').value = "";
-		        document.getElementById('statusFilter').value = "";
-		        
-		        // 2. 완료 내역 그리드
-		        filterArea.style.gridTemplateColumns = '1fr 2fr auto'; 
-		    } else {
-		        // 1. 모든 필터 표시
-		        opGroup.style.display = 'block';
-		        statusGroup.style.display = 'block';
-		        
-		        // 2. 진행 현황 그리드
-		        filterArea.style.gridTemplateColumns = '1fr 1fr 1fr 2fr auto'; 
-		    }
-		    
-		    // 테이블 헤더 교체 및 데이터 필터링 실행
-		    document.getElementById('status-thead').innerHTML = HEADERS[status];
-		    filterData();
-		}
-	    
-	    async function fetchData() {
-	        try {
-	            const response = await fetch('/process/api/processStatusList'); 
-	            allData = await response.json();
-	            
-	            // 초기 로드시 'ING'(진행중) 탭에 맞는 데이터 필터링
-	            const initialData = allData.filter(d => d.status === 'PROGRESS' || d.status === 'WAITING');
-	            renderTable(initialData);
-	        } catch (e) {
-	            console.error("데이터 로드 실패", e);
-	        }
-	    }
-	
-	    function renderTable(data) {
-	        const tbody = document.getElementById('status-tbody');
-	        if (!tbody) return;
-	
-	        tbody.innerHTML = data.map((d, i) => {
-	        	const shortOpName = formatOperationName(d.operationName);
-	        	if (currentStatusTab === 'ING') {
-	        	    // DB 상태값에 따른 UI 텍스트 및 스타일 분기 [cite: 2026-03-04]
-	        	    const isWaiting = d.status === 'WAITING';
-	        	    const statusText = isWaiting ? '대기 중' : '진행중';
-	        	    const statusClass = isWaiting ? 'bg-waiting' : 'bg-ing';
-	        	    const displayOpName = isWaiting ? '-' : (shortOpName || '-');
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+ let allData = [];
+ let currentStatusTab = 'ING';
 
-	        	    return `
-	        	        <tr>
-	        	            <td>${i + 1}</td>
-	        	            <td class="fw-bold text-indigo">${d.instructCode}</td>
-	        	            <td>${d.itemName}</td>
-	        	            <td>${d.instructQty || 0}</td>
-	        	            <td>${d.startDate ? d.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-	        	            <td><span class="badge-status ${statusClass}">${statusText}</span></td>
-	        	            <td>${displayOpName}</td>
-	        	            <td class="text-muted">${calculateElapsed(d.startDate)}</td>
-	        	            <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
-	        	        </tr>`;
-	        	} else {
-	        	    const productionQty = (d.instructQty || 0) - (d.defective || 0);
+   // 1. 헤더 정의 (순서: No, 지시번호, 제품명, 수량, [가변컬럼], 비고) [cite: 2026-03-04]
+const HEADERS = {
+ ING: `<tr>
+         <th style="width: 50px;">No.</th>
+         <th>작업지시번호</th><th>제품명</th><th>계획수량</th>
+         <th>시작시간</th><th>상태</th><th>현재공정</th>
+         <th style="width: 130px;">경과시간</th><th style="width: 100px;">비고</th>
+       </tr>`,
+ DONE: `<tr>
+         <th style="width: 50px;">No.</th>
+         <th>작업지시번호</th><th>제품명</th><th>계획수량</th>
+         <th>생산량</th><th>불량</th><th>완료일시</th>
+         <th style="width: 130px;">경과시간</th><th style="width: 100px;">비고</th>
+       </tr>` // 처리결과 삭제 후 경과시간 추가 [cite: 2026-03-04]
+};
 
-	        	    return `
-	        	        <tr>
-	        	            <td>${i + 1}</td>
-	        	            <td class="fw-bold text-indigo">${d.instructCode}</td>
-	        	            <td>${d.itemName || '-'}</td> 
-	        	            <td>${d.instructQty || 0}</td>
-	        	            <td class="text-primary fw-bold">${productionQty}</td>
-	        	            <td class="text-danger fw-bold">${d.defective || 0}</td>
-	        	            <td>${d.endDate ? d.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-	        	            <td class="text-muted">${calculateElapsed(d.endDate)}</td>
-	        	            <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
-	        	        </tr>`;
-	        	}
-	        }).join('');
-	    }
-	
-	    function calculateElapsed(startDate) {
-	        if(!startDate) return '-';
-	        const start = new Date(startDate);
-	        const now = new Date();
-	        const diff = now - start;
-	        const hours = Math.floor(diff / (1000 * 60 * 60));
-	        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-	        return `${hours}시간 ${mins}분`;
-	    }
-	
-		async function goDetail(code) {
-		    try {
-		        const response = await fetch(`/process/api/processDetail/${code}`);
-		        const data = await response.json();
-		
-		        // 헤더 정보 세팅 생략...
-		        const tbody = document.getElementById('detail-tbody');
-		        const steps = data.steps || [];
-		
-		        if (steps.length === 0) {
-		            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">등록된 공정 이력이 없습니다.</td></tr>';
-		        } else {
-		            tbody.innerHTML = steps.map((s, i) => {
-		                const goodQty = (data.instructQty || 0) - (s.defectiveQty || 0);
-		                const isScrapped = s.defectiveQty > 0 ? '<span class="text-danger modal-detail-text">폐기완료</span>' : '-';
-		                
-		                // 1. 상태에 따른 불량 수량 표시 처리 추가 [cite: 2026-03-04]
-		                // 상태가 COMPLETE일 때만 숫자를 보여주고, 아니면 '-'를 표시합니다.
-		                const displayDefective = s.status === 'COMPLETE' ? (s.defectiveQty || 0) : '-';
-		                
-		                let statusColorClass = 'status-text-waiting';
-		                if (s.status === 'COMPLETE') statusColorClass = 'status-text-complete';
-		                else if (s.status === 'PROGRESS') statusColorClass = 'status-text-progress';
-		
-		                return `
-		                    <tr>
-		                        <td class="modal-detail-text">${i + 1}</td>
-		                        <td><span class="modal-detail-text text-process-name">${s.processName || '-'}</span></td>
-		                        <td><span class="modal-detail-text ${statusColorClass}">${s.status}</span></td>
-		                        <td class="modal-detail-text">${s.startDate ? s.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-		                        <td class="modal-detail-text">${s.endDate ? s.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-		                        
-		                        <td class="fw-bold text-primary modal-detail-text">${s.status === 'COMPLETE' ? goodQty : '-'}</td>
-		                        
-		                        <td class="text-danger modal-detail-text">${displayDefective}</td>
-		                        
-		                        <td class="modal-detail-text">${isScrapped}</td>
-		                    </tr>`;
-		            }).join('');
-		        }
-		
-		        const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
-		        detailModal.show();
-		    } catch (e) {
-		        console.error("상세 정보 로드 실패", e);
-		    }
-		}
-	    
-	    function formatOperationName(name) {
-	        if (!name || name === '-') return '-';
-	        
-	        if (name.includes('프레스')) return '프레스';
-	        if (name.includes('사출')) return '사출';
-	        if (name.includes('도색') || name.includes('도장')) return '도장'; // 도색 -> 도장 치환
-	        if (name.includes('조립')) return '조립';
-	        
-	        return name; // 매칭되는 키워드 없으면 원본 표시
-	    }
-	    
-	 // ProcessStatus.html 내 filterData 함수 수정
-	    function filterData() {
-	        const dateVal = document.getElementById('dateFilter').value;      // 통합 날짜
-	        const opVal = document.getElementById('opFilter').value;          // 공정 선택
-	        const statusVal = document.getElementById('statusFilter').value;  // 상태 선택
-	        const keyword = document.getElementById('keywordFilter').value.toLowerCase().trim();
+document.addEventListener('DOMContentLoaded', () => {
+    // 초기 헤더 설정
+    document.getElementById('status-thead').innerHTML = HEADERS.ING;
+    fetchData();
+});
 
-	        const filtered = allData.filter(d => {
-	            // 1. 탭 필터링 (기존 유지)
-	            const isIngTab = currentStatusTab === 'ING';
-	            const matchesTab = isIngTab ? 
-	                (d.status === 'PROGRESS' || d.status === 'WAITING') : 
-	                (d.status === 'COMPLETE');
-	            if (!matchesTab) return false;
+   // 상단 탭 전환 함수
+function switchTab(status) {
+    currentStatusTab = status; 
+    
+    // 탭 UI 활성화 처리
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => link.classList.remove('active'));
+    if (status === 'ING') navLinks[0].classList.add('active');
+    else navLinks[1].classList.add('active');
+    
+    const opGroup = document.getElementById('opFilterGroup');
+    const statusGroup = document.getElementById('statusFilterGroup');
+    const filterArea = document.querySelector('.search-filter-area');
 
-	            // 2. 통합 날짜 필터링 (시작 시간 기준)
-	            if (dateVal) {
-	                if (!d.startDate || !d.startDate.startsWith(dateVal)) return false;
-	            }
+    if (status === 'DONE') {
+        // 1. 공정, 상태 필터 숨기기 및 값 초기화
+        opGroup.style.display = 'none';
+        statusGroup.style.display = 'none';
+        document.getElementById('opFilter').value = "";
+        document.getElementById('statusFilter').value = "";
+        
+        // 2. 완료 내역 그리드
+        filterArea.style.gridTemplateColumns = '1fr 2fr auto'; 
+    } else {
+        // 1. 모든 필터 표시
+        opGroup.style.display = 'block';
+        statusGroup.style.display = 'block';
+        
+        // 2. 진행 현황 그리드
+        filterArea.style.gridTemplateColumns = '1fr 1fr 1fr 2fr auto'; 
+    }
+    
+    // 테이블 헤더 교체 및 데이터 필터링 실행
+    document.getElementById('status-thead').innerHTML = HEADERS[status];
+    filterData();
+}
+   
+async function fetchData() {
+    try {
+        const response = await fetch('/process/api/processStatusList'); 
+        allData = await response.json();
+        
+        // 초기 로드시 'ING'(진행중) 탭에 맞는 데이터 필터링
+        const initialData = allData.filter(d => d.status === 'PROGRESS' || d.status === 'WAITING');
+        renderTable(initialData);
+    } catch (e) {
+        console.error("데이터 로드 실패", e);
+    }
+}
 
-	            // 3. 공정 필터링 
-	            if (opVal) {
-	                const opName = d.operationName || "";
-	                if (opVal === '도장') {
-	                    if (!opName.includes('도장') && !opName.includes('도색')) return false;
-	                } else if (!opName.includes(opVal)) {
-	                    return false;
-	                }
-	            }
+function renderTable(data) {
+    const tbody = document.getElementById('status-tbody');
+    if (!tbody) return;
 
-	            // 4. 상태 필터링 (이전 수정사항 적용)
-	            if (statusVal && d.status !== statusVal) return false;
+    tbody.innerHTML = data.map((d, i) => {
+  	const shortOpName = formatOperationName(d.operationName);
+  	if (currentStatusTab === 'ING') {
+  	    // DB 상태값에 따른 UI 텍스트 및 스타일 분기 [cite: 2026-03-04]
+  	    const isWaiting = d.status === 'WAITING';
+  	    const statusText = isWaiting ? '대기 중' : '진행중';
+  	    const statusClass = isWaiting ? 'bg-waiting' : 'bg-ing';
+  	    const displayOpName = isWaiting ? '-' : (shortOpName || '-');
 
-	            // 5. 검색어 필터링
-	            if (keyword) {
-	                const code = (d.instructCode || "").toLowerCase();
-	                const name = (d.itemName || "").toLowerCase();
-	                if (!code.includes(keyword) && !name.includes(keyword)) return false;
-	            }
+  	    return `
+  	        <tr>
+  	            <td>${i + 1}</td>
+  	            <td class="fw-bold text-indigo">${d.instructCode}</td>
+  	            <td>${d.itemName}</td>
+  	            <td>${d.instructQty || 0}</td>
+  	            <td>${d.startDate ? d.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+  	            <td><span class="badge-status ${statusClass}">${statusText}</span></td>
+  	            <td>${displayOpName}</td>
+  	            <td class="text-muted">${calculateElapsed(d.startDate)}</td>
+  	            <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
+  	        </tr>`;
+  	} else {
+  	    const productionQty = (d.instructQty || 0) - (d.defective || 0);
 
-	            return true;
-	        });
+  	    return `
+  	        <tr>
+  	            <td>${i + 1}</td>
+  	            <td class="fw-bold text-indigo">${d.instructCode}</td>
+  	            <td>${d.itemName || '-'}</td> 
+  	            <td>${d.instructQty || 0}</td>
+  	            <td class="text-primary fw-bold">${productionQty}</td>
+  	            <td class="text-danger fw-bold">${d.defective || 0}</td>
+  	            <td>${d.endDate ? d.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+  	            <td class="text-muted">${calculateElapsed(d.endDate)}</td>
+  	            <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
+  	        </tr>`;
+  	}
+    }).join('');
+}
 
-	        renderTable(filtered);
-	    }
-	</script>
+function calculateElapsed(startDate) {
+    if(!startDate) return '-';
+    const start = new Date(startDate);
+    const now = new Date();
+    const diff = now - start;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}시간 ${mins}분`;
+}
+
+async function goDetail(code) {
+    try {
+        const response = await fetch(`/process/api/processDetail/${code}`);
+        const data = await response.json();
+        
+        document.getElementById('modalInstructCode').innerText = data.instructCode || '-';
+        document.getElementById('modalItemName').innerText = data.itemName || '-';
+        document.getElementById('modalInstructQty').innerText = (data.instructQty || 0).toLocaleString() + ' EA';
+
+        const tbody = document.getElementById('detail-tbody');
+        const steps = data.steps || [];
+
+        // DB에서 받아온 지시 시작 시간을 기준점으로 설정
+        let currentStartTime = data.startDate ? new Date(data.startDate) : new Date(); 
+        let runningQty = data.instructQty || 0; 
+
+        tbody.innerHTML = steps.map((s, i) => {
+            const inputQty = runningQty;
+            const defective = s.defectiveQty || 0;
+            const goodQty = inputQty - defective;
+            runningQty = goodQty; 
+
+            // 2. 공정별 소요 시간 계산
+            let durationSeconds = 0;
+            const processName = s.processName || "";
+            if (processName.includes("사출")) {
+                durationSeconds = inputQty * 60; // 사출: 수량 * 60초
+            } else {
+                durationSeconds = inputQty * 3;  // 프레스, 도장, 조립: 수량 * 3초
+            }
+
+            // 3. 현재 공정의 시작 시간과 종료 시간 확정
+            const startTime = new Date(currentStartTime);
+            const endTime = new Date(startTime.getTime() + durationSeconds * 1000);
+            
+            // 4. 다음 공정의 시작 시간은 현재 공정의 종료 시간으로 업데이트
+            currentStartTime = new Date(endTime);
+
+            const isScrapped = defective > 0 ? '<span class="text-danger modal-detail-text">폐기완료</span>' : '-';
+            const displayDefective = s.status === 'COMPLETE' ? defective : '-';
+            
+            let statusColorClass = 'status-text-waiting';
+            if (s.status === 'COMPLETE') statusColorClass = 'status-text-complete';
+            else if (s.status === 'PROGRESS') statusColorClass = 'status-text-progress';
+
+            return `
+                <tr>
+                    <td class="modal-detail-text">${i + 1}</td>
+                    <td><span class="modal-detail-text text-process-name">${processName}</span></td>
+                    <td><span class="modal-detail-text ${statusColorClass}">${s.status}</span></td>
+                    
+                    <td class="modal-detail-text">${formatDateTime(startTime)}</td>
+                    <td class="modal-detail-text">${formatDateTime(endTime)}</td>
+                    
+                    <td class="fw-bold text-primary modal-detail-text">${s.status === 'COMPLETE' ? goodQty : '-'}</td>
+                    <td class="text-danger modal-detail-text">${displayDefective}</td>
+                    <td class="modal-detail-text">${isScrapped}</td>
+                </tr>`;
+        }).join('');
+
+        const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+        detailModal.show();
+    } catch (e) {
+        console.error("상세 정보 로드 실패", e);
+    }
+}
+   
+function formatOperationName(name) {
+    if (!name || name === '-') return '-';
+    
+    if (name.includes('프레스')) return '프레스';
+    if (name.includes('사출')) return '사출';
+    if (name.includes('도색') || name.includes('도장')) return '도장'; // 도색 -> 도장 치환
+    if (name.includes('조립')) return '조립';
+    
+    return name; // 매칭되는 키워드 없으면 원본 표시
+}
+   
+// ProcessStatus.html 내 filterData 함수 수정
+function filterData() {
+    const dateVal = document.getElementById('dateFilter').value;      // 통합 날짜
+    const opVal = document.getElementById('opFilter').value;          // 공정 선택
+    const statusVal = document.getElementById('statusFilter').value;  // 상태 선택
+    const keyword = document.getElementById('keywordFilter').value.toLowerCase().trim();
+
+    const filtered = allData.filter(d => {
+        // 1. 탭 필터링 (기존 유지)
+        const isIngTab = currentStatusTab === 'ING';
+        const matchesTab = isIngTab ? 
+            (d.status === 'PROGRESS' || d.status === 'WAITING') : 
+            (d.status === 'COMPLETE');
+        if (!matchesTab) return false;
+
+        // 2. 통합 날짜 필터링 (시작 시간 기준)
+        if (dateVal) {
+            if (!d.startDate || !d.startDate.startsWith(dateVal)) return false;
+        }
+
+        // 3. 공정 필터링 
+        if (opVal) {
+            const opName = d.operationName || "";
+            if (opVal === '도장') {
+                if (!opName.includes('도장') && !opName.includes('도색')) return false;
+            } else if (!opName.includes(opVal)) {
+                return false;
+            }
+        }
+
+        // 4. 상태 필터링 (이전 수정사항 적용)
+        if (statusVal && d.status !== statusVal) return false;
+
+        // 5. 검색어 필터링
+        if (keyword) {
+            const code = (d.instructCode || "").toLowerCase();
+            const name = (d.itemName || "").toLowerCase();
+            if (!code.includes(keyword) && !name.includes(keyword)) return false;
+        }
+
+        return true;
+    });
+
+    renderTable(filtered);
+}
+
+function formatDateTime(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+}
+</script>
 </th:block>
 </body>
 </html>

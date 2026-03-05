@@ -15,10 +15,6 @@ public class ProductionLowStock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 수주 ID
-    @Column(name = "order_id")
-    private Long order_id;
-
     // 품목명
     @ManyToOne
     @JoinColumn(name = "item_id")

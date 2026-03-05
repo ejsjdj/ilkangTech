@@ -1,99 +1,94 @@
+let analysisGrid; // 전역 선언
+
 document.addEventListener("DOMContentLoaded", function () {
+
   const Grid = tui.Grid;
 
-  // 더미 수주 데이터
-  const dummyOrderData = {
-    1: [
-      { productName: "제품A", orderQty: 100, stockQty: 120 },
-      { productName: "제품B", orderQty: 50, stockQty: 20 },
-    ],
-    2: [{ productName: "제품C", orderQty: 30, stockQty: 10 }],
-    3: [{ productName: "제품D", orderQty: 200, stockQty: 300 }],
-  };
-
-  // O/X 컬러 포맷터 함수
-  const statusFormatter = ({ value }) => {
-    const color = value === "O" ? "#166534" : "#ef4444"; // 초록 / 빨강
-    const bgColor = value === "O" ? "#dcfce7" : "#fee2e2";
-    return `<span style="color: ${color}; background: ${bgColor}; padding: 2px 8px; border-radius: 4px; font-weight: bold;">${value}</span>`;
-  };
-
-  // Grid 생성
-  const analysisGrid = new Grid({
+  analysisGrid = new Grid({
     el: document.getElementById("analysisGrid"),
-    rowHeaders: ["checkbox"], // 1️⃣ 체크박스 추가
     bodyHeight: 300,
     scrollX: false,
     scrollY: false,
     columns: [
-      { header: "제품명", name: "productName" },
-      { header: "주문수량", name: "orderQty", align: "center" },
-      { header: "현재재고", name: "stockQty", align: "center" },
-      {
-        header: "재고가능 여부",
-        name: "hasStock",
-        align: "center",
-        formatter: statusFormatter,
-      }, // 2️⃣ 컬러 적용
-      {
-        header: "생산가능 여부",
-        name: "producible",
-        align: "center",
-        formatter: statusFormatter,
-      },
-      {
-        header: "생산필요 여부",
-        name: "needProduction",
-        align: "center",
-        formatter: statusFormatter,
-      },
+      { header: "제품ID", name: "itemId", align: "center" },
+      { header: "생산수량", name: "productionQty", align: "center" },
+      { header: "재고검증", name: "result", align: "center" },
+      { header: "재고여부", name: "hasStock" }
     ],
   });
 
-  // 3️⃣ 체크박스 클릭 이벤트 (재고 X일 때 모달 띄우기)
+  // 수주 선택
+  document.getElementById("orderSelect").addEventListener("change", function () {
+
+    const orderId = this.value;
+
+    if (!orderId) {
+      analysisGrid.resetData([]);
+      return;
+    }
+
+    let itemId = 1;
+    let productionQty = 100;
+
+    if (orderId === "2") {
+      itemId = 2;
+      productionQty = 200;
+    }
+
+    if (orderId === "3") {
+      itemId = 3;
+      productionQty = 50;
+    }
+
+    fetch(`/api/production/check?itemId=${itemId}&productionQty=${productionQty}`)
+      .then(res => {
+
+        if (!res.ok) {
+          throw new Error("재고 부족");
+        }
+
+        return res;
+      })
+      .then(() => {
+
+        analysisGrid.resetData([
+          {
+            itemId: itemId,
+            productionQty: productionQty,
+            result: "생산 가능"
+          }
+        ]);
+
+      })
+      .catch(() => {
+
+        analysisGrid.resetData([
+          {
+            itemId: itemId,
+            productionQty: productionQty,
+            result: "재고 부족"
+          }
+        ]);
+
+        alert("재고 부족으로 생산 불가");
+      });
+
+  });
+
+  // 🔥 Grid 클릭 이벤트도 여기 안에 넣어야 함
   analysisGrid.on("click", (ev) => {
-    // 클릭한 대상이 데이터 셀이 아니면 무시
+
     if (ev.targetType !== "cell") return;
 
-    // 클릭한 컬럼이 'hasStock' 컬럼인지 확인
     if (ev.columnName === "hasStock") {
+
       const rowData = analysisGrid.getRow(ev.rowKey);
 
-      // 상태가 'X'인 경우에만 모달 표시
       if (rowData.hasStock === "X") {
         showShortageModal(rowData);
       }
     }
   });
-
-  // 수주 선택 시 동작
-  document
-    .getElementById("orderSelect")
-    .addEventListener("change", function () {
-      const orderId = this.value;
-      if (!orderId) {
-        analysisGrid.resetData([]);
-        return;
-      }
-
-      const rawData = dummyOrderData[orderId];
-      const processedData = rawData.map((item) => {
-        const hasStock = item.stockQty >= item.orderQty;
-        const needProduction = item.stockQty < item.orderQty;
-        const producible = true;
-
-        return {
-          productName: item.productName,
-          orderQty: item.orderQty,
-          stockQty: item.stockQty,
-          hasStock: hasStock ? "O" : "X",
-          producible: producible ? "O" : "X",
-          needProduction: needProduction ? "O" : "X",
-        };
-      });
-
-      analysisGrid.resetData(processedData);
-    });
 });
 
 // 4️⃣ 모달 표시 함수 (가상 원자재 계산 포함)

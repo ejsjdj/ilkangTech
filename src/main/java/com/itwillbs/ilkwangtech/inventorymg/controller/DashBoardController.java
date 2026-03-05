@@ -33,16 +33,21 @@ public class DashBoardController {
         // 금일 입고 처리 완료 건수
         model.addAttribute("inboundProcessed", dashboardService.getInboundProcessedToday());
         
-        // 출고 지시는 생산/영업팀 데이터로 나중에 교체
-        model.addAttribute("outboundOrdered", 3); 
+        // DB에서 출고 리스트를 가져옵니다.
+        List<OutboundItemDTO> outboundList = dashboardService.getOutboundScheduledList();
+        
+        // 출고 지시 카드에 들어가는 숫자도 더미데이터(3) 대신 실제 리스트 개수로 변경해 드렸습니다.
+        model.addAttribute("outboundOrdered", outboundList.size()); 
+        
         // 금일 출고 처리 완료 건수
         model.addAttribute("outboundProcessed", dashboardService.getOutboundProcessedToday());
-        
-//        model.addAttribute("imminentCount", dashboardService.getImminentStockCount());
         
         // 창고 상태 & 발주 필요 리스트
         model.addAttribute("warehouse", dashboardService.getWarehouseStatus());
         model.addAttribute("orderList", dashboardService.getOrderNeededList());
+        
+        // 여기가 핵심! 화면 하단 '최근 출고 내역' 테이블에 데이터를 넘겨줍니다.
+        model.addAttribute("outboundList", outboundList); 
         
         return "inventorymg/dashboard"; 
     }

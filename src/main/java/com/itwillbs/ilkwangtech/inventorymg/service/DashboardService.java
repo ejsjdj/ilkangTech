@@ -383,7 +383,7 @@ public class DashboardService {
         return dto;
     }
     
-    // 💡 [수정됨] 최근 출고 내역 통합 조회 (에러 해결)
+    // 최근 출고 내역 통합 조회 (에러 해결)
     public List<OutboundItemDTO> getOutboundScheduledList() {
         List<OutboundItemDTO> list = new ArrayList<>();
         
@@ -392,7 +392,6 @@ public class DashboardService {
         
         for (Object[] obj : materials) {
             String instructCode = (String) obj[0]; 
-            // 💡 에러 방지: Number로 받아서 longValue()로 변환
             Long itemId = ((Number) obj[1]).longValue();     
             String itemName = (String) obj[2];     
             Long requiredQty = ((Number) obj[3]).longValue(); 
@@ -403,7 +402,7 @@ public class DashboardService {
             list.add(OutboundItemDTO.builder()
                     .type("생산 투입") 
                     .refCode(instructCode)
-                    .itemCode(itemId) // DTO 이름은 itemCode지만 내부적으로 ID(Long) 저장
+                    .itemCode(itemId) 
                     .itemName(itemName)
                     .requiredQty(requiredQty)
                     .currentStock(currentStock)
@@ -413,17 +412,15 @@ public class DashboardService {
                     .build());
         }
         
-        // 2. 완제품 출하 실적 (영업팀)
-        // 💡 쿼리 수정: i.item_code -> i.item_id 로 변경하여 Long 타입 반환 유도
         String sql = "SELECT " +
-                     "  'SO-' || so.sales_order_id, " +  
-                     "  i.item_id, " + // 수정 완료                 
-                     "  i.item_name, " +                 
-                     "  oi.quantity, " +                 
-                     "  so.expected_delivery_date " +    
-                     "FROM sales_order so " +
-                     "JOIN order_item oi USING (sales_order_id) " +
-                     "JOIN Item i USING (item_id) ";
+                "  'SO-' || so.sales_order_id, " +  
+                "  i.item_id, " +                 
+                "  i.item_name, " +                 
+                "  oi.quantity, " +                 
+                "  so.expected_delivery_date " +    
+                "FROM sales_order so " +
+                "JOIN order_item oi ON so.sales_order_id = oi.sales_order_id " + 
+                "JOIN Item i ON oi.item_id = i.item_id ";
 
         @SuppressWarnings("unchecked")
         List<Object[]> salesList = entityManager.createNativeQuery(sql).getResultList();

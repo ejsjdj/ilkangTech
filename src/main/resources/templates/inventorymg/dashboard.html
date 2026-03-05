@@ -229,6 +229,47 @@
                     <ul class="pagination pagination-sm" id="paginationControls"></ul>
                 </div>
             </div>
+            
+            <div class="card mt-4 shadow-sm">
+			    <div class="card-header bg-white">
+			        <h5 class="m-0 font-weight-bold text-dark">최근 출고 내역 (생산 / 영업)</h5>
+			    </div>
+			    <div class="card-body p-0">
+			        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+			            <table class="table table-bordered table-hover m-0 text-center align-middle">
+			                <thead class="table-light sticky-top">
+			                    <tr>
+			                        <th>No (전표번호)</th>
+			                        <th>품목명</th>
+			                        <th>현재 재고</th>
+			                        <th>출고 수량</th> <th>출고일</th>
+			                        <th>요청팀</th>
+			                        <th>출고 사유</th>
+			                        <th>상태</th>
+			                    </tr>
+			                </thead>
+			                <tbody id="outboundListBody">
+			                    <tr th:each="outbound : ${outboundList}">
+			                        <td th:text="${outbound.refCode}">SO-1234</td>
+			                        <td th:text="${outbound.itemName}">SAMSUNG-MINI DOOR</td>
+			                        <td th:text="${outbound.currentStock}">1000</td>
+			                        <td class="text-primary font-weight-bold" th:text="${outbound.requiredQty}">50</td>
+			                        <td th:text="${outbound.dueDate}">2026-03-05</td>
+			                        <td th:text="${outbound.requestDept}">생산팀</td>
+			                        <td th:text="${outbound.type}">자재출고</td>
+			                        <td>
+			                            <span class="badge bg-secondary">출고 완료</span>
+			                        </td>
+			                    </tr>
+			                    
+			                    <tr th:if="${#lists.isEmpty(outboundList)}">
+			                        <td colspan="8" class="text-muted py-4">최근 출고된 내역이 없습니다.</td>
+			                    </tr>
+			                </tbody>
+			            </table>
+			        </div>
+			    </div>
+			</div>
         </div>
         
         <div class="modal fade" id="rackModal" tabindex="-1" aria-labelledby="rackModalLabel" aria-hidden="true">

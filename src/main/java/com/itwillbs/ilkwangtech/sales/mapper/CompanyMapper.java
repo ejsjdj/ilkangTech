@@ -17,8 +17,8 @@ public interface CompanyMapper {
 
     List<CompanyDTO> selectByPage(@Param("offset") long offset,
                                   @Param("pageSize") long pageSize,
-                                  @Param("category") CompanyCategory category);
+                                  @Param("companyType") CompanyCategory companyType);
 
-    long selectCount(@Param("category") CompanyCategory category);
+    long selectCount(@Param("companyType") CompanyCategory companyType);
 
 }

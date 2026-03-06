@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.sales.service.company;
 import com.itwillbs.ilkwangtech.sales.constant.CompanyCategory;
 import com.itwillbs.ilkwangtech.sales.constant.CompanyStatus;
 import com.itwillbs.ilkwangtech.sales.dto.CompanyDTO;
+import com.itwillbs.ilkwangtech.sales.mapper.CompanyMapper;
 import com.itwillbs.ilkwangtech.sales.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import java.util.List;
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final CompanyMapper companyMapper;
 
     @Override
     @Transactional
@@ -29,16 +31,16 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CompanyDTO> getCompanyList(Pageable pageable, CompanyCategory category) {
+    public List<CompanyDTO> getCompanyList(Pageable pageable, CompanyCategory companyType) {
         long offset = pageable.getOffset();
         long pageSize = pageable.getPageSize();
-        return companyRepository.selectByPage(offset, pageSize, category);
+        return companyMapper.selectByPage(offset, pageSize, companyType);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public long getTotalCount(CompanyCategory category) {
-        return companyRepository.selectCount(category);
+    public long getTotalCount(CompanyCategory companyType) {
+        return companyMapper.selectCount(companyType);
     }
 
 }

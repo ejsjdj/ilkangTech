@@ -12,21 +12,22 @@ import lombok.ToString;
 @ToString
 public class CompanyDTO {
 
-//    CREATE TABLE Company (
-//    company_id NUMBER(19) GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-//    company_code VARCHAR2(50) NOT NULL UNIQUE,
-//    company_name VARCHAR2(50) NOT NULL,
-//    company_type INTEGER,
-//    CEO_name VARCHAR2(50),
-//    TEL_NO VARCHAR2(20)
-//    );
+    //    CREATE TABLE Company (
+    //            company_id    NUMBER(19) GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    //    company_code  VARCHAR2(50)  NOT NULL UNIQUE,
+    //    company_name  VARCHAR2(50)  NOT NULL,
+    //    company_type  INTEGER,
+    //    company_email VARCHAR2(255),
+    //    CEO_name      VARCHAR2(50),
+    //    TEL_NO        VARCHAR2(20)
+    //);
 
     private Long companyId;
     private String companyCode;
     private String companyName;
-    private String email;
-    private String companyType;
-    private CompanyCategory category;
+    private String companyEmail;
+    private CompanyCategory companyType;
     private String ceoName;
     private String telNo;
+
 }

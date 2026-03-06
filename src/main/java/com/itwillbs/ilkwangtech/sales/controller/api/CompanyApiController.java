@@ -6,6 +6,7 @@ import com.itwillbs.ilkwangtech.sales.dto.CompanyDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PageResponseDTO;
 import com.itwillbs.ilkwangtech.sales.service.company.CompanyService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/sales/company")
 @RequiredArgsConstructor
+@Log4j2
 public class CompanyApiController {
 
     private final CompanyService companyService;
@@ -28,9 +30,14 @@ public class CompanyApiController {
 
     // 2. 고객사 목록 조회
     @GetMapping("/list")
-    public ResponseEntity<ApiResponseDTO<PageResponseDTO<CompanyDTO>>> getCustomerList(Pageable pageable, @RequestParam CompanyCategory category) {
-        List<CompanyDTO> list = companyService.getCompanyList(pageable, category);
-        long total = companyService.getTotalCount(category);
+    public ResponseEntity<ApiResponseDTO<PageResponseDTO<CompanyDTO>>> getCustomerList(Pageable pageable, @RequestParam CompanyCategory companyType) {
+        List<CompanyDTO> list = companyService.getCompanyList(pageable, companyType);
+
+        for (CompanyDTO dto : list) {
+            log.info(dto);
+        }
+
+        long total = companyService.getTotalCount(companyType);
 
         PageResponseDTO<CompanyDTO> pageData = new PageResponseDTO<>(
                 list, total, (int) Math.ceil((double) total / pageable.getPageSize())

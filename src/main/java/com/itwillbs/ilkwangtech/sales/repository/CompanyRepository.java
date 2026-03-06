@@ -23,12 +23,12 @@ public class CompanyRepository {
         return companyMapper.selectByName(name);
     }
 
-    public List<CompanyDTO> selectByPage(Long offset, Long pageSize, CompanyCategory category) {
-        return companyMapper.selectByPage(offset, pageSize, category);
+    public List<CompanyDTO> selectByPage(Long offset, Long pageSize, CompanyCategory companyType) {
+        return companyMapper.selectByPage(offset, pageSize, companyType);
     }
 
-    public long selectCount(CompanyCategory category) {
-        return companyMapper.selectCount(category);
+    public long selectCount(CompanyCategory companyType) {
+        return companyMapper.selectCount(companyType);
     }
 
 }

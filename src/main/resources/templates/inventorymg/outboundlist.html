@@ -96,7 +96,7 @@
                 }
             });
             
-            // 💡 3. Toast UI Grid 초기화 및 항목 세팅
+        	// 💡 3. Toast UI Grid 초기화 및 항목 세팅 (너비 및 디자인 밸런스 완벽 조정)
             grid = new tui.Grid({
                 el: document.getElementById('grid'),
                 scrollX: false,
@@ -106,16 +106,21 @@
                 pageOptions: {
                     useClient: true, 
                     perPage: 15,       // 한 페이지당 15개 
-                    visiblePages: 10   // 하단 페이지네이션 10개씩 표시 (1~10, 11~20...)
+                    visiblePages: 10   // 하단 페이지네이션 10개씩 표시
                 },
                 columns: [
-                    { header: '품목 구분', name: 'itemType', align: 'center', sortable: true, width: 100 },
-                    { header: 'LOT 번호', name: 'lotNumber', align: 'center' },
-                    { header: '제품명', name: 'itemName', align: 'left' },
-                    { header: '출고량', name: 'outboundQty', align: 'right', width: 120, 
+                    // 🌟 다른 컬럼들의 너비를 넉넉히 주어 '제품명'이 과도하게 늘어나는 것을 방지합니다.
+                    { header: '품목 구분', name: 'itemType', align: 'center', sortable: true, width: 150 },
+                    
+                    // 🌟 제품명은 width를 빼서 남은 공간을 자연스럽게 채우도록 둡니다 (최소 너비만 보장)
+                    { header: '제품명', name: 'itemName', align: 'left', minWidth: 250 },
+                    
+                    { header: '출고량', name: 'outboundQty', align: 'right', width: 150, 
                       formatter: ({value}) => `<span class="text-primary fw-bold">${value ? value.toLocaleString() : 0}</span>` },
-                    { header: '출고일', name: 'outboundDate', align: 'center', sortable: true, width: 150 },
-                    { header: '출고팀', name: 'requestDept', align: 'center', sortable: true, width: 120 }
+                      
+                    // 🌟 날짜와 팀 컬럼의 너비를 키워서 오른쪽 마감 라인이 깔끔하게 떨어지도록 수정
+                    { header: '출고일', name: 'outboundDate', align: 'center', sortable: true, width: 200 },
+                    { header: '출고팀', name: 'requestDept', align: 'center', sortable: true, width: 150 }
                 ]
             });
 

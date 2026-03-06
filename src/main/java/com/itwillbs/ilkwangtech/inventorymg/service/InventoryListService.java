@@ -232,11 +232,12 @@ public class InventoryListService {
         if (typeObj == null) return "원자재"; 
         String typeStr = typeObj.toString().toUpperCase();
         
-        if (typeStr.equals("0") || typeStr.contains("RAW")) return "원자재";
-        if (typeStr.equals("1") || typeStr.contains("SEMI")) return "반제품";
-        if (typeStr.equals("2") || typeStr.contains("FINISHED")) return "완제품";
+        // 💡 유저님의 실제 DB 저장 순서에 맞게 조건 변경 (0: 완제품, 1: 원자재, 2: 반제품)
+        if (typeStr.equals("0") || typeStr.contains("FINISHED")) return "완제품";
+        if (typeStr.equals("1") || typeStr.contains("RAW")) return "원자재";
+        if (typeStr.equals("2") || typeStr.contains("SEMI")) return "반제품";
         
-        return "원자재";
+        return "원자재"; // 매핑 실패 시 기본값
     }
 
     // 날짜(Datetime)를 화면 규격(YYYY-MM-DD)에 맞게 자르기

@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.inventorymg.controller;
 
 import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryListDTO;
+import com.itwillbs.ilkwangtech.inventorymg.dto.OutboundListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.service.InventoryListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -67,5 +68,24 @@ public class InventoryListController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    
+    // 출고 목록 페이지 화면 연결
+    @GetMapping("/outboundlist")
+    public String outboundList() {
+        return "inventorymg/outboundlist"; 
+    }
+    
+    // 출고 목록 페이지 데이터 로드 API
+    @GetMapping("/api/outbound-data")
+    public ResponseEntity<List<OutboundListDTO>> getOutboundDataList(
+            @RequestParam(defaultValue = "ALL") String tab,
+            @RequestParam(defaultValue = "itemName") String searchType,
+            @RequestParam(defaultValue = "") String keyword) {
+            
+        // 서비스로 탭, 검색조건, 검색어 전달
+        List<OutboundListDTO> resultList = inventoryListService.getOutboundListData(tab, searchType, keyword);
+        
+        return ResponseEntity.ok(resultList);
     }
 }

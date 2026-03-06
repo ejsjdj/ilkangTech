@@ -1,15 +1,19 @@
 package com.itwillbs.ilkwangtech.inventorymg.service;
 
 import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryListDTO;
+import com.itwillbs.ilkwangtech.inventorymg.dto.OutboundListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryHistoryEntity;
 import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryHistoryRepository;
 import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryRepository;
+
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // 💡 반드시 추가!
+import org.springframework.transaction.annotation.Transactional; 
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +23,7 @@ public class InventoryListService {
 
     private final InventoryRepository inventoryRepository;
     private final InventoryHistoryRepository historyRepository;
+    private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<InventoryListDTO> getFilteredInventoryList(String tab, String searchType, String keyword) {
@@ -132,5 +137,112 @@ public class InventoryListService {
         historyRepository.save(history);
 
         return "폐기 처리가 완료되었습니다. (사유: " + reason + ")";
+    }
+
+    // 출고 목록 조회 핵심 로직
+    public List<OutboundListDTO> getOutboundListData(String tab, String searchType, String keyword) {
+        List<OutboundListDTO> allData = new ArrayList<>();
+
+        // 1. 생산팀 (Production) 출고 내역 수집
+        String prodSql = 
+            "SELECT MAX(p.item_type), p.item_name, SUM(target.req_qty), MAX(i.start_date) " +
+            "FROM (" +
+            "    SELECT i.id AS instruct_id, p.item_id, (COALESCE(i.instruct_qty, 0) * b.require_qty) AS req_qty " +
+            "    FROM production_instruct i " +
+            "    JOIN bom b ON i.item_id = b.child_item_id " +
+            "    JOIN item p ON b.parent_item_id = p.item_id " +
+            "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
+            "    UNION ALL " +
+            "    SELECT i.id AS instruct_id, p.item_id, (w.addition_qty * b.require_qty) AS req_qty " +
+            "    FROM production_instruct i " +
+            "    JOIN production_worker w ON i.id = w.instruct_id " +
+            "    JOIN bom b ON w.item_id = b.child_item_id " +
+            "    JOIN item p ON b.parent_item_id = p.item_id " +
+            "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
+            "      AND w.addition_qty IS NOT NULL AND w.addition_qty > 0 " +
+            ") target " +
+            "JOIN item p ON target.item_id = p.item_id " +
+            "JOIN production_instruct i ON target.instruct_id = i.id " +
+            "GROUP BY p.item_id, p.item_name, target.instruct_id " +
+            "HAVING COALESCE(SUM(target.req_qty), 0) > 0";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> prodResults = entityManager.createNativeQuery(prodSql).getResultList();
+        
+        for (Object[] obj : prodResults) {
+            allData.add(OutboundListDTO.builder()
+                .itemType(convertItemType(obj[0]))
+                .lotNumber("-") // 복수의 원자재가 출고되므로 LOT는 하이픈 처리
+                .itemName((String) obj[1])
+                .outboundQty(((Number) obj[2]).longValue())
+                .outboundDate(formatDate(obj[3]))
+                .requestDept("생산팀")
+                .build());
+        }
+
+        // 2. 영업팀 (Sales) 출고 내역 수집
+        String salesSql = 
+            "SELECT i.item_type, i.item_name, oi.quantity, so.expected_delivery_date " +
+            "FROM sales_order so " +
+            "JOIN order_item oi ON so.sales_order_id = oi.sales_order_id " +
+            "JOIN item i ON oi.item_id = i.item_id ";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> salesResults = entityManager.createNativeQuery(salesSql).getResultList();
+        
+        for (Object[] obj : salesResults) {
+            allData.add(OutboundListDTO.builder()
+                .itemType(convertItemType(obj[0]))
+                .lotNumber("-") 
+                .itemName((String) obj[1])
+                .outboundQty(((Number) obj[2]).longValue())
+                .outboundDate(formatDate(obj[3]))
+                .requestDept("영업팀")
+                .build());
+        }
+
+        // 3. 자바 Stream을 이용한 탭 & 검색어 필터링
+        return allData.stream()
+            // 탭 필터링
+            .filter(dto -> {
+                if ("ALL".equalsIgnoreCase(tab)) return true;
+                if ("RAW".equalsIgnoreCase(tab)) return "원자재".equals(dto.getItemType());
+                if ("SEMI".equalsIgnoreCase(tab)) return "반제품".equals(dto.getItemType());
+                if ("FINISHED".equalsIgnoreCase(tab)) return "완제품".equals(dto.getItemType());
+                if ("SALES".equalsIgnoreCase(tab)) return "영업팀".equals(dto.getRequestDept());
+                if ("PRODUCTION".equalsIgnoreCase(tab)) return "생산팀".equals(dto.getRequestDept());
+                return true;
+            })
+            // 검색어 필터링
+            .filter(dto -> {
+                if (keyword == null || keyword.trim().isEmpty()) return true;
+                String k = keyword.toLowerCase();
+                switch (searchType) {
+                    case "itemName": return dto.getItemName() != null && dto.getItemName().toLowerCase().contains(k);
+                    case "requestDept": return dto.getRequestDept() != null && dto.getRequestDept().toLowerCase().contains(k);
+                    case "outboundDate": return dto.getOutboundDate() != null && dto.getOutboundDate().contains(k);
+                    default: return true;
+                }
+            })
+            .collect(Collectors.toList());
+    }
+
+    // DB의 ItemType을 한글로 예쁘게 변환
+    private String convertItemType(Object typeObj) {
+        if (typeObj == null) return "원자재"; 
+        String typeStr = typeObj.toString().toUpperCase();
+        
+        if (typeStr.equals("0") || typeStr.contains("RAW")) return "원자재";
+        if (typeStr.equals("1") || typeStr.contains("SEMI")) return "반제품";
+        if (typeStr.equals("2") || typeStr.contains("FINISHED")) return "완제품";
+        
+        return "원자재";
+    }
+
+    // 날짜(Datetime)를 화면 규격(YYYY-MM-DD)에 맞게 자르기
+    private String formatDate(Object dateObj) {
+        if (dateObj == null) return LocalDate.now().toString();
+        String dateStr = dateObj.toString();
+        return dateStr.length() >= 10 ? dateStr.substring(0, 10) : dateStr;
     }
 }

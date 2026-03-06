@@ -22,9 +22,8 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     @Transactional
     public void createCompany(CompanyDTO companyDTO) {
-        if (companyRepository.findByName(companyDTO.getName()) != null)
+        if (companyRepository.findByName(companyDTO.getCompanyName()) != null)
             throw new IllegalArgumentException("이미 등록된 회사입니다.");
-        companyDTO.setValid(CompanyStatus.ACTIVE);
         companyRepository.save(companyDTO);
     }
 

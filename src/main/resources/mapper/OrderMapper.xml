@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.OrderMapper">
+
+    <resultMap id="OrderResultMap" type="com.itwillbs.ilkwangtech.sales.dto.OrderDTO">
+        <id property="orderId" column="order_id"/>
+        <result property="orderCode" column="order_code"/>
+        <result property="companyName" column="company_name"/>
+        <result property="expectedDeliveryDatetime" column="expected_delivery_datetime" />
+    </resultMap>
+
+    <resultMap id="OrderDetailResultMap" type="com.itwillbs.ilkwangtech.sales.dto.OrderDetailDTO">
+        <id property="orderId" column="order_id"/>
+    </resultMap>
+
+
+
+</mapper>

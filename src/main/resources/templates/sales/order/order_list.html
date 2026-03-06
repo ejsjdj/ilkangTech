@@ -73,68 +73,70 @@
                 </table>
             </div>
         </div>
+
+        <script th:inline="javascript">
+            function showList(element) {
+                document.querySelectorAll('.bookmark').forEach(btn => btn.classList.remove('active'));
+                element.classList.add('active');
+
+                const category = element.dataset.category;
+                if (!category) return;
+
+                document.getElementById('list-little').textContent =
+                    category == 'PENDING' ? '납품예정' : '납품완료';
+
+                loadList(category);
+            }
+
+            async function loadList(category) {
+                const tbody = document.getElementById('list-body');
+                if (!tbody) return;
+                const page = 0;
+                const url = `/api/orders/list?category=${category}&page=${page}&size=10`;
+
+                try {
+
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                    const json = await res.json();
+
+                    if (!json.success) {
+                        alert(`로드 실패: ${json.message || '알 수 없는 오류'}`);
+                        return;
+                    }
+
+                    const orders = json.data?.content ?? [];
+
+                    tbody.innerHTML = orders.length === 0
+                        ? '<tr><td colspan="5" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>'
+                        : '';
+
+                    orders.forEach(order => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${order.orderCode ?? '-'}</td>
+                            <td>${order.companyName ?? '-'}</td>
+                            <td>${order.deliveryDate ?? '-'}</td>
+                            <td>
+                                <button class="btn-add-stick"
+                                        onclick="openDetail(${order.orderId})">자세히</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                } catch (err) {
+                    console.error('리스트 로드 오류:', err);
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">서버 연결 오류가 발생했습니다.</td></tr>';
+                }
+
+            }
+        </script>
+
     </div>
 
 
-<script>
-    function showList(element) {
-        document.querySelectorAll('.bookmark').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
 
-        const category = element.dataset.category;
-        if (!category) return;
-
-        document.getElementById('list-little').textContent =
-            category == 'PENDING' ? '납품예정' : '납품완료';
-
-        loadList(category);
-    }
-
-    async function loadList(category) {
-        const tbody = document.getElementById('list-body');
-        if (!tbody) return;
-        const page = 0;
-        const url = `/api/sales/order/list?orderType=${category}&page=${page}&size=10`;
-
-        try {
-
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            const json = await res.json();
-
-            if (!json.success) {
-                alert(`로드 실패: ${json.message || '알 수 없는 오류'}`);
-                return;
-            }
-
-            const orders = json.data?.content ?? [];
-
-            tbody.innerHTML = orders.length === 0
-                ? '<tr><td colspan="5" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>'
-                : '';
-
-            orders.forEach(order => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${order.orderCode ?? '-'}</td>
-                    <td>${order.companyName ?? '-'}</td>
-                    <td>${order.deliveryDate ?? '-'}</td>
-                    <td>
-                        <button class="btn-add-stick"
-                                onclick="openDetail(${order.orderId})">자세히</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-        } catch (err) {
-            console.error('리스트 로드 오류:', err);
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">서버 연결 오류가 발생했습니다.</td></tr>';
-        }
-
-    }
-
-</script>
 </body>
 </html>

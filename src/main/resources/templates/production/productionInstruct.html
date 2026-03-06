@@ -285,6 +285,20 @@
           </table>
         </div>
       </div>
+
+      <div id="defectModal" class="modal" style="display: none; z-index: 10000;">
+        <div class="modal-content" style="width: 300px; margin: 15% auto;">
+          <span class="close-defect" style="float:right; cursor:pointer;">&times;</span>
+          <div class="modal-title" style="font-size: 16px">불량 수량 등록</div>
+          <div class="mb-3">
+            <input type="number" id="defectiveInput" class="form-control" placeholder="수량 입력" min="0">
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-danger w-100" id="submitDefect">등록 완료</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </body>

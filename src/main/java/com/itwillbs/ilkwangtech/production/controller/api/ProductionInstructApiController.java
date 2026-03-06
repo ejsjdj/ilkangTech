@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,6 +63,7 @@ public class ProductionInstructApiController {
 
 
     // 4. 불량 수량 등록
+    @PostMapping("/defective")
     public void updateProductionInstructDefective(@RequestParam(value = "DefectiveQty") Long defectiveQty,
                                                   @RequestParam(value = "instructId") Long instructId,
                                                   @RequestParam(value = "workerId") Long workerId){

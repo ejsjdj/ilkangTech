@@ -196,34 +196,38 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     @Override
     @Transactional
     public void completeInstruct(Long planeId, Long instructId, Long workerId){
-        // 1. 현재 작업자 상태 변경
-        ProductionWorkerEntity workerEntity = productionWorkerRepository
-                .findById(workerId).orElseThrow(() -> new IllegalArgumentException("작업자 정보가 없습니다."));
+
+        // 1. 작업자 상태 변경
+        ProductionWorkerEntity workerEntity = productionWorkerRepository.findById(workerId).orElseThrow();
         workerEntity.setStatus("COMPLETE");
 
-        // 2. 상위 작업지시(Instruct) 엔티티 가져오기
-        ProductionInstructEntity instructEntity = productionInsturctRepository
-                .findById(instructId).orElseThrow(() -> new IllegalArgumentException("작업지시 정보가 없습니다."));
+        // 2. 작업지시 엔티티 가져오기
+        ProductionInstructEntity currentInstruct = productionInsturctRepository.findById(instructId).orElseThrow();
 
         // 3. 모든 작업자가 COMPLETE인지 확인
-        boolean allWorkersComplete = instructEntity.getWorkers().stream()
+        boolean allWorkersComplete = currentInstruct.getWorkers().stream()
                 .allMatch(w -> "COMPLETE".equals(w.getStatus()));
 
         if (allWorkersComplete) {
-            // 4. 작업지시 상태를 COMPLETE로 변경
-            instructEntity.setStatus("COMPLETE");
+            currentInstruct.setStatus("COMPLETE");
 
-            // 5. 상위 생산계획(Plane) 엔티티 가져오기
-            ProductionPlaneEntity planeEntity = productionPlaneRepository
-                    .findById(planeId).orElseThrow(() -> new IllegalArgumentException("생산계획 정보가 없습니다."));
+            // 중요: DB와 영속성 컨텍스트를 동기화하여 다음 조회 시 COMPLETE 상태가 반영되도록 함
+            productionInsturctRepository.saveAndFlush(currentInstruct);
 
-            // 6. 해당 생산계획에 속한 모든 작업지시(Instruct)가 COMPLETE인지 확인
-            boolean allInstructsComplete = planeEntity.getInstruct().stream()
-                    .allMatch(i -> "COMPLETE".equals(i.getStatus()));
+            // 5. 생산계획 엔티티 가져오기
+            ProductionPlaneEntity planeEntity = productionPlaneRepository.findById(planeId).orElseThrow();
 
-            if (allInstructsComplete) {
-                // 7. 생산계획 상태를 COMPLETE로 변경
+            // 6. 상태 검사 (로그를 찍어보세요)
+            long totalInstructs = planeEntity.getInstruct().size();
+            long completeCount = planeEntity.getInstruct().stream()
+                    .filter(i -> "COMPLETE".equals(i.getStatus()))
+                    .count();
+
+            System.out.println("전체 지시 수: " + totalInstructs + ", 완료된 지시 수: " + completeCount);
+
+            if (totalInstructs == completeCount) {
                 planeEntity.setStatus("COMPLETE");
+                productionPlaneRepository.save(planeEntity);
             }
         }
     }

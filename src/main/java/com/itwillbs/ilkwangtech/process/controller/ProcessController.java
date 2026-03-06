@@ -73,15 +73,16 @@ public class ProcessController {
 	@GetMapping("/api/lot/{lotId}/{type}")
 	@ResponseBody
 	public List<?> getLotSubDetail(
-		    @PathVariable("lotId") String lotId,
-		    @PathVariable("type") String type  
-		) {
+	        @PathVariable("lotId") String lotId,
+	        @PathVariable("type") String type  
+	    ) {
 	    log.info(">>>>>>>>>>>> LOT 서브 상세 호출: " + lotId + ", 타입: " + type);
 	    
-	    if ("finished_usage".equals(type)) {
+	    if ("FINISHED_USAGE".equalsIgnoreCase(type)) {
 	        return lotTraceService.getFinishedUsageList(lotId);
 	    }
-	    return null;
+	    
+	    return null; 
 	}
 	
 	@GetMapping("/api/lot/{lotId}/finished_usage") // JS에서 호출하는 경로와 일치해야 함
@@ -89,4 +90,6 @@ public class ProcessController {
 	public List<Map<String, Object>> getFinishedUsage(@PathVariable("lotId") String lotId) {
 	    return lotTraceService.getFinishedUsageList(lotId);
 	}
+	
+	
 }

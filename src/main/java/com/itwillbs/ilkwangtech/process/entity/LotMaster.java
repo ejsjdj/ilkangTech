@@ -14,7 +14,8 @@ import lombok.Setter;
 @Getter 
 @Setter
 public class LotMaster {
-    @Id
+	
+	@Id
     @Column(name = "lot_id", length = 30)
     private String lotId; // LOT 고유 번호
 

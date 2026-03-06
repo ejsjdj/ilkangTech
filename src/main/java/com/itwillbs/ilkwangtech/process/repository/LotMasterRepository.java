@@ -84,20 +84,18 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
 	}
 	
 	@Query(value = "SELECT lotId, itemName, createdDate, lotType, status " +
-            "FROM ( " +
-            "    /* 1. 완제품(ASSEMBLY): JOIN을 통해 제품명(item_name)을 가져옵니다 */ " +
-            "    SELECT a.lot_id AS lotId, i.item_name AS itemName, " +
-            "           a.assembly_date AS createdDate, 'F' AS lotType, 'DONE' AS status " +
-            "    FROM ASSEMBLY a " +
-            "    JOIN LOT_MASTER lm ON a.lot_id = lm.lot_id " +
-            "    JOIN item i ON lm.product_id = i.item_id " +
-            "    UNION ALL " +
-            "    /* 2. 반제품(PART_PRODUCTION): 기존 컬럼명(part_name, production_date) 활용 */ " +
-            "    SELECT lot_id AS lotId, part_name AS itemName, " +
-            "           production_date AS createdDate, 'S' AS lotType, 'DONE' AS status " +
-            "    FROM PART_PRODUCTION " +
-            ") " +
-            "ORDER BY createdDate DESC", nativeQuery = true)
+	        "FROM ( " +
+	        "    SELECT a.lot_id AS lotId, i.item_name AS itemName, " +
+	        "           CAST(a.assembly_date AS TIMESTAMP) AS createdDate, 'F' AS lotType, 'DONE' AS status " + // CAST 추가
+	        "    FROM ASSEMBLY a " +
+	        "    JOIN LOT_MASTER lm ON a.lot_id = lm.lot_id " +
+	        "    JOIN item i ON lm.product_id = i.item_id " +
+	        "    UNION ALL " +
+	        "    SELECT lot_id AS lotId, part_name AS itemName, " +
+	        "           CAST(production_date AS TIMESTAMP) AS createdDate, 'S' AS lotType, 'DONE' AS status " + // CAST 추가
+	        "    FROM PART_PRODUCTION " +
+	        ") " +
+	        "ORDER BY createdDate DESC", nativeQuery = true)
 	List<LotSummaryMapping> findAllProdAndSemiLots();
 	
 	/* LotMasterRepository.java */

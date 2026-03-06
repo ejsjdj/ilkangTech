@@ -299,11 +299,22 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadLotList() {
     try {
         const response = await fetch('/process/api/lots');
-        allLotData = await response.json(); 
+        const result = await response.json(); 
+        
+        // 서버가 리스트를 바로 주지 않고 객체를 줄 경우 대비
+        if (Array.isArray(result)) {
+            allLotData = result;
+        } else if (result && Array.isArray(result.data)) {
+            allLotData = result.data;
+        } else {
+            console.error("데이터 형식이 올바르지 않습니다:", result);
+            allLotData = []; // 에러 시 빈 배열로 초기화
+        }
         
         filterLotList(); 
     } catch (error) {
         console.error('데이터 로드 실패:', error);
+        allLotData = [];
     }
 }
 
@@ -315,7 +326,7 @@ function renderLotTable(lots) {
     lots.forEach(lot => {
         const date = new Date(lot.createdDate);
         const formattedDate = date.toLocaleDateString();
-        const isRawMaterial = (lot.lotType === 'M' || lot.lotType === 'RW');
+        const isRawMaterial = (lot.lotType === 'R' || lot.lotType === 'RW');
         
         const accordionContent = isRawMaterial
             ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
@@ -505,7 +516,7 @@ function filterLotList() {
             if (typeVal !== 'ALL' && lot.lotType !== typeVal) return false;
         } else {
             // [수정] 원자재 탭: lotType이 M/RW이면서 동시에 LOT 코드가 'RW-'로 시작해야 함
-            const isRawType = (lot.lotType === 'M' || lot.lotType === 'RW');
+            const isRawType = (lot.lotType === 'R' || lot.lotType === 'RW');
             const isRawPrefix = lot.lotId && lot.lotId.startsWith('RW-');
             
             if (!(isRawType && isRawPrefix)) return false;

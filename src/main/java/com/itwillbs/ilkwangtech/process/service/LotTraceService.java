@@ -61,15 +61,13 @@ public class LotTraceService {
             dto.setItemName(res.getItemName() != null ? res.getItemName() : "N/A");
             dto.setStatus(res.getStatus());
             dto.setCreatedDate(res.getCreatedDate());
-            dto.setLotType("M");
+            dto.setLotType("R");
             combinedList.add(dto);
         });
 
         return combinedList;
     }
     
-    /* LotTraceService.java */
-
     public LotDetailResponseDTO getLotDetail(String lotId) {
         // 1. 먼저 기본 LOT 정보를 가져와서 타입을 확인합니다.
         LotMaster master = lotMasterRepository.findById(lotId)

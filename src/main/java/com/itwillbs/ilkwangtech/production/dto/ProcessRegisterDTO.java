@@ -14,19 +14,22 @@ public class ProcessRegisterDTO {
     private String processName;
     private Long outPutItemId;
     private Long productionQty;
+    private String outputItemName;
 
     public ProcessRegisterDTO(
             Long sequence,
             Long processId,
             String processCode,
             String processName,
-            Long outPutItemId
+            Long outPutItemId,
+            String outputItemName
     ) {
         this.sequence = sequence;
         this.processId = processId;
         this.processCode = processCode;
         this.processName = processName;
         this.outPutItemId = outPutItemId;
+        this.outputItemName = outputItemName;
     }
 
 }

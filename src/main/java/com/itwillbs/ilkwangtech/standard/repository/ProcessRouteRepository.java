@@ -42,7 +42,8 @@ public interface ProcessRouteRepository extends JpaRepository<ProcessRouteEntity
             pr.operation.id,
             pr.operation.operationCode,
             pr.operation.name,
-            pr.outItem.itemId
+            pr.outItem.itemId,
+            pr.outItem.itemName
             )
             FROM ProcessRouteEntity pr
             WHERE pr.item.id = :itemId

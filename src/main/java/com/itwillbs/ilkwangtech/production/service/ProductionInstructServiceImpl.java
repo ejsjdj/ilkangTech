@@ -233,9 +233,4 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         instructEntity.setStatus("CACEL");
         planeEntity.setStatus("CACEL");
     }
-
-    // 4. 불량 등록
-//    public void completeInstructDefective(Long defectiveQty, String instructCode, Long processId){
-//
-//    }
 }

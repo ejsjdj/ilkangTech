@@ -56,25 +56,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
           tr.innerHTML = `
               <td>${process.sequence}</td>
-              <td>${process.outPutItemId}</td>
-              <td>${process.processCode}</td>
-              <td>${process.processName}</td>
-              <td>${process.productionQty}</td>
-              <td>
-                <input type="number"
-                class="additionQty"
-                value="0"
-                min="0" />
-                </td>
-              <td>
-              <select class="memberSelect"
+        <td>${process.outPutItemId}</td>
+        <td>${process.outputItemName || '-'}</td> <td>${process.processCode}</td>
+        <td>${process.processName}</td>
+        <td>${process.productionQty}</td>
+        <td>
+            <input type="number" class="additionQty" value="0" min="0" />
+        </td>
+        <td>
+            <select class="memberSelect"
                 data-sequence="${process.sequence}"
                 data-process-id="${process.processId}"
                 data-production-qty="${process.productionQty}"
                 data-output-item-id="${process.outPutItemId}">
+                <option value="">-- 선택 --</option>
                 ${memberOptions}
-              </select>
-            </td>
+            </select>
+        </td>
           `;
 
           tbody.appendChild(tr);

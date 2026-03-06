@@ -51,15 +51,20 @@ public class ProductionWorkerEntity{
     @Column(name = "addition_qty")
     private Long additionQty;
 
+    @Column(name = "defective_qty")
+    private Long defectiveQty;
+
+    @Column(name = "actual_qty")
+    private Long actualQty;
+
     @Column(name = "sequence")
     private Long sequence;
-
-    @Column(name = "defective")
-    private Long defective;
 
     @ManyToOne
     @JoinColumn(name = "item_id")
     private ItemEntity item;
+
+
 
     public static ProductionWorkerEntity create(ProcessEntity process,
                                                 Member member,

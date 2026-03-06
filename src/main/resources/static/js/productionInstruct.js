@@ -143,7 +143,7 @@ function handleWork(button, type) {
   // 타입별 URL 설정
   const urlMap = {
     start: '/api/production_instruct/start',
-    stop: '/api/production_instruct/stop',
+    stop: '/api/production_instruct/cancel',
     complete: '/api/production_instruct/complete',
     defect: '/api/production_instruct/defect'
   };

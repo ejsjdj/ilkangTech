@@ -1,10 +1,9 @@
 package com.itwillbs.ilkwangtech.sales.controller.api;
 
 import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
-import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDTO;
-import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderDetailDTO;
-import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderInsertDTO;
+import com.itwillbs.ilkwangtech.sales.dto.*;
 import com.itwillbs.ilkwangtech.sales.service.purchaseorder.PurchaseOrderService;
+import com.itwillbs.ilkwangtech.sales.service.purchasereturn.PurchaseReturnService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -14,7 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sales")
@@ -23,27 +23,37 @@ import java.util.List;
 public class ProcurementApiController {
 
     private final PurchaseOrderService purchaseOrderService;
+    private final PurchaseReturnService purchaseReturnService;
 
     // 1. 발주 리스트 조회
     @GetMapping("/procurement")
-    public Page<PurchaseOrderDTO> getProcurement(Pageable pageable,
-                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-                                                 @RequestParam(required = false) String searchType,
-                                                 @RequestParam(required = false) String keyword
-                                               ){
+    public Map<String, Object> getProcurement(Pageable pageable,
+                                              @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+                                              @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+                                              @RequestParam(required = false) String searchType,
+                                              @RequestParam(required = false) String keyword) {
 
-        log.info("발주 리스트 조회 - 발주 시작일: {}, 발주 종료일: {}, 검색필터: {}, 검색어: {}",startDate, endDate, searchType, keyword);
+        Page<PurchaseOrderDTO> page =
+                purchaseOrderService.getPurchaseOrderList(pageable, startDate, endDate, searchType, keyword);
 
-        Page<PurchaseOrderDTO> purchaseOrderDTO = purchaseOrderService.getPurchaseOrderList(pageable, startDate, endDate, searchType, keyword);
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> pagination = new HashMap<>();
 
-        log.info("발주 리스트 조회 - 결과: {}", purchaseOrderDTO );
+        pagination.put("page", page.getNumber() + 1); // 1부터 시작
+        pagination.put("totalCount", page.getTotalElements());
 
-        return purchaseOrderDTO;
+        data.put("contents", page.getContent());
+        data.put("pagination", pagination);
+
+        response.put("result", true);
+        response.put("data", data);
+
+        return response;
     }
 
     // 2. 발주 상세 조회
-    @GetMapping("/procurement_deail")
+    @GetMapping("/procurement_detail")
     public PurchaseOrderDetailDTO getProcurementDetail(@RequestParam("purchaseOrderId") Long purchaseOrderId){
 
         log.info("발주 상세 조회 - 발주 ID: {}", purchaseOrderId);
@@ -56,13 +66,44 @@ public class ProcurementApiController {
     }
 
     // 3. 신규 발주 등록
-    @PostMapping("/procurement/insert")
+    @PostMapping("/procurement/register")
     public void saveProcurement(@RequestBody PurchaseOrderInsertDTO purchaseOrderInsertDTO,
                                 @AuthenticationPrincipal AccountLogin accountLogin){
+
+        log.info("발주 등록 리스트 조회 - 결과: {}", purchaseOrderInsertDTO);
 
         Long userId = accountLogin.getId();
 
         purchaseOrderService.savePurchaseOrder(purchaseOrderInsertDTO, userId);
     }
 
+
+    // 4. 배송 -> 품질검사 처리
+
+
+    // 5. 반품 조회
+    @GetMapping("procurement/return")
+    public Page<PurchaseReturnDTO> getProcurementReturn(Pageable pageable){
+
+        Page<PurchaseReturnDTO> list = purchaseReturnService.getReturnPurchase(pageable);
+
+        return list;
+    }
+
+    // 6. 반품처리
+    @PostMapping("procurement/return_insert")
+    public void returnProcurement(@RequestBody PurchaseReturnInsertDTO purchaseReturnInsertDTO,
+                                  @AuthenticationPrincipal AccountLogin accountLogin){
+
+        Long userId = accountLogin.getId();
+
+        purchaseReturnService.returnPurchase(purchaseReturnInsertDTO, userId);
+
+    }
+
+    // 7. 검수 완료 처리
+    @PostMapping("procurement/complete_qc")
+    public void completeQcProcurement(@RequestParam(required = true) Long purchaseOrderId){
+        purchaseOrderService.completeQcPurchase(purchaseOrderId);
+    }
 }

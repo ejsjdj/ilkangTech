@@ -4,6 +4,7 @@ import com.itwillbs.ilkwangtech.common.dto.ApiResponseDTO;
 import com.itwillbs.ilkwangtech.sales.constant.CompanyCategory;
 import com.itwillbs.ilkwangtech.sales.dto.CompanyDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PageResponseDTO;
+import com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO;
 import com.itwillbs.ilkwangtech.sales.service.company.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,15 @@ public class CompanyApiController {
         PageResponseDTO<CompanyDTO> pageData = new PageResponseDTO<>(
                 list, total, (int) Math.ceil((double) total / pageable.getPageSize())
         );
-
         return ResponseEntity.ok(ApiResponseDTO.success(pageData));
+    }
+
+    // 3. 거래처만 조회
+    @GetMapping("/list/purchase_company")
+    public ResponseEntity<ApiResponseDTO<List<PurchaseCompanyDTO>>> getPurchaseCompany(){
+
+        List<PurchaseCompanyDTO> listData = companyService.selectPurchaseCompany();
+
+        return ResponseEntity.ok(ApiResponseDTO.success(listData));
     }
 }

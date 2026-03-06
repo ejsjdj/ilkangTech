@@ -7,12 +7,11 @@ import lombok.Setter;
 @Setter
 public class ProcessRouteInsertDTO {
 
-    private Long id; // 1. 라우트 기본 ID
-    private String routeId; // 2. 라우트 ID(저장 시 자동 생성)
-    private Long operationId; // 3. 공정 ID
-    private Long itemId; // 4. 제품 ID(저장 시 자동 생성)
-    private Long sequence; // 5. 라우트 순번
-    private String routeName; // 6. 라우트명
-    private String description; // 7. 라우트 설명
-    private String note; // 8. 공정 비고
+    private String routeCode; // 1. 라우트 코드(저장 시 자동 생성)
+    private Long operationId; // 2. 공정 ID
+    private Long itemId; // 3. 제품 ID(저장 시 자동 생성)
+    private Long sequence; // 4. 라우트 순번
+    private String routeName; // 5. 라우트명
+    private String description; // 6. 라우트 설명
+    private String note; // 7. 공정 비고
 }

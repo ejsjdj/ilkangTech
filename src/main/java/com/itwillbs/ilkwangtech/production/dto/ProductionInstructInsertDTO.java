@@ -13,38 +13,33 @@ import java.util.List;
 @Getter
 public class ProductionInstructInsertDTO {
 
+
     // 작업지시 코드
     private String instructCode;
-
-    // LOT
-    private Long lotId;
 
     // 생산계획 ID
     private Long productionId;
 
-
     // 품목 ID
-    private Long Item;
-
-    // 공정 ID
-    private Long processCode;
-
-    // 작업자
-    private List<ProductionInstructWorkerInsertDTO> workers;
+    private Long item;
 
     // 지시 수량
     private Long instructQty;
 
-    // 지시등록일
-    private LocalDateTime startDate;
-
-    // 생산완료일
-    private LocalDateTime endDate;
+    // 불량
+    private Long defective;
 
     // 상태
     private String status;
 
-    // 불량
-    private Long defective;
+    // 지시등록일
+    private LocalDateTime startDate;
 
+    //==================================//
+
+    // 생산완료일
+    private LocalDateTime endDate;
+
+    // 작업자
+    private List<ProductionInstructWorkerInsertDTO> workers;
 }

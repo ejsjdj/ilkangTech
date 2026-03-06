@@ -49,6 +49,115 @@
         .col-content { width: auto; color: #64748b; line-height: 1.5; }
 
         .pagination-wrapper { padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; background: #ffffff; }
+        /* 설비 현황 페이지와 동일한 모달 스타일 */
+	.modal-backdrop {
+	    position: fixed;
+	    left: 0; top: 0;
+	    width: 100%; height: 100%;
+	    background: rgba(0,0,0,0.35);
+	    z-index: 9998;
+	}
+	
+	.modal {
+	    position: fixed;
+	    left: 50%; top: 50%;
+	    transform: translate(-50%, -50%);
+	    z-index: 9999;
+	    width: min(520px, calc(100% - 40px));
+	}
+	
+	.modal-card {
+	    background: #fff;
+	    border-radius: 16px;
+	    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+	    overflow: hidden;
+	}
+	
+	.modal-header {
+	    display: flex;
+	    align-items: center;
+	    justify-content: space-between;
+	    padding: 14px 16px;
+	    border-bottom: 1px solid #e5e7eb;
+	}
+	
+	.modal-header h3 {
+	    font-size: 18px;
+	    font-weight: 800;
+	    margin: 0;
+	}
+	
+	.modal-close {
+	    border: none;
+	    background: transparent;
+	    cursor: pointer;
+	    font-size: 18px;
+	    line-height: 1;
+	}
+	
+	.modal-body {
+	    padding: 16px;
+	}
+	
+	.form-row {
+	    display: flex;
+	    flex-direction: column;
+	    gap: 6px;
+	    margin-bottom: 12px;
+	}
+	
+	.form-row label {
+	    font-size: 14px;
+	    font-weight: 700;
+	    color: #374151;
+	}
+	
+	.form-row input, .form-row select, .form-row textarea {
+	    border: 1px solid #d1d5db;
+	    border-radius: 10px;
+	    padding: 10px 12px;
+	    outline: none;
+	    font-size: 14px;
+	}
+	
+	.modal-footer {
+	    display: flex;
+	    justify-content: flex-end;
+	    gap: 10px;
+	    margin-top: 14px;
+	}
+	
+	.btn-secondary, .btn-primary {
+	    padding: 9px 14px;
+	    border-radius: 10px;
+	    border: 1px solid #d1d5db;
+	    cursor: pointer;
+	    font-weight: 700;
+	    background: #fff;
+	}
+	
+	.btn-primary {
+	    border-color: #111827;
+	    background: #111827;
+	    color: #fff;
+	}
+	
+	.btn-add-qc {
+	    border: 1px solid #d1d5db;
+	    background: #ffffff;
+	    padding: 8px 14px;
+	    border-radius: 10px;
+	    font-weight: 700;
+	    cursor: pointer;
+	    font-size: 13px;
+	    display: flex;
+	    align-items: center;
+	    gap: 4px;
+	}
+	
+	.btn-add-qc:hover {
+	    background: #f3f4f6;
+	}
     </style>
 </head>
 <body>
@@ -60,7 +169,7 @@
                 <div class="header-title-area">
                     <div class="header-icon-bar"></div>
                     <div>
-                        <h1>품질 검사 항목 관리</h1>
+                        <h1>품질 검사 항목</h1>
                         <p class="page-subtitle">공정별 품질 검사 기준 및 세부 내용 확인</p>
                     </div>
                 </div>
@@ -69,7 +178,7 @@
             <div class="search-filter-area">
                 <div class="search-box">
                     <i class="bi bi-search" style="position: absolute; top: 10px; left: 12px; color: #94a3b8;"></i>
-                    <input type="text" id="searchInput" placeholder="검사 항목명 검색">
+                    <input type="text" id="searchInput" placeholder="검사 항목명 검색" onkeyup="if(window.event.keyCode==13){filterList()}">
                 </div>
                 <button class="btn-search" onclick="filterList()">검색</button>
                 <button class="btn-reset" onclick="location.reload()">초기화</button>
@@ -83,6 +192,9 @@
                     <option value="PAINT">도장</option>
                     <option value="ASSY">조립</option>
                 </select>
+                <button type="button" id="btnOpenQcModal" class="btn-add-qc">
+			        <i class="bi bi-plus-lg"></i> 품질 항목 추가
+			    </button>
             </div>
 
             <div class="table-wrapper">
@@ -112,63 +224,219 @@
             </div>
         </div>
     </div>
+    
+    <div id="qcModalBackdrop" class="modal-backdrop" style="display:none;"></div>
+	<div id="qcModal" class="modal" style="display:none;" role="dialog" aria-modal="true">
+	    <div class="modal-card">
+	        <div class="modal-header">
+	            <h3>품질검사 항목 등록</h3>
+	            <button type="button" id="btnCloseQcModal" class="modal-close">✕</button>
+	        </div>
+	        <div class="modal-body">
+	            <form id="qcForm">
+	                <div class="form-row">
+	                    <label>공정</label>
+	                    <select id="newProcCode" name="procCode" required>
+	                        <option value="" disabled selected>공정을 선택하세요</option>
+	                        <option value="PRESS">프레스</option>
+	                        <option value="INJECT">사출</option>
+	                        <option value="PAINT">도장</option>
+	                        <option value="ASSY">조립</option>
+	                    </select>
+	                </div>
+	                <div class="form-row">
+	                    <label>품질검사 명칭</label>
+	                    <input id="newQcName" name="qcName" type="text" placeholder="검사 명칭 입력" required>
+	                </div>
+	                <div class="form-row">
+	                    <label>세부 내용 및 기준</label>
+	                    <textarea id="newContent" name="content" rows="3" placeholder="세부 기준 입력" style="resize:none;"></textarea>
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" id="btnCancelQcModal" class="btn-secondary">취소</button>
+	                    <button type="submit" class="btn-primary">저장</button>
+	                </div>
+	            </form>
+	        </div>
+	    </div>
+	</div>
 </th:block>
 
 <th:block layout:fragment="script">
     <script>
-    let allQcData = [];
+    let allQcData = [];     // 전체 데이터
+    let filteredData = [];  // 검색/필터링된 데이터
+    let currentPage = 1;    // 현재 페이지
+    const itemsPerPage = 10; // 한 페이지당 표시할 행 수
 
     document.addEventListener('DOMContentLoaded', loadQcList);
 
     function loadQcList() {
-        // 엔드포인트는 실제 Controller의 URL에 맞춰 수정하세요
         fetch('/quality/api/qcItems')
             .then(res => res.json())
             .then(data => {
                 allQcData = data; 
-                renderTable(data);     
+                filteredData = data; // 초기값은 전체 데이터
+                renderTableWithPagination();     
             })
             .catch(err => console.error("데이터 로딩 실패:", err));
     }
-    
-    function renderTable(data) {
+
+    function renderTableWithPagination() {
         const tbody = document.getElementById('qc-tbody');
         if(!tbody) return;
 
-        if (data.length === 0) {
+        if (filteredData.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px;">조회된 검사 항목이 없습니다.</td></tr>';
+            updatePagination(0);
             return;
         }
 
-        tbody.innerHTML = data.map((item, index) => `
+        // 1. 페이지 계산
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageData = filteredData.slice(startIndex, endIndex);
+
+        // 2. 테이블 렌더링
+        tbody.innerHTML = pageData.map((item, index) => `
             <tr>
-                <td class="col-id">${index + 1}</td>
+                <td class="col-id">${startIndex + index + 1}</td>
                 <td class="col-proc">${getProcNameKr(item.procCode)}</td>
                 <td class="col-name">${item.qcName}</td>
                 <td class="col-content">${item.content || '-'}</td>
             </tr>
         `).join('');
+
+        // 3. 페이징 버튼 업데이트
+        updatePagination(filteredData.length);
     }
-    
+
+    function updatePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const paginationWrapper = document.querySelector('.pagination');
+        if (!paginationWrapper) return;
+
+        let html = '';
+        
+        // 이전 버튼
+        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="javascript:void(0)" onclick="changePage(${currentPage - 1})">이전</a>
+                 </li>`;
+
+        // 페이지 번호
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<li class="page-item ${currentPage === i ? 'active' : ''}">
+                        <a class="page-link" href="javascript:void(0)" onclick="changePage(${i})" 
+                           style="${currentPage === i ? 'background-color: #4f46e5; border-color: #4f46e5;' : ''}">${i}</a>
+                     </li>`;
+        }
+
+        // 다음 버튼
+        html += `<li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}">
+                    <a class="page-link" href="javascript:void(0)" onclick="changePage(${currentPage + 1})">다음</a>
+                 </li>`;
+
+        paginationWrapper.innerHTML = html;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        renderTableWithPagination();
+        // 페이지 이동 시 상단으로 스크롤 (선택 사항)
+        document.querySelector('.table-scroll').scrollTop = 0;
+    }
+
     function filterList() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
         const proc = document.getElementById('procFilter').value;
 
-        const filtered = allQcData.filter(item => {
+        filteredData = allQcData.filter(item => {
             const nameMatch = (item.qcName || '').toLowerCase().includes(keyword);
             const procMatch = !proc || item.procCode === proc;
             return nameMatch && procMatch;
         });
-        renderTable(filtered);
-    }
 
-    // 셀렉트 박스 변경 시 즉시 필터링
-    document.getElementById('procFilter').addEventListener('change', filterList);
+        currentPage = 1; 
+        renderTableWithPagination(); // 이 함수가 filteredData를 바탕으로 페이징 처리를 합니다.
+    }
 
     function getProcNameKr(code) {
         const names = { 'PRESS': '프레스', 'INJECT': '사출', 'PAINT': '도장', 'ASSY': '조립' };
         return names[code] || code;
     }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQcList();
+        
+        const procFilter = document.getElementById('procFilter');
+        if (procFilter) {
+            procFilter.addEventListener('change', filterList);
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') filterList();
+            });
+        }
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        /* 모달 제어 함수 */
+        function openQcModal() {
+            document.getElementById('qcModalBackdrop').style.display = 'block';
+            document.getElementById('qcModal').style.display = 'block';
+        }
+
+        function closeQcModal() {
+            document.getElementById('qcModalBackdrop').style.display = 'none';
+            document.getElementById('qcModal').style.display = 'none';
+            document.getElementById('qcForm').reset();
+        }
+
+        /* 이벤트 바인딩 */
+        const btnOpen = document.getElementById('btnOpenQcModal');
+        const btnClose = document.getElementById('btnCloseQcModal');
+        const btnCancel = document.getElementById('btnCancelQcModal');
+        const backdrop = document.getElementById('qcModalBackdrop');
+
+        if (btnOpen) btnOpen.addEventListener('click', openQcModal);
+        if (btnClose) btnClose.addEventListener('click', closeQcModal);
+        if (btnCancel) btnCancel.addEventListener('click', closeQcModal);
+        if (backdrop) backdrop.addEventListener('click', closeQcModal);
+
+        /* 폼 제출 처리 */
+        const qcForm = document.getElementById('qcForm');
+        qcForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const payload = {
+                procCode: document.getElementById('newProcCode').value,
+                qcName: document.getElementById('newQcName').value.trim(),
+                content: document.getElementById('newContent').value.trim()
+            };
+
+            if(!confirm('새 품질검사 항목을 등록하시겠습니까?')) return;
+
+            fetch('/quality/api/qcItems', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('등록 실패');
+                return res.json();
+            })
+            .then(data => {
+                alert('등록되었습니다.');
+                closeQcModal();
+                loadQcList(); // 목록 새로고침
+            })
+            .catch(err => {
+                console.error(err);
+                alert('등록 중 오류가 발생했습니다.');
+            });
+        });
+    });
     </script>
 </th:block>
 </body>

@@ -1,8 +1,10 @@
 package com.itwillbs.ilkwangtech.production.dto;
 
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -11,32 +13,33 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductionPlaneDTO {
 
-    private String planeCode; // 계획코드
+    private Long id; // 기본키
 
-    private String routeCode; // 라우트코드
+    private String planeCode; // 1. 계획코드
 
-    private LocalDate planeDate; // 계획일시
+    private LocalDate planeDate; // 2. 계획일시
 
-    private String memberName; // 등록자
+    private String memberName; // 3. 등록자
 
-    private Long item; // 폼목코드
+    private String itemName; // 4. 폼목명
 
-    private Long totalQty; // 주문 총 수량
+    private Long totalQty; // 5. 총 생산 수량
 
-    private String status; // 생산 상태
-
-    private String memo; // 메모
+    private String status; // 6. 생산 상태
 
     public static ProductionPlaneDTO fromList(ProductionPlaneEntity entity){
         return ProductionPlaneDTO.builder().
+                id(entity.getId()).
                 planeCode(entity.getPlaneCode()).
                 planeDate(LocalDate.from(entity.getPlaneDate())).
                 memberName(entity.getMember().getName()).
-                item(entity.getItem()).
+                itemName(entity.getItem().getItemName()).
+                totalQty(entity.getTotalQty()).
                 status(entity.getStatus()).
-                memo(entity.getMemo()).
                 build();
     }
 }

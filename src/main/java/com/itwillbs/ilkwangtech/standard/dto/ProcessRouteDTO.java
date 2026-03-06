@@ -9,26 +9,25 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class ProcessRouteDTO {
-    private String routeId; // 공정라우트 코드
-    private Long itemId; // 제품 코드
+    private String routeCode; // 공정라우트 코드
+    private Long itemId;
+    private String itemName; // 품목명
     private String routeName; // 라우트명
     private String description; // 공정라우트 설명
     private String createdAt; // 생성일시
     private String constructor; // 생성자
-    private List<String> item;
 
     @Builder
-    public ProcessRouteDTO(String routeId, String description, Long itemId, String createdAt, String routeName, String constructor, List<String> item){
+    public ProcessRouteDTO(String routeCode, String description, Long itemId, String itemName, String createdAt, String routeName, String constructor){
         super();
-        this.routeId = routeId;
+        this.routeCode = routeCode;
         this.itemId = itemId;
+        this.itemName = itemName;
         this.routeName = routeName;
         this.description = description;
         this.createdAt = createdAt;
         this.constructor = constructor;
-        this.item = item;
 
     }
 }

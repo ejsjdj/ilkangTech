@@ -30,13 +30,23 @@ public class ProductionWorkerEntity{
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "lot_id")
+    private String lot;
+
+
     public static ProductionWorkerEntity create(ProcessEntity process,
-                                                Member member){
+                                                Member member,
+                                                String lot){
 
         ProductionWorkerEntity line = new ProductionWorkerEntity();
 
         line.process = process;
         line.member = member;
+        line.status = "READY";
+        line.lot = lot;
 
         return line;
     }

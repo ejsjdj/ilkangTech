@@ -37,18 +37,18 @@ public interface ProcessRouteRepository extends JpaRepository<ProcessRouteEntity
 
     // 3. 생산계획으로 작업지시 등록 용
     @Query("""
-            SELECT new com.itwillbs.ilkwangtech.production.dto.ProcessRegisterDTO(
-            pr.sequence,
-            pr.operation.id,
-            pr.operation.operationCode,
-            pr.operation.name,
-            pr.outItem.itemId,
-            pr.outItem.itemName
-            )
-            FROM ProcessRouteEntity pr
-            WHERE pr.outItem.itemId = :itemId
-            ORDER BY pr.sequence ASC
-            """)
+    SELECT new com.itwillbs.ilkwangtech.production.dto.ProcessRegisterDTO(
+        pr.sequence,
+        pr.operation.id,
+        pr.operation.operationCode,
+        pr.operation.name,
+        pr.outItem.itemId, 
+        pr.outItem.itemName
+    )
+    FROM ProcessRouteEntity pr
+    WHERE pr.item.id = :itemId 
+    ORDER BY pr.sequence ASC
+    """)
     List<ProcessRegisterDTO> findProcessRegisterList(@Param("itemId") Long itemId);
 
     // 4. 라우트 순번 업데이트

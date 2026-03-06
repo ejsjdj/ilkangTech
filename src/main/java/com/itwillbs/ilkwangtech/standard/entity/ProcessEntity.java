@@ -22,7 +22,12 @@ public class ProcessEntity {
 
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "op_seq")
+    @SequenceGenerator(
+            name = "op_seq",
+            sequenceName = "OPERATION_INFO_SEQ",
+            allocationSize = 1
+    )
     private Long id;
 
     @Column(name = "operation_id")

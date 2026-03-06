@@ -11,6 +11,11 @@ import java.util.List;
 @Builder
 public class ProductionInstructDetailDTO {
 
+    // 생산계획 ID
+    private Long planeId;
+    // 작업지시 ID
+    private Long instructId;
+
     // 작업지시 번호
     private String instructCode;
     // 생산계획코드
@@ -28,6 +33,8 @@ public class ProductionInstructDetailDTO {
 
     public static ProductionInstructDetailDTO fromList(ProductionInstructEntity entity){
         return ProductionInstructDetailDTO.builder().
+                planeId(entity.getProductionId().getId()).
+                instructId(entity.getId()).
                 instructCode(entity.getInstructCode()).
                 planeCode(entity.getProductionId().getPlaneCode()).
                 itemName(entity.getItem().getItemName()).

@@ -16,6 +16,7 @@ public class ProductionWorkerDTO {
     private String newLot;
 
     // 조회용
+    private Long workerId;
     private String operationName;
     private String name;
     private String status;
@@ -27,6 +28,7 @@ public class ProductionWorkerDTO {
 
     public static ProductionWorkerDTO fromList(ProductionWorkerEntity entity){
         return ProductionWorkerDTO.builder().
+                workerId(entity.getId()).
                 operationName(entity.getProcess().getName()).
                 name(entity.getMember().getName()).
                 status(entity.getStatus()).

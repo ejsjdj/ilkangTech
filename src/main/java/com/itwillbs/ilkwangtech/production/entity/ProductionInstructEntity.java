@@ -7,6 +7,7 @@ import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.util.List;
 // 생산지시 엔티티
 @Entity
 @Getter
+@Setter
 @Table(name = "production_instruct")
 public class ProductionInstructEntity {
 

@@ -1,3 +1,5 @@
+let selectedDefectData = null;
+
 document.addEventListener("DOMContentLoaded", function () {
   const Grid = tui.Grid;
 
@@ -58,6 +60,23 @@ document.addEventListener("DOMContentLoaded", function () {
   // 3️⃣ 검색 버튼 이벤트
   // ===========================
   document.getElementById("searchBtn").addEventListener("click", loadData);
+
+  // ===========================
+  // 3️⃣ 불량 수량 등록 모달
+  // ===========================
+  document.querySelector(".close-defect").onclick = function () {
+    document.getElementById("defectModal").style.display = "none";
+  };
+
+  // 불량 등록 완료 버튼 클릭 이벤트
+  document.getElementById("submitDefect").onclick = function () {
+    const qty = document.getElementById("defectiveInput").value;
+    if (!qty || qty < 0) {
+      alert("올바른 수량을 입력해주세요.");
+      return;
+    }
+    sendDefectData(qty);
+  };
 
   // 최초 로딩
   loadData();
@@ -163,4 +182,60 @@ function handleWork(button, type) {
       }
     })
     .catch(err => console.error("API 호출 에러:", err));
+}
+
+
+function handleWork(button, type) {
+  const workerId = button.dataset.workerId;
+  const instructId = button.dataset.instructId;
+  const planeId = button.dataset.planeId;
+
+  // 불량 등록인 경우 모달만 띄우고 리턴
+  if (type === 'defect') {
+    selectedDefectData = { workerId, instructId };
+    document.getElementById("defectiveInput").value = "";
+    document.getElementById("defectModal").style.display = "block";
+    return;
+  }
+
+  // 나머지(start, stop, complete) 로직은 동일
+  const urlMap = {
+    start: '/api/production_instruct/start',
+    stop: '/api/production_instruct/cancel',
+    complete: '/api/production_instruct/complete'
+  };
+
+  const url = `${urlMap[type]}?planeId=${planeId}&instructId=${instructId}&workerId=${workerId}`;
+
+  fetch(url, { method: 'POST' })
+    .then(res => {
+      if (res.ok) {
+        alert("처리가 완료되었습니다.");
+        location.reload();
+      } else {
+        alert("처리 중 오류 발생");
+      }
+    });
+}
+
+// 실제 불량 데이터를 서버로 전송하는 함수
+function sendDefectData(defectiveQty) {
+  const { instructId, workerId } = selectedDefectData;
+
+  // 컨트롤러의 @RequestParam 명칭과 일치하도록 쿼리 스트링 구성
+  const url = `/api/production_instruct/defective?DefectiveQty=${defectiveQty}&instructId=${instructId}&workerId=${workerId}`;
+
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
+    .then(res => {
+      if (res.ok) {
+        alert("불량 등록이 완료되었습니다.");
+        location.reload();
+      } else {
+        alert("등록 실패");
+      }
+    })
+    .catch(err => console.error("API 에러:", err));
 }

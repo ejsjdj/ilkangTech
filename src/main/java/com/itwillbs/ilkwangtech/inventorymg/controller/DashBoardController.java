@@ -122,15 +122,4 @@ public class DashBoardController {
         return ResponseEntity.ok(dashboardService.getOutboundScheduledList());
     }
 
-    // 금일 출고 처리 실행
-    @PostMapping("/process-outbound")
-    @ResponseBody
-    public ResponseEntity<String> processOutbound() {
-        try {
-            String result = dashboardService.processOutbound();
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 }

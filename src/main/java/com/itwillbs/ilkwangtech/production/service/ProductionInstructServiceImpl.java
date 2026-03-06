@@ -98,6 +98,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
             System.out.println("processId = " + lineDTO.getProcessId());
             System.out.println("memberId = " + lineDTO.getMemberId());
             System.out.println("outputItemId = " + lineDTO.getOutputItemId());
+            System.out.println("additionQty = " + lineDTO.getAdditionQty());
 
             Member memberId = memberRepository.findById(lineDTO.getMemberId())
                     .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다."));
@@ -127,13 +128,25 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         // 1. 작업지시 DB 저장
         productionInsturctRepository.save(header);
 
-        List<BomEntity> bomList = bomRepository.findByChildItem_ItemId(item.getItemId());
+        List<BomEntity> mainBomList = bomRepository.findByChildItem_ItemId(item.getItemId());
+        deductMaterials(mainBomList, productionInstructInsertDTO.getInstructQty());
+
+        for(ProductionInstructWorkerInsertDTO lineDTO : productionInstructInsertDTO.getWorkers()){
+            if (lineDTO.getAdditionQty() != null && lineDTO.getAdditionQty() > 0) {
+                List<BomEntity> subBomList = bomRepository.findByChildItem_ItemId(lineDTO.getOutputItemId());
+                deductMaterials(subBomList, lineDTO.getAdditionQty());
+            }
+        }
+    }
+    
+    // 재고 차감 공통 로직
+    private void deductMaterials(List<BomEntity> bomList, Long qtyMultiplier) {
+        if (bomList == null || bomList.isEmpty()) return;
 
         for (BomEntity bom : bomList) {
             ItemEntity material = bom.getParentItem();
-            long requiredQty = bom.getRequireQty() * productionInstructInsertDTO.getInstructQty();
+            long requiredQty = bom.getRequireQty() * qtyMultiplier; // 필요수량 * (메인수량 or 추가수량)
 
-            // 출고할 자재의 창고 재고 목록을 가져옴 (선입선출)
             List<InventoryEntity> stocks = inventoryRepository.findByItemItemIdOrderByExpirationDateAsc(material.getItemId());
             long remainingToDeduct = requiredQty;
 
@@ -144,10 +157,9 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
                 if (currentQty == 0) continue;
 
                 long deductQty = Math.min(currentQty, remainingToDeduct);
-                stock.setCurrentQuantity(currentQty - deductQty); // 실제 재고 깎기
+                stock.setCurrentQuantity(currentQty - deductQty); 
                 remainingToDeduct -= deductQty;
 
-                // 수불 이력(OUT) 저장 (차트에 자동 반영됨)
                 InventoryHistoryEntity history = new InventoryHistoryEntity();
                 history.setItem(material);
                 history.setTransactionDate(LocalDate.now());

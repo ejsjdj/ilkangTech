@@ -243,7 +243,8 @@
                 
                 <table class="table table-bordered text-center align-middle" style="table-layout: fixed; width: 100%;">
                     <colgroup>
-                        <col style="width: 13%;"> <col style="width: 25%;"> <col style="width: 9%;">  <col style="width: 9%;">  <col style="width: 9%;">  <col style="width: 9%;">  <col style="width: 10%;"> <col style="width: 8%;">  <col style="width: 8%;">  </colgroup>
+                        <col style="width: 13%;"> <col style="width: 25%;"> <col style="width: 9%;">  <col style="width: 9%;">  <col style="width: 9%;">  <col style="width: 9%;">  <col style="width: 10%;"> <col style="width: 8%;">  <col style="width: 8%;">  
+                    </colgroup>
                     <thead class="table-light">
                         <tr>
                             <th>No (전표번호)</th>
@@ -253,23 +254,21 @@
                             <th class="text-primary">출고 수량</th>
                             <th class="text-danger">부족 수량</th>
                             <th>출고일</th>
-                            <th>요청팀</th>
+                            <th style="cursor: pointer;" onclick="toggleOutboundDeptSort()" class="user-select-none">
+                                요청팀 <i class="fa-solid fa-sort-down text-primary" id="outboundSortIcon"></i>
+                            </th>
                             <th>상태</th>
                         </tr>
                     </thead>
                     <tbody id="outboundListBody">
-                        <tr th:each="outbound : ${outboundList}">
+                        <tr th:each="outbound : ${outboundList}" th:data-dept="${outbound.requestDept}">
                             <td th:text="${outbound.refCode}">SO-1234</td>
                             <td class="text-start text-truncate" th:text="${outbound.itemName}">SAMSUNG-MINI DOOR</td>
                             <td th:text="${outbound.currentStock}">3500</td>
-                            
                             <td th:text="${outbound.requiredQty}">5000</td>
-                            
                             <td class="text-primary fw-bold" th:text="${outbound.availableOutboundQty}">3500</td>
-                            
                             <td th:class="${outbound.shortageQty > 0 ? 'text-danger fw-bold' : 'text-muted'}" 
                                 th:text="${outbound.shortageQty}">1500</td>
-                            
                             <td th:text="${outbound.dueDate}">2026-03-05</td>
                             <td th:text="${outbound.requestDept}">생산팀</td>
                             <td>
@@ -286,6 +285,9 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="d-flex justify-content-center mt-3">
+                    <ul class="pagination pagination-sm" id="outboundPaginationControls"></ul>
+                </div>
             </div>
         </div>
         
@@ -990,6 +992,99 @@
                 .catch(error => {
                     alert('출고 실패: \n' + error.message);
                 });
+            }
+        }
+        
+     // =========================================================
+        // 💡 최근 출고 내역 전용 페이징 및 정렬 로직 
+        // =========================================================
+        let outboundAllRows = [];
+        let outboundCurrentPage = 1;
+        const outboundRowsPerPage = 10;   // 1페이지당 10개씩
+        let outboundSortProdFirst = true; // true: 생산팀 먼저, false: 영업팀 먼저
+
+        // 페이지 로딩 완료 시 데이터 저장 및 초기 1페이지 렌더링
+        document.addEventListener("DOMContentLoaded", () => {
+            outboundAllRows = Array.from(document.querySelectorAll('#outboundListBody tr:not(.empty-row)'));
+            if(outboundAllRows.length > 0) {
+                sortOutboundRows(true); // 기본 정렬(생산팀 우선) 실행
+            }
+        });
+
+        // '요청팀' 헤더 클릭 시 정렬 토글
+        function toggleOutboundDeptSort() {
+            outboundSortProdFirst = !outboundSortProdFirst;
+            
+            // 아이콘 변경 (생산팀 먼저면 아래화살표, 영업팀 먼저면 위화살표)
+            const icon = document.getElementById('outboundSortIcon');
+            icon.className = outboundSortProdFirst ? 'fa-solid fa-sort-down text-primary' : 'fa-solid fa-sort-up text-primary';
+            
+            sortOutboundRows(true); // 토글 후 무조건 1페이지로 이동
+        }
+
+        // 실제 정렬 수행 및 화면 갱신 함수
+        function sortOutboundRows(resetPage = true) {
+            outboundAllRows.sort((a, b) => {
+                const deptA = a.getAttribute('data-dept');
+                const deptB = b.getAttribute('data-dept');
+                
+                if (deptA === deptB) return 0; // 같은 팀이면 순서 유지
+                
+                // 선택된 기준에 따라 오름차순 배치
+                if (outboundSortProdFirst) {
+                    return deptA === '생산팀' ? -1 : 1;
+                } else {
+                    return deptA === '영업팀' ? -1 : 1;
+                }
+            });
+
+            renderOutboundPagination();
+            displayOutboundPage(resetPage ? 1 : outboundCurrentPage);
+        }
+
+        // 화면에 페이징된 10개 데이터 그리기
+        function displayOutboundPage(page) {
+            outboundCurrentPage = page;
+            const start = (page - 1) * outboundRowsPerPage;
+            const end = start + outboundRowsPerPage;
+
+            const tbody = document.getElementById('outboundListBody');
+            tbody.innerHTML = ''; // 테이블 내용 지우기
+
+            // 현재 페이지 번호에 해당하는 10개 행만 추가
+            outboundAllRows.slice(start, end).forEach(row => {
+                row.style.display = ''; 
+                tbody.appendChild(row);
+            });
+
+            updateOutboundPaginationUI();
+        }
+
+        // 하단 페이지 번호(1, 2, 3...) 버튼 생성
+        function renderOutboundPagination() {
+            const totalPages = Math.ceil(outboundAllRows.length / outboundRowsPerPage) || 1;
+            const ul = document.getElementById('outboundPaginationControls');
+            if(!ul) return;
+            ul.innerHTML = '';
+
+            for(let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === outboundCurrentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="displayOutboundPage(${i})">${i}</a>`;
+                ul.appendChild(li);
+            }
+        }
+
+        // 현재 선택된 페이지 버튼 색상 활성화
+        function updateOutboundPaginationUI() {
+            const ul = document.getElementById('outboundPaginationControls');
+            if(!ul) return;
+            const items = ul.getElementsByTagName('li');
+            for(let i = 0; i < items.length; i++) {
+                items[i].classList.remove('active');
+                if(i + 1 === outboundCurrentPage) {
+                    items[i].classList.add('active');
+                }
             }
         }
     </script>

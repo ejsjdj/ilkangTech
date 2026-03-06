@@ -54,13 +54,30 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
     @Query("SELECT p.item.itemId, COALESCE(SUM(p.instructQty), 0) FROM ProductionInstructEntity p WHERE p.status NOT IN ('COM', 'CAN') GROUP BY p.item.itemId")
     List<Object[]> sumReservedQtyGrouped();
     
-    // 출고 완료되어 생산 중(PROGRESS)이거나 완료된(COM) 자재 목록 조회
-    @Query("SELECT i.instructCode, p.itemId, p.itemName, SUM(i.instructQty * b.requireQty) " +
-            "FROM ProductionInstructEntity i " +
-            "JOIN BomEntity b ON i.item.itemId = b.childItem.itemId " +
-            "JOIN b.parentItem p " +  // 암묵적 조인 대신 명시적 조인 사용
-            "WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " + 
-            "GROUP BY i.instructCode, p.itemId, p.itemName") 
+    // 메인 생산계획 수량 + 공정별 추가 생산 수량(addition_qty) 합산 네이티브 쿼리
+    @Query(value = 
+            "SELECT target.instruct_code, target.item_id, target.item_name, COALESCE(SUM(target.req_qty), 0) " +
+            "FROM ( " +
+            "    SELECT i.instruct_code, p.item_id, p.item_name, (COALESCE(i.instruct_qty, 0) * b.require_qty) AS req_qty " +
+            "    FROM production_instruct i " +
+            "    JOIN bom b ON i.item_id = b.child_item_id " +
+            "    JOIN item p ON b.parent_item_id = p.item_id " +
+            "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
+            "    " +
+            "    UNION ALL " +
+            "    " +
+            "    SELECT i.instruct_code, p.item_id, p.item_name, (w.addition_qty * b.require_qty) AS req_qty " +
+            "    FROM production_instruct i " +
+            "    JOIN production_worker w ON i.id = w.instruct_id " +
+            "    JOIN bom b ON w.item_id = b.child_item_id " +
+            "    JOIN item p ON b.parent_item_id = p.item_id " +
+            "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
+            "      AND w.addition_qty IS NOT NULL " +
+            "      AND w.addition_qty > 0 " +
+            ") target " +
+            "GROUP BY target.instruct_code, target.item_id, target.item_name " +
+            "HAVING COALESCE(SUM(target.req_qty), 0) > 0", 
+            nativeQuery = true)
      List<Object[]> findMaterialOutboundList();
 
     // 작업지시 상태 변경

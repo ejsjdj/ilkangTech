@@ -5,6 +5,7 @@ import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.ibatis.annotations.One;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ import java.util.List;
 // 생산 계획 엔티티
 @Entity
 @Getter
+@Setter
 @Table(name = "production_plane")
 public class ProductionPlaneEntity {
 

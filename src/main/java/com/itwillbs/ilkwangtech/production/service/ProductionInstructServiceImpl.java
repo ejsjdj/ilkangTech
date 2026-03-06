@@ -10,6 +10,7 @@ import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionWorkerEntity;
 import com.itwillbs.ilkwangtech.production.repository.ProductionInsturctRepository;
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
+import com.itwillbs.ilkwangtech.production.repository.ProductionWorkerRepository;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
@@ -35,6 +36,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     private final ProductionPlaneRepository productionPlaneRepository;
     private final ItemRepository itemRepository;
     private final InventoryRepository inventoryRepository;
+    private final ProductionWorkerRepository productionWorkerRepository;
 
     @Override
     @Transactional
@@ -61,8 +63,6 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     @Transactional
     // 3. 작업지시 등록
     public void saveProductionInstruct(ProductionInstructInsertDTO productionInstructInsertDTO, Long userId){
-
-
 
         // 1. 공정정보 확인
         ItemEntity item = itemRepository.findById(productionInstructInsertDTO.getItem()).
@@ -116,13 +116,30 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         productionInsturctRepository.save(header);
     }
 
+    // 5. 작업시작(공정 시작)
+    @Override
+    @Transactional
+    public void updateInstructStart(Long planeId, Long instructId, Long workerId){
+        ProductionWorkerEntity workerEntity = productionWorkerRepository
+                .findById(workerId).orElseThrow(() -> new IllegalArgumentException("작업지시 공정정보가 없습니다."));
+
+        ProductionInstructEntity instructEntity = productionInsturctRepository.findById(instructId)
+                .orElseThrow(() -> new IllegalArgumentException("작업지시 정보가 없습니다."));
+
+        ProductionPlaneEntity planeEntity  = productionPlaneRepository.findById(planeId)
+                .orElseThrow(() -> new IllegalArgumentException("생산계획 정보가 없습니다."));
+
+        workerEntity.setStatus("PROGRESS");
+        instructEntity.setStatus("PROGRESS");
+        planeEntity.setStatus("PROGRESS");
+
+
+    }
+
     // 4. 불량 등록
     public void updateInstructDefective(Long defectiveQty, String instructCode, Long processId){
 
     }
 
-//    // 5. 작업지시 완료
-//    public void updateInstruct(String instructCode, Long itemId, Long completeQty){
-//        //productionInsturctRepository.updateInstructCompleteStatus(instructCode, processId, completeQty);
-//    }
+
 }

@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductionPlaneItemDTO {
 
     private Long id;

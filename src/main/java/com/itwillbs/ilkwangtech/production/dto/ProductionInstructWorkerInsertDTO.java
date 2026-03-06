@@ -27,5 +27,6 @@ public class ProductionInstructWorkerInsertDTO {
         this.startTime = startTime;
         this.endTime = endTime;
         this.outputItemId = outputItemId;
+        
     }
 }

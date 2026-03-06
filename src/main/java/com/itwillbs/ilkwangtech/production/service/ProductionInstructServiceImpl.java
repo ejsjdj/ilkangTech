@@ -1,6 +1,8 @@
 package com.itwillbs.ilkwangtech.production.service;
 
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
+import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryHistoryEntity;
+import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryHistoryRepository;
 import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryRepository;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
@@ -13,8 +15,10 @@ import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
 import com.itwillbs.ilkwangtech.production.repository.ProductionWorkerRepository;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
+import com.itwillbs.ilkwangtech.standard.entity.BomEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ProcessEntity;
+import com.itwillbs.ilkwangtech.standard.repository.BomRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ProcessRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,7 +42,11 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     private final ProductionPlaneRepository productionPlaneRepository;
     private final ItemRepository itemRepository;
     private final InventoryRepository inventoryRepository;
+    
+    private final BomRepository bomRepository;
+    private final InventoryHistoryRepository inventoryHistoryRepository;
     private final ProductionWorkerRepository productionWorkerRepository;
+
 
     @Override
     @Transactional
@@ -113,7 +123,39 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
 
             header.saveLine(line);
         }
+        
+        // 1. 작업지시 DB 저장
         productionInsturctRepository.save(header);
+
+        List<BomEntity> bomList = bomRepository.findByChildItem_ItemId(item.getItemId());
+
+        for (BomEntity bom : bomList) {
+            ItemEntity material = bom.getParentItem();
+            long requiredQty = bom.getRequireQty() * productionInstructInsertDTO.getInstructQty();
+
+            // 출고할 자재의 창고 재고 목록을 가져옴 (선입선출)
+            List<InventoryEntity> stocks = inventoryRepository.findByItemItemIdOrderByExpirationDateAsc(material.getItemId());
+            long remainingToDeduct = requiredQty;
+
+            for (InventoryEntity stock : stocks) {
+                if (remainingToDeduct <= 0) break;
+
+                long currentQty = stock.getCurrentQuantity();
+                if (currentQty == 0) continue;
+
+                long deductQty = Math.min(currentQty, remainingToDeduct);
+                stock.setCurrentQuantity(currentQty - deductQty); // 실제 재고 깎기
+                remainingToDeduct -= deductQty;
+
+                // 수불 이력(OUT) 저장 (차트에 자동 반영됨)
+                InventoryHistoryEntity history = new InventoryHistoryEntity();
+                history.setItem(material);
+                history.setTransactionDate(LocalDate.now());
+                history.setTransactionType("OUT");
+                history.setQuantity(deductQty);
+                inventoryHistoryRepository.save(history);
+            }
+        }
     }
 
     // 5. 작업시작(공정 시작)

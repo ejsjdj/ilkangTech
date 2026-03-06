@@ -383,7 +383,7 @@ public class DashboardService {
         return dto;
     }
     
-    // 최근 출고 내역 통합 조회 (에러 해결)
+    // 최근 출고 내역 통합 조회
     public List<OutboundItemDTO> getOutboundScheduledList() {
         List<OutboundItemDTO> list = new ArrayList<>();
         
@@ -399,6 +399,9 @@ public class DashboardService {
             Long currentStock = inventoryRepository.getTotalQuantityByItemId(itemId);
             currentStock = (currentStock == null) ? 0L : currentStock;
 
+            Long availableOutboundQty = Math.min(currentStock, requiredQty);
+            Long shortageQty = Math.max(0L, requiredQty - currentStock);
+
             list.add(OutboundItemDTO.builder()
                     .type("생산 투입") 
                     .refCode(instructCode)
@@ -406,99 +409,58 @@ public class DashboardService {
                     .itemName(itemName)
                     .requiredQty(requiredQty)
                     .currentStock(currentStock)
+                    .availableOutboundQty(availableOutboundQty) 
+                    .shortageQty(shortageQty)                  
                     .requestDept("생산팀")
                     .dueDate(LocalDate.now().toString()) 
-                    .status("출고 완료") 
+                    .status(shortageQty > 0 ? "재고 부족" : "출고 완료") 
                     .build());
         }
         
+        // 2. 완제품 출하 실적 (영업팀)
         String sql = "SELECT " +
-                "  'SO-' || so.sales_order_id, " +  
+                "  CONCAT('SO-', so.sales_order_id), " +  
                 "  i.item_id, " +                 
                 "  i.item_name, " +                 
                 "  oi.quantity, " +                 
                 "  so.expected_delivery_date " +    
                 "FROM sales_order so " +
                 "JOIN order_item oi ON so.sales_order_id = oi.sales_order_id " + 
-                "JOIN Item i ON oi.item_id = i.item_id ";
+                "JOIN item i ON oi.item_id = i.item_id ";
 
         @SuppressWarnings("unchecked")
         List<Object[]> salesList = entityManager.createNativeQuery(sql).getResultList();
 
         for (Object[] obj : salesList) {
             String orderCode = (String) obj[0];
-            // 💡 에러 방지: Number로 받아서 longValue()로 변환
             Long itemId = ((Number) obj[1]).longValue();
             String itemName = (String) obj[2];
             Long requiredQty = ((Number) obj[3]).longValue();
-            
             String dueDate = (obj[4] != null) ? obj[4].toString().substring(0, 10) : "";
 
             Long currentStock = inventoryRepository.getTotalQuantityByItemId(itemId);
             currentStock = (currentStock == null) ? 0L : currentStock;
 
+            Long availableOutboundQty = Math.min(currentStock, requiredQty);
+            Long shortageQty = Math.max(0L, requiredQty - currentStock);
+
             list.add(OutboundItemDTO.builder()
                     .type("영업 출하") 
                     .refCode(orderCode)
-                    .itemCode(itemId) // DTO 이름은 itemCode지만 내부적으로 ID(Long) 저장
+                    .itemCode(itemId) 
                     .itemName(itemName)
                     .requiredQty(requiredQty)
                     .currentStock(currentStock)
+                    .availableOutboundQty(availableOutboundQty)
+                    .shortageQty(shortageQty)
                     .requestDept("영업팀")
                     .dueDate(dueDate)
-                    .status("출고 완료")
+                    .status(shortageQty > 0 ? "재고 부족" : "출고 완료")
                     .build());
         }
 
         return list;
     }
-
-    // 💡 [수정됨] 출고 처리 실행 (재고 차감)
-    @Transactional
-    public String processOutbound() {
-        List<Object[]> pendingMaterials = productionInstructRepository.findMaterialOutboundList();
-        
-        if (pendingMaterials.isEmpty()) {
-            return "출고 대기 중인 항목이 없습니다.";
-        }
-
-        for (Object[] obj : pendingMaterials) {
-            String instructCode = (String) obj[0];
-            // 💡 여기도 동일하게 ID(Long) 기반으로 변경
-            Long itemId = ((Number) obj[1]).longValue();
-            Long requiredQty = ((Number) obj[3]).longValue();
-
-            // 💡 수정 완료: ItemCode가 아닌 ItemId를 기반으로 재고를 조회하도록 레포지토리 메서드 변경
-            List<InventoryEntity> stocks = inventoryRepository.findByItemItemIdOrderByExpirationDateAsc(itemId);
-            
-            long remainingToDeduct = requiredQty;
-
-            for (InventoryEntity stock : stocks) {
-                if (remainingToDeduct <= 0) break; 
-
-                long currentQty = stock.getCurrentQuantity();
-                if (currentQty == 0) continue;
-
-                long deductQty = Math.min(currentQty, remainingToDeduct);
-                stock.setCurrentQuantity(currentQty - deductQty); 
-                remainingToDeduct -= deductQty;
-
-                InventoryHistoryEntity history = new InventoryHistoryEntity();
-                history.setItem(stock.getItem());
-                history.setTransactionDate(LocalDate.now());
-                history.setTransactionType("OUT");
-                history.setQuantity(deductQty);
-                historyRepository.save(history);
-            }
-
-            if (remainingToDeduct > 0) {
-                throw new RuntimeException("재고가 부족하여 출고할 수 없습니다: 품목 ID " + itemId + " (부족수량: " + remainingToDeduct + ")");
-            }
-
-            productionInstructRepository.updateInstructStatus(instructCode, "PROGRESS");
-        }
-        
-        return "출고 처리가 완료되었습니다.";
-    }
+    
 
 }

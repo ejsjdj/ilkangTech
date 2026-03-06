@@ -46,7 +46,7 @@ public interface ProcessRouteRepository extends JpaRepository<ProcessRouteEntity
             pr.outItem.itemName
             )
             FROM ProcessRouteEntity pr
-            WHERE pr.item.id = :itemId
+            WHERE pr.outItem.itemId = :itemId
             ORDER BY pr.sequence ASC
             """)
     List<ProcessRegisterDTO> findProcessRegisterList(@Param("itemId") Long itemId);

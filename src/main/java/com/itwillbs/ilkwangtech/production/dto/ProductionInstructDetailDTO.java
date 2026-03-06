@@ -15,7 +15,6 @@ public class ProductionInstructDetailDTO {
     private Long planeId;
     // 작업지시 ID
     private Long instructId;
-
     // 작업지시 번호
     private String instructCode;
     // 생산계획코드

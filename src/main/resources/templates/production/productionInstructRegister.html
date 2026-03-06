@@ -1,96 +1,85 @@
 <!doctype html>
-<html
-  lang="ko"
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-  layout:decorate="~{layout/layout}"
->
-  <head>
-    <title>작업지시 등록</title>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/layout}">
 
-    <link
-      rel="stylesheet"
-      href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://uicdn.toast.com/grid/latest/tui-grid.css"
-    />
-  </head>
+<head>
+  <title>작업지시 등록</title>
 
-  <body layout:fragment="content">
-    <div style="padding: 20px">
-      <h2>신규 작업지시 생성</h2>
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+</head>
 
-      <label>생산계획 선택</label>
-      <select id="planeSelect">
-        <option value="">-- 생산계획을 선택하세요 --</option>
-      </select>
+<body layout:fragment="content">
+  <div style="padding: 20px">
+    <h2>신규 작업지시 생성</h2>
 
-      <br /><br />
+    <label>생산계획 선택</label>
+    <select id="planeSelect">
+      <option value="">-- 생산계획을 선택하세요 --</option>
+    </select>
 
-      <div>
-        <label>작업지시코드</label>
-        <input type="text" id="instructCode" readonly />
-      </div>
+    <br /><br />
 
-      <br />
-
-      <div>
-        <label>계획수량</label>
-        <input type="number" id="instructQty" min="1" />
-      </div>
-
-      <div>
-        <label>지시일자</label>
-        <input type="number" id="instructQty" min="1" />
-      </div>
-
-      <div>
-        <label>시작시간</label>
-        <input type="time" id="startTime" />
-      </div>
-
-      <div>
-        <label>종료시간</label>
-        <input type="time" id="endTime" />
-      </div>
-
-      <br /><br />
-
-      <!-- 공정 목록 표시 영역 -->
-      <div id="processArea">
-        <table border="1" style="border-collapse: collapse; width: 100%">
-          <thead>
-            <tr>
-              <th>순번</th>
-              <th>생산 품목 ID</th>
-              <th>공정코드</th>
-              <th>공정명</th>
-              <th>최소 생산수량</th>
-              <th>추가 생산수량</th>
-              <th>담당자</th>
-            </tr>
-          </thead>
-          <tbody id="processTableBody">
-            <!-- JS로 동적 생성 -->
-          </tbody>
-        </table>
-      </div>
-
-      <br /><br />
-
-      <button id="registerBtn" style="padding: 6px 12px">지시 등록</button>
+    <div>
+      <label>작업지시코드</label>
+      <input type="text" id="instructCode" readonly />
     </div>
-  </body>
 
-  <th:block layout:fragment="script">
-    <script
-      src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"
-    ></script>
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <br />
 
-    <script th:src="@{/js/productionInstructRegister.js}"></script>
-  </th:block>
+    <div>
+      <label>계획수량</label>
+      <input type="number" id="instructQty" min="1" />
+    </div>
+
+    <div>
+      <label>지시일자</label>
+      <input type="number" id="instructQty" min="1" />
+    </div>
+
+    <div>
+      <label>시작시간</label>
+      <input type="time" id="startTime" />
+    </div>
+
+    <div>
+      <label>종료시간</label>
+      <input type="time" id="endTime" />
+    </div>
+
+    <br /><br />
+
+    <!-- 공정 목록 표시 영역 -->
+    <div id="processArea">
+      <table border="1" style="border-collapse: collapse; width: 100%">
+        <thead>
+          <tr>
+            <th>순번</th>
+            <th>생산 품목 ID</th>
+            <th>공정코드</th>
+            <th>공정명</th>
+            <th>최소 생산수량</th>
+            <th>추가 생산수량</th>
+            <th>담당자</th>
+          </tr>
+        </thead>
+        <tbody id="processTableBody">
+          <!-- JS로 동적 생성 -->
+        </tbody>
+      </table>
+    </div>
+
+    <br /><br />
+
+    <button id="registerBtn" style="padding: 6px 12px">지시 등록</button>
+  </div>
+</body>
+
+<th:block layout:fragment="script">
+  <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+  <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+  <script th:src="@{/js/productionInstructRegister.js}"></script>
+</th:block>
+
 </html>

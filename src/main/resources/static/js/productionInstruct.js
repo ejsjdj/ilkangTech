@@ -80,8 +80,11 @@ function openDetailModal(instructId) {
       const tbody = document.getElementById("workerTable");
       tbody.innerHTML = "";
 
-      data.worker.forEach((w) => {
+      if (data.worker && data.worker.length > 0) {
+        data.worker.sort((a, b) => a.sequence - b.sequence);
+      }
 
+      data.worker.forEach((w) => {
         const commonData = `
           data-worker-id="${w.workerId}" 
           data-instruct-id="${data.instructId}"
@@ -90,11 +93,11 @@ function openDetailModal(instructId) {
 
         tbody.innerHTML += `
           <tr>
-            <tr>
+            <td>${w.sequence}</td>
             <td>${w.operationName}</td>
             <td>${w.name}</td>
-            <td>${w.startTime}</td>
-            <td>${w.endTime}</td>
+            <td>${w.startTime || '-'}</td>
+            <td>${w.endTime || '-'}</td>
             <td>${w.productionQty}</td>
             <td>${w.additionQty}</td>
             <td>${w.status}</td>
@@ -102,8 +105,6 @@ function openDetailModal(instructId) {
             <td><button class="btn-stop" ${commonData} onclick="handleWork(this, 'stop')">중단</button></td>
             <td><button class="btn-complete" ${commonData} onclick="handleWork(this, 'complete')">완료</button></td>
             <td><button class="btn-defect" ${commonData} onclick="handleWork(this, 'defect')">등록</button></td>
-          </tr>
-          </tr>
           </tr>
         `;
       });
@@ -139,7 +140,7 @@ function handleWork(button, type) {
 
   console.log(`[${type}] 요청 - 작업자ID: ${workerId}, 지시ID: ${instructId}, 계획ID: ${planeId}`);
 
-  // 타입별 URL 설정 (필요에 따라 수정)
+  // 타입별 URL 설정
   const urlMap = {
     start: '/api/production_instruct/start',
     stop: '/api/production_instruct/stop',
@@ -150,13 +151,13 @@ function handleWork(button, type) {
   const url = `${urlMap[type]}?planeId=${planeId}&instructId=${instructId}&workerId=${workerId}`;
 
   fetch(url, {
-    method: 'POST', // 서버 컨트롤러가 @PostMapping이면 POST 유지
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   })
     .then(res => {
       if (res.ok) {
         alert("처리가 완료되었습니다.");
-        location.reload(); // 성공 시 화면 갱신 (상태 변경 반영)
+        location.reload();
       } else {
         alert("처리 중 오류가 발생했습니다.");
       }

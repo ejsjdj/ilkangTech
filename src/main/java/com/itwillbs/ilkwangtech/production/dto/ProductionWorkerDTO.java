@@ -25,6 +25,7 @@ public class ProductionWorkerDTO {
     private String endTime;
     private Long productionQty;
     private Long additionQty;
+    private Long sequence;
 
     public static ProductionWorkerDTO fromList(ProductionWorkerEntity entity){
         return ProductionWorkerDTO.builder().
@@ -37,6 +38,7 @@ public class ProductionWorkerDTO {
                 endTime(String.valueOf(entity.getEndTime())).
                 productionQty(entity.getProductionQty()).
                 additionQty(entity.getAdditionQty()).
+                sequence(entity.getSequence()).
                 build();
 
     }

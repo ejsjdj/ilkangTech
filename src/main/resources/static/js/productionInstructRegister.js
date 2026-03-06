@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 </td>
               <td>
               <select class="memberSelect"
+                data-sequence="${process.sequence}"
                 data-process-id="${process.processId}"
                 data-production-qty="${process.productionQty}"
                 data-output-item-id="${process.outPutItemId}">
@@ -98,6 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
     rows.forEach((row) => {
       const select = row.querySelector(".memberSelect");
       const additionInput = row.querySelector(".additionQty");
+      const sequence = Number(select.dataset.sequence);
       const outPutItemId = Number(select.dataset.outputItemId);
 
       const processId = Number(select.dataset.processId);
@@ -114,6 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
         startTime: startTime,
         endTime: endTime,
         outputItemId: outPutItemId,
+        sequence: sequence
       });
     });
 

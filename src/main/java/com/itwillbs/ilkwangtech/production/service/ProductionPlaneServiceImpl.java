@@ -66,9 +66,6 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
 
-//        ProcessRouteEntity routeCode = processRouteRepository.findById(productionPlaneInsertDTO.getRouteCode()).
-//                orElseThrow(() -> new IllegalArgumentException("라우트 코드가 존재하지 않습니다."));
-
         ItemEntity item = itemRepository.findById(productionPlaneInsertDTO.getItem())
                 .orElseThrow(() -> new IllegalArgumentException("품목 정보가 존재하지 않습니다."));
 
@@ -110,6 +107,8 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
     }
 
     // 5. 생산계획 전체 조회
+    @Override
+    @Transactional
     public List<ProductionPlaneAllDTO> getProductionPlaneAll(){
 
         return productionPlaneRepository.findAllForSelect();

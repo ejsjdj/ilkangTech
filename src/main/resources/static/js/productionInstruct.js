@@ -69,6 +69,7 @@ function openDetailModal(instructId) {
     .then((data) => {
       // 상단 기본정보 표시
       document.getElementById("detailInfo").innerHTML = `
+        <p><b>생산계획 ID:</b> ${data.planeId}</p>
         <p><b>작업지시코드:</b> ${data.instructCode}</p>
         <p><b>생산계획코드:</b> ${data.planeCode}</p>
         <p><b>품목:</b> ${data.itemName}</p>
@@ -80,8 +81,16 @@ function openDetailModal(instructId) {
       tbody.innerHTML = "";
 
       data.worker.forEach((w) => {
+
+        const commonData = `
+          data-worker-id="${w.workerId}" 
+          data-instruct-id="${data.instructId}"
+          data-plane-id="${data.planeId}"
+        `;
+
         tbody.innerHTML += `
           <tr>
+            <tr>
             <td>${w.operationName}</td>
             <td>${w.name}</td>
             <td>${w.startTime}</td>
@@ -89,6 +98,12 @@ function openDetailModal(instructId) {
             <td>${w.productionQty}</td>
             <td>${w.additionQty}</td>
             <td>${w.status}</td>
+            <td><button class="btn-start" ${commonData} onclick="handleWork(this, 'start')">시작</button></td>
+            <td><button class="btn-stop" ${commonData} onclick="handleWork(this, 'stop')">중단</button></td>
+            <td><button class="btn-complete" ${commonData} onclick="handleWork(this, 'complete')">완료</button></td>
+            <td><button class="btn-defect" ${commonData} onclick="handleWork(this, 'defect')">등록</button></td>
+          </tr>
+          </tr>
           </tr>
         `;
       });
@@ -115,3 +130,36 @@ window.onclick = function (event) {
 document.getElementById("createBtn").addEventListener("click", function () {
   window.location.href = "/production/instruct_register";
 });
+
+function handleWork(button, type) {
+  // dataset에서 ID 추출
+  const workerId = button.dataset.workerId;
+  const instructId = button.dataset.instructId;
+  const planeId = button.dataset.planeId;
+
+  console.log(`[${type}] 요청 - 작업자ID: ${workerId}, 지시ID: ${instructId}, 계획ID: ${planeId}`);
+
+  // 타입별 URL 설정 (필요에 따라 수정)
+  const urlMap = {
+    start: '/api/production_instruct/start',
+    stop: '/api/production_instruct/stop',
+    complete: '/api/production_instruct/complete',
+    defect: '/api/production_instruct/defect'
+  };
+
+  const url = `${urlMap[type]}?planeId=${planeId}&instructId=${instructId}&workerId=${workerId}`;
+
+  fetch(url, {
+    method: 'POST', // 서버 컨트롤러가 @PostMapping이면 POST 유지
+    headers: { 'Content-Type': 'application/json' }
+  })
+    .then(res => {
+      if (res.ok) {
+        alert("처리가 완료되었습니다.");
+        location.reload(); // 성공 시 화면 갱신 (상태 변경 반영)
+      } else {
+        alert("처리 중 오류가 발생했습니다.");
+      }
+    })
+    .catch(err => console.error("API 호출 에러:", err));
+}

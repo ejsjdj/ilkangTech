@@ -18,7 +18,7 @@ public interface ProductionInstructService {
 
     void updateInstructDefective(Long defectiveQty, String instructCode, Long processId);
 
-    // void updateInstruct(String instructCode, Long processId);
+    void updateInstructStart(Long planeId, Long instructId, Long workerId);
 
 
 }

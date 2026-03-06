@@ -68,11 +68,12 @@ public class ProductionInstructApiController {
 
     }
 
-    // 5. 작업 완료
-//    public void updateProductionInstruct(@RequestParam("instructCode") String instructCode,
-//                                         @RequestParam("processId") Long processId){
-//
-//        productionInstructService.updateInstruct(instructCode, processId);
-//
-//    }
+    // 5. 작업 시작
+    @PostMapping("/start")
+    public void startProductionInstruct(@RequestParam(value = "planeId") Long planeId,
+                                        @RequestParam(value = "instructId") Long instructId,
+                                        @RequestParam(value = "workerId") Long workerId){
+
+        productionInstructService.updateInstructStart(planeId, instructId, workerId);
+    }
 }

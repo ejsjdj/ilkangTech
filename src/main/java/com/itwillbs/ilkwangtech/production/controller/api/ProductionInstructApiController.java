@@ -4,6 +4,7 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.production.dto.ProductionInstructDTO;
 import com.itwillbs.ilkwangtech.production.dto.ProductionInstructDetailDTO;
 import com.itwillbs.ilkwangtech.production.dto.ProductionInstructInsertDTO;
+import com.itwillbs.ilkwangtech.production.service.ProductionDefectiveService;
 import com.itwillbs.ilkwangtech.production.service.ProductionInstructService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.Optional;
 public class ProductionInstructApiController {
 
     private final ProductionInstructService productionInstructService;
+    private final ProductionDefectiveService productionDefectiveService;
 
 
     @GetMapping("/list")
@@ -60,11 +62,11 @@ public class ProductionInstructApiController {
 
 
     // 4. 불량 수량 등록
-    public void updateProductionInstructDefective(@RequestParam("DefectiveQty") Long defectiveQty,
-                                                  @RequestParam("instructCode") String instructCode,
-                                                  @RequestParam("processId") Long processId){
+    public void updateProductionInstructDefective(@RequestParam(value = "DefectiveQty") Long defectiveQty,
+                                                  @RequestParam(value = "instructId") Long instructId,
+                                                  @RequestParam(value = "workerId") Long workerId){
 
-        // productionInstructService.updateInstructDefective(defectiveQty, instructCode, processId);
+        productionDefectiveService.instructDefective(defectiveQty, instructId, workerId);
 
     }
 

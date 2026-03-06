@@ -25,7 +25,7 @@ public class PurchaseOrderEntity {
     private PurchaseOrderHeaderEntity header;
 
     // 품목
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "item_id")
     private ItemEntity item;
 

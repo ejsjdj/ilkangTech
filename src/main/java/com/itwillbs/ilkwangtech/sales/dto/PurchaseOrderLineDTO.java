@@ -9,15 +9,13 @@ public class PurchaseOrderLineDTO {
 
     private Long id;
     private Long item;
-    private String itemName;
     private Long quantity;
-    private Long totalPrice;
+    private Long unitPrice;
 
-    public PurchaseOrderLineDTO(Long id, Long item, String itemName, Long quantity, Long totalPrice){
+    public PurchaseOrderLineDTO(Long id, Long item, Long quantity, Long unitPrice){
         this.id = id;
         this.item = item;
-        this.itemName = itemName;
         this.quantity = quantity;
-        this.totalPrice = totalPrice;
+        this.unitPrice = unitPrice;
     }
 }

@@ -7,11 +7,11 @@ import lombok.Setter;
 @Setter
 public class ProductionInstructWorkerInsertDTO {
 
-    private Long processId;
+    private Long operationId;
     private Long memberId;
 
-    public ProductionInstructWorkerInsertDTO(Long processId, Long memberId){
-        this.processId = processId;
+    public ProductionInstructWorkerInsertDTO(Long operationId, Long memberId){
+        this.operationId = operationId;
         this.memberId = memberId;
     }
 }

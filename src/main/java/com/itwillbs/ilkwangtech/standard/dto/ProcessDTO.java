@@ -1,6 +1,5 @@
 package com.itwillbs.ilkwangtech.standard.dto;
 
-import com.itwillbs.ilkwangtech.standard.constant.ProcessStatus;
 import lombok.*;
 
 @Getter
@@ -9,22 +8,18 @@ import lombok.*;
 @ToString
 public class ProcessDTO {
 
-    private Long id;
-    private String operationCode;
+    private String opertaionId;
     private String name;
     private String description;
     private String memberName;
     private String createdAt;
-    private ProcessStatus status;
 
     @Builder
-    public ProcessDTO(Long id, String operationCode, String name, String description, String memberName, String createdAt, ProcessStatus status){
-        this.id = id;
-        this.operationCode = operationCode;
+    public ProcessDTO(String opertaionId, String name, String description, String memberName, String createdAt){
+        this.opertaionId = opertaionId;
         this.name = name;
         this.description = description;
         this.memberName = memberName;
         this.createdAt = createdAt;
-        this.status = status;
     }
 }

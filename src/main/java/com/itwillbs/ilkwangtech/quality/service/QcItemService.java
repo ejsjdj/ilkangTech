@@ -18,8 +18,4 @@ public class QcItemService {
 	public List<QcItem> findAllQcItems() {
         return qcItemRepository.findAll();
     }
-
-	public QcItem saveQcItem(QcItem qcItem) {
-		return qcItemRepository.save(qcItem);
-	}
 }

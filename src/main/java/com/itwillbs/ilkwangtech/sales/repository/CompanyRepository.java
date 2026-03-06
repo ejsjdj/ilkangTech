@@ -2,7 +2,6 @@ package com.itwillbs.ilkwangtech.sales.repository;
 
 import com.itwillbs.ilkwangtech.sales.constant.CompanyCategory;
 import com.itwillbs.ilkwangtech.sales.dto.CompanyDTO;
-import com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO;
 import com.itwillbs.ilkwangtech.sales.mapper.CompanyMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -30,10 +29,6 @@ public class CompanyRepository {
 
     public long selectCount(CompanyCategory category) {
         return companyMapper.selectCount(category);
-    }
-
-    public List<PurchaseCompanyDTO> selectCompanyType3(){
-        return companyMapper.selectCompanyType3();
     }
 
 }

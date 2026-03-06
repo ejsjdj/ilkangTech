@@ -2,7 +2,6 @@ package com.itwillbs.ilkwangtech.sales.mapper;
 
 import com.itwillbs.ilkwangtech.sales.constant.CompanyCategory;
 import com.itwillbs.ilkwangtech.sales.dto.CompanyDTO;
-import com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,5 +21,4 @@ public interface CompanyMapper {
 
     long selectCount(@Param("category") CompanyCategory category);
 
-    List<PurchaseCompanyDTO> selectCompanyType3();
 }

@@ -1,0 +1,62 @@
+package com.itwillbs.ilkwangtech.equipment.controller;
+
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.itwillbs.ilkwangtech.equipment.entity.Equipment;
+import com.itwillbs.ilkwangtech.equipment.entity.EquipmentFailure;
+import com.itwillbs.ilkwangtech.equipment.service.EquipmentService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
+@Controller
+@RequestMapping("/equipment")
+@RequiredArgsConstructor
+@Log4j2
+public class EquipmentController {
+
+    private final EquipmentService equipmentService;
+
+//  설비 현황 페이지 접속
+    @GetMapping("/equipmentList")
+    public String equipmentPage() {
+        return "equipment/equipmentList"; 
+    }
+
+//  TOAST UI Grid가 호출할 데이터 API
+    @GetMapping("/api/equipment")
+    @ResponseBody
+    public List<Equipment> getEquipmentApi() {
+        return equipmentService.getAllEquipments();
+    }
+    
+//  새 설비 등록
+    @PostMapping("/api/equipment")
+    @ResponseBody
+    public Equipment create(@RequestBody Equipment equipment) {
+    	log.info(">>>>>>>>>>> equipment-controller : " + equipment);
+        return equipmentService.createEquipment(equipment);
+    }
+    
+//  고장 이력 페이지 접속
+    @GetMapping("/failure-history")
+    public String failureHistoryPage() {
+    	log.info(">>>>>>>>>>>>>>>>> failure-history 접속");
+        return "equipment/equipmentFailureList"; 
+    }
+    
+//  고장 이력 데이터 반환
+    @GetMapping("/equipmentFailureList")
+    @ResponseBody
+    public List<EquipmentFailure> getFailureList() {
+    	log.info(">>>>>>>>>>>>>>>>> failure 리스트 controller 접속");
+        return equipmentService.getAllFailures();
+    }
+}

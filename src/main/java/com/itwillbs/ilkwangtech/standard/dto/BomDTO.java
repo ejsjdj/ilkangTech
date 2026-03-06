@@ -14,11 +14,11 @@ public class BomDTO {
 
     private Long bomId;
 
-    @JsonProperty("parentItemId")
-    private Long parentItemId;
+    @JsonProperty("beforeItemId")
+    private Long beforeItemId;
 
-    @JsonProperty("childItemId")
-    private Long childItemId;
+    @JsonProperty("afterItemId")
+    private Long afterItemId;
 
     @JsonProperty("requiredQty")
     private Long requiredQty;

@@ -18,8 +18,9 @@ public class ProductionInstructWorkerInsertDTO {
     private LocalTime startTime;
     private LocalTime endTime;
     private Long outputItemId;
+    private Long sequence;
 
-    public ProductionInstructWorkerInsertDTO(Long processId, Long memberId, Long productionQty, Long additionQty, LocalTime startTime, LocalTime endTime, Long outputItemId ){
+    public ProductionInstructWorkerInsertDTO(Long processId, Long memberId, Long productionQty, Long additionQty, LocalTime startTime, LocalTime endTime, Long outputItemId, Long sequence ){
         this.processId = processId;
         this.memberId = memberId;
         this.productionQty = productionQty;
@@ -27,6 +28,7 @@ public class ProductionInstructWorkerInsertDTO {
         this.startTime = startTime;
         this.endTime = endTime;
         this.outputItemId = outputItemId;
-        
+        this.sequence = sequence;
+
     }
 }

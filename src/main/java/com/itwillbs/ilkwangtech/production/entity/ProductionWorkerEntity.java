@@ -51,6 +51,12 @@ public class ProductionWorkerEntity{
     @Column(name = "addition_qty")
     private Long additionQty;
 
+    @Column(name = "sequence")
+    private Long sequence;
+
+    @Column(name = "defective")
+    private Long defective;
+
     @ManyToOne
     @JoinColumn(name = "item_id")
     private ItemEntity item;
@@ -62,7 +68,8 @@ public class ProductionWorkerEntity{
                                                 LocalTime endTime,
                                                 Long productionQty,
                                                 Long additionQty,
-                                                ItemEntity item){
+                                                ItemEntity item,
+                                                Long sequence){
 
         ProductionWorkerEntity line = new ProductionWorkerEntity();
 
@@ -75,6 +82,7 @@ public class ProductionWorkerEntity{
         line.productionQty = productionQty;
         line.additionQty = additionQty;
         line.item = item;
+        line.sequence = sequence;
 
         return line;
     }

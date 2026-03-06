@@ -118,7 +118,8 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
                     lineDTO.getEndTime(),
                     lineDTO.getProductionQty(),
                     lineDTO.getAdditionQty(),
-                    outputItem
+                    outputItem,
+                    lineDTO.getSequence()
             );
 
             header.saveLine(line);
@@ -158,10 +159,11 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         }
     }
 
+
     // 5. 작업시작(공정 시작)
     @Override
     @Transactional
-    public void updateInstructStart(Long planeId, Long instructId, Long workerId){
+    public void startInstruct(Long planeId, Long instructId, Long workerId){
         ProductionWorkerEntity workerEntity = productionWorkerRepository
                 .findById(workerId).orElseThrow(() -> new IllegalArgumentException("작업지시 공정정보가 없습니다."));
 
@@ -178,10 +180,62 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
 
     }
 
-    // 4. 불량 등록
-    public void updateInstructDefective(Long defectiveQty, String instructCode, Long processId){
+    // 작업지시 공정 완료
+    @Override
+    @Transactional
+    public void completeInstruct(Long planeId, Long instructId, Long workerId){
+        // 1. 현재 작업자 상태 변경
+        ProductionWorkerEntity workerEntity = productionWorkerRepository
+                .findById(workerId).orElseThrow(() -> new IllegalArgumentException("작업자 정보가 없습니다."));
+        workerEntity.setStatus("COMPLETE");
 
+        // 2. 상위 작업지시(Instruct) 엔티티 가져오기
+        ProductionInstructEntity instructEntity = productionInsturctRepository
+                .findById(instructId).orElseThrow(() -> new IllegalArgumentException("작업지시 정보가 없습니다."));
+
+        // 3. 모든 작업자가 COMPLETE인지 확인
+        boolean allWorkersComplete = instructEntity.getWorkers().stream()
+                .allMatch(w -> "COMPLETE".equals(w.getStatus()));
+
+        if (allWorkersComplete) {
+            // 4. 작업지시 상태를 COMPLETE로 변경
+            instructEntity.setStatus("COMPLETE");
+
+            // 5. 상위 생산계획(Plane) 엔티티 가져오기
+            ProductionPlaneEntity planeEntity = productionPlaneRepository
+                    .findById(planeId).orElseThrow(() -> new IllegalArgumentException("생산계획 정보가 없습니다."));
+
+            // 6. 해당 생산계획에 속한 모든 작업지시(Instruct)가 COMPLETE인지 확인
+            boolean allInstructsComplete = planeEntity.getInstruct().stream()
+                    .allMatch(i -> "COMPLETE".equals(i.getStatus()));
+
+            if (allInstructsComplete) {
+                // 7. 생산계획 상태를 COMPLETE로 변경
+                planeEntity.setStatus("COMPLETE");
+            }
+        }
     }
 
+    // 작업지시 공정 중단
+    @Override
+    @Transactional
+    public void cancelInstruct(Long planeId, Long instructId, Long workerId){
+        ProductionWorkerEntity workerEntity = productionWorkerRepository
+                .findById(workerId).orElseThrow(() -> new IllegalArgumentException("작업지시 공정정보가 없습니다."));
 
+        ProductionInstructEntity instructEntity = productionInsturctRepository.findById(instructId)
+                .orElseThrow(() -> new IllegalArgumentException("작업지시 정보가 없습니다."));
+
+        ProductionPlaneEntity planeEntity  = productionPlaneRepository.findById(planeId)
+                .orElseThrow(() -> new IllegalArgumentException("생산계획 정보가 없습니다."));
+
+        workerEntity.setStatus("CACEL");
+        instructEntity.setStatus("CACEL");
+        planeEntity.setStatus("CACEL");
+    }
+
+    // 4. 불량 등록
+//    public void completeInstructDefective(Long defectiveQty, String instructCode, Long processId){
+//
+//    }
 }

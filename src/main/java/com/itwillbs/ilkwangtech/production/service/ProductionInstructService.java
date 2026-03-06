@@ -16,9 +16,11 @@ public interface ProductionInstructService {
 
     void saveProductionInstruct(ProductionInstructInsertDTO productionInstructInsertDTO, Long userId);
 
-    void updateInstructDefective(Long defectiveQty, String instructCode, Long processId);
+    void startInstruct(Long planeId, Long instructId, Long workerId);
 
-    void updateInstructStart(Long planeId, Long instructId, Long workerId);
+    void completeInstruct(Long planeId, Long instructId, Long workerId);
+
+    void cancelInstruct(Long planeId, Long instructId, Long workerId);
 
 
 }

@@ -30,6 +30,9 @@ public class ProductionPlaneEntity {
     @OneToMany(mappedBy = "header", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductionPlaneDetailEntity> details = new ArrayList<>();
 
+    @OneToMany(mappedBy = "productionId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductionInstructEntity> instruct = new ArrayList<>();
+
     // 계획 코드
     @Column(name = "plane_code")
     private String planeCode;

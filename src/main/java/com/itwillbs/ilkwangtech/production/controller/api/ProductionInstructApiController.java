@@ -64,16 +64,34 @@ public class ProductionInstructApiController {
                                                   @RequestParam("instructCode") String instructCode,
                                                   @RequestParam("processId") Long processId){
 
-        productionInstructService.updateInstructDefective(defectiveQty, instructCode, processId);
+        // productionInstructService.updateInstructDefective(defectiveQty, instructCode, processId);
 
     }
 
-    // 5. 작업 시작
+    // 5. 작업시지 공정 생산시작
     @PostMapping("/start")
     public void startProductionInstruct(@RequestParam(value = "planeId") Long planeId,
                                         @RequestParam(value = "instructId") Long instructId,
                                         @RequestParam(value = "workerId") Long workerId){
 
-        productionInstructService.updateInstructStart(planeId, instructId, workerId);
+        productionInstructService.startInstruct(planeId, instructId, workerId);
+    }
+
+    // 6. 작업지시 공정 완료
+    @PostMapping("/complete")
+    public void completeProductionInstruct(@RequestParam(value = "planeId") Long planeId,
+                                        @RequestParam(value = "instructId") Long instructId,
+                                        @RequestParam(value = "workerId") Long workerId){
+
+        productionInstructService.completeInstruct(planeId, instructId, workerId);
+    }
+
+    // 7. 작업지시 공정 중단
+    @PostMapping("/cancel")
+    public void cancelProductionInstruct(@RequestParam(value = "planeId") Long planeId,
+                                        @RequestParam(value = "instructId") Long instructId,
+                                        @RequestParam(value = "workerId") Long workerId){
+
+        productionInstructService.cancelInstruct(planeId, instructId, workerId);
     }
 }

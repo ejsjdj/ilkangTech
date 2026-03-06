@@ -119,6 +119,7 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
     @Override
     @Transactional
     public List<ProcessRegisterDTO> getProcessInstructList(Long planeId){
+
         ProductionPlaneEntity plane = productionPlaneRepository.findById(planeId)
                 .orElseThrow();
 
@@ -146,6 +147,8 @@ public class ProductionPlaneServiceImpl implements ProductionPlaneService {
                 dto.setProductionQty(qty);
             }
         }
+
+        System.out.println("공정라우트 별 bom 전재 결과" + processes);
         return processes;
     }
 

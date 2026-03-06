@@ -56,15 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
           tr.innerHTML = `
               <td>${process.sequence}</td>
-        <td>${process.outPutItemId}</td>
-        <td>${process.outputItemName || '-'}</td> <td>${process.processCode}</td>
-        <td>${process.processName}</td>
-        <td>${process.productionQty}</td>
-        <td>
-            <input type="number" class="additionQty" value="0" min="0" />
-        </td>
-        <td>
-            <select class="memberSelect"
+              <td>${process.outPutItemId}</td>
+              <td>${process.outputItemName || '-'}</td> <td>${process.processCode}</td>
+              <td>${process.processName}</td>
+              <td>${process.productionQty}</td>
+              <td>
+                <input type="number" class="additionQty" value="0" min="0" />
+              </td>
+              <td>
+                <select class="memberSelect"
                 data-sequence="${process.sequence}"
                 data-process-id="${process.processId}"
                 data-production-qty="${process.productionQty}"
@@ -179,15 +179,10 @@ function loadProductionPlanes() {
 
 // 작업자 목록
 function loadMembers() {
-  fetch("/api/member/list")
-    .then((res) => {
-      if (!res.ok) throw new Error("작업자 조회 실패");
-      return res.json();
-    })
-    .then((data) => {
-      memberList = data;
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+  console.log("⚠️ 서버 에러 방지를 위해 임시 멤버 데이터를 로드합니다.");
+
+  memberList = [
+    { id: 1, name: "관리자(임시)" },
+    { id: 2, name: "작업자1" }
+  ];
 }

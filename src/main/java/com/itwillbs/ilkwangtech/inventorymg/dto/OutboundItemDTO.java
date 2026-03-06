@@ -18,4 +18,7 @@ public class OutboundItemDTO {
     
     private Long requiredQty;     // 필요(출고) 수량
     private Long currentStock;    // 재고
+    
+    private Long availableOutboundQty;  // 실제 출고(차감)될 수량
+    private Long shortageQty;			// 부족 수량 (예: 1500)
 }

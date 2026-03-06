@@ -1,12 +1,14 @@
 package com.itwillbs.ilkwangtech.production.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class ProductionInstructWorkerInsertDTO {
 
     private Long processId;
@@ -25,5 +27,6 @@ public class ProductionInstructWorkerInsertDTO {
         this.startTime = startTime;
         this.endTime = endTime;
         this.outputItemId = outputItemId;
+        
     }
 }

@@ -55,12 +55,13 @@ public interface ProductionInsturctRepository extends JpaRepository<ProductionIn
     List<Object[]> sumReservedQtyGrouped();
     
     // 출고 완료되어 생산 중(PROGRESS)이거나 완료된(COM) 자재 목록 조회
-    @Query("SELECT i.instructCode, b.parentItem.itemId, b.parentItem.itemName, SUM(i.instructQty * b.requireQty) " +
-            "FROM ProductionInstructEntity i, BomEntity b " +
-            "WHERE i.item.itemId = b.childItem.itemId " + 
-            "AND UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " + 
-            "GROUP BY i.instructCode, b.parentItem.itemId, b.parentItem.itemName") 
-    List<Object[]> findMaterialOutboundList();
+    @Query("SELECT i.instructCode, p.itemId, p.itemName, SUM(i.instructQty * b.requireQty) " +
+            "FROM ProductionInstructEntity i " +
+            "JOIN BomEntity b ON i.item.itemId = b.childItem.itemId " +
+            "JOIN b.parentItem p " +  // 암묵적 조인 대신 명시적 조인 사용
+            "WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " + 
+            "GROUP BY i.instructCode, p.itemId, p.itemName") 
+     List<Object[]> findMaterialOutboundList();
 
     // 작업지시 상태 변경
     @Modifying(clearAutomatically = true)

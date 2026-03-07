@@ -24,7 +24,7 @@ public class PurchaseReturnDTO {
     public static PurchaseReturnDTO fromList(PurchaseReturnEntity entity){
         return PurchaseReturnDTO.builder().
                 id(entity.getId()).
-                orderCode(entity.getHeader().getHeader().getPurchaseRequestCode()).
+                orderCode(entity.getHeader().getHeader().getPurchaseOrderCode()).
                 itemName(entity.getHeader().getItem().getItemName()).
                 returnQty(entity.getReturnQty()).
                 memberName(entity.getMember().getName()).

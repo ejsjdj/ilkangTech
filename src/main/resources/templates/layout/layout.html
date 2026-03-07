@@ -1,12 +1,17 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
-<head>
-    <meta charset="UTF-8">
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <meta charset="UTF-8" />
     <title>ERP Dashboard</title>
 
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css">
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/grid/latest/tui-grid.css"
+    />
 
     <!--
 <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
@@ -18,508 +23,703 @@
     <th:block layout:fragment="style"></th:block>
 
     <style>
-        /* 공통 스타일 */
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-            font-family: 'Noto Sans KR', sans-serif;
-        }
+      /* 공통 스타일 */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: "Noto Sans KR", sans-serif;
+      }
 
-        .layout {
-            display: flex;
-            height: 100vh;
-            background: #f5f6f8;
-            overflow: hidden;
-        }
+      .layout {
+        display: flex;
+        height: 100vh;
+        background: #f5f6f8;
+        overflow: hidden;
+      }
 
-        /* 사이드바 */
-        .sidebar {
-            width: 250px;
-            background: #ffffff;
-            border-right: 1px solid #e5e7eb;
-            padding: 16px 12px;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            overflow-y: auto;
-        }
+      /* 사이드바 */
+      .sidebar {
+        width: 250px;
+        background: #ffffff;
+        border-right: 1px solid #e5e7eb;
+        padding: 16px 12px;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        overflow-y: auto;
+      }
 
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+      }
 
-        .nav-group {
-            margin-bottom: 5px;
-        }
+      .nav-group {
+        margin-bottom: 5px;
+      }
 
-        .nav-parent {
-            width: 100%;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 10px;
-            border-radius: 12px;
-            font-weight: 700;
-            color: #1f2937;
-            text-align: left;
-        }
+      .nav-parent {
+        width: 100%;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 10px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: #1f2937;
+        text-align: left;
+      }
 
-        .nav-parent:hover {
-            background: #f3f4f6;
-        }
+      .nav-parent:hover {
+        background: #f3f4f6;
+      }
 
-        .nav-icon {
-            width: 24px;
-            display: inline-flex;
-            justify-content: center;
-            font-size: 18px;
-        }
+      .nav-icon {
+        width: 24px;
+        display: inline-flex;
+        justify-content: center;
+        font-size: 18px;
+      }
 
-        .nav-menu {
-            font-size: 17px;
-        }
+      .nav-menu {
+        font-size: 17px;
+      }
 
-        .nav-arrow {
-            margin-left: auto;
-            font-size: 12px;
-            color: #6b7280;
-        }
+      .nav-arrow {
+        margin-left: auto;
+        font-size: 12px;
+        color: #6b7280;
+      }
 
-        .nav-children {
-            list-style: none;
-            margin: 0;
-            padding: 0 0 0 10px;
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transform: translateY(-6px);
-            transition: all 0.3s ease;
-        }
+      .nav-children {
+        list-style: none;
+        margin: 0;
+        padding: 0 0 0 10px;
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-6px);
+        transition: all 0.3s ease;
+      }
 
-        .nav-children.open {
-            max-height: 500px;
-            opacity: 1;
-            transform: translateY(0);
-            margin-top: 5px;
-        }
+      .nav-children.open {
+        max-height: 500px;
+        opacity: 1;
+        transform: translateY(0);
+        margin-top: 5px;
+      }
 
-        .nav-child {
-            display: block;
-            padding: 8px 10px 8px 34px;
-            margin: 2px 0;
-            border-radius: 8px;
-            color: #4b5563;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 16px;
-        }
+      .nav-child {
+        display: block;
+        padding: 8px 10px 8px 34px;
+        margin: 2px 0;
+        border-radius: 8px;
+        color: #4b5563;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 16px;
+      }
 
-        .nav-child:hover {
-            background: #f3f4f6;
-            color: #111827;
-        }
+      .nav-child:hover {
+        background: #f3f4f6;
+        color: #111827;
+      }
 
-        /* 메인 영역 */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+      /* 메인 영역 */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-        .header {
-            background: transparent;
-            padding: 14px 20px;
-            flex-shrink: 0;
-        }
+      .header {
+        background: transparent;
+        padding: 14px 20px;
+        flex-shrink: 0;
+      }
 
-        .header-box {
-            width: 100%;
-            height: 60px;
-            background: #ffffff;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 0 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
+      .header-box {
+        width: 100%;
+        height: 60px;
+        background: #ffffff;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
 
-        .messenger-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #f3f4f6;
-            transition: background 0.2s;
-            position: relative;
-        }
+      .messenger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        transition: background 0.2s;
+        position: relative;
+      }
 
-        .messenger-btn:hover {
-            background: #e5e7eb;
-        }
+      .messenger-btn:hover {
+        background: #e5e7eb;
+      }
 
-        .messenger-btn img {
-            width: 20px;
-            height: 20px;
-        }
+      .messenger-btn img {
+        width: 20px;
+        height: 20px;
+      }
 
-        .content {
-            flex: 1;
-            padding: 0 20px 20px 20px;
-            overflow-y: auto;
-        }
+      .content {
+        flex: 1;
+        padding: 0 20px 20px 20px;
+        overflow-y: auto;
+      }
 
-        /* 로고 */
-        .logo {
-            display: flex;
-            align-items: center;
-            padding-bottom: 20px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #e5e7eb;
-        }
+      /* 로고 */
+      .logo {
+        display: flex;
+        align-items: center;
+        padding-bottom: 20px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #e5e7eb;
+      }
 
-        .logo-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 10px;
-            border-radius: 10px;
-            transition: background 0.2s ease;
-        }
+      .logo-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 10px;
+        transition: background 0.2s ease;
+      }
 
-        .logo-link:hover {
-            background: #f3f4f6;
-        }
+      .logo-link:hover {
+        background: #f3f4f6;
+      }
 
-        .logo img {
-            width: 150px;
-            height: 53px;
-            object-fit: contain;
-            margin: 0px 36px;
-        }
+      .logo img {
+        width: 150px;
+        height: 53px;
+        object-fit: contain;
+        margin: 0px 36px;
+      }
 
-        /* 상단 메뉴를 일반 메뉴와 동일한 디자인으로 변경 */
-        .top-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            margin-bottom: 5px;
-        }
+      /* 상단 메뉴를 일반 메뉴와 동일한 디자인으로 변경 */
+      .top-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 5px;
+      }
 
-        /* 공지사항 전용 스타일: 기존 배경을 없애고 nav-parent와 동일하게 구성 */
-        .nav-notice {
-            width: 100%;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 10px;
-            border-radius: 12px;
-            font-weight: 700;
-            color: #1f2937;
-            text-align: left;
-            text-decoration: none;
-        }
+      /* 공지사항 전용 스타일: 기존 배경을 없애고 nav-parent와 동일하게 구성 */
+      .nav-notice {
+        width: 100%;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 10px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: #1f2937;
+        text-align: left;
+        text-decoration: none;
+      }
 
-        .nav-notice:hover {
-            background: #f3f4f6;
-            /* 마우스 올렸을 때만 배경색 발생 */
-        }
+      .nav-notice:hover {
+        background: #f3f4f6;
+        /* 마우스 올렸을 때만 배경색 발생 */
+      }
 
-        /* ERP 구분선 텍스트 스타일 */
-        .menu-category {
-            font-size: 13px;
-            font-weight: 600;
-            color: #9ca3af;
-            margin: 15px 0 5px 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+      /* ERP 구분선 텍스트 스타일 */
+      .menu-category {
+        font-size: 13px;
+        font-weight: 600;
+        color: #9ca3af;
+        margin: 15px 0 5px 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-        .menu-category::before {
-            content: "—";
-            font-size: 10px;
-        }
+      .menu-category::before {
+        content: "—";
+        font-size: 10px;
+      }
 
-        .notification-container {
-            position: relative;
-            display: inline-block;
-        }
+      .notification-container {
+        position: relative;
+        display: inline-block;
+      }
 
-        .red-dot {
-            position: absolute;
-            bottom: 0px;
-            /* 우측 하단 배치 */
-            right: 0px;
-            width: 15px;
-            height: 15px;
-            background-color: #ff3b30;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            display: none;
-            z-index: 10;
-        }
+      .red-dot {
+        position: absolute;
+        bottom: 0px;
+        /* 우측 하단 배치 */
+        right: 0px;
+        width: 15px;
+        height: 15px;
+        background-color: #ff3b30;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        display: none;
+        z-index: 10;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <div class="layout">
-        <div class="sidebar">
-            <div class="logo">
-                <a href="/schedule/calendar">
-                    <img th:src="@{/img/logo.png}" alt="ERP Logo">
-                </a>
-            </div>
-            <nav class="sidebar-nav">
-                <div class="top-menu">
-                    <a th:href="@{/notice/list}" class="nav-notice">
-                        <span class="nav-icon">📣</span>
-                        <span class="nav-menu">공지사항</span>
-                    </a>
-                </div>
+      <div class="sidebar">
+        <div class="logo">
+          <a href="/schedule/calendar">
+            <img th:src="@{/img/logo.png}" alt="ERP Logo" />
+          </a>
+        </div>
+        <nav class="sidebar-nav">
+          <div class="top-menu">
+            <a th:href="@{/notice/list}" class="nav-notice">
+              <span class="nav-icon">📣</span>
+              <span class="nav-menu">공지사항</span>
+            </a>
+          </div>
 
-                <div class="menu-category">ERP</div>
-                <div class="nav-group">
-                    <button type="button" class="nav-parent" data-target="menu-hr" aria-expanded="false">
-                        <span class="nav-icon">👤</span><span class="nav-menu">인사관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-hr">
-                        <li><a class="nav-child" th:href="@{/account/list}">사원목록</a></li>
-                        <li sec:authorize="hasAnyAuthority('CEO','HR')"><a class="nav-child"
-                                th:href="@{/hr/appointment}">발령 관리</a></li>
-                        <li><a class="nav-child" th:href="@{/account/orgChart}">조직도</a></li>
-                        <li><a class="nav-child" th:href="@{/account/role}"
-                                sec:authorize="hasAnyAuthority('CEO','INFORMATION')">권한 관리</a></li>
-                        <li><a class="nav-child" th:href="@{/account/lockAccount}"
-                                sec:authorize="hasAnyAuthority('CEO','HR')">잠긴 계정 관리</a></li>
-                    </ul>
-                </div>
-                <div class="nav-group">
-                    <button type="button" class="nav-parent" data-target="menu-att" aria-expanded="false">
-                        <span class="nav-icon">☑️</span><span class="nav-menu">근태관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-att">
-                        <li><a class="nav-child" th:href="@{/attendance/commute}">출퇴근 현황</a></li>
-                        <li sec:authorize="hasAnyAuthority('CEO','HR')"><a class="nav-child"
-                                th:href="@{/attendance/work}">근무 현황</a></li>
-                        <li><a class="nav-child" th:href="@{/attendance/vacation}">휴가 관리</a></li>
-                    </ul>
-                </div>
+          <div class="menu-category">ERP</div>
+          <div class="nav-group">
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-hr"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">👤</span
+              ><span class="nav-menu">인사관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-hr">
+              <li>
+                <a class="nav-child" th:href="@{/account/list}">사원목록</a>
+              </li>
+              <li sec:authorize="hasAnyAuthority('CEO','HR')">
+                <a class="nav-child" th:href="@{/hr/appointment}">발령 관리</a>
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/account/orgChart}">조직도</a>
+              </li>
+              <li>
+                <a
+                  class="nav-child"
+                  th:href="@{/account/role}"
+                  sec:authorize="hasAnyAuthority('CEO','INFORMATION')"
+                  >권한 관리</a
+                >
+              </li>
+              <li>
+                <a
+                  class="nav-child"
+                  th:href="@{/account/lockAccount}"
+                  sec:authorize="hasAnyAuthority('CEO','HR')"
+                  >잠긴 계정 관리</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="nav-group">
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-att"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">☑️</span
+              ><span class="nav-menu">근태관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-att">
+              <li>
+                <a class="nav-child" th:href="@{/attendance/commute}"
+                  >출퇴근 현황</a
+                >
+              </li>
+              <li sec:authorize="hasAnyAuthority('CEO','HR')">
+                <a class="nav-child" th:href="@{/attendance/work}">근무 현황</a>
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/attendance/vacation}"
+                  >휴가 관리</a
+                >
+              </li>
+            </ul>
+          </div>
 
-                <div class="nav-group">
-                    <button type="button" class="nav-parent" data-target="menu-appr" aria-expanded="false">
-                        <span class="nav-icon">📋</span><span class="nav-menu">전자결재</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-appr">
-                        <li><a class="nav-child" th:href="@{/draft/list}">전자결재 목록</a></li>
-                    </ul>
-                </div>
+          <div class="nav-group">
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-appr"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">📋</span
+              ><span class="nav-menu">전자결재</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-appr">
+              <li>
+                <a class="nav-child" th:href="@{/draft/list}">전자결재 목록</a>
+              </li>
+            </ul>
+          </div>
 
-                <div class="nav-group">
-                    <button type="button" class="nav-parent" data-target="menu-sales" aria-expanded="false">
-                        <span class="nav-icon">💼</span><span class="nav-menu">영업관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-sales">
-                        <li><a class="nav-child" th:href="@{/sales/customer/list}">고객사/협력사 관리</a></li>
+          <div class="nav-group">
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-sales"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">💼</span
+              ><span class="nav-menu">영업관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-sales">
+              <li>
+                <a class="nav-child" th:href="@{/sales/customer/list}"
+                  >고객사/협력사 관리</a
+                >
+              </li>
 
-                        <li><a class="nav-child" th:href="@{/sales/order/list}">수주 현황</a></li>
+              <li>
+                <a class="nav-child" th:href="@{/sales/order/list}"
+                  >수주 현황</a
+                >
+              </li>
 
-                        <li><a class="nav-child" th:href="@{/sales/procurement/list}">구매 계획</a></li>
+              <li>
+                <a class="nav-child" th:href="@{/sales/procurement/list}"
+                  >구매 계획</a
+                >
+              </li>
 
-                        <li><a class="nav-child" th:href="@{/sales/procurement/return}">반품 관리</a></li>
+              <li>
+                <a class="nav-child" th:href="@{/sales/procurement/return}"
+                  >반품 관리</a
+                >
+              </li>
 
-                        <li><a class="nav-child" th:href="@{/sales/performance/list}">매출 현황</a></li>
-                    </ul>
-                </div>
-                <div class="menu-category">MES</div>
-                <div class="nav-group">
-                    <button type="button" class="nav-parent" data-target="menu-standard" aria-expanded="false">
-                        <span class="nav-icon">⚙️</span><span class="nav-menu">기준정보관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-standard">
-                        <li><a class="nav-child" th:href="@{/bom/list}">BOM</a></li>
-                        <li><a class="nav-child" th:href="@{/quality/QcItemList}">품질검사 항목</a></li>
-                        <li><a class="nav-child" th:href="@{/equipment/equipmentList}">설비정보</a></li>
-                        <li><a class="nav-child" th:href="@{/process/process_list}">공정정보</a></li>
-                        <li><a class="nav-child" th:href="@{/process/route_list}">공정라우트정보</a></li>
-                    </ul>
+              <li>
+                <a class="nav-child" th:href="@{/sales/performance/list}"
+                  >매출 현황</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="menu-category">MES</div>
+          <div class="nav-group">
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-standard"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">⚙️</span
+              ><span class="nav-menu">기준정보관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-standard">
+              <li><a class="nav-child" th:href="@{/bom/list}">BOM</a></li>
+              <li>
+                <a class="nav-child" th:href="@{/quality/QcItemList}"
+                  >품질검사 항목</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/equipment/equipmentList}"
+                  >설비정보</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/process/process_list}"
+                  >공정정보</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/process/route_list}"
+                  >공정라우트정보</a
+                >
+              </li>
+            </ul>
 
-                    <button type="button" class="nav-parent" data-target="menu-pr" aria-expanded="false">
-                        <span class="nav-icon">🏭</span><span class="nav-menu">생산관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-pr">
-                        <li><a class="nav-child" th:href="@{/account/list}">대시보드</a></li>
-                        <li><a class="nav-child" th:href="@{/production/production_list}">생산계획</a></li>
-                        <li><a class="nav-child" th:href="@{/production/instruct_list}">작업지시</a></li>
-                        <li><a class="nav-child" th:href="@{/account/list}">작업일정</a></li>
-                    </ul>
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-pr"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">🏭</span
+              ><span class="nav-menu">생산관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-pr">
+              <li>
+                <a
+                  class="nav-child"
+                  th:href="@{/production/production_dashboard}"
+                  >대시보드</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/production/production_list}"
+                  >생산계획</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/production/instruct_list}"
+                  >작업지시</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/account/list}">작업일정</a>
+              </li>
+            </ul>
 
-                    <button type="button" class="nav-parent" data-target="menu-stock" aria-expanded="false">
-                        <span class="nav-icon">📦</span><span class="nav-menu">재고관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-stock">
-                        <li><a class="nav-child" th:href="@{/inventorymg/dashboard}">대시보드</a></li>
-                        <li><a class="nav-child" th:href="@{/inventorymg/inventorylist}">재고목록</a></li>
-                        <li><a class="nav-child" th:href="@{/inventorymg/outboundlist}">출고관리</a></li>
-                        <li><a class="nav-child" th:href="@{/account/list}">재고실사</a></li>
-                    </ul>
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-stock"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">📦</span
+              ><span class="nav-menu">재고관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-stock">
+              <li>
+                <a class="nav-child" th:href="@{/inventorymg/dashboard}"
+                  >대시보드</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/inventorymg/inventorylist}"
+                  >재고목록</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/inventorymg/outboundlist}"
+                  >출고관리</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/account/list}">재고실사</a>
+              </li>
+            </ul>
 
-                    <button type="button" class="nav-parent" data-target="menu-process" aria-expanded="false">
-                        <span class="nav-icon">🔁</span><span class="nav-menu">공정관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-process">
-                        <li><a class="nav-child" th:href="@{/process/ProcessDashboard}">대시보드</a></li>
-                        <li><a class="nav-child" th:href="@{/process/ProcessStatus}">공정 현황</a></li>
-                        <li><a class="nav-child" th:href="@{/process/LOT}">LOT 추적</a></li>
-                    </ul>
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-process"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">🔁</span
+              ><span class="nav-menu">공정관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-process">
+              <li>
+                <a class="nav-child" th:href="@{/process/ProcessDashboard}"
+                  >대시보드</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/process/ProcessStatus}"
+                  >공정 현황</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/process/LOT}">LOT 추적</a>
+              </li>
+            </ul>
 
-                    <button type="button" class="nav-parent" data-target="menu-eq" aria-expanded="false">
-                        <span class="nav-icon">🛠️</span><span class="nav-menu">설비관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-eq">
-                        <li><a class="nav-child" th:href="@{/equipment/equipmentDashboard}">설비 현황</a></li>
-                        <li><a class="nav-child" th:href="@{/equipment/equipmentHistory}">설비 가동 이력</a></li>
-                        <li><a class="nav-child" th:href="@{/equipment/failure-history}">설비 고장 이력</a></li>
-                    </ul>
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-eq"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">🛠️</span
+              ><span class="nav-menu">설비관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-eq">
+              <li>
+                <a class="nav-child" th:href="@{/equipment/equipmentDashboard}"
+                  >설비 현황</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/equipment/equipmentHistory}"
+                  >설비 가동 이력</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/equipment/failure-history}"
+                  >설비 고장 이력</a
+                >
+              </li>
+            </ul>
 
-                    <button type="button" class="nav-parent" data-target="menu-qc" aria-expanded="false">
-                        <span class="nav-icon">✅</span><span class="nav-menu">품질관리</span><span
-                            class="nav-arrow">▸</span>
-                    </button>
-                    <ul class="nav-children" id="menu-qc">
-                        <li><a class="nav-child" th:href="@{/quality/QcDashboard}">대시보드</a></li>
-                        <li><a class="nav-child" th:href="@{/quality/QcHistory}">품질관리 현황</a></li>
-                        <li><a class="nav-child" th:href="@{/quality/DisposalList}">폐기 이력</a></li>
-                    </ul>
-                </div>
+            <button
+              type="button"
+              class="nav-parent"
+              data-target="menu-qc"
+              aria-expanded="false"
+            >
+              <span class="nav-icon">✅</span
+              ><span class="nav-menu">품질관리</span
+              ><span class="nav-arrow">▸</span>
+            </button>
+            <ul class="nav-children" id="menu-qc">
+              <li>
+                <a class="nav-child" th:href="@{/quality/QcDashboard}"
+                  >대시보드</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/quality/QcHistory}"
+                  >품질관리 현황</a
+                >
+              </li>
+              <li>
+                <a class="nav-child" th:href="@{/quality/DisposalList}"
+                  >폐기 이력</a
+                >
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
 
-            </nav>
+      <div class="main">
+        <div class="header">
+          <div class="header-box">
+            <a
+              href="/messenger/memberList"
+              class="messenger-btn"
+              onclick="openMessenger(event)"
+            >
+              <img th:src="@{/img/messenger/chat.png}" alt="Talk" />
+              <span id="main-unread-dot" class="red-dot"></span>
+            </a>
+          </div>
         </div>
 
-        <div class="main">
-            <div class="header">
-                <div class="header-box">
-                    <a href="/messenger/memberList" class="messenger-btn" onclick="openMessenger(event)">
-                        <img th:src="@{/img/messenger/chat.png}" alt="Talk">
-                        <span id="main-unread-dot" class="red-dot"></span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="content" layout:fragment="content">..</div>
-        </div>
+        <div class="content" layout:fragment="content">..</div>
+      </div>
     </div>
 
     <script>
-        /* 사이드바 동작 */
-        document.querySelectorAll(".nav-parent").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                const targetId = btn.getAttribute("data-target");
-                const currentList = document.getElementById(targetId);
-                const willOpen = !currentList.classList.contains("open");
-                if (willOpen) {
-                    currentList.classList.add("open");
-                    btn.setAttribute("aria-expanded", "true");
-                } else {
-                    currentList.classList.remove("open");
-                    btn.setAttribute("aria-expanded", "false");
-                }
-            });
+      /* 사이드바 동작 */
+      document.querySelectorAll(".nav-parent").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const targetId = btn.getAttribute("data-target");
+          const currentList = document.getElementById(targetId);
+          const willOpen = !currentList.classList.contains("open");
+          if (willOpen) {
+            currentList.classList.add("open");
+            btn.setAttribute("aria-expanded", "true");
+          } else {
+            currentList.classList.remove("open");
+            btn.setAttribute("aria-expanded", "false");
+          }
         });
+      });
 
-        /* 메신저 버튼 동작 */
-        function openMessenger(event) {
-            event.preventDefault(); // 기본 이동 막기
+      /* 메신저 버튼 동작 */
+      function openMessenger(event) {
+        event.preventDefault(); // 기본 이동 막기
 
-            window.open(
-                "/messenger/memberList",
-                "messengerWindow",
-                "width=500,height=700,resizable=yes,scrollbars=yes"
-            );
-        }
+        window.open(
+          "/messenger/memberList",
+          "messengerWindow",
+          "width=500,height=700,resizable=yes,scrollbars=yes",
+        );
+      }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script th:inline="javascript">
-        // Thymeleaf 변수를 자바스크립트 변수로 안전하게 할당
-        const myId = /*[[${#authentication.principal.id}]]*/ 0;
+      // Thymeleaf 변수를 자바스크립트 변수로 안전하게 할당
+      const myId = /*[[${#authentication.principal.id}]]*/ 0;
 
-        // 페이지 로드 시 즉시 실행되지 않도록 함수로 감싸거나 하단에 배치
-        document.addEventListener("DOMContentLoaded", function () {
-            const mainDot = document.getElementById('main-unread-dot');
+      // 페이지 로드 시 즉시 실행되지 않도록 함수로 감싸거나 하단에 배치
+      document.addEventListener("DOMContentLoaded", function () {
+        const mainDot = document.getElementById("main-unread-dot");
 
-            // 1. 초기 로드 시 안 읽은 메시지 체크
-            fetch('/messenger/api/unread-exists')
-                .then(res => res.json())
-                .then(exists => {
-                    if (mainDot) {
-                        mainDot.style.display = exists ? 'block' : 'none';
-                    }
-                })
-                .catch(err => console.error("초기 알림 체크 실패:", err));
-
-            //  웹소켓 실시간 알림 구독
-            function connectNotification() {
-                const socket = new SockJS("/ws");
-                const stomp = Stomp.over(socket);
-
-                // 디버그 로그 끄기 (선택사항)
-                stomp.debug = null;
-
-                stomp.connect({}, function () {
-                    stomp.subscribe("/topic/user/" + myId + "/list", function (message) {
-                        const payload = JSON.parse(message.body);
-                        const mainDot = document.getElementById('main-unread-dot');
-
-                        if (!mainDot) return;
-
-                        if (payload.msgType === 'READ') {
-                            // 읽음 신호를 받으면 서버에 안 읽은 게 남았는지 다시 물어봄
-                            fetch('/messenger/api/unread-exists')
-                                .then(res => res.json())
-                                .then(exists => {
-                                    mainDot.style.display = exists ? 'block' : 'none';
-                                });
-                        } else if (payload.memberId !== myId) {
-                            // 내가 보낸 게 아닌 새 메시지라면 빨간 점 표시
-                            mainDot.style.display = 'block';
-                        }
-                    });
-                }, function (error) {
-                    setTimeout(connectNotification, 5000); // 연결 끊기면 5초 후 재시도
-                });
+        // 1. 초기 로드 시 안 읽은 메시지 체크
+        fetch("/messenger/api/unread-exists")
+          .then((res) => res.json())
+          .then((exists) => {
+            if (mainDot) {
+              mainDot.style.display = exists ? "block" : "none";
             }
+          })
+          .catch((err) => console.error("초기 알림 체크 실패:", err));
 
-            if (myId > 0) connectNotification();
-        });
+        //  웹소켓 실시간 알림 구독
+        function connectNotification() {
+          const socket = new SockJS("/ws");
+          const stomp = Stomp.over(socket);
+
+          // 디버그 로그 끄기 (선택사항)
+          stomp.debug = null;
+
+          stomp.connect(
+            {},
+            function () {
+              stomp.subscribe(
+                "/topic/user/" + myId + "/list",
+                function (message) {
+                  const payload = JSON.parse(message.body);
+                  const mainDot = document.getElementById("main-unread-dot");
+
+                  if (!mainDot) return;
+
+                  if (payload.msgType === "READ") {
+                    // 읽음 신호를 받으면 서버에 안 읽은 게 남았는지 다시 물어봄
+                    fetch("/messenger/api/unread-exists")
+                      .then((res) => res.json())
+                      .then((exists) => {
+                        mainDot.style.display = exists ? "block" : "none";
+                      });
+                  } else if (payload.memberId !== myId) {
+                    // 내가 보낸 게 아닌 새 메시지라면 빨간 점 표시
+                    mainDot.style.display = "block";
+                  }
+                },
+              );
+            },
+            function (error) {
+              setTimeout(connectNotification, 5000); // 연결 끊기면 5초 후 재시도
+            },
+          );
+        }
+
+        if (myId > 0) connectNotification();
+      });
     </script>
 
     <th:block layout:fragment="script"></th:block>
-
-</body>
-
+  </body>
 </html>

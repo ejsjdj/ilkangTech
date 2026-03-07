@@ -22,7 +22,11 @@ public class QProductionWorkerEntity extends EntityPathBase<ProductionWorkerEnti
 
     public static final QProductionWorkerEntity productionWorkerEntity = new QProductionWorkerEntity("productionWorkerEntity");
 
+    public final NumberPath<Long> actualQty = createNumber("actualQty", Long.class);
+
     public final NumberPath<Long> additionQty = createNumber("additionQty", Long.class);
+
+    public final NumberPath<Long> defectiveQty = createNumber("defectiveQty", Long.class);
 
     public final TimePath<java.time.LocalTime> endTime = createTime("endTime", java.time.LocalTime.class);
 
@@ -39,6 +43,8 @@ public class QProductionWorkerEntity extends EntityPathBase<ProductionWorkerEnti
     public final com.itwillbs.ilkwangtech.standard.entity.QProcessEntity process;
 
     public final NumberPath<Long> productionQty = createNumber("productionQty", Long.class);
+
+    public final NumberPath<Long> sequence = createNumber("sequence", Long.class);
 
     public final TimePath<java.time.LocalTime> startTime = createTime("startTime", java.time.LocalTime.class);
 

@@ -28,5 +28,10 @@ public class ProductionController {
         return "production/productionInstructRegister";
     }
 
+    @GetMapping("/production_dashboard")
+    public String getProcessDashboard() {
+        return "production/productionDashboard";
+    }
+
 
 }

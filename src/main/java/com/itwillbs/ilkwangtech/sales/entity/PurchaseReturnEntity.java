@@ -18,7 +18,7 @@ public class PurchaseReturnEntity {
 
     @ManyToOne
     @JoinColumn(name = "purchase_line_id")
-    private PurchaseRequestEntity header;
+    private PurchaseOrderEntity header;
 
     @Column(name = "return_qty")
     private Long returnQty;
@@ -36,7 +36,7 @@ public class PurchaseReturnEntity {
     @Column(name = "return_date")
     private LocalDate returnDate;
 
-    public static PurchaseReturnEntity create(PurchaseRequestEntity header,
+    public static PurchaseReturnEntity create(PurchaseOrderEntity header,
                                               Long returnQty,
                                               Member member,
                                               String memo){

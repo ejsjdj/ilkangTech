@@ -15,8 +15,8 @@ public class PurchaseOrderEntity {
 
     // 발주라인 ID
     @Id
-    @Column(name = "id", length = 10)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "return_seq")
+    @SequenceGenerator(name = "return_seq", sequenceName = "PURCHASE_RETURN_SEQ", allocationSize = 1)
     private Long id;
 
     // 발주헤더 ID (FK)
@@ -37,6 +37,7 @@ public class PurchaseOrderEntity {
     @Column(name = "unit_price")
     private Long unitPrice;
 
+    // 발주상세 등록
     public static PurchaseOrderEntity create(ItemEntity item,
                                              Long quantity,
                                              Long unitPrice){

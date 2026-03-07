@@ -28,63 +28,64 @@ public class InventoryListService {
     @Transactional(readOnly = true)
     public List<InventoryListDTO> getFilteredInventoryList(String tab, String searchType, String keyword) {
         
-        // 전체 재고 조회 (수량이 0보다 큰 것만)
         List<InventoryEntity> allInventory = inventoryRepository.findAll().stream()
-                .filter(i -> i.getCurrentQuantity() != null && i.getCurrentQuantity() > 0)
+                .filter(i -> i.getCurrentQuantity() != null)
                 .collect(Collectors.toList());
 
         return allInventory.stream()
-                .filter(i -> filterByTab(i, tab))           // 탭 분류 필터링
-                .filter(i -> filterBySearch(i, searchType, keyword)) // 검색 필터링
                 .map(i -> {
-                    // 방어 로직: DB에 Item이나 Code가 비어있어도 에러가 나지 않도록 처리
-                    String code = (i.getItem() != null && i.getItem().getItemCode() != null) 
-                                  ? i.getItem().getItemCode().toUpperCase() : "UNKNOWN";
-                                  
-                    String type = code.startsWith("RW") ? "원자재" : 
-                                  (code.startsWith("SAM") ? "완제품" : "반제품");
+                    try {
+                        // 🌟 방어 로직: DB에 품목(Item)이 삭제되었는데 재고(Inventory)만 남은 고아 데이터 방어
+                        if (i.getItem() == null) return null;
+                        
+                        // 이 시점에 품목 데이터를 가져오다 실패하면 EntityNotFoundException이 발생합니다.
+                        String code = i.getItem().getItemCode() != null ? i.getItem().getItemCode().toUpperCase() : "UNKNOWN";
+                        
+                        String type = code.startsWith("RW") ? "원자재" : 
+                                      (code.startsWith("SAM") ? "완제품" : "반제품");
 
-                    String itemName = (i.getItem() != null && i.getItem().getItemName() != null) 
-                                      ? i.getItem().getItemName() : "품목명 없음";
+                        String itemName = i.getItem().getItemName() != null ? i.getItem().getItemName() : "품목명 없음";
 
-                    return InventoryListDTO.builder()
-                            .id(i.getId())
-                            .lotNumber(i.getLotNumber())
-                            .itemName(itemName)
-                            .currentQuantity(i.getCurrentQuantity())
-                            .scheduledOutbound(0L) // TODO: 작업지시 할당 시 연동
-                            .location(i.getZone() + " - " + i.getRack())
-                            .inboundDate(LocalDate.now().toString()) // 임시 오늘 날짜
-                            .itemType(type)
-                            .build();
+                        return InventoryListDTO.builder()
+                                .id(i.getId())
+                                .lotNumber(i.getLotNumber())
+                                .itemName(itemName)
+                                .currentQuantity(i.getCurrentQuantity())
+                                .scheduledOutbound(0L) 
+                                .location(i.getZone() + " - " + i.getRack())
+                                .inboundDate(LocalDate.now().toString()) 
+                                .itemType(type)
+                                .build();
+                                
+                    } catch (jakarta.persistence.EntityNotFoundException e) {
+                        return null; 
+                    }
                 })
+                .filter(dto -> dto != null) // null로 반환된 불량 데이터 걸러내기
+                .filter(dto -> filterByTabDTO(dto, tab))
+                .filter(dto -> filterBySearchDTO(dto, searchType, keyword))
                 .collect(Collectors.toList());
     }
 
     // 탭 필터 로직
-    private boolean filterByTab(InventoryEntity i, String tab) {
+    private boolean filterByTabDTO(InventoryListDTO dto, String tab) {
         if ("ALL".equals(tab)) return true;
-        
-        String code = (i.getItem() != null && i.getItem().getItemCode() != null) 
-                      ? i.getItem().getItemCode().toUpperCase() : "";
-                      
-        if ("RAW".equals(tab) && code.startsWith("RW")) return true;
-        if ("SEMI".equals(tab) && (code.startsWith("ST") || code.startsWith("IN"))) return true;
-        if ("FINISHED".equals(tab) && code.startsWith("SAM")) return true;
-        
+        if ("RAW".equals(tab) && "원자재".equals(dto.getItemType())) return true;
+        if ("FINISHED".equals(tab) && "완제품".equals(dto.getItemType())) return true;
+        if ("SEMI".equals(tab) && "반제품".equals(dto.getItemType())) return true;
         return false;
     }
 
     // 검색어 필터 로직
-    private boolean filterBySearch(InventoryEntity i, String searchType, String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) return true; // 검색어 없으면 모두 통과
+    private boolean filterBySearchDTO(InventoryListDTO dto, String searchType, String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) return true; 
         
         String word = keyword.toLowerCase();
         return switch (searchType) {
-            case "itemName" -> i.getItem() != null && i.getItem().getItemName() != null && i.getItem().getItemName().toLowerCase().contains(word);
-            case "lotNumber" -> i.getLotNumber() != null && i.getLotNumber().toLowerCase().contains(word);
-            case "location" -> i.getZone() != null && i.getRack() != null && (i.getZone() + i.getRack()).toLowerCase().contains(word);
-            case "inboundDate" -> true; // 날짜 검색은 포맷 변환이 필요하므로 임시 통과
+            case "itemName" -> dto.getItemName() != null && dto.getItemName().toLowerCase().contains(word);
+            case "lotNumber" -> dto.getLotNumber() != null && dto.getLotNumber().toLowerCase().contains(word);
+            case "location" -> dto.getLocation() != null && dto.getLocation().toLowerCase().contains(word);
+            case "inboundDate" -> true; 
             default -> true;
         };
     }
@@ -145,26 +146,26 @@ public class InventoryListService {
 
         // 1. 생산팀 (Production) 출고 내역 수집
         String prodSql = 
-            "SELECT MAX(p.item_type), p.item_name, SUM(target.req_qty), MAX(i.start_date) " +
-            "FROM (" +
-            "    SELECT i.id AS instruct_id, p.item_id, (COALESCE(i.instruct_qty, 0) * b.require_qty) AS req_qty " +
-            "    FROM production_instruct i " +
-            "    JOIN bom b ON i.item_id = b.child_item_id " +
-            "    JOIN item p ON b.parent_item_id = p.item_id " +
-            "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
-            "    UNION ALL " +
-            "    SELECT i.id AS instruct_id, p.item_id, (w.addition_qty * b.require_qty) AS req_qty " +
-            "    FROM production_instruct i " +
-            "    JOIN production_worker w ON i.id = w.instruct_id " +
-            "    JOIN bom b ON w.item_id = b.child_item_id " +
-            "    JOIN item p ON b.parent_item_id = p.item_id " +
-            "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
-            "      AND w.addition_qty IS NOT NULL AND w.addition_qty > 0 " +
-            ") target " +
-            "JOIN item p ON target.item_id = p.item_id " +
-            "JOIN production_instruct i ON target.instruct_id = i.id " +
-            "GROUP BY p.item_id, p.item_name, target.instruct_id " +
-            "HAVING COALESCE(SUM(target.req_qty), 0) > 0";
+                "SELECT MAX(p.item_code), p.item_name, SUM(target.req_qty), MAX(i.start_date) " +
+                "FROM (" +
+                "    SELECT i.id AS instruct_id, p.item_id, (COALESCE(i.instruct_qty, 0) * b.require_qty) AS req_qty " +
+                "    FROM production_instruct i " +
+                "    JOIN bom b ON i.item_id = b.child_item_id " +
+                "    JOIN item p ON b.parent_item_id = p.item_id " +
+                "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
+                "    UNION ALL " +
+                "    SELECT i.id AS instruct_id, p.item_id, (w.addition_qty * b.require_qty) AS req_qty " +
+                "    FROM production_instruct i " +
+                "    JOIN production_worker w ON i.id = w.instruct_id " +
+                "    JOIN bom b ON w.item_id = b.child_item_id " +
+                "    JOIN item p ON b.parent_item_id = p.item_id " +
+                "    WHERE UPPER(i.status) IN ('PROGRESS', 'COMPLETE') " +
+                "      AND w.addition_qty IS NOT NULL AND w.addition_qty > 0 " +
+                ") target " +
+                "JOIN item p ON target.item_id = p.item_id " +
+                "JOIN production_instruct i ON target.instruct_id = i.id " +
+                "GROUP BY p.item_id, p.item_name, target.instruct_id " +
+                "HAVING COALESCE(SUM(target.req_qty), 0) > 0";
 
         @SuppressWarnings("unchecked")
         List<Object[]> prodResults = entityManager.createNativeQuery(prodSql).getResultList();
@@ -182,10 +183,10 @@ public class InventoryListService {
 
         // 2. 영업팀 (Sales) 출고 내역 수집
         String salesSql = 
-            "SELECT i.item_type, i.item_name, oi.quantity, so.expected_delivery_date " +
-            "FROM sales_order so " +
-            "JOIN order_item oi ON so.sales_order_id = oi.sales_order_id " +
-            "JOIN item i ON oi.item_id = i.item_id ";
+                "SELECT i.item_code, i.item_name, oi.quantity, so.expected_delivery_date " +
+                "FROM sales_order so " +
+                "JOIN order_item oi ON so.sales_order_id = oi.sales_order_id " +
+                "JOIN item i ON oi.item_id = i.item_id ";
 
         @SuppressWarnings("unchecked")
         List<Object[]> salesResults = entityManager.createNativeQuery(salesSql).getResultList();
@@ -228,16 +229,15 @@ public class InventoryListService {
     }
 
     // DB의 ItemType을 한글로 예쁘게 변환
-    private String convertItemType(Object typeObj) {
-        if (typeObj == null) return "원자재"; 
-        String typeStr = typeObj.toString().toUpperCase();
+    private String convertItemType(Object codeObj) {
+        if (codeObj == null) return "UNKNOWN"; 
+        String code = codeObj.toString().toUpperCase();
         
-        // 💡 유저님의 실제 DB 저장 순서에 맞게 조건 변경 (0: 완제품, 1: 원자재, 2: 반제품)
-        if (typeStr.equals("0") || typeStr.contains("FINISHED")) return "완제품";
-        if (typeStr.equals("1") || typeStr.contains("RAW")) return "원자재";
-        if (typeStr.equals("2") || typeStr.contains("SEMI")) return "반제품";
+        // 품목 코드가 RW로 시작하면 원자재, SAM으로 시작하면 완제품, 그 외는 전부 반제품
+        if (code.startsWith("RW")) return "원자재";
+        if (code.startsWith("SAM")) return "완제품";
         
-        return "원자재"; // 매핑 실패 시 기본값
+        return "반제품"; 
     }
 
     // 날짜(Datetime)를 화면 규격(YYYY-MM-DD)에 맞게 자르기

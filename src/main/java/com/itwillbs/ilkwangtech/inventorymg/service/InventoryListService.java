@@ -35,10 +35,9 @@ public class InventoryListService {
         return allInventory.stream()
                 .map(i -> {
                     try {
-                        // 🌟 방어 로직: DB에 품목(Item)이 삭제되었는데 재고(Inventory)만 남은 고아 데이터 방어
+                        
                         if (i.getItem() == null) return null;
                         
-                        // 이 시점에 품목 데이터를 가져오다 실패하면 EntityNotFoundException이 발생합니다.
                         String code = i.getItem().getItemCode() != null ? i.getItem().getItemCode().toUpperCase() : "UNKNOWN";
                         
                         String type = code.startsWith("RW") ? "원자재" : 
@@ -133,7 +132,7 @@ public class InventoryListService {
         InventoryHistoryEntity history = new InventoryHistoryEntity();
         history.setItem(inv.getItem());
         history.setTransactionDate(LocalDate.now());
-        history.setTransactionType("DISCARD"); // 차트 주황색(폐기) 라인에 반영됨!
+        history.setTransactionType("DISCARD"); 
         history.setQuantity(qty);
         historyRepository.save(history);
 
@@ -173,7 +172,7 @@ public class InventoryListService {
         for (Object[] obj : prodResults) {
             allData.add(OutboundListDTO.builder()
                 .itemType(convertItemType(obj[0]))
-                .lotNumber("-") // 복수의 원자재가 출고되므로 LOT는 하이픈 처리
+                .lotNumber("-") 
                 .itemName((String) obj[1])
                 .outboundQty(((Number) obj[2]).longValue())
                 .outboundDate(formatDate(obj[3]))
@@ -228,12 +227,10 @@ public class InventoryListService {
             .collect(Collectors.toList());
     }
 
-    // DB의 ItemType을 한글로 예쁘게 변환
     private String convertItemType(Object codeObj) {
         if (codeObj == null) return "UNKNOWN"; 
         String code = codeObj.toString().toUpperCase();
         
-        // 품목 코드가 RW로 시작하면 원자재, SAM으로 시작하면 완제품, 그 외는 전부 반제품
         if (code.startsWith("RW")) return "원자재";
         if (code.startsWith("SAM")) return "완제품";
         

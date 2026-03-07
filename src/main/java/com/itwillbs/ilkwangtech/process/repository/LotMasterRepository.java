@@ -38,16 +38,16 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
 	    Integer getDefective();
 	}
 	
-	@Query(value = "SELECT lm.lot_id AS lotId, i.item_name AS itemName, " +
-	            "lm.quantity AS quantity, lm.status AS status " +
-	            "FROM ( " +
-	            "    SELECT lot_id, product_id, quantity, status, lot_type " +
-	            "    FROM LOT_MASTER " +
-	            "    START WITH lot_id = :rawLotId " + // 입력받은 LOT부터 시작
-	            "    CONNECT BY PRIOR lot_id = parent_lot_id " + // 자식 방향으로 전개
-	            ") lm " +
-	            "JOIN item i ON lm.product_id = i.item_id " +
-	            "WHERE lm.lot_type = 'F'", nativeQuery = true) // 최종 완제품만 필터링
+	@Query(value = "SELECT lm.lot_id AS lotId, NVL(i.item_name, '제품명 미등록') AS itemName, " +
+	        "NVL(lm.quantity, 0) AS quantity, lm.status AS status " +
+	        "FROM ( " +
+	        "    SELECT lot_id, product_id, quantity, status, lot_type, LEVEL as lvl " +
+	        "    FROM LOT_MASTER " +
+	        "    START WITH TRIM(lot_id) = TRIM(:rawLotId) " +
+	        "    CONNECT BY PRIOR TRIM(lot_id) = TRIM(parent_lot_id) " +
+	        ") lm " +
+	        "LEFT JOIN item i ON TRIM(lm.product_id) = TRIM(i.item_code) " +
+	        "WHERE lm.lvl > 1", nativeQuery = true)
 	List<FinishedUsageMapping> findFinishedLotsByRawLotId(@Param("rawLotId") String rawLotId);
 	
 	@Query(value = "SELECT lm.lot_id AS lotId, i.item_code AS itemCode, i.item_name AS itemName, " +
@@ -126,5 +126,105 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
 	    String getEquipCode();
 	}
 	
+	// 원자재 Summary Box 표시 정보
+	interface RawMaterialDetailMapping {
+	    String getLotId();
+	    String getItemCode();
+	    String getItemName();
+	    String getUom();
+	    String getItemType();
+	    Integer getCurrentQuantity();
+	    LocalDateTime getExpirationDate();
+	    String getZone();
+	}
+
+	@Query(value = "SELECT iv.lot_number AS lotId, it.item_code AS itemCode, it.item_name AS itemName, " +
+	        "it.uom AS uom, CAST(it.item_type AS VARCHAR(10)) AS itemType, " +
+	        "iv.current_quantity AS currentQuantity, iv.expiration_date AS expirationDate, iv.zone AS zone " +
+	        "FROM inventory iv " +
+	        "JOIN item it ON iv.item_id = it.item_id " +
+	        "WHERE iv.lot_number = :lotId", nativeQuery = true)
+	RawMaterialDetailMapping findRawMaterialDetail(@Param("lotId") String lotId);
+	
+	// 아코디언 클릭 시 매핑
+	interface SubDetailMapping {
+	    String getLotId();
+	    String getItemId();
+	    String getItemName();
+	    String getItemType();
+	    String getInstructCode();
+	    Integer getProductionQty();
+	    Integer getDefectiveQty();
+	    String getStartTime();
+	    String getEndTime();
+	}
+
+	@Query(value = "SELECT lm.lot_id AS lotId, " +
+	        "i.item_code AS itemId, " + 
+	        "NVL(i.item_name, '제품명 미등록') AS itemName, " +
+	        "CAST(i.item_type AS VARCHAR2(10)) AS itemType, " +
+	        "pi.instruct_code AS instructCode, " +
+	        "NVL(pw.production_qty, NVL(lm.quantity, 0)) AS productionQty, " +
+	        "NVL(pw.defective_qty, 0) AS defectiveQty, " +
+	        "CAST(pw.start_time AS VARCHAR2(50)) AS startTime, " +
+	        "CAST(pw.end_time AS VARCHAR2(50)) AS endTime " +
+	        "FROM LOT_MASTER lm " +
+	        "LEFT JOIN item i ON TRIM(lm.product_id) = TRIM(i.item_code) " +
+	        "LEFT JOIN production_worker pw ON TRIM(lm.lot_id) = TRIM(pw.lot_id) " +
+	        "LEFT JOIN production_instruct pi ON pw.instruct_id = pi.id " +
+	        "WHERE TRIM(lm.lot_id) = TRIM(:lotId)", nativeQuery = true)
+	SubDetailMapping findSubDetailByLotId(@Param("lotId") String lotId);
+	
+	@Query(value = "SELECT pw.lot_id AS lotId, i.item_name AS itemName, " +
+	        "CAST(pw.end_time AS TIMESTAMP) AS createdDate, " +
+	        "CAST(i.item_type AS VARCHAR2(10)) AS lotType, 'DONE' AS status " +
+	        "FROM production_worker pw " +
+	        "LEFT JOIN item i ON TRIM(pw.item_id) = TRIM(i.item_id) " + // item_id를 기준으로 조인
+	        "WHERE pw.status = 'COMPLETE' " +
+	        "ORDER BY pw.end_time DESC", nativeQuery = true)
+	List<LotSummaryMapping> findAllProdAndSemiLotsFromWorker();
+	
+	interface ProdLotDetailMapping {
+	    String getLotId();
+	    String getItemCode();
+	    String getItemName();
+	    String getInstructCode();
+	    Integer getProductionQty();
+	    Integer getDefectiveQty();
+	    String getEndTime();
+	}
+	
+	@Query(value = "SELECT lm.lot_id AS lotId, i.item_code AS itemCode, i.item_name AS itemName, " +
+	        "pi.instruct_code AS instructCode, NVL(pw.production_qty, 0) AS productionQty, " +
+	        "NVL(pw.defective_qty, 0) AS defectiveQty, CAST(pw.end_time AS VARCHAR2(50)) AS endTime " +
+	        "FROM LOT_MASTER lm " +
+	        "LEFT JOIN production_worker pw ON TRIM(lm.lot_id) = TRIM(pw.lot_id) " +
+	        "LEFT JOIN item i ON TRIM(pw.item_id) = TRIM(i.item_id) " +
+	        "LEFT JOIN production_instruct pi ON pw.instruct_id = pi.id " +
+	        "WHERE TRIM(lm.lot_id) = TRIM(:lotId)", nativeQuery = true)
+	ProdLotDetailMapping findProdLotDetail(@Param("lotId") String lotId);
+
+	interface ProdSubDetailMapping {
+	    String getOperationName();
+	    String getOperationId();
+	    String getMemberName();
+	    String getEmployeeNumber();
+	    Integer getProductionQty();
+	    Integer getDefectiveQty();
+	    String getEquipName();
+	    String getEquipCode();
+	}
+	
+	@Query(value = "SELECT oi.description AS operationName, oi.operation_id AS operationId, " +
+	        "m.name AS memberName, m.employee_number AS employeeNumber, " +
+	        "NVL(pw.production_qty, 0) AS productionQty, NVL(pw.defective_qty, 0) AS defectiveQty, " +
+	        "e.equip_name AS equipName, e.equip_code AS equipCode " +
+	        "FROM production_worker pw " +
+	        "LEFT JOIN operation_info oi ON pw.process_id = oi.id " +
+	        "LEFT JOIN members m ON pw.member_id = m.id " +
+	        "LEFT JOIN production_instruct pi ON pw.instruct_id = pi.id " +
+	        "LEFT JOIN equipment e ON pi.equip_id = e.equip_id " +
+	        "WHERE TRIM(pw.lot_id) = TRIM(:lotId)", nativeQuery = true)
+	ProdSubDetailMapping findProdSubDetailByLotId(@Param("lotId") String lotId);
 	
 }

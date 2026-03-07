@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.itwillbs.ilkwangtech.process.dto.LotDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessStatusResponseDTO;
+import com.itwillbs.ilkwangtech.process.repository.LotMasterRepository;
 import com.itwillbs.ilkwangtech.process.service.LotTraceService;
 
 import lombok.RequiredArgsConstructor;
@@ -43,6 +43,12 @@ public class ProcessController {
         return lotTraceService.getAllProcessStatusList(); 
     }
 	
+	@GetMapping("/api/lot/prodSubDetail/{lotId}")
+	@ResponseBody
+	public LotMasterRepository.ProdSubDetailMapping getProdSubDetail(@PathVariable("lotId") String lotId) {
+	    return lotTraceService.getProdSubDetailInfo(lotId);
+	}
+	
 	@GetMapping("/LOT")
     public String chaseLOTPage() {
         return "process/LOT"; 
@@ -58,13 +64,21 @@ public class ProcessController {
     // LOT 상세 데이터 반환
 	@GetMapping("/api/lot/{lotId}")
 	@ResponseBody
-	public LotDetailResponseDTO getLotDetail(@PathVariable("lotId") String lotId) {
+	public Object getLotDetail(@PathVariable("lotId") String lotId) {
+	    if (lotId.startsWith("RW-")) {
+	        return lotTraceService.getRawMaterialDetail(lotId);
+	    }
 	    return lotTraceService.getLotDetail(lotId);
+	}
+	
+	@GetMapping("/api/lot/subDetail/{lotId}")
+	@ResponseBody
+	public LotMasterRepository.SubDetailMapping getUsageSubDetail(@PathVariable("lotId") String lotId) {
+	    return lotTraceService.getSubDetailInfo(lotId);
 	}
 	
 	@GetMapping("/api/processDetail/{instructCode}")
 	@ResponseBody
-	// @PathVariable 뒤에 ("instructCode")를 추가합니다. [cite: 2026-03-04]
 	public ProcessDetailResponseDTO getProcessDetail(@PathVariable("instructCode") String instructCode) {
 	    log.info(">>>>>>>>>>>> 상세 정보 호출: " + instructCode);
 	    return lotTraceService.getProcessDetailData(instructCode);

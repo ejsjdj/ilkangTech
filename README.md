@@ -28,7 +28,7 @@ Oracle DB
 
 프레임워크: Spring Boot 3.x
 
-ORM: JPA (Hibernate)
+ORM: JPA (Hibernate), Mybatis
 
 인증: Spring Security
 

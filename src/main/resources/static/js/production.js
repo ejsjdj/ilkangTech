@@ -19,7 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
     columns: [
       { header: "ID", name: "id", hidden: true },
       { header: "계획코드", name: "planeCode" },
-      { header: "계획일자", name: "planeDate" },
+      {
+        header: "계획일자",
+        name: "planeDate",
+        formatter: ({ value }) => formatDateTime(value),
+      },
       { header: "등록자", name: "memberName" },
       { header: "품목명", name: "itemName" },
       { header: "총생산수량", name: "totalQty" },
@@ -32,8 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
           const statusMap = {
             PROGRESS: { text: "생산중", class: "status-progress" },
             COMPLETE: { text: "생산완료", class: "status-complete" },
-            CANCEL: { text: "중단", class: "status-cancel" },
-            WAIT: { text: "대기중", class: "status-wait" },
+            CACEL: { text: "중단", class: "status-cancel" },
+            READY: { text: "대기중", class: "status-wait" },
           };
           const item = statusMap[value] || {
             text: value,
@@ -164,7 +168,12 @@ function openModal() {
         { header: "수주ID", name: "orderId", align: "center" },
         { header: "생산수량", name: "productQty", align: "center" },
         { header: "메모", name: "memo" },
-        { header: "기한", name: "productionDetailDate", align: "center" },
+        {
+          header: "기한",
+          name: "productionDetailDate",
+          align: "center",
+          formatter: ({ value }) => formatDateTime(value),
+        },
       ],
     });
   }
@@ -184,7 +193,9 @@ function closeModal() {
 function setDetailForm(data) {
   console.log("상세보기 데이터 : ", data);
   document.getElementById("d_planeCode").value = data?.planeCode || "";
-  document.getElementById("d_planeDate").value = data?.planeDate || "";
+  document.getElementById("d_planeDate").value = formatDateTime(
+    data?.planeDate,
+  );
   document.getElementById("d_memberName").value = data?.memberName || "";
   document.getElementById("d_itemName").value = data?.itemName || "";
   document.getElementById("d_totalQty").value = data?.totalQty || "";
@@ -207,7 +218,7 @@ function setDetailForm(data) {
         text = "생산완료";
         className += "status-complete";
         break;
-      case "CANCEL":
+      case "CACEL":
         text = "중단";
         className += "status-cancel";
         break;
@@ -215,7 +226,7 @@ function setDetailForm(data) {
         text = "생산중";
         className += "status-progress";
         break;
-      case "WAIT":
+      case "READY":
       default:
         text = "대기중";
         className += "status-wait";
@@ -224,4 +235,24 @@ function setDetailForm(data) {
     badge.innerText = text;
     badge.className = className;
   }
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr || dateStr === "-" || dateStr.trim() === "") {
+    return "-";
+  }
+
+  const date = new Date(dateStr);
+
+  if (isNaN(date.getTime())) {
+    return "-";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 }

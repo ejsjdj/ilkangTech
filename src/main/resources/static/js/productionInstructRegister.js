@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   registerBtn.addEventListener("click", function () {
-    console.log("🔥 버튼 클릭됨");
+    console.log("버튼 클릭됨");
   });
 
   loadProductionPlanes();
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // 🔥 작업지시코드 자동 생성 (임시)
+    // 작업지시코드 자동 생성
     const autoCode = "INS-" + Date.now();
     instructCodeInput.value = autoCode;
 
@@ -39,6 +39,11 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then((data) => {
         console.log(data);
+        const targetData = Array.isArray(data) ? data[0] : data;
+        if (targetData && targetData.productionQty) {
+          document.getElementById("instructQty").value =
+            targetData.productionQty;
+        }
         tbody.innerHTML = "";
 
         data.forEach((process) => {
@@ -55,23 +60,34 @@ document.addEventListener("DOMContentLoaded", function () {
           const tr = document.createElement("tr");
 
           tr.innerHTML = `
-              <td>${process.sequence}</td>
-              <td>${process.outPutItemId}</td>
-              <td>${process.outputItemName || '-'}</td> <td>${process.processCode}</td>
-              <td>${process.processName}</td>
-              <td>${process.productionQty}</td>
-              <td>
-                <input type="number" class="additionQty" value="0" min="0" />
-              </td>
-              <td>
-                <select class="memberSelect"
-                data-sequence="${process.sequence}"
-                data-process-id="${process.processId}"
-                data-production-qty="${process.productionQty}"
-                data-output-item-id="${process.outPutItemId}">
-                <option value="">-- 선택 --</option>
-                ${memberOptions}
-            </select>
+          <td>${process.sequence}</td>
+          <td>${process.outPutItemId}</td>
+          <td>${process.outputItemName || "-"}</td>
+          <td>${process.processCode}</td>
+          <td>${process.processName}</td>
+          <td>${process.productionQty}</td>
+
+          <td>  
+            <input type="number" class="additionQty" value="0" min="0" />
+          </td>
+
+          <td>
+            <input type="time" class="processStartTime"/>
+          </td>
+
+          <td>
+            <input type="time" class="processEndTime"/>
+          </td>
+
+          <td>
+          <select class="memberSelect"
+          data-sequence="${process.sequence}"
+          data-process-id="${process.processId}"
+          data-production-qty="${process.productionQty}"
+          data-output-item-id="${process.outPutItemId}">
+          <option value="">-- 선택 --</option>
+          ${memberOptions}
+          </select>
         </td>
           `;
 
@@ -81,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .catch((error) => console.error(error));
   });
 
-  // 🔥 등록 버튼
+  // 등록 버튼
   registerBtn.addEventListener("click", function () {
     const planeId = planeSelect.value;
     const instructCode = instructCodeInput.value;
@@ -97,6 +113,10 @@ document.addEventListener("DOMContentLoaded", function () {
     rows.forEach((row) => {
       const select = row.querySelector(".memberSelect");
       const additionInput = row.querySelector(".additionQty");
+
+      const startTimeInput = row.querySelector(".processStartTime");
+      const endTimeInput = row.querySelector(".processEndTime");
+
       const sequence = Number(select.dataset.sequence);
       const outPutItemId = Number(select.dataset.outputItemId);
 
@@ -106,6 +126,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const memberId = 1;
       const additionQty = Number(additionInput.value || 0);
 
+      const startTime = startTimeInput.value;
+      const endTime = endTimeInput.value;
+
       workerData.push({
         processId: processId,
         memberId: memberId,
@@ -114,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
         startTime: startTime,
         endTime: endTime,
         outputItemId: outPutItemId,
-        sequence: sequence
+        sequence: sequence,
       });
     });
 
@@ -162,6 +185,8 @@ function loadProductionPlanes() {
     .then((data) => {
       const select = document.getElementById("planeSelect");
 
+      console.log(data);
+
       select.innerHTML =
         '<option value="">-- 생산계획을 선택하세요 --</option>';
 
@@ -169,6 +194,7 @@ function loadProductionPlanes() {
         const option = document.createElement("option");
         option.value = plane.id;
         option.textContent = plane.planeCode;
+        option.dataset.qty = plane.productionQty;
         select.appendChild(option);
       });
     })
@@ -183,6 +209,6 @@ function loadMembers() {
 
   memberList = [
     { id: 1, name: "관리자(임시)" },
-    { id: 2, name: "작업자1" }
+    { id: 2, name: "작업자1" },
   ];
 }

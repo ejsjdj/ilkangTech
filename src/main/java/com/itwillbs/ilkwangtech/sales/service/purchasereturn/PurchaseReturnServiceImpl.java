@@ -4,8 +4,10 @@ import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseReturnDTO;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseReturnInsertDTO;
+import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseRequestEntity;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseReturnEntity;
+import com.itwillbs.ilkwangtech.sales.repository.PurchaseOrderRepository;
 import com.itwillbs.ilkwangtech.sales.repository.PurchaseRequestRepository;
 import com.itwillbs.ilkwangtech.sales.repository.PurchaseReturnRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,7 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
 
     private final PurchaseReturnRepository purchaseReturnRepository;
     private final MemberRepository memberRepository;
-    private final PurchaseRequestRepository purchaseRequestRepository;
+    private final PurchaseOrderRepository purchaseOrderRepository;
 
     // 1. 반품 조회
     public Page<PurchaseReturnDTO> getReturnPurchase(Pageable pageable){
@@ -43,16 +45,17 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
                 .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다. 재로그인 해주세요"));
 
         // 2. 구매요청 상세 엔티티 조회
-        PurchaseRequestEntity request = purchaseRequestRepository.findById(purchaseReturnInsertDTO.getPurchaseRequestDetailId())
+        PurchaseOrderEntity orderDetail = purchaseOrderRepository.findById(purchaseReturnInsertDTO.getPurchaseRequestDetailId())
                 .orElseThrow(() -> new IllegalArgumentException("구매요청 라인 정보가 없습니다."));
 
         // 3. 반품수량만큼 주문수량 차감
-        Long requestQty = request.getQuantity();
+        Long requestQty = orderDetail.getQuantity();
         Long resultQty = requestQty - purchaseReturnInsertDTO.getReturnQty();
-        request.setQuantity(resultQty);
+        orderDetail.setQuantity(resultQty);
 
+        // 4. 반품 테이블 저장
         PurchaseReturnEntity entity = PurchaseReturnEntity.create(
-                request,
+                orderDetail,
                 purchaseReturnInsertDTO.getReturnQty(),
                 member,
                 purchaseReturnInsertDTO.getMemo()

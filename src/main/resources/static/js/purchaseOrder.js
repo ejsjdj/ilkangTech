@@ -1,11 +1,11 @@
 const statusMap = {
-  READY: { text: '발주대기', class: 'bg-ready' },
-  CONFIRMED: { text: '확정', class: 'bg-confirmed' },
-  DELIVERY: { text: '배송중', class: 'bg-delivery' },
-  INSPECTION: { text: '검수중', class: 'bg-inspection' },
-  COMPLETE: { text: '검수완료', class: 'bg-complete' },
-  STORED: { text: '입고완료', class: 'bg-stored' },
-  RETURN: { text: '반송', class: 'bg-return' }
+  READY: { text: "발주대기", class: "bg-ready" },
+  CONFIRMED: { text: "확정", class: "bg-confirmed" },
+  DELIVERY: { text: "배송중", class: "bg-delivery" },
+  INSPECTION: { text: "검수중", class: "bg-inspection" },
+  COMPLETE: { text: "검수완료", class: "bg-complete" },
+  STORED: { text: "입고완료", class: "bg-stored" },
+  RETURN: { text: "반송", class: "bg-return" },
 };
 
 let selectedLineId = null;
@@ -20,15 +20,15 @@ document.addEventListener("DOMContentLoaded", function () {
     data: {
       api: {
         readData: {
-          url: '/api/sales/procurement',
-          method: 'GET'
-        }
+          url: "/api/sales/procurement",
+          method: "GET",
+        },
       },
 
       // ✅ 서버 응답 구조 매핑 (반드시 data 안에!)
       responseData: {
-        data: 'data.contents',
-        totalCount: 'data.pagination.totalCount'
+        data: "data.contents",
+        totalCount: "data.pagination.totalCount",
       },
 
       // ✅ pageable + 검색 파라미터 전부 전송
@@ -40,12 +40,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (params.endDate) query += `&endDate=${params.endDate}`;
 
         return query;
-      }
+      },
     },
 
     pageOptions: {
       useClient: false,
-      perPage: 10
+      perPage: 10,
     },
 
     columns: [
@@ -59,9 +59,12 @@ document.addEventListener("DOMContentLoaded", function () {
         name: "status",
         align: "center",
         formatter: (props) => {
-          const info = statusMap[props.value] || { text: props.value, class: 'bg-ready' };
+          const info = statusMap[props.value] || {
+            text: props.value,
+            class: "bg-ready",
+          };
           return `<span class="status-badge ${info.class}">${info.text}</span>`;
-        }
+        },
       },
       { header: "발주일자", name: "orderDate" },
       { header: "총금액", name: "amount" },
@@ -70,9 +73,9 @@ document.addEventListener("DOMContentLoaded", function () {
         name: "detail",
         align: "center",
         formatter: () =>
-          '<button class="btn-primary" style="padding:4px 10px;font-size:12px;">상세보기</button>'
-      }
-    ]
+          '<button class="btn-primary" style="padding:4px 10px;font-size:12px;">상세보기</button>',
+      },
+    ],
   });
 
   // ✅ 검색 버튼
@@ -92,13 +95,15 @@ document.addEventListener("DOMContentLoaded", function () {
     currentPurchaseOrderId = rowData.id;
 
     fetch(`/api/sales/procurement_detail?purchaseOrderId=${rowData.id}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (!data) return;
 
-        document.getElementById("modalPurchaseOrderCode").value = data.purchaseOrderCode ?? "";
+        document.getElementById("modalPurchaseOrderCode").value =
+          data.purchaseOrderCode ?? "";
         document.getElementById("modalCompany").value = data.company ?? "";
-        document.getElementById("modalManager").value = data.companyManager ?? "";
+        document.getElementById("modalManager").value =
+          data.companyManager ?? "";
         document.getElementById("modalPhone").value = data.phone ?? "";
         document.getElementById("modalName").value = data.name ?? "";
         document.getElementById("modalOrderDate").value = data.orderDate ?? "";
@@ -108,14 +113,17 @@ document.addEventListener("DOMContentLoaded", function () {
         tbody.innerHTML = "";
 
         if (data.purchaseOrderLineDto) {
-          data.purchaseOrderLineDto.forEach(line => {
+          data.purchaseOrderLineDto.forEach((line) => {
+            console.log("라인 데이터 확인:", line);
             const row = document.createElement("tr");
+            const actualLineId = line.id;
+
             row.innerHTML = `
               <td>${line.id}</td>
               <td>${line.itemName}</td>
               <td>${line.quantity}</td>
               <td>${line.totalPrice}</td>
-              <td><button onclick="openReturnModal(${line.purchaseRequestLineId})">반품</button></td>
+              <td><button onclick="openReturnModal(${actualLineId})">반품</button></td>
             `;
             tbody.appendChild(row);
           });
@@ -123,7 +131,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const qcBtn = document.getElementById("completeQcBtn");
         qcBtn.style.display =
-          (data.status === 'COMPLETE' || data.status === 'STORED') ? 'none' : 'block';
+          data.status === "COMPLETE" || data.status === "STORED"
+            ? "none"
+            : "block";
 
         document.getElementById("detailModal").style.display = "block";
       });
@@ -136,19 +146,21 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!currentPurchaseOrderId) return;
       if (!confirm("검수 완료 처리하시겠습니까?")) return;
 
-      fetch(`/api/sales/procurement/complete_qc?purchaseOrderId=${currentPurchaseOrderId}`, {
-        method: "POST"
-      })
-        .then(res => {
+      fetch(
+        `/api/sales/procurement/complete_qc?purchaseOrderId=${currentPurchaseOrderId}`,
+        {
+          method: "POST",
+        },
+      )
+        .then((res) => {
           if (!res.ok) throw new Error("처리 실패");
           alert("검수 완료되었습니다.");
           grid.reloadData(); // ✅ 전체 reload 대신 그리드만 갱신
         })
-        .catch(err => alert(err.message));
+        .catch((err) => alert(err.message));
     });
   }
 });
-
 
 // =======================
 // 페이지 이동
@@ -222,5 +234,3 @@ function submitReturn() {
       alert(err.message);
     });
 }
-
-

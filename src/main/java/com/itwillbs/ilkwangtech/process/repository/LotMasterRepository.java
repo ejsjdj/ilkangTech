@@ -98,21 +98,19 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
 	        "ORDER BY createdDate DESC", nativeQuery = true)
 	List<LotSummaryMapping> findAllProdAndSemiLots();
 	
-	/* LotMasterRepository.java */
 
 	@Query(value = "SELECT oi.description AS operationName, " +
-	               "       oi.operation_id AS operationId, " +
-	               "       oi.member_id AS memberId, " +
-	               "       m.name AS memberName, " +
-	               "       pi.operation_qty AS operationQty, " +
-	               "       pi.defective AS defectiveQty, " +
-	               "       e.equip_name AS equipName, " +
-	               "       e.equip_code AS equipCode " +
-	               "FROM production_instruct pi " +
-	               "JOIN operation_info oi ON pi.operation_id = oi.operation_id " +
-	               "LEFT JOIN members m ON oi.member_id = m.id " + 
-	               "LEFT JOIN equipment e ON pi.equip_id = e.equip_id " + 
-	               "WHERE pi.instruct_code = :instructCode", nativeQuery = true)
+	            "       oi.operation_id AS operationId, " +
+	            "       oi.member_id AS memberId, " +
+	            "       m.name AS memberName, " +
+	            "       pi.operation_qty AS operationQty, " +
+	            "       pi.defective AS defectiveQty, " +
+	            "       '-' AS equipName, " +
+	            "       '-' AS equipCode " +
+	            "FROM production_instruct pi " +
+	            "JOIN operation_info oi ON pi.operation_id = oi.operation_id " +
+	            "LEFT JOIN members m ON oi.member_id = m.id " + 
+	            "WHERE pi.instruct_code = :instructCode", nativeQuery = true)
 	ProcessStepDetailMapping findStepDetailByInstructCode(@Param("instructCode") String instructCode);
 
 	interface ProcessStepDetailMapping {
@@ -194,14 +192,13 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
 	    String getEndTime();
 	}
 	
-	@Query(value = "SELECT lm.lot_id AS lotId, i.item_code AS itemCode, i.item_name AS itemName, " +
+	@Query(value = "SELECT pw.lot_id AS lotId, i.item_code AS itemCode, NVL(i.item_name, '제품명 미등록') AS itemName, " +
 	        "pi.instruct_code AS instructCode, NVL(pw.production_qty, 0) AS productionQty, " +
 	        "NVL(pw.defective_qty, 0) AS defectiveQty, CAST(pw.end_time AS VARCHAR2(50)) AS endTime " +
-	        "FROM LOT_MASTER lm " +
-	        "LEFT JOIN production_worker pw ON TRIM(lm.lot_id) = TRIM(pw.lot_id) " +
+	        "FROM production_worker pw " +
 	        "LEFT JOIN item i ON TRIM(pw.item_id) = TRIM(i.item_id) " +
 	        "LEFT JOIN production_instruct pi ON pw.instruct_id = pi.id " +
-	        "WHERE TRIM(lm.lot_id) = TRIM(:lotId)", nativeQuery = true)
+	        "WHERE TRIM(pw.lot_id) = TRIM(:lotId)", nativeQuery = true)
 	ProdLotDetailMapping findProdLotDetail(@Param("lotId") String lotId);
 
 	interface ProdSubDetailMapping {
@@ -218,13 +215,50 @@ public interface LotMasterRepository extends JpaRepository<LotMaster, String> {
 	@Query(value = "SELECT oi.description AS operationName, oi.operation_id AS operationId, " +
 	        "m.name AS memberName, m.employee_number AS employeeNumber, " +
 	        "NVL(pw.production_qty, 0) AS productionQty, NVL(pw.defective_qty, 0) AS defectiveQty, " +
-	        "e.equip_name AS equipName, e.equip_code AS equipCode " +
+	        "'-' AS equipName, '-' AS equipCode " +
 	        "FROM production_worker pw " +
 	        "LEFT JOIN operation_info oi ON pw.process_id = oi.id " +
 	        "LEFT JOIN members m ON pw.member_id = m.id " +
 	        "LEFT JOIN production_instruct pi ON pw.instruct_id = pi.id " +
-	        "LEFT JOIN equipment e ON pi.equip_id = e.equip_id " +
 	        "WHERE TRIM(pw.lot_id) = TRIM(:lotId)", nativeQuery = true)
 	ProdSubDetailMapping findProdSubDetailByLotId(@Param("lotId") String lotId);
+	
+	// 해당 LOT의 공정 목록 및 상세 정보 매핑
+	interface ProdProcessMapping {
+	    String getOperationName();
+	    String getOperationId();
+	    String getMemberName();
+	    String getEmployeeNumber();
+	    Integer getProductionQty();
+	    Integer getDefectiveQty();
+	    String getEquipName();
+	    String getEquipCode();
+	    String getStatus();
+	}
+
+	@Query(value = "SELECT oi.description AS operationName, oi.operation_id AS operationId, " +
+	        "m.name AS memberName, m.employee_number AS employeeNumber, " +
+	        "NVL(pw.production_qty, 0) AS productionQty, NVL(pw.defective_qty, 0) AS defectiveQty, " +
+	        "'-' AS equipName, '-' AS equipCode, pw.status AS status " +
+	        "FROM production_worker pw " +
+	        "LEFT JOIN operation_info oi ON pw.process_id = oi.id " +
+	        "LEFT JOIN members m ON pw.member_id = m.id " +
+	        "LEFT JOIN production_instruct pi ON pw.instruct_id = pi.id " +
+	        "WHERE TRIM(pw.lot_id) = TRIM(:lotId) " +
+	        "ORDER BY pw.end_time ASC", nativeQuery = true)
+	List<ProdProcessMapping> findProcessesByLotId(@Param("lotId") String lotId);
+
+
+	@Query(value = "SELECT lm.lot_id AS lotId, NVL(i.item_name, '제품명 미등록') AS itemName, " +
+	        "NVL(lm.quantity, 0) AS quantity, lm.status AS status " +
+	        "FROM ( " +
+	        "    SELECT lot_id, product_id, quantity, status, LEVEL as lvl " +
+	        "    FROM LOT_MASTER " +
+	        "    START WITH TRIM(lot_id) = TRIM(:lotId) " +
+	        "    CONNECT BY PRIOR TRIM(parent_lot_id) = TRIM(lot_id) " +
+	        ") lm " +
+	        "LEFT JOIN item i ON TRIM(lm.product_id) = TRIM(i.item_code) " +
+	        "WHERE lm.lvl > 1 AND lm.lot_id LIKE 'RW-%'", nativeQuery = true)
+	List<FinishedUsageMapping> findRecursiveMaterialsByLotId(@Param("lotId") String lotId);
 	
 }

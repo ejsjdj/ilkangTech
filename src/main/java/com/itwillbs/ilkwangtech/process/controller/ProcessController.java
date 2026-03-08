@@ -3,10 +3,14 @@ package com.itwillbs.ilkwangtech.process.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
@@ -81,7 +85,23 @@ public class ProcessController {
 	@ResponseBody
 	public ProcessDetailResponseDTO getProcessDetail(@PathVariable("instructCode") String instructCode) {
 	    log.info(">>>>>>>>>>>> 상세 정보 호출: " + instructCode);
-	    return lotTraceService.getProcessDetailData(instructCode);
+	    
+	    try {
+	        ProcessDetailResponseDTO response = lotTraceService.getProcessDetailData(instructCode);
+	        
+	        // 데이터가 아직 없어서 null이 반환될 경우 빈 객체를 보내 400 에러 방지
+	        if (response == null) {
+	            log.warn(">>> [" + instructCode + "] 해당 공정의 헤더 데이터가 없습니다. 빈 객체 반환.");
+	            return new ProcessDetailResponseDTO(); 
+	        }
+	        
+	        return response;
+	        
+	    } catch (Exception e) {
+	        // 서버에서 터진 '진짜' 에러를 STS 콘솔에 빨간 글씨로 출력
+	        log.error(">>> [" + instructCode + "] 상세 데이터 처리 중 서버 에러 발생!!!", e);
+	        throw e; 
+	    }
 	}
 	
 	@GetMapping("/api/lot/{lotId}/{type}")
@@ -92,11 +112,20 @@ public class ProcessController {
 	    ) {
 	    log.info(">>>>>>>>>>>> LOT 서브 상세 호출: " + lotId + ", 타입: " + type);
 	    
-	    if ("FINISHED_USAGE".equalsIgnoreCase(type)) {
-	        return lotTraceService.getFinishedUsageList(lotId);
+	    try {
+	        if ("FINISHED_USAGE".equalsIgnoreCase(type)) {
+	            return lotTraceService.getFinishedUsageList(lotId);
+	        } else if ("PROD_PROCESS".equalsIgnoreCase(type) || "processes".equalsIgnoreCase(type)) {
+	            // 브라우저 캐시에 예전 주소(processes)가 남아있어도 정상 작동하도록 방어!
+	            return lotTraceService.getProcessesByLotId(lotId);
+	        } else if ("PROD_MATERIAL".equalsIgnoreCase(type) || "materials".equalsIgnoreCase(type)) {
+	            return lotTraceService.getMaterialsByLotId(lotId);
+	        }
+	    } catch (Exception e) {
+	        log.error("서브 상세 데이터 조회 실패", e);
 	    }
 	    
-	    return null; 
+	    return java.util.Collections.emptyList(); 
 	}
 	
 	@GetMapping("/api/lot/{lotId}/finished_usage") // JS에서 호출하는 경로와 일치해야 함
@@ -105,5 +134,39 @@ public class ProcessController {
 	    return lotTraceService.getFinishedUsageList(lotId);
 	}
 	
+	@GetMapping("/api/lot/{lotId}/processes")
+	@ResponseBody
+	public List<LotMasterRepository.ProdProcessMapping> getLotProcesses(@PathVariable("lotId") String lotId) {
+	    return lotTraceService.getProcessesByLotId(lotId);
+	}
+
+	@GetMapping("/api/lot/{lotId}/materials")
+	@ResponseBody
+	public List<LotMasterRepository.FinishedUsageMapping> getLotMaterials(@PathVariable("lotId") String lotId) {
+	    return lotTraceService.getMaterialsByLotId(lotId);
+	}
 	
+	@GetMapping("/api/dashboard/defectiveList")
+	@ResponseBody
+	public List<Map<String, Object>> getDefectiveList() {
+	    return lotTraceService.getDefectiveProcessList();
+	}
+	
+	@PostMapping("/api/worker/timeUpdate")
+    @ResponseBody
+    public ResponseEntity<String> updateWorkerTime(
+            @RequestParam("workerId") Long workerId, 
+            @RequestParam("type") String type) {
+        try {
+            if ("START".equalsIgnoreCase(type)) {
+                lotTraceService.startProcessWork(workerId);
+            } else if ("END".equalsIgnoreCase(type)) {
+                lotTraceService.completeProcessWork(workerId);
+            }
+            return ResponseEntity.ok("Success");
+        } catch (Exception e) {
+            log.error("작업 시간/LOT 업데이트 실패 - workerId: " + workerId, e);
+            return ResponseEntity.status(500).body("Fail");
+        }
+    }
 }

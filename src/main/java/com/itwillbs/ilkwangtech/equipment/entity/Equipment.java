@@ -47,4 +47,10 @@ public class Equipment {
 
     @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate = LocalDateTime.now(); // 등록 일시
+    
+    @Column(name = "worker_id")
+    private Long workerId;
+
+    @Column(name = "last_work_date")
+    private LocalDateTime lastWorkDate;
 }

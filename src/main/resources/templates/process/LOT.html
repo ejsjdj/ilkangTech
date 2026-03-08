@@ -298,6 +298,7 @@ let allLotData = [];
 let selectedLotData = null;
 let currentMainTab = 'PROD';
 let selectedLotDetail = null;
+let cachedProcessData = {};
 
 let currentFilteredData = []; 
 let currentPage = 1;         
@@ -345,10 +346,15 @@ function renderLotTable(lots) {
                <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
            </div>
            <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
-        : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
-               <i class="bi bi-diagram-3 me-2"></i> 하위 LOT 목록 <i class="bi bi-chevron-right ms-auto"></i>
+        : `<div class="acc-item" onclick="toggleMenu('process-list-${lot.lotId}'); loadSubDetail('${lot.lotId}', 'PROD_PROCESS')">
+               <i class="bi bi-play-fill text-secondary me-1"></i> 공정
            </div>
-           <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`;
+           <div id="process-list-${lot.lotId}" class="usage-list-container" style="display:none; background: #fff; padding-left: 20px;"></div>
+           
+           <div class="acc-item" onclick="toggleMenu('material-list-${lot.lotId}'); loadSubDetail('${lot.lotId}', 'PROD_MATERIAL')">
+               <i class="bi bi-play-fill text-secondary me-1"></i> 자재
+           </div>
+           <div id="material-list-${lot.lotId}" class="usage-list-container" style="display:none; background: #fff; padding-left: 20px;"></div>`;
 
         // ... 기존 행(mainTr, accordionTr) 생성 로직 동일 ...
         const mainTr = document.createElement('tr');
@@ -458,83 +464,85 @@ function updateRightPanel(detail) {
             <div><span class="text-muted">제품 코드:</span> <strong>${detail.itemCode || '-'}</strong></div>
             <div><span class="text-muted">제품명:</span> <strong>${detail.itemName || '-'}</strong></div>
             <div><span class="text-muted">작업지시번호:</span> ${detail.instructCode || '-'}</div>
-            
-            <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-3 mb-1">생산 관리 정보</h6><hr class="mt-1 mb-2"></div>
             <div><span class="text-muted">생산수량:</span> <span class="fw-bold text-primary">${detail.productionQty || 0} EA</span></div>
             <div><span class="text-muted">불량수량:</span> <span class="fw-bold text-danger">${detail.defectiveQty || 0} EA</span></div>
-            <div style="grid-column: span 2;"><span class="text-muted">생산일자:</span> ${detail.endTime ? detail.endTime.substring(0, 16).replace('T', ' ') : '-'}</div>
+            <div style="grid-column: span 2;"><span class="text-muted">생산일자:</span> ${detail.endTime && detail.endTime !== '-' ? detail.endTime.substring(0, 16).replace('T', ' ') : '-'}</div>
         `;
     }
 }
 
-async function loadSubDetail(lotId, type) {
-    // 1. 타입에 따라 데이터를 렌더링할 정확한 위치를 찾아줍니다.
-    let containerId = `usage-list-${lotId}`;
-    if (type === 'FINISHED_USAGE') {
-        containerId = `usage-list-${lotId}`; // 원자재 아코디언 내부
-    } else if (type === 'PROCESS' || type === 'MATERIAL') {
-        containerId = `process-menu-${lotId}`; // 완제품/반제품 아코디언 내부
-    }
-    
-    const container = document.getElementById(containerId);
-    if (!container) return; // 요소를 찾지 못하면 중단
+//LOT.html 내부 스크립트 영역
 
-    // 로딩 스피너 표시
-    container.innerHTML = '<div class="p-4 text-center"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+async function loadSubDetail(lotId, type) {
+    let containerId = '';
+    let apiUrl = '';
+
+    if (type === 'FINISHED_USAGE') {
+        containerId = `usage-list-${lotId}`;
+        apiUrl = `/process/api/lot/${encodeURIComponent(lotId)}/FINISHED_USAGE`;
+    } else if (type === 'PROD_PROCESS') {
+        containerId = `process-list-${lotId}`;
+        apiUrl = `/process/api/lot/${encodeURIComponent(lotId)}/PROD_PROCESS`;
+    } else if (type === 'PROD_MATERIAL') {
+        containerId = `material-list-${lotId}`;
+        apiUrl = `/process/api/lot/${encodeURIComponent(lotId)}/PROD_MATERIAL`;
+    }
+
+    const container = document.getElementById(containerId);
+    if (!container || container.innerHTML.trim() !== '') return; 
+
+    container.innerHTML = '<div class="p-3 text-center"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
 
     try {
-        const response = await fetch(`/process/api/lot/${lotId}/${type}`);
-        const data = await response.json();
+        const response = await fetch(apiUrl);
+        
+        // 💡 방어 1: 400 등 서버 응답 에러 시 처리
+        if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+        
+        let data = await response.json();
+        
+        // 💡 방어 2: 데이터가 배열이 아닐 경우(객체나 null) 빈 배열로 강제 변환하여 forEach 에러 원천 차단!
+        if (!Array.isArray(data)) {
+            console.warn("배열이 아닌 데이터 반환됨:", data);
+            data = []; 
+        }
 
-        switch (type) {
-            case 'PROCESS':
-                // (기존 프로세스 로직 유지)
-                if (data.length === 0) {
-                    container.innerHTML = '<div class="p-4 text-center text-muted">진행된 공정 정보가 없습니다.</div>';
-                } else {
-                    let html = '<ul class="list-group list-group-flush">';
-                    data.forEach((step, index) => {
-                        html += `
-                            <li class="list-group-item d-flex justify-content-between align-items-center py-3" 
-                                onclick="fetchStepDetail('${step.instructCode}')" 
-                                style="cursor: pointer; transition: all 0.2s ease;"
-                                onmouseover="this.style.backgroundColor='#f1f5f9'" 
-                                onmouseout="this.style.backgroundColor='transparent'">
-                                
-                                <div class="d-flex align-items-center">
-                                    <div class="step-badge me-3" style="width:24px; height:24px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">
-                                        ${index + 1}
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">${step.operationName || '알 수 없는 공정'}</div>
-                                        <div class="text-muted small">${step.instructCode || '-'}</div>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge rounded-pill bg-label-primary mb-1" style="background-color: #e0e7ff; color: #4338ca;">${step.status || '대기'}</span>
-                                    <div class="text-muted small" style="font-size: 11px;">
-                                        ${step.startDate ? step.startDate.replace('T', ' ').substring(0, 16) : '-'}
-                                    </div>
-                                </div>
-                            </li>`;
-                    });
-                    html += '</ul>';
-                    container.innerHTML = html;
-                }
-                break;
-
-            case 'MATERIALS':
-                // container.innerHTML = renderMaterials(data);
-                break;
-                
-            case 'FINISHED_USAGE':
-                // 직접 수정해주신 함수 이름 적용!
-                container.innerHTML = renderFinishedUsage(data);
-                break;
+        if (type === 'FINISHED_USAGE') {
+            container.innerHTML = renderFinishedUsage(data);
+        } else if (type === 'PROD_PROCESS') {
+            cachedProcessData[lotId] = data; 
+            
+            let html = '<ul class="list-group list-group-flush" style="font-size: 12px;">';
+            if(data.length === 0) html += '<p class="text-muted p-2">진행된 공정이 없습니다.</p>';
+            
+            data.forEach((proc, idx) => {
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2 border-0" 
+                        style="background: transparent; cursor:pointer;" 
+                        onclick="showProcessDetailBox('${lotId}', ${idx})">
+                        <span class="text-secondary">${proc.operationName} / ${proc.operationId || '-'} <span class="text-primary">(${proc.status || '완료'})</span></span>
+                    </li>`;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+            
+        } else if (type === 'PROD_MATERIAL') {
+            let html = '<ul class="list-group list-group-flush" style="font-size: 12px;">';
+            if(data.length === 0) html += '<p class="text-muted p-2">투입된 자재가 없습니다.</p>';
+            
+            data.forEach(mat => {
+                html += `
+                    <li class="list-group-item py-2 border-0" style="background: transparent;">
+                        <div class="text-secondary">${mat.itemName} (${mat.quantity} EA)</div>
+                        <div class="text-muted" style="font-size: 10px;">${mat.lotId}</div>
+                    </li>`;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
         }
     } catch (error) {
         console.error("서브 상세 조회 실패:", error);
-        container.innerHTML = '<div class="p-4 text-center text-danger">데이터를 불러오는 중 오류가 발생했습니다.</div>';
+        container.innerHTML = '<div class="p-3 text-center text-danger">상세 정보를 불러오지 못했습니다.</div>';
     }
 }
 
@@ -601,21 +609,22 @@ function setLotTypeFilter(typeValue, btnElement) {
 function switchLotTab(tab) {
     currentMainTab = tab;
     
-    // 탭 UI 활성화 처리
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => link.classList.remove('active'));
     if (tab === 'PROD') navLinks[0].classList.add('active');
     else navLinks[1].classList.add('active');
 
-    // 완제품 탭일 때만 '제품 구분' 셀렉트 박스 표시
     const typeGroup = document.getElementById('typeFilterGroup');
-    typeGroup.style.visibility = (tab === 'PROD') ? 'visible' : 'hidden';
+    if (typeGroup) typeGroup.style.visibility = (tab === 'PROD') ? 'visible' : 'hidden';
     
-    // 필터 초기화 후 데이터 갱신
+    document.getElementById('empty-detail').style.display = 'flex';
+    document.getElementById('detail-display-area').style.display = 'none';
+    document.getElementById('selected-lot-code').innerText = '';
+    selectedLotDetail = null;
+
     filterLotList();
 }
 
-//아코디언 항목 클릭 시 원자재 탭이냐, 완제품 탭이냐에 따라 부르는 API 함수를 다르게 설정합니다.
 function renderFinishedUsage(data) {
     if (!data || data.length === 0) return '<p class="text-muted p-3">하위 이력이 없습니다.</p>';
 
@@ -624,9 +633,13 @@ function renderFinishedUsage(data) {
         const clickFn = (currentMainTab === 'M') ? `showUsageSubDetail('${item.lotId}')` : `showProdSubDetail('${item.lotId}')`;
         
         html += `
-            <li class="list-group-item d-flex justify-content-between align-items-center py-2" style="background: transparent; border-bottom: 1px dashed #eee;">
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2" 
+                style="background: transparent; border-bottom: 1px dashed #eee; cursor: pointer; transition: background-color 0.2s;" 
+                onclick="${clickFn}"
+                onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                onmouseout="this.style.backgroundColor='transparent'">
                 <div class="d-flex flex-column">
-                    <span class="fw-bold text-indigo" style="cursor:pointer;" onclick="${clickFn}">
+                    <span class="fw-bold text-indigo">
                         ${item.lotId}
                     </span>
                     <span class="text-muted" style="font-size: 10px;">${item.itemName} (${item.quantity} EA)</span>
@@ -844,6 +857,33 @@ async function showProdSubDetail(lotId) {
     } catch (error) {
         console.error("완제품 서브 상세정보 로드 실패:", error);
     }
+}
+
+function toggleMenu(id) {
+    const el = document.getElementById(id);
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+
+function showProcessDetailBox(lotId, index) {
+    const dataList = cachedProcessData[lotId];
+    if(!dataList || !dataList[index]) return;
+    const data = dataList[index];
+
+    const container = document.getElementById('sub-detail-content');
+    document.getElementById('sub-detail-title').innerText = '공정 상세 정보';
+
+    container.innerHTML = `
+        <div class="row g-3 px-2 py-1" style="font-size: 13px;">
+            <div class="col-6"><strong>공정명:</strong> <span class="text-indigo fw-bold">${data.operationName || '-'}</span></div>
+            <div class="col-6"><strong>공정코드:</strong> ${data.operationId || '-'}</div>
+            <div class="col-6"><strong>담당자:</strong> ${data.memberName || '-'}</div>
+            <div class="col-6"><strong>사번:</strong> ${data.employeeNumber || '-'}</div>
+            <div class="col-6"><strong>생산수량:</strong> ${data.productionQty || 0} EA</div>
+            <div class="col-6"><strong>불량수량:</strong> <span class="text-danger fw-bold">${data.defectiveQty || 0}</span> EA</div>
+            <div class="col-6"><strong>설비명:</strong> ${data.equipName || '-'}</div>
+            <div class="col-6"><strong>설비코드:</strong> ${data.equipCode || '-'}</div>
+        </div>
+    `;
 }
 </script>
 </th:block>

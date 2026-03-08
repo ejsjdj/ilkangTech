@@ -1,5 +1,7 @@
 package com.itwillbs.ilkwangtech.process.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,15 +11,16 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.itwillbs.ilkwangtech.process.dto.DashboardSummaryDTO;
-import com.itwillbs.ilkwangtech.process.dto.LotDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.LotResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessDetailResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessStatusResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessStepDetailDTO;
 import com.itwillbs.ilkwangtech.process.entity.LotMaster;
 import com.itwillbs.ilkwangtech.process.repository.LotMasterRepository;
+import com.itwillbs.ilkwangtech.process.repository.ProcessWorkerRepository;
 import com.itwillbs.ilkwangtech.process.repository.ProductionInstructRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -27,6 +30,7 @@ import lombok.extern.log4j.Log4j2;
 public class LotTraceService {
     private final LotMasterRepository lotMasterRepository;
     private final ProductionInstructRepository productionInstructRepository;
+    private final ProcessWorkerRepository processWorkerRepository;
 
     // 1. 좌측 리스트용 전체 LOT 조회
     public List<LotMaster> getAllLots() {
@@ -65,15 +69,24 @@ public class LotTraceService {
         return combinedList;
     }
     
+ // LotTraceService.java 내부
+
     public Object getLotDetail(String lotId) {
-        // 원자재인 경우
         if (lotId.startsWith("RW-")) {
-            return getRawMaterialDetail(lotId);
+            Map<String, Object> rawMap = getRawMaterialDetail(lotId);
+            // 원자재 데이터가 없을 때 뻗는 것 방지
+            if (rawMap == null) return new HashMap<>(); 
+            return rawMap;
         }
         
-        // 완제품/반제품인 경우 새로운 쿼리 실행
         LotMasterRepository.ProdLotDetailMapping res = lotMasterRepository.findProdLotDetail(lotId);
-        if (res == null) return null;
+        
+        if (res == null) {
+            Map<String, Object> emptyMap = new HashMap<>();
+            emptyMap.put("lotId", lotId);
+            emptyMap.put("isRawMaterial", false);
+            return emptyMap; 
+        }
         
         Map<String, Object> map = new HashMap<>();
         map.put("lotId", res.getLotId());
@@ -83,7 +96,7 @@ public class LotTraceService {
         map.put("productionQty", res.getProductionQty());
         map.put("defectiveQty", res.getDefectiveQty());
         map.put("endTime", res.getEndTime());
-        map.put("isRawMaterial", false); 
+        map.put("isRawMaterial", false);
         return map;
     }
     
@@ -109,10 +122,15 @@ public class LotTraceService {
     }
 
     public ProcessDetailResponseDTO getProcessDetailData(String instructCode) {
-        ProductionInstructRepository.HeaderMapping header = productionInstructRepository.findHeaderByCode(instructCode);
-        if (header == null) return null;
+    	List<ProductionInstructRepository.HeaderMapping> headers = productionInstructRepository.findHeaderByCode(instructCode);
+    	
+    	if (headers == null || headers.isEmpty()) {
+            log.warn(">>> [" + instructCode + "] 해당 공정의 헤더 데이터가 없습니다.");
+            return new ProcessDetailResponseDTO(); 
+        }
+    	
+    	ProductionInstructRepository.HeaderMapping header = headers.get(0);
 
-        // 1. 전체 불량 수량 파악 (p.defective)
         int totalDefective = header.getDefectiveQty() != null ? header.getDefectiveQty() : 0;
 
         ProcessDetailResponseDTO dto = new ProcessDetailResponseDTO();
@@ -208,5 +226,89 @@ public class LotTraceService {
 
     public LotMasterRepository.SubDetailMapping getSubDetailInfo(String lotId) {
         return lotMasterRepository.findSubDetailByLotId(lotId);
+    }
+    
+    public List<LotMasterRepository.ProdProcessMapping> getProcessesByLotId(String lotId) {
+        return lotMasterRepository.findProcessesByLotId(lotId);
+    }
+
+    public List<LotMasterRepository.FinishedUsageMapping> getMaterialsByLotId(String lotId) {
+        return lotMasterRepository.findRecursiveMaterialsByLotId(lotId);
+    }
+    
+    // 불량 발생 리스트 조회
+    public List<Map<String, Object>> getDefectiveProcessList() {
+        List<ProductionInstructRepository.DefectiveMapping> results = productionInstructRepository.findDefectiveProcesses();
+        
+        return results.stream().map(res -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("instructCode", res.getInstructCode());
+            map.put("itemName", res.getItemName());
+            map.put("processName", res.getProcessName());
+            map.put("defectiveQty", res.getDefectiveQty());
+            map.put("endDate", res.getEndDate());
+            return map;
+        }).collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public void updateWorkerTime(Long workerId, String type) {
+        if ("START".equals(type)) {
+            productionInstructRepository.updateStartTime(workerId);
+        } else if ("END".equals(type)) {
+            productionInstructRepository.updateEndTime(workerId);
+        }
+    }
+    
+    @Transactional
+    public void startProcessWork(Long workerId) {
+        // 시작 시간 기록
+    	processWorkerRepository.updateStartTime(workerId);
+    }
+
+    @Transactional
+    public void completeProcessWork(Long workerId) {
+        // 1. 해당 작업(공정)의 기본 정보 가져오기
+    	ProcessWorkerRepository.WorkerInfoMapping info = processWorkerRepository.findWorkerInfoById(workerId);
+        if (info == null) return;
+
+        // 2. LOT TYPE 결정 (공정명 기준)
+        String processName = info.getProcessName();
+        String lotType = "ETC";
+        if (processName.contains("프레스")) lotType = "ST";
+        else if (processName.contains("사출")) lotType = "IN";
+        else if (processName.contains("도장") || processName.contains("도색")) lotType = "PT";
+        else if (processName.contains("조립")) lotType = "SAM";
+
+        // 3. LOT 코드 생성
+        // 3-1. 날짜 (예: 20260308)
+        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        
+        // 3-2. 작업지시번호 생략버전 (예: INS300 추출)
+        String fullInstructCode = info.getInstructCode();
+        String[] codeParts = fullInstructCode.split("-");
+        String shortInstructCode = codeParts[codeParts.length - 1]; // 맨 마지막 부분 추출
+        
+        // 3-3. 시퀀스 채번 (오늘 날짜, 동일 아이템 기준)
+        Integer seq = processWorkerRepository.getNextLotSequence(info.getItemCode());
+        String seqStr = String.format("%03d", seq); // 3자리 숫자 (예: 001)
+
+        // 완성된 LOT_ID 조립 (예: ST-008-20260307-INS300-001)
+        String generatedLotId = String.format("%s-%s-%s-%s", info.getItemCode(), dateStr, shortInstructCode, seqStr);
+
+        // 4. PARENT_LOT_ID 찾기 (이전 공정의 LOT)
+        String parentLotId = processWorkerRepository.findParentLotId(info.getInstructId(), workerId);
+
+        // 5. lot_master 테이블에 Insert (회원님 정정 내역 반영: product_id에 item_code 삽입)
+        processWorkerRepository.insertLotMaster(
+                generatedLotId, 
+                lotType, 
+                parentLotId, 
+                info.getItemCode(), 
+                info.getProductionQty()
+        );
+
+        // 6. production_worker 테이블의 end_time 업데이트 및 생성된 lot_id 부여
+        processWorkerRepository.updateEndTimeAndLotId(workerId, generatedLotId);
     }
 }

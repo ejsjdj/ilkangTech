@@ -353,7 +353,7 @@
             let grid;
             let currentPage = 1;
             let pageSize = 10;
-            let sortBy = "memberId";
+            let sortBy = "id";
             let direction = "ASC";
 
             $(function() {
@@ -368,13 +368,13 @@
 
                     columns: [
                         { header: "id", name: "memberId", hidden: true },
-                        { header: "사원번호", name: "employeeNumber", sortable: true },
-                        { header: "부서", name: "department", sortable: true },
-                        { header: "직급", name: "position", sortable: true },
-                        { header: "이름", name: "name", sortable: true },
-                        { header: "전화번호", name: "phoneNumber", sortable: true },
-                        { header: "이메일", name: "email", sortable: true },
-                        { header: "잠긴 시간", name: "lockDateTime", sortable: true },
+                        { header: "사원번호", name: "employeeNumber" },
+                        { header: "부서", name: "department" },
+                        { header: "직급", name: "position" },
+                        { header: "이름", name: "name" },
+                        { header: "전화번호", name: "phoneNumber" },
+                        { header: "이메일", name: "email" },
+                        { header: "잠긴 시간", name: "lockDateTime" },
                         {
                             header: "상세 정보",
                             name: "detail",

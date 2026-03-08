@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Repository
 public interface PurchaseOrderHeaderRepository extends JpaRepository<PurchaseOrderHeaderEntity, Long> {
@@ -32,6 +33,11 @@ public interface PurchaseOrderHeaderRepository extends JpaRepository<PurchaseOrd
             @Param("endDate") LocalDate endDate,
             @Param("searchType") String searchType,
             @Param("keyword") String keyword);
+
+    @Query("SELECT p FROM PurchaseOrderHeaderEntity p WHERE p.company.companyId = :companyId ORDER BY p.orderDate DESC")
+    List<PurchaseOrderHeaderEntity> findByCompanyId(@Param("companyId") Long companyId);
+
+    Page<PurchaseOrderHeaderEntity> findByCompanyCompanyId(Long companyId, Pageable pageable);
 
     @Modifying
     @Query("""

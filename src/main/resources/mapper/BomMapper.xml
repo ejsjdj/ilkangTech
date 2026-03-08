@@ -11,6 +11,7 @@
         <result property="code" column="code" />
         <result property="name" column="name" />
         <result property="unit" column="unit" />
+        <result property="imgUrl" column="imgUrl" />
     </resultMap>
 
     <select id="selectBomList" resultMap="BomResultMap">
@@ -19,10 +20,113 @@
             I.item_id as itemId,
             I.item_code as code,
             I.item_name as name,
-            B.require_qty as unit
+            B.require_qty as unit,
+            (SELECT '/display?fileName=' || IMG.img_location || IMG.img_name 
+             FROM item_img IMG 
+             WHERE IMG.item_id = I.item_id AND IMG.rep_img_yn = 'Y' AND ROWNUM = 1) as imgUrl
         from bom B
         join item I on B.parent_item_id = I.item_id
         where B.child_item_id = #{childItemId}
+    </select>
+
+    <select id="selectRecursiveForward" resultType="com.itwillbs.ilkwangtech.standard.dto.BomTreeDTO">
+        /* 1. 루트 아이템 (기준 품목) */
+        SELECT
+            0 as "level",
+            NULL as parentItemId,
+            I.item_id as itemId,
+            I.item_code as itemCode,
+            I.item_name as itemName,
+            CASE I.item_type
+                WHEN 1 THEN 'RAW'
+                WHEN 2 THEN 'SEMI'
+                WHEN 3 THEN 'FIN'
+                ELSE 'OTHER'
+            END as itemType,
+            1.0 as requireQty,
+            0 as bomId,
+            I.item_name as "path",
+            (SELECT '/display?fileName=' || IMG.img_location || IMG.img_name 
+             FROM item_img IMG 
+             WHERE IMG.item_id = I.item_id AND IMG.rep_img_yn = 'Y' AND ROWNUM = 1) as imgUrl
+        FROM ITEM I
+        WHERE I.item_id = #{itemId}
+
+        UNION ALL
+
+        /* 2. 하위 자재들 (전개) */
+        SELECT
+            LEVEL as "level",
+            B.child_item_id as parentItemId,
+            B.parent_item_id as itemId,
+            I.item_code as itemCode,
+            I.item_name as itemName,
+            CASE I.item_type
+                WHEN 1 THEN 'RAW'
+                WHEN 2 THEN 'SEMI'
+                WHEN 3 THEN 'FIN'
+                ELSE 'OTHER'
+            END as itemType,
+            B.require_qty as requireQty,
+            B.bom_id as bomId,
+            SYS_CONNECT_BY_PATH(I.item_name, ' > ') as "path",
+            (SELECT '/display?fileName=' || IMG.img_location || IMG.img_name 
+             FROM item_img IMG 
+             WHERE IMG.item_id = I.item_id AND IMG.rep_img_yn = 'Y' AND ROWNUM = 1) as imgUrl
+        FROM BOM B
+        JOIN ITEM I ON B.parent_item_id = I.item_id
+        START WITH B.child_item_id = #{itemId}
+        CONNECT BY PRIOR B.parent_item_id = B.child_item_id
+    </select>
+
+    <select id="selectRecursiveReverse" resultType="com.itwillbs.ilkwangtech.standard.dto.BomTreeDTO">
+        /* 1. 루트 아이템 (기준 품목) */
+        SELECT
+            0 as "level",
+            NULL as childItemId,
+            I.item_id as itemId,
+            I.item_code as itemCode,
+            I.item_name as itemName,
+            CASE I.item_type
+                WHEN 1 THEN 'RAW'
+                WHEN 2 THEN 'SEMI'
+                WHEN 3 THEN 'FIN'
+                ELSE 'OTHER'
+            END as itemType,
+            1.0 as requireQty,
+            0 as bomId,
+            I.item_name as "path",
+            (SELECT '/display?fileName=' || IMG.img_location || IMG.img_name 
+             FROM item_img IMG 
+             WHERE IMG.item_id = I.item_id AND IMG.rep_img_yn = 'Y' AND ROWNUM = 1) as imgUrl
+        FROM ITEM I
+        WHERE I.item_id = #{itemId}
+
+        UNION ALL
+
+        /* 2. 상위 품목들 (역전개) */
+        SELECT
+            LEVEL as "level",
+            B.parent_item_id as childItemId,
+            B.child_item_id as itemId,
+            I.item_code as itemCode,
+            I.item_name as itemName,
+            CASE I.item_type
+                WHEN 1 THEN 'RAW'
+                WHEN 2 THEN 'SEMI'
+                WHEN 3 THEN 'FIN'
+                ELSE 'OTHER'
+            END as itemType,
+            B.require_qty as requireQty,
+            B.bom_id as bomId,
+            SYS_CONNECT_BY_PATH(I.item_name, ' &lt; ') as "path",
+            (SELECT '/display?fileName=' || IMG.img_location || IMG.img_name 
+             FROM item_img IMG 
+             WHERE IMG.item_id = I.item_id AND IMG.rep_img_yn = 'Y' AND ROWNUM = 1) as imgUrl
+        FROM BOM B
+        JOIN ITEM I ON B.child_item_id = I.item_id
+        START WITH B.parent_item_id = #{itemId}
+        CONNECT BY PRIOR B.child_item_id = B.parent_item_id
     </select>
 
 </mapper>

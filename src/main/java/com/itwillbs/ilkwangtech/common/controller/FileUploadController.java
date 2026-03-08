@@ -5,11 +5,16 @@ import com.itwillbs.ilkwangtech.common.entity.FileMeta;
 import com.itwillbs.ilkwangtech.common.repository.FileMetaRepository;
 import com.itwillbs.ilkwangtech.common.service.FlieDownloadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,12 +27,14 @@ public class FileUploadController {
 
     private final FileMetaRepository fileMetaRepository;
     private final FlieDownloadService fileDownloadService;
-    private final String uploadDir = "C:\\ilkang_uploads";
+
+    @Value("${file.uploadBaseLocation:/upload/}")
+    private String uploadBaseLocation;
 
     @PostMapping("/file/upload")
     public FileUploadDTO upload(@RequestParam MultipartFile file) throws IOException {
         // 1. 서버 디스크에 저장
-        Path uploadPath = Paths.get(uploadDir);
+        Path uploadPath = Paths.get(uploadBaseLocation);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
@@ -41,7 +48,7 @@ public class FileUploadController {
         FileMeta meta = new FileMeta();
         meta.setOriginalName(file.getOriginalFilename());
         meta.setStoredName(storedName);
-        meta.setFilePath(uploadDir);
+        meta.setFilePath(uploadBaseLocation);
         FileMeta savedMeta = fileMetaRepository.saveAndFlush(meta);
 
         System.out.println("FileId = " + savedMeta.getId());
@@ -55,5 +62,26 @@ public class FileUploadController {
     public ResponseEntity<Resource> download(@PathVariable Long fileId) throws IOException {
 
         return fileDownloadService.fileDownload(fileId);
+    }
+
+    // 이미지 스트리밍 (URL 기반)
+    @GetMapping("/display")
+    public ResponseEntity<Resource> display(@RequestParam("fileName") String fileName) {
+        String fullPath = uploadBaseLocation + fileName;
+        Resource resource = new FileSystemResource(fullPath);
+
+        if (!resource.exists()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        HttpHeaders header = new HttpHeaders();
+        try {
+            Path filePath = Paths.get(fullPath);
+            header.add("Content-Type", Files.probeContentType(filePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(resource, header, HttpStatus.OK);
     }
 }

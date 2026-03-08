@@ -4,392 +4,369 @@
       layout:decorate="~{layout/layout}">
 <head>
     <meta charset="UTF-8">
-    <title>고객사 상세 정보</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <title th:text="${company.companyName} + ' 상세 정보'">업체 상세 정보</title>
+    <!-- Chart.js 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .Company-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+        .page-header {
+            background-color: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            border-left: 6px solid #4f46e5;
         }
-        
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
         .info-card {
-            transition: transform 0.2s ease-in-out;
-            border-left: 4px solid #007bff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            height: 100%;
         }
-        
-        .info-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+        .info-card .card-header {
+            background-color: #f9fafb;
+            border-bottom: 1px solid #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+            padding: 16px 20px;
         }
-        
-        .status-badge {
-            font-size: 1rem;
-            padding: 0.5rem 1rem;
-        }
-        
-        .contact-item {
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            background: #f8f9fa;
-            transition: background 0.2s;
-        }
-        
-        .contact-item:hover {
-            background: #e9ecef;
-        }
-        
-        .stats-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+
+        .stat-box {
+            background-color: #f3f4f6;
             border-radius: 10px;
-            padding: 1.5rem;
+            padding: 16px;
             text-align: center;
-            color: white;
+            transition: all 0.2s;
         }
-        
-        .timeline-item {
+
+        .stat-box:hover {
+            background-color: #e5e7eb;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4f46e5;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-tabs-custom {
+            border-bottom: 2px solid #f3f4f6;
+            margin-bottom: 24px;
+        }
+
+        .nav-tabs-custom .nav-link {
+            border: none;
+            color: #6b7280;
+            font-weight: 500;
+            padding: 12px 24px;
             position: relative;
-            padding-left: 30px;
-            margin-bottom: 1.5rem;
+            transition: all 0.2s;
         }
-        
-        .timeline-item::before {
+
+        .nav-tabs-custom .nav-link:hover {
+            color: #111827;
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            color: #4f46e5;
+            background-color: transparent;
+        }
+
+        .nav-tabs-custom .nav-link.active::after {
             content: '';
             position: absolute;
-            left: 10px;
-            top: 5px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #007bff;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #4f46e5;
         }
-        
-        .timeline-item::after {
-            content: '';
-            position: absolute;
-            left: 14px;
-            top: 15px;
-            bottom: -15px;
-            width: 2px;
-            background: #e9ecef;
+
+        .table th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 14px 16px;
+            border-bottom: 2px solid #e2e8f0;
         }
-        
-        .timeline-item:last-child::after {
-            display: none;
+
+        .table td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        /* Modal styling */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 24px;
+        }
+
+        .order-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .order-info-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .order-info-item span {
+            font-weight: 600;
+            color: #111827;
         }
     </style>
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container-fluid">
-        <!-- 뒤로가기 버튼 -->
-        <div class="mb-3">
-            <a href="/sales/Company/list" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+    <div class="container-fluid py-4">
+        <!-- 상단 네비게이션 & 액션 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/sales/customer/list" class="text-decoration-none">업체 관리</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">상세 정보</li>
+                </ol>
+            </nav>
+            <a href="/sales/customer/list" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-list me-1"></i> 목록으로
             </a>
         </div>
 
-        <!-- 고객사 헤더 정보 -->
-        <div class="Company-header" th:if="${Company}">
+        <!-- 업체 헤더 카드 -->
+        <div class="page-header" th:if="${company}">
             <div class="row align-items-center">
-                <div class="col-md-8">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="me-3">
-                            <i class="bi bi-building" style="font-size: 3rem;"></i>
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-light p-3 rounded-3 me-4">
+                            <i class="bi bi-building text-primary" style="font-size: 2.5rem;"></i>
                         </div>
                         <div>
-                            <h2 class="mb-1" th:text="${Company.CompanyName}">ABC전자</h2>
-                            <p class="mb-0" th:text="${Company.businessType}">제조업</p>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <h4 th:text="${Company.totalOrders ?: '0'}">0</h4>
-                                <p class="mb-0">총 주문 건수</p>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h2 class="header-title mb-0" th:text="${company.companyName}">ABC전자</h2>
+                                <span class="badge badge-status"
+                                      th:classappend="${company.status.name() == 'ACTIVE' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}"
+                                      th:text="${company.status.description}">거래중</span>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <h4 th:text="${Company.totalAmount ?: '0'}">0</h4>
-                                <p class="mb-0">총 거래액(만원)</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <h4 th:text="${Company.avgOrderAmount ?: '0'}">0</h4>
-                                <p class="mb-0">평균 주문액(만원)</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stats-card">
-                                <h4 th:text="${#temporals.format(Company.createdAt, 'yyyy-MM-dd')}">-</h4>
-                                <p class="mb-0">등록일</p>
-                            </div>
+                            <p class="header-subtitle mb-0">
+                                <span class="me-3"><i class="bi bi-hash me-1"></i>[[${company.companyCode}]]</span>
+                                <span><i class="bi bi-tag me-1"></i>[[${company.companyType.description}]]</span>
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 text-end">
-                    <span class="badge status-badge"
-                          th:classappend="'bg-' + ${Company.status == 'ACTIVE' ? 'success' : (Company.status == 'INACTIVE' ? 'secondary' : 'warning')}"
-                          th:text="${Company.status == 'ACTIVE' ? '활성' : (Company.status == 'INACTIVE' ? '비활성' : '검토중')}">
-                        활성
-                    </span>
-                    <div class="mt-3">
-                        <button class="btn btn-light" onclick="editCustomer()">
-                            <i class="bi bi-pencil"></i> 정보 수정
-                        </button>
-                        <button class="btn btn-outline-light" onclick="deleteCustomer()">
-                            <i class="bi bi-trash"></i> 삭제
-                        </button>
+                <div class="col-md-5">
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <span class="stat-value" th:text="${companyDetail.salesHistory.size() + companyDetail.purchaseHistory.size()}">0</span>
+                                <span class="stat-label">총 거래 건수</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <span class="stat-value text-dark" th:text="${company.ceoName}">홍길동</span>
+                                <span class="stat-label">대표자</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <span class="stat-value text-dark" style="font-size: 0.9rem;" th:text="${company.businessNumber ?: '-'}">-</span>
+                                <span class="stat-label">사업자번호</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 상세 정보 탭 -->
-        <div class="card">
-            <div class="card-header bg-white">
-                <ul class="nav nav-tabs card-header-tabs" id="CompanyTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
-                            <i class="bi bi-info-circle"></i> 기본 정보
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">
-                            <i class="bi bi-telephone"></i> 연락처
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
-                            <i class="bi bi-cart"></i> 주문 내역
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="prices-tab" data-bs-toggle="tab" data-bs-target="#prices" type="button" role="tab">
-                            <i class="bi bi-tag"></i> 단가 정보
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
-                            <i class="bi bi-clock-history"></i> 활동 이력
-                        </button>
-                    </li>
-                </ul>
+        <!-- 상세 정보 섹션 -->
+        <div class="row g-4">
+            <!-- 왼쪽: 기본 정보 -->
+            <div class="col-lg-4">
+                <div class="card info-card">
+                    <div class="card-header">기본 정보</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">업체코드</span>
+                                <span class="fw-bold" th:text="${company.companyCode}">COMP-001</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">사업자번호</span>
+                                <span th:text="${company.businessNumber ?: '-'}">123-45-67890</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">대표자명</span>
+                                <span th:text="${company.ceoName ?: '-'}">김대표</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">대표전화</span>
+                                <span th:text="${company.telNo ?: '-'}">02-123-4567</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">팩스</span>
+                                <span th:text="${company.faxNo ?: '-'}">02-123-4568</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">이메일</span>
+                                <span th:text="${company.email ?: '-'}">info@abc.com</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">내부 담당자</span>
+                                <span class="fw-bold text-primary" th:text="${company.managerName ?: '미지정'}">담당자명</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between">
+                                <span class="text-muted">담당자 연락처</span>
+                                <span th:text="${company.managerTel ?: '-'}">010-0000-0000</span>
+                            </li>
+                            <li class="list-group-item px-0">
+                                <div class="text-muted mb-1">회사 주소</div>
+                                <div class="small fw-medium" th:text="${company.address ?: '-'}">서울시 강남구 테헤란로 123</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="tab-content" id="CompanyTabContent">
-                    <!-- 기본 정보 탭 -->
-                    <div class="tab-pane fade show active" id="basic" role="tabpanel">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="info-card card mb-3">
-                                    <div class="card-body">
-                                        <h6 class="card-title"><i class="bi bi-building"></i> 회사 정보</h6>
-                                        <table class="table table-sm">
-                                            <tr>
-                                                <td width="30%">고객사명</td>
-                                                <td th:text="${Company.CompanyName}">ABC전자</td>
-                                            </tr>
-                                            <tr>
-                                                <td>사업자번호</td>
-                                                <td th:text="${Company.businessNumber}">123-45-67890</td>
-                                            </tr>
-                                            <tr>
-                                                <td>대표자명</td>
-                                                <td th:text="${Company.representativeName}">김대표</td>
-                                            </tr>
-                                            <tr>
-                                                <td>업종</td>
-                                                <td th:text="${Company.businessType}">제조업</td>
-                                            </tr>
-                                            <tr>
-                                                <td>주소</td>
-                                                <td th:text="${Company.address}">서울시 강남구 테헤란로 123</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-card card mb-3">
-                                    <div class="card-body">
-                                        <h6 class="card-title"><i class="bi bi-gear"></i> 관리 정보</h6>
-                                        <table class="table table-sm">
-                                            <tr>
-                                                <td width="30%">상태</td>
-                                                <td>
-                                                    <span class="badge"
-                                                          th:classappend="'bg-' + ${Company.status == 'ACTIVE' ? 'success' : (Company.status == 'INACTIVE' ? 'secondary' : 'warning')}"
-                                                          th:text="${Company.status == 'ACTIVE' ? '활성' : (Company.status == 'INACTIVE' ? '비활성' : '검토중')}">
-                                                        활성
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>등록일</td>
-                                                <td th:text="${#temporals.format(Company.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</td>
-                                            </tr>
-                                            <tr>
-                                                <td>최종 수정일</td>
-                                                <td th:text="${Company.updatedAt ? #temporals.format(Company.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">2024-01-20 14:15</td>
-                                            </tr>
-                                            <tr>
-                                                <td>등록자</td>
-                                                <td th:text="${Company.createdBy ?: '-'}">김관리</td>
-                                            </tr>
-                                            <tr>
-                                                <td>수정자</td>
-                                                <td th:text="${Company.updatedBy ?: '-'}">이관리</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="info-card card">
-                            <div class="card-body">
-                                <h6 class="card-title"><i class="bi bi-file-text"></i> 비고</h6>
-                                <p th:text="${Company.notes ?: '등록된 비고가 없습니다.'}">특별 요청사항이나 메모 내용</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- 연락처 탭 -->
-                    <div class="tab-pane fade" id="contact" role="tabpanel">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="info-card card mb-3">
-                                    <div class="card-body">
-                                        <h6 class="card-title"><i class="bi bi-telephone"></i> 회사 연락처</h6>
-                                        <div class="contact-item">
-                                            <i class="bi bi-telephone-fill text-primary"></i>
-                                            <strong>대표전화:</strong> <span th:text="${Company.phone}">02-1234-5678</span>
-                                        </div>
-                                        <div class="contact-item">
-                                            <i class="bi bi-envelope-fill text-primary"></i>
-                                            <strong>이메일:</strong> <span th:text="${Company.email}">info@abc.com</span>
-                                        </div>
-                                        <div class="contact-item">
-                                            <i class="bi bi-globe-fill text-primary"></i>
-                                            <strong>웹사이트:</strong> <span th:text="${Company.website ?: '-'}">www.abc.com</span>
-                                        </div>
-                                        <div class="contact-item">
-                                            <i class="bi bi-geo-alt-fill text-primary"></i>
-                                            <strong>주소:</strong> <span th:text="${Company.address}">서울시 강남구 테헤란로 123</span>
-                                        </div>
-                                    </div>
+            <!-- 오른쪽: 거래 내역 & 통계 -->
+            <div class="col-lg-8">
+                <div class="card info-card">
+                    <div class="card-body p-0">
+                        <ul class="nav nav-tabs nav-tabs-custom px-4 pt-3" id="CompanyTab" role="tablist">
+                            <li class="nav-item" role="presentation" th:if="${company.companyType.name() != 'supplier'}">
+                                <button class="nav-link active" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales" type="button" role="tab">판매 내역</button>
+                            </li>
+                            <li class="nav-item" role="presentation" th:if="${company.companyType.name() != 'client'}">
+                                <button class="nav-link" th:classappend="${company.companyType.name() == 'supplier' ? 'active' : ''}" id="purchase-tab" data-bs-toggle="tab" data-bs-target="#purchase" type="button" role="tab">구매 내역</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab">거래 통계</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content p-4 pt-2" id="CompanyTabContent">
+                            <!-- 판매 내역 -->
+                            <div class="tab-pane fade" th:classappend="${company.companyType.name() != 'supplier' ? 'show active' : ''}" id="sales" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                        <tr>
+                                            <th>주문일자</th>
+                                            <th>납기예정일</th>
+                                            <th>상태</th>
+                                            <th class="text-end">금액</th>
+                                            <th class="text-center">액션</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="salesBody"></tbody>
+                                    </table>
                                 </div>
+                                <div id="salesPagination" class="pagination mt-4"></div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="info-card card mb-3">
-                                    <div class="card-body">
-                                        <h6 class="card-title"><i class="bi bi-person"></i> 담당자 정보</h6>
-                                        <div class="contact-item">
-                                            <i class="bi bi-person-fill text-success"></i>
-                                            <strong>담당자명:</strong> <span th:text="${Company.contactPerson}">이담당자</span>
-                                        </div>
-                                        <div class="contact-item">
-                                            <i class="bi bi-telephone-fill text-success"></i>
-                                            <strong>담당자 연락처:</strong> <span th:text="${Company.managerPhone ?: '-'}">010-1234-5678</span>
-                                        </div>
-                                        <div class="contact-item">
-                                            <i class="bi bi-envelope-fill text-success"></i>
-                                            <strong>담당자 이메일:</strong> <span th:text="${Company.managerEmail ?: '-'}">manager@abc.com</span>
-                                        </div>
-                                        <div class="contact-item">
-                                            <i class="bi bi-telephone-fill text-info"></i>
-                                            <strong>FAX:</strong> <span th:text="${Company.faxNumber ?: '-'}">02-1234-5679</span>
-                                        </div>
-                                    </div>
+
+                            <!-- 구매 내역 -->
+                            <div class="tab-pane fade" th:classappend="${company.companyType.name() == 'supplier' ? 'show active' : ''}" id="purchase" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                        <tr>
+                                            <th>발주일자</th>
+                                            <th>발주코드</th>
+                                            <th>상태</th>
+                                            <th class="text-end">금액</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="purchaseBody"></tbody>
+                                    </table>
                                 </div>
+                                <div id="purchasePagination" class="pagination mt-4"></div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- 주문 내역 탭 -->
-                    <div class="tab-pane fade" id="orders" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="mb-0">최근 주문 내역</h6>
-                            <button class="btn btn-sm btn-primary" onclick="createNewOrder()">
-                                <i class="bi bi-plus-circle"></i> 신규 주문
-                            </button>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                <tr>
-                                    <th>주문번호</th>
-                                    <th>제품</th>
-                                    <th>수량</th>
-                                    <th>단가</th>
-                                    <th>총액</th>
-                                    <th>상태</th>
-                                    <th>주문일</th>
-                                    <th>납기일</th>
-                                    <th>관리</th>
-                                </tr>
-                                </thead>
-                                <tbody id="ordersTableBody">
-                                <tr>
-                                    <td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- 단가 정보 탭 -->
-                    <div class="tab-pane fade" id="prices" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="mb-0">고객사별 단가 정보</h6>
-                            <button class="btn btn-sm btn-success" onclick="negotiatePrice()">
-                                <i class="bi bi-handshake"></i> 단가 협상
-                            </button>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                <tr>
-                                    <th>제품명</th>
-                                    <th>현재 단가</th>
-                                    <th>기본 단가</th>
-                                    <th>차이</th>
-                                    <th>적용일</th>
-                                    <th>변경 사유</th>
-                                    <th>관리</th>
-                                </tr>
-                                </thead>
-                                <tbody id="pricesTableBody">
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- 활동 이력 탭 -->
-                    <div class="tab-pane fade" id="history" role="tabpanel">
-                        <h6 class="mb-3">고객사 활동 이력</h6>
-                        <div id="activityTimeline">
-                            <div class="timeline-item">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h6 class="card-title">고객사 등록</h6>
-                                                <p class="card-text text-muted">신규 고객사로 등록되었습니다.</p>
+                            <!-- 거래 통계 -->
+                            <div class="tab-pane fade" id="stats" role="tabpanel">
+                                <div class="row g-4">
+                                    <div class="col-12">
+                                        <div class="p-3 bg-light rounded-3 mb-4">
+                                            <h6 class="fw-bold mb-3"><i class="bi bi-graph-up me-2"></i>월별 거래 추이</h6>
+                                            <div style="height: 300px;">
+                                                <canvas id="transactionChart"></canvas>
                                             </div>
-                                            <small class="text-muted" th:text="${#temporals.format(Company.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-15 10:30</small>
                                         </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <h6 class="fw-bold mb-3"><i class="bi bi-table me-2"></i>상세 통계 데이터</h6>
+                                        <table class="table table-sm border">
+                                            <thead class="bg-light">
+                                            <tr>
+                                                <th>년-월</th>
+                                                <th class="text-end">판매액 (수주)</th>
+                                                <th class="text-end">구매액 (발주)</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:if="${companyDetail.allMonths == null or companyDetail.allMonths.isEmpty()}">
+                                                    <td colspan="3" class="text-center py-4 text-muted">거래 데이터가 없습니다.</td>
+                                                </tr>
+                                                <tr th:each="month : ${companyDetail.allMonths}">
+                                                    <td class="fw-medium" th:text="${month}">2024-01</td>
+                                                    <td class="text-end text-primary fw-bold" th:text="${#numbers.formatInteger(companyDetail.monthlySales.getOrDefault(month, 0L), 0, 'COMMA')} + '원'"></td>
+                                                    <td class="text-end text-danger fw-bold" th:text="${#numbers.formatInteger(companyDetail.monthlyPurchases.getOrDefault(month, 0L), 0, 'COMMA')} + '원'"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -398,82 +375,38 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- 고객사 수정 모달 -->
-    <div class="modal fade" id="editCustomerModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">고객사 정보 수정</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editCustomerForm">
-                        <input type="hidden" id="editCustomerId" th:value="${Company.CompanyId}">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">고객사명 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="editCustomerName" th:value="${Company.CompanyName}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">사업자번호 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="editBusinessNumber" th:value="${Company.businessNumber}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">대표자명 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="editRepresentativeName" th:value="${Company.representativeName}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">업종</label>
-                                <input type="text" class="form-control" id="editBusinessType" th:value="${Company.businessType}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">연락처 <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" id="editPhoneNumber" th:value="${Company.phoneNumber}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">이메일</label>
-                                <input type="email" class="form-control" id="editEmail" th:value="${Company.email}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">담당자명</label>
-                                <input type="text" class="form-control" id="editContactPerson" th:value="${Company.contactPerson}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">담당자 연락처</label>
-                                <input type="tel" class="form-control" id="editManagerPhone" th:value="${Company.managerPhone}">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">주소</label>
-                                <input type="text" class="form-control" id="editAddress" th:value="${Company.address}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">웹사이트</label>
-                                <input type="url" class="form-control" id="editWebsite" th:value="${Company.website}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">FAX</label>
-                                <input type="tel" class="form-control" id="editFaxNumber" th:value="${Company.faxNumber}">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">비고</label>
-                                <textarea class="form-control" id="editNotes" rows="3" th:text="${Company.remark}"></textarea>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">상태</label>
-                                <select class="form-select" id="editStatus">
-                                    <option value="ACTIVE" th:selected="${Company.status == 'ACTIVE'}">활성</option>
-                                    <option value="INACTIVE" th:selected="${Company.status == 'INACTIVE'}">비활성</option>
-                                    <option value="PENDING" th:selected="${Company.status == 'PENDING'}">검토중</option>
-                                </select>
-                            </div>
+        <!-- 수주 상세 보기 모달 (Bootstrap) -->
+        <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">📖 수주 상세 내역</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="detailHeader" class="order-info-grid">
+                            <!-- 로딩 정보 -->
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCustomerChanges()">저장</button>
+                        <h6 class="fw-bold mb-3 px-1"><i class="bi bi-box-seam me-2 text-primary"></i>품목 리스트</h6>
+                        <div class="table-responsive border rounded-3">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-3">품목코드</th>
+                                        <th>품목명</th>
+                                        <th class="text-end">수량</th>
+                                        <th class="text-end">단가</th>
+                                        <th class="text-end pe-3">합계</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailItemsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -481,259 +414,346 @@
 </div>
 
 <th:block layout:fragment="script">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let editCustomerModal;
-        const CompanyId = /*[[${Company.CompanyId}]]*/ 0;
+    <script th:inline="javascript">
+        // 전역 변수 설정
+        const companyId = [[${company.companyId}]];
+        let detailModal;
 
         document.addEventListener('DOMContentLoaded', function() {
-            editCustomerModal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
-            loadCustomerOrders();
-            loadCustomerPrices();
-            loadActivityHistory();
-        });
+            detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
 
-        function editCustomer() {
-            editCustomerModal.show();
-        }
+            // 초기 데이터 로드
+            loadSales(0);
+            loadPurchases(0);
 
-        function saveCustomerChanges() {
-            const CompanyData = {
-                CompanyId: document.getElementById('editCustomerId').value,
-                CompanyName: document.getElementById('editCustomerName').value,
-                businessNumber: document.getElementById('editBusinessNumber').value,
-                representativeName: document.getElementById('editRepresentativeName').value,
-                businessType: document.getElementById('editBusinessType').value,
-                phoneNumber: document.getElementById('editPhoneNumber').value,
-                email: document.getElementById('editEmail').value,
-                contactPerson: document.getElementById('editContactPerson').value,
-                managerPhone: document.getElementById('editManagerPhone').value,
-                address: document.getElementById('editAddress').value,
-                website: document.getElementById('editWebsite').value,
-                faxNumber: document.getElementById('editFaxNumber').value,
-                notes: document.getElementById('editNotes').value,
-                status: document.getElementById('editStatus').value
-            };
+            // 탭 클릭 이벤트 리스너
+            const salesTab = document.getElementById('sales-tab');
+            if (salesTab) salesTab.addEventListener('shown.bs.tab', () => loadSales(0));
+            
+            const purchaseTab = document.getElementById('purchase-tab');
+            if (purchaseTab) purchaseTab.addEventListener('shown.bs.tab', () => loadPurchases(0));
 
-            fetch(`/sales/Company/api/${CompanyId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(CompanyData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                editCustomerModal.hide();
-                location.reload(); // 페이지 새로고침하여 변경사항 반영
-                showNotification('고객사 정보가 수정되었습니다.', 'success');
-            })
-            .catch(error => {
-                console.error('Error updating Company:', error);
-                showNotification('수정 중 오류가 발생했습니다.', 'error');
-            });
-        }
+            try {
+                // Thymeleaf 변수를 안전하게 JSON으로 파싱
+                const companyDetail = [[${companyDetail}]];
+                console.log('Company Detail:', companyDetail);
+                if (!companyDetail) {
+                    console.error('Company detail data is missing');
+                    return;
+                }
 
-        function deleteCustomer() {
-            if (confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                fetch(`/sales/Company/api/${CompanyId}`, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = '/sales/Company/list';
-                    } else {
-                        throw new Error('Delete failed');
+                const monthlySales = companyDetail.monthlySales || {};
+                const monthlyPurchases = companyDetail.monthlyPurchases || {};
+
+                // 모든 월 합치기 및 정렬
+                const labels = Array.from(new Set([...Object.keys(monthlySales), ...Object.keys(monthlyPurchases)])).sort();
+                console.log('Stats Labels:', labels);
+                
+                if (labels.length > 0) {
+                    const salesData = labels.map(label => monthlySales[label] || 0);
+                    const purchaseData = labels.map(label => monthlyPurchases[label] || 0);
+
+                    const canvas = document.getElementById('transactionChart');
+                    if (canvas) {
+                        new Chart(canvas.getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    {
+                                        label: '판매액 (수주)',
+                                        data: salesData,
+                                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                                        borderColor: '#4f46e5',
+                                        borderWidth: 2,
+                                        tension: 0.3,
+                                        fill: true,
+                                        pointRadius: 4,
+                                        pointBackgroundColor: '#4f46e5'
+                                    },
+                                    {
+                                        label: '구매액 (발주)',
+                                        data: purchaseData,
+                                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                        borderColor: '#ef4444',
+                                        borderWidth: 2,
+                                        tension: 0.3,
+                                        fill: true,
+                                        pointRadius: 4,
+                                        pointBackgroundColor: '#ef4444'
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: { 
+                                        beginAtZero: true, 
+                                        grid: { color: '#f3f4f6' },
+                                        ticks: { 
+                                            color: '#6b7280',
+                                            callback: v => (v >= 10000 ? (v/10000).toLocaleString() + '만원' : v.toLocaleString() + '원') 
+                                        } 
+                                    },
+                                    x: {
+                                        grid: { display: false },
+                                        ticks: { color: '#6b7280' }
+                                    }
+                                },
+                                plugins: {
+                                    legend: { position: 'top', align: 'end' },
+                                    tooltip: {
+                                        padding: 12,
+                                        backgroundColor: 'rgba(17, 24, 39, 0.8)',
+                                        callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toLocaleString() + '원' }
+                                    }
+                                },
+                                interaction: {
+                                    intersect: false,
+                                    mode: 'index',
+                                }
+                            }
+                        });
                     }
-                })
-                .catch(error => {
-                    console.error('Error deleting Company:', error);
-                    showNotification('삭제 중 오류가 발생했습니다.', 'error');
-                });
-            }
-        }
+                }
+            } catch (err) { console.error(err); }
+        });
+        
+        // 수주 상세 정보 로드 함수
+        async function loadOrderDetail(id) {
+            try {
+                const res = await fetch(`/api/sales/orders/${id}`);
+                const json = await res.json();
+                const order = json.data;
 
-        function loadCustomerOrders() {
-            fetch(`/sales/Company/api/${CompanyId}/orders`)
-                .then(response => response.json())
-                .then(data => {
-                    renderOrdersTable(data);
-                })
-                .catch(error => {
-                    console.error('Error loading orders:', error);
-                });
-        }
+                const formatDate = (dtStr) => {
+                    if(!dtStr) return '-';
+                    const d = new Date(dtStr);
+                    return d.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                };
 
-        function loadCustomerPrices() {
-            fetch(`/sales/quotation/Company/${CompanyId}/prices`)
-                .then(response => response.json())
-                .then(data => {
-                    renderPricesTable(data);
-                })
-                .catch(error => {
-                    console.error('Error loading prices:', error);
-                });
-        }
+                const escapeHtml = (unsafe) => {
+                    if(!unsafe) return '';
+                    return unsafe.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+                };
 
-        function loadActivityHistory() {
-            fetch(`/sales/Company/api/${CompanyId}/history`)
-                .then(response => response.json())
-                .then(data => {
-                    renderActivityTimeline(data);
-                })
-                .catch(error => {
-                    console.error('Error loading history:', error);
-                });
-        }
+                const getStatusBadgeClass = (s) => {
+                    if (!s) return 'bg-info-subtle text-info';
+                    const status = typeof s === 'string' ? s : (s.name || s.toString());
+                    if (['READY', '준비완료'].includes(status)) return 'bg-primary-subtle text-primary';
+                    if (['NEED_PRODUCTION', '생산필요'].includes(status)) return 'bg-danger-subtle text-danger';
+                    if (['COMPLETED', '납품완료'].includes(status)) return 'bg-success-subtle text-success';
+                    return 'bg-info-subtle text-info';
+                };
 
-        function renderOrdersTable(orders) {
-            const tbody = document.getElementById('ordersTableBody');
-            if (orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">주문 내역이 없습니다.</td></tr>';
-                return;
-            }
+                const statusDesc = order.orderStatusDescription || order.orderStatus;
 
-            tbody.innerHTML = orders.map(order => `
-                <tr>
-                    <td>${order.orderNumber}</td>
-                    <td>${order.productName}</td>
-                    <td>${order.quantity} ${order.unit}</td>
-                    <td>${order.unitPrice.toLocaleString()}원</td>
-                    <td>${order.totalAmount.toLocaleString()}원</td>
-                    <td><span class="badge bg-${getOrderStatusColor(order.status)}">${getOrderStatusText(order.status)}</span></td>
-                    <td>${new Date(order.requestDate).toLocaleDateString('ko-KR')}</td>
-                    <td>${new Date(order.deliveryDeadline).toLocaleDateString('ko-KR')}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${order.salesOrderId})">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function renderPricesTable(prices) {
-            const tbody = document.getElementById('pricesTableBody');
-            if (prices.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">단가 정보가 없습니다.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = prices.map(price => {
-                const basePrice = price.basePrice || price.unitPrice;
-                const priceDiff = price.unitPrice - basePrice;
-                const priceDiffPercent = basePrice > 0 ? (priceDiff / basePrice * 100).toFixed(1) : 0;
-                const changeType = priceDiff > 0 ? 'increase' : (priceDiff < 0 ? 'decrease' : '');
-
-                return `
-                    <tr>
-                        <td>${price.productName}</td>
-                        <td>${price.unitPrice.toLocaleString()}원</td>
-                        <td>${basePrice.toLocaleString()}원</td>
-                        <td>
-                            <span class="price-change ${changeType}">
-                                ${priceDiff >= 0 ? '+' : ''}${priceDiff.toLocaleString()}원 (${priceDiffPercent}%)
-                            </span>
-                        </td>
-                        <td>${new Date(price.effectiveDate).toLocaleDateString('ko-KR')}</td>
-                        <td>${price.changeReason || '-'}</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" onclick="viewPriceHistory(${price.itemStockId})">
-                                    <i class="bi bi-clock-history"></i>
-                                </button>
-                                <button class="btn btn-outline-warning" onclick="negotiateProductPrice(${price.itemStockId})">
-                                    <i class="bi bi-handshake"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderActivityTimeline(history) {
-            const timeline = document.getElementById('activityTimeline');
-            if (history.length === 0) {
-                return;
-            }
-
-            const historyItems = history.map(item => `
-                <div class="timeline-item">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="card-title">${item.activityType}</h6>
-                                    <p class="card-text text-muted">${item.description}</p>
-                                </div>
-                                <small class="text-muted">${new Date(item.createdAt).toLocaleString('ko-KR')}</small>
-                            </div>
-                        </div>
+                document.getElementById('detailHeader').innerHTML = `
+                    <div class="order-info-item">
+                        <label>주문상태</label>
+                        <span class="badge ${getStatusBadgeClass(order.orderStatusDescription)}">${escapeHtml(statusDesc)}</span>
                     </div>
-                </div>
-            `).join('');
+                    <div class="order-info-item">
+                        <label>고객사</label>
+                        <span>${escapeHtml(order.companyName)}</span>
+                    </div>
+                    <div class="order-info-item">
+                        <label>주문일시</label>
+                        <span>${formatDate(order.orderDate)}</span>
+                    </div>
+                    <div class="order-info-item">
+                        <label>납기예정</label>
+                        <span>${formatDate(order.expectedDeliveryDate)}</span>
+                    </div>
+                `;
 
-            timeline.innerHTML += historyItems;
-        }
+                const itemsBody = document.getElementById('detailItemsBody');
+                itemsBody.innerHTML = '';
+                let total = 0;
+                
+                if (order.orderDetails && order.orderDetails.length > 0) {
+                    order.orderDetails.forEach(d => {
+                        const sum = (d.quantity || 0) * (d.unitPrice || 0);
+                        total += sum;
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="ps-3 fw-medium">${escapeHtml(d.itemCode || '-')}</td>
+                            <td>${escapeHtml(d.itemName || '-')}</td>
+                            <td class="text-end">${(d.quantity || 0).toLocaleString()}</td>
+                            <td class="text-end">${(d.unitPrice || 0).toLocaleString()}</td>
+                            <td class="text-end pe-3 fw-bold">${sum.toLocaleString()}</td>
+                        `;
+                        itemsBody.appendChild(tr);
+                    });
+                } else {
+                    itemsBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">품목 내역이 없습니다.</td></tr>';
+                }
+                
+                const totalTr = document.createElement('tr');
+                totalTr.className = 'bg-light-subtle fw-bold';
+                totalTr.innerHTML = `<td colspan="4" class="text-end py-3">총 합계액:</td><td class="text-end pe-3 py-3 text-primary" style="font-size: 1.1rem;">${total.toLocaleString()}원</td>`;
+                itemsBody.appendChild(totalTr);
 
-        function createNewOrder() {
-            window.location.href = `/sales/sales-order/create?CompanyId=${CompanyId}`;
-        }
-
-        function negotiatePrice() {
-            window.location.href = `/sales/quotation/price-management?CompanyId=${CompanyId}`;
-        }
-
-        function viewOrder(orderId) {
-            window.location.href = `/sales/sales-order/${orderId}`;
-        }
-
-        function viewPriceHistory(itemStockId) {
-            window.location.href = `/sales/quotation/price-history?CompanyId=${CompanyId}&itemStockId=${itemStockId}`;
-        }
-
-        function negotiateProductPrice(itemStockId) {
-            window.location.href = `/sales/quotation/negotiate?CompanyId=${CompanyId}&itemStockId=${itemStockId}`;
-        }
-
-        function getOrderStatusColor(status) {
-            switch(status) {
-                case 'REQUESTED': return 'warning';
-                case 'ACCEPTED': return 'info';
-                case 'IN_PROGRESS': return 'primary';
-                case 'COMPLETED': return 'success';
-                case 'CANCELLED': return 'danger';
-                case 'REJECTED': return 'secondary';
-                default: return 'secondary';
+                detailModal.show();
+            } catch (err) {
+                console.error('상세 정보를 불러오지 못했습니다:', err);
+                alert('상세 정보를 불러오지 못했습니다.');
             }
         }
 
-        function getOrderStatusText(status) {
-            switch(status) {
-                case 'REQUESTED': return '요청됨';
-                case 'ACCEPTED': return '수락됨';
-                case 'IN_PROGRESS': return '진행중';
-                case 'COMPLETED': return '완료됨';
-                case 'CANCELLED': return '취소됨';
-                case 'REJECTED': return '거부됨';
-                default: return status;
+        // 판매 내역 로드
+        async function loadSales(page = 0) {
+            try {
+                const res = await fetch(`/api/sales/company/${companyId}/sales?page=${page}&size=10`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const json = await res.json();
+                const data = json.data;
+                const tbody = document.getElementById('salesBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (data && data.content && data.content.length > 0) {
+                    data.content.forEach(sale => {
+                        const tr = document.createElement('tr');
+                        const getStatusClass = (status) => {
+                            if (['READY', '준비완료'].includes(status)) return 'bg-primary-subtle text-primary';
+                            if (['NEED_PRODUCTION', '생산필요'].includes(status)) return 'bg-danger-subtle text-danger';
+                            if (['COMPLETED', '납품완료'].includes(status)) return 'bg-success-subtle text-success';
+                            return 'bg-info-subtle text-info';
+                        };
+                        
+                        const statusClass = getStatusClass(sale.orderStatusDescription);
+                        const statusDesc = sale.orderStatusDescription || sale.orderStatus;
+                        
+                        const formatDate = (dateStr) => {
+                            if (!dateStr) return '-';
+                            return dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.split(' ')[0];
+                        };
+
+                        tr.innerHTML = `
+                            <td class="ps-3"><span class="text-muted small">${formatDate(sale.orderDate)}</span></td>
+                            <td><span class="text-muted small">${formatDate(sale.expectedDeliveryDate)}</span></td>
+                            <td><span class="badge ${statusClass}">${statusDesc}</span></td>
+                            <td class="text-end fw-bold">${(sale.totalAmount || 0).toLocaleString()}원</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary" style="border-radius: 6px;" onclick="loadOrderDetail(${sale.orderId})">내역보기</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    renderPagination('salesPagination', data, loadSales);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">판매 내역이 존재하지 않습니다.</td></tr>';
+                    const pag = document.getElementById('salesPagination');
+                    if (pag) pag.innerHTML = '';
+                }
+            } catch (err) {
+                console.error('판매 내역 로딩 실패:', err);
+                const tbody = document.getElementById('salesBody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-danger">데이터 로딩 중 오류가 발생했습니다.</td></tr>`;
             }
         }
 
-        function showNotification(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(alertDiv);
+        // 구매 내역 로드
+        async function loadPurchases(page = 0) {
+            try {
+                const res = await fetch(`/api/sales/company/${companyId}/purchases?page=${page}&size=10`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const json = await res.json();
+                const data = json.data;
+                const tbody = document.getElementById('purchaseBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
 
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 3000);
+                if (data && data.content && data.content.length > 0) {
+                    data.content.forEach(p => {
+                        const getPurchaseStatusClass = (status) => {
+                            if (status === 'COMPLETED' || status === '발주완료') return 'bg-success-subtle text-success';
+                            if (status === 'ORDERED' || status === '발주중') return 'bg-primary-subtle text-primary';
+                            if (status === 'CANCELED' || status === '발주취소') return 'bg-danger-subtle text-danger';
+                            return 'bg-secondary-subtle text-secondary';
+                        };
+                        const statusClass = getPurchaseStatusClass(p.status);
+                        
+                        // 날짜 포맷팅 안전하게 처리
+                        const formatDate = (dateStr) => {
+                            if (!dateStr) return '-';
+                            return dateStr.includes(' ') ? dateStr.split(' ')[0] : (dateStr.includes('T') ? dateStr.split('T')[0] : dateStr);
+                        };
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="fw-medium">${formatDate(p.orderDate)}</td>
+                            <td><code class="text-primary fw-bold">${p.purchaseOrderCode || '-'}</code></td>
+                            <td><span class="badge ${statusClass}">${p.status || '-'}</span></td>
+                            <td class="text-end fw-bold">${(p.amount || 0).toLocaleString()}원</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    renderPagination('purchasePagination', data, loadPurchases);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">구매 내역이 존재하지 않습니다.</td></tr>';
+                    const pag = document.getElementById('purchasePagination');
+                    if (pag) pag.innerHTML = '';
+                }
+            } catch (err) {
+                console.error('구매 내역 로딩 실패:', err);
+                const tbody = document.getElementById('purchaseBody');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-danger">데이터 로딩 중 오류가 발생했습니다.</td></tr>`;
+            }
+        }
+
+        // 공통 페이징 렌더러 (Bootstrap pagination 스타일)
+        function renderPagination(containerId, pageData, callback) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const totalPages = pageData.totalPages;
+            const currentPage = pageData.number;
+            
+            if (totalPages <= 1) return;
+
+            const ul = document.createElement('ul');
+            ul.className = 'pagination pagination-sm mb-0';
+
+            // 이전 버튼
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 0 ? 'disabled' : ''}`;
+            const prevA = document.createElement('button');
+            prevA.className = 'page-link';
+            prevA.innerHTML = '<i class="bi bi-chevron-left"></i>';
+            prevA.onclick = () => currentPage > 0 && callback(currentPage - 1);
+            prevLi.appendChild(prevA);
+            ul.appendChild(prevLi);
+
+            // 페이지 번호
+            const startPage = Math.max(0, currentPage - 2);
+            const endPage = Math.min(totalPages - 1, startPage + 4);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pLi = document.createElement('li');
+                pLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                const pA = document.createElement('button');
+                pA.className = 'page-link';
+                pA.innerText = i + 1;
+                pA.onclick = () => callback(i);
+                pLi.appendChild(pA);
+                ul.appendChild(pLi);
+            }
+
+            // 다음 버튼
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`;
+            const nextA = document.createElement('button');
+            nextA.className = 'page-link';
+            nextA.innerHTML = '<i class="bi bi-chevron-right"></i>';
+            nextA.onclick = () => currentPage < totalPages - 1 && callback(currentPage + 1);
+            nextLi.appendChild(nextA);
+            ul.appendChild(nextLi);
+
+            container.appendChild(ul);
         }
     </script>
 </th:block>

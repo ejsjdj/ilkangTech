@@ -50,6 +50,14 @@
         WHERE company_name = #{companyName}
     </select>
 
+    <select id="selectById" resultMap="CompanyResultMap">
+        SELECT
+            company_id, company_code, company_name, business_number, ceo_name, company_type,
+            tel_no, fax_no, email, address, manager_name, manager_tel, status
+        FROM COMPANY
+        WHERE company_id = #{id}
+    </select>
+
     <select id="selectByPage" resultMap="CompanyResultMap">
         SELECT
             company_id, company_code, company_name, business_number, ceo_name, company_type,

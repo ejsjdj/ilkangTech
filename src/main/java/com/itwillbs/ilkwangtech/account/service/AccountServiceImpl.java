@@ -6,6 +6,7 @@ import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponseDTO;
 import com.itwillbs.ilkwangtech.account.entity.ProfileImg;
 import com.itwillbs.ilkwangtech.account.repository.AccountRepository;
 import com.itwillbs.ilkwangtech.account.repository.ProfileImgRepository;
+import com.itwillbs.ilkwangtech.common.annotation.Audit;
 import com.itwillbs.ilkwangtech.common.exception.MemberNotFoundException;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import lombok.RequiredArgsConstructor;
@@ -205,15 +206,8 @@ public class AccountServiceImpl implements AccountService {
 		// DB 에 인스턴스를 저장
 		profileImgRepository.save(profileImg);
 
-		// 세션 정보 갱신을 위해 URL 설정
-		List<ProfileImg> loginsImgs = profileImgRepository.findByMemberId(login.getId());
-
-		loginsImgs.sort((o1, o2) -> {
-			// 1. Y를 우선순위로
-			if (!o1.getRepImgYn().equals(o2.getRepImgYn())) return o2.getRepImgYn().compareTo(o1.getRepImgYn());
-			// 2. ID 내림차순 (최신 등록 순)
-			return o2.getId().compareTo(o1.getId());
-		});
+		// 세션 정보 갱신을 위해 URL 설정 (정렬된 이미지 리스트 조회)
+		List<ProfileImg> loginsImgs = profileImgRepository.findByMemberIdOrderByRepImgYnDescIdDesc(login.getId());
 
 		login.updateSortImages(loginsImgs);
 
@@ -238,5 +232,52 @@ public class AccountServiceImpl implements AccountService {
 	// 상대경로를 생성
 	private String makeRelativePath(String subDir) {
 		return profileImageLocation + "/" + subDir;
+	}
+
+	@Override
+	@Transactional
+	@Audit(action = "비밀번호 초기화", entity = "Member")
+	public boolean resetPassword(Long id) {
+		Member member = accountRepository.findById(id).orElse(null);
+		if (member == null) return false;
+
+		member.setPassword(passwordEncoder.encode("1234")); // 초기 비밀번호: 1234
+		accountRepository.save(member);
+		return true;
+	}
+
+	@Override
+	@Transactional
+	@Audit(action = "비밀번호 변경", entity = "Member")
+	public boolean changePassword(Long id, String oldPassword, String newPassword) {
+		Member member = accountRepository.findById(id).orElse(null);
+		if (member == null) return false;
+
+		if (!passwordEncoder.matches(oldPassword, member.getPassword())) {
+			return false;
+		}
+
+		member.setPassword(passwordEncoder.encode(newPassword));
+		accountRepository.save(member);
+		return true;
+	}
+
+	@Override
+	public boolean verifyMember(String employeeNumber, String name, String email) {
+		return accountRepository.getMemberByEmployeeNumber(employeeNumber)
+				.filter(m -> m.getName().equals(name) && m.getEmail().equals(email))
+				.isPresent();
+	}
+
+	@Override
+	@Transactional
+	@Audit(action = "비밀번호 재설정", entity = "Member")
+	public boolean resetPassword(String employeeNumber, String newPassword) {
+		Member member = accountRepository.getMemberByEmployeeNumber(employeeNumber).orElse(null);
+		if (member == null) return false;
+
+		member.setPassword(passwordEncoder.encode(newPassword));
+		accountRepository.save(member);
+		return true;
 	}
 }

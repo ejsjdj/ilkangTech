@@ -44,4 +44,11 @@ public interface AccountService {
 
     int updateProfileImage(@AuthenticationPrincipal AccountLogin login, MultipartFile upload) throws IOException;
 
+    boolean resetPassword(Long id);
+
+    boolean changePassword(Long id, String oldPassword, String newPassword);
+
+    boolean verifyMember(String employeeNumber, String name, String email);
+
+    boolean resetPassword(String employeeNumber, String newPassword);
 }

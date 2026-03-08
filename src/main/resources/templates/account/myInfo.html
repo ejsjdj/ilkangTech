@@ -75,9 +75,28 @@
         /* 카드 레이아웃 */
         .form-grid-main {
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 320px 1fr 380px;
             gap: 20px;
             align-items: stretch;
+        }
+
+        /* 반응형 대응 */
+        @media (max-width: 1200px) {
+            .form-grid-main {
+                grid-template-columns: 320px 1fr;
+            }
+            .form-column:last-child {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .form-grid-main {
+                grid-template-columns: 1fr;
+            }
+            .form-column:last-child {
+                grid-column: span 1;
+            }
         }
 
         .form-column {
@@ -481,6 +500,39 @@
                     </div>
                 </form>
             </div>
+
+            <!-- 세 번째 열: 비밀번호 변경 섹션 -->
+            <div class="form-column">
+                <div class="form-card">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title"><i class="bi bi-shield-lock-fill"></i> 비밀번호 변경</h2>
+                            <p class="section-desc">안전한 계정 관리를 위해 주기적으로 비밀번호를 변경해 주세요.</p>
+                        </div>
+                    </div>
+                    <form th:action="@{/account/changePassword}" method="post" id="passwordForm">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label class="form-label">현재 비밀번호</label>
+                                <input type="password" name="oldPassword" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">새 비밀번호</label>
+                                <input type="password" id="newPassword" name="newPassword" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">새 비밀번호 확인</label>
+                                <input type="password" id="confirmPassword" class="form-control" required>
+                            </div>
+                            <div class="form-row-full" style="margin-top: 20px;">
+                                <button type="submit" class="btn-submit" style="width: 100%;">
+                                    <i class="bi bi-key-fill"></i> 비밀번호 변경 적용
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -567,6 +619,65 @@
         /*]]>*/
 
         document.addEventListener('DOMContentLoaded', function () {
+            // 비밀번호 폼 AJAX 제출
+            const passwordForm = document.getElementById('passwordForm');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const oldPassword = this.oldPassword.value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+
+                    if (newPassword !== confirmPassword) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '비밀번호 불일치',
+                            text: '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                        return;
+                    }
+
+                    // AJAX 요청 (jQuery $.ajax 사용)
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        type: 'POST',
+                        data: {
+                            oldPassword: oldPassword,
+                            newPassword: newPassword
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '변경 성공',
+                                text: response.message || '비밀번호가 성공적으로 변경되었습니다.',
+                                confirmButtonColor: '#4f46e5'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            let msg = '비밀번호 변경에 실패했습니다.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            } else if (xhr.responseText) {
+                                try {
+                                    const resp = JSON.parse(xhr.responseText);
+                                    if (resp.message) msg = resp.message;
+                                } catch (e) {}
+                            }
+                            Swal.fire({
+                                icon: 'error',
+                                title: '변경 실패',
+                                text: msg,
+                                confirmButtonColor: '#ef4444'
+                            });
+                        }
+                    });
+                });
+            }
+
             // 전화번호 하이픈 자동 삽입
             const phoneInput = document.getElementById('phoneNumber');
             if (phoneInput) {

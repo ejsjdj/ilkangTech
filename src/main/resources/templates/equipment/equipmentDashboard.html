@@ -144,10 +144,10 @@
 
 
 <script th:inline="javascript">
-    function calculateElapsedTime(instDateStr) {
-    if (!instDateStr) return "0분";
+function calculateElapsedTime(lastWorkDateStr) {
+    if (!lastWorkDateStr) return "0분";
     
-    const instDate = new Date(instDateStr);
+    const instDate = new Date(lastWorkDateStr);
     const now = new Date();
     const diffInMs = now - instDate;
     
@@ -160,15 +160,12 @@
     const remainingMins = diffInMins % 60;
     const remainingHours = diffInHours % 24;
 
-    // 1. 일단위가 있을 경우: X일 Y시간
     if (diffInDays > 0) {
         return `${diffInDays}일 ${remainingHours}시간`;
     } 
-    // 2. 시간단위가 있을 경우: X시간 Y분
     else if (diffInHours > 0) {
         return `${diffInHours}시간 ${remainingMins}분`;
     } 
-    // 3. 분단위만 있을 경우: X분
     else {
         return `${diffInMins}분`;
     }
@@ -205,7 +202,7 @@
 
                 let timeDisplay = '';
                 if (statusClass === 'STOP') {
-                    const timeText = calculateElapsedTime(eq.instDate);
+                    const timeText = calculateElapsedTime(eq.lastWorkDate);
                     timeDisplay = `<div style="font-size: 1.5rem; font-weight: bold; margin-top: 10px;">${timeText}</div>`;
                 }
 

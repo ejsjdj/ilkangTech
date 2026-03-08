@@ -10,7 +10,7 @@ public class CustomerController {
 
     @GetMapping("/list")
     public String getCustomerList() {
-        return "sales/customer/list";
+        return "sales/customer/customer-list";
     }
 
 }

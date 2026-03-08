@@ -27,6 +27,30 @@
         .cute-table th { color: #FF8E9E; border-bottom: 2px solid #FFDEE9; padding: 10px; }
         .cute-table td { padding: 15px 10px; border-bottom: 1px solid #F0F0F0; }
 
+        /* 페이지네이션 스타일 */
+        .cute-pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
+        .cute-pagination button {
+            border: 2px solid #FFDEE9;
+            background: white;
+            color: #FF8E9E;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-family: 'Gamja Flower', cursive;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cute-pagination button:hover { background: #FFDEE9; }
+        .cute-pagination button.active {
+            background: #FF8E9E;
+            color: white;
+            border-color: #FF8E9E;
+            font-weight: bold;
+            box-shadow: 2px 3px 0px #FF5E7E;
+        }
+        .cute-pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+
         /* 모달 스타일 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); z-index: 9999; backdrop-filter: blur(3px); }
         .modal-diary-page { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 30px; border: 4px solid #ADE8F4; width: 400px; box-shadow: 20px 20px 0px rgba(173, 232, 244, 0.5); }
@@ -71,6 +95,9 @@
                 </thead>
                 <tbody id="list-body"></tbody>
             </table>
+
+            <!-- ✅ 페이지네이션 영역 -->
+            <div id="pagination" class="cute-pagination"></div>
         </div>
     </div>
 
@@ -116,8 +143,15 @@
     <script th:inline="javascript">
         'use strict';
 
+        // ✅ 페이지 상태 중앙 관리
+        const state = {
+            currentPage: 0,
+            totalPages: 0,
+            currentCategory: 'supplier'
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
-            loadList('supplier');  // 초기 로드
+            loadList('supplier', 0);
 
             document.getElementById('openModalBtn')?.addEventListener('click', openModal);
             document.getElementById('addForm')?.addEventListener('submit', handleFormSubmit);
@@ -141,17 +175,21 @@
             const category = element.dataset.category;
             if (!category) return;
 
-            const title = category === 'supplier' ? '협력사 리스트' : '고객사 리스트';
-            document.getElementById('list-title').textContent = title;
+            document.getElementById('list-title').textContent =
+                category === 'supplier' ? '협력사 리스트' : '고객사 리스트';
 
-            loadList(category);
+            // ✅ 탭 전환 시 페이지 초기화
+            loadList(category, 0);
         }
 
-        async function loadList(category) {
+        async function loadList(category, page = 0) {
             const tbody = document.getElementById('list-body');
             if (!tbody) return;
 
-            const url = `/api/sales/company/list?category=${category}&page=0&size=10`;
+            state.currentCategory = category;
+            state.currentPage = page;
+
+            const url = `/api/sales/company/list?category=${category}&page=${page}&size=10`;
 
             try {
                 const res = await fetch(url);
@@ -165,7 +203,12 @@
                     return;
                 }
 
-                const items = json.data?.content ?? [];
+                const pageData = json.data;
+                const items = pageData?.content ?? [];
+
+                // ✅ totalPages 저장 후 페이지네이션 렌더링
+                state.totalPages = pageData?.totalPages ?? 0;
+                renderPagination();
 
                 tbody.innerHTML = items.length === 0
                     ? '<tr><td colspan="4" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>'
@@ -189,25 +232,72 @@
             }
         }
 
+        // ✅ 페이지네이션 버튼 렌더링
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (state.totalPages <= 1) return;
+
+            // 이전 버튼
+            const prevBtn = createPageBtn('‹', state.currentPage === 0, () =>
+                loadList(state.currentCategory, state.currentPage - 1)
+            );
+            container.appendChild(prevBtn);
+
+            // 페이지 번호 버튼 (최대 5개 윈도우)
+            const { start, end } = getPageWindow(state.currentPage, state.totalPages, 5);
+
+            for (let i = start; i < end; i++) {
+                const btn = createPageBtn(String(i + 1), false, () =>
+                    loadList(state.currentCategory, i)
+                );
+                if (i === state.currentPage) btn.classList.add('active');
+                container.appendChild(btn);
+            }
+
+            // 다음 버튼
+            const nextBtn = createPageBtn('›', state.currentPage >= state.totalPages - 1, () =>
+                loadList(state.currentCategory, state.currentPage + 1)
+            );
+            container.appendChild(nextBtn);
+        }
+
+        function createPageBtn(label, disabled, onClick) {
+            const btn = document.createElement('button');
+            btn.textContent = label;
+            btn.disabled = disabled;
+            if (!disabled) btn.addEventListener('click', onClick);
+            return btn;
+        }
+
+        // 현재 페이지 기준 슬라이딩 윈도우 계산
+        function getPageWindow(current, total, windowSize) {
+            let start = Math.max(0, current - Math.floor(windowSize / 2));
+            let end = start + windowSize;
+            if (end > total) {
+                end = total;
+                start = Math.max(0, end - windowSize);
+            }
+            return { start, end };
+        }
+
         async function handleFormSubmit(e) {
             e.preventDefault();
 
             const payload = {
-                name:    document.getElementById('newName')?.value.trim() ?? '',
-                phone:   document.getElementById('newPhone')?.value.trim() ?? '',
-                email:   document.getElementById('newEmail')?.value.trim() ?? '',
-                manager: document.getElementById('newManager')?.value.trim() ?? '',
+                name:     document.getElementById('newName')?.value.trim() ?? '',
+                phone:    document.getElementById('newPhone')?.value.trim() ?? '',
+                email:    document.getElementById('newEmail')?.value.trim() ?? '',
+                manager:  document.getElementById('newManager')?.value.trim() ?? '',
                 category: document.getElementById('newCategory')?.value ?? ''
             };
 
-            if (!payload.name) {
-                alert('거래처 명은 필수입니다!');
-                return;
-            }
-
+            if (!payload.name) { alert('거래처 명은 필수입니다!'); return; }
             if (!['supplier', 'client', 'partner'].includes(payload.category)) {
-                alert('구분을 올바르게 선택해주세요!');
-                return;
+                alert('구분을 올바르게 선택해주세요!'); return;
             }
 
             try {
@@ -219,19 +309,13 @@
 
                 if (!res.ok) {
                     let msg = '저장 실패';
-                    try {
-                        const errData = await res.json();
-                        msg = errData.message || msg;
-                    } catch {}
+                    try { const errData = await res.json(); msg = errData.message || msg; } catch {}
                     throw new Error(msg);
                 }
 
                 alert('성공적으로 저장되었습니다! ✨');
                 closeModal();
-
-                const active = document.querySelector('.bookmark.active');
-                const reloadCategory = active?.dataset.category ?? 'supplier';
-                loadList(reloadCategory);
+                loadList(state.currentCategory, state.currentPage);
             } catch (err) {
                 console.error('저장 오류:', err);
                 alert(`저장 실패: ${err.message || '네트워크 오류가 발생했습니다.'}`);

@@ -10,7 +10,7 @@ public interface CompanyService {
 
     void createCompany(CompanyDTO companyDTO);
 
-    List<CompanyDTO> getCompanyList(Pageable pageable, CompanyCategory companyType);
+    List<CompanyDTO> getCompanyList(CompanyCategory companyType, Pageable pageable);
 
     long getTotalCount(CompanyCategory companyType);
 

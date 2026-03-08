@@ -13,6 +13,9 @@
             display: flex; 
             flex-direction: column; 
             background-color: #f8fafc;
+            
+            flex: 1;             
+   			overflow-y: auto;
         }
         
         .container-wrapper { 
@@ -36,16 +39,22 @@
         }
 
         .lot-main-content { 
-            display: flex; 
-            gap: 20px; 
-            min-height: 600px; 
-            margin-bottom: 40px; /* 페이지 하단 여백 추가 */
-        }
+		    display: flex; 
+		    gap: 20px; 
+		    min-height: calc(100vh - 280px); 
+		    margin-bottom: 20px; 
+		}
         
         .content-card { 
-            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; 
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column;
-        }
+		    background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; 
+		    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column;
+		    overflow: hidden;
+		}
+		#detail-display-area {
+		    flex: 1;
+		    padding: 20px;
+		}
+		
 
         .card-header { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
         .card-header h3 { font-size: 15px; font-weight: 700; margin: 0; }
@@ -195,20 +204,18 @@
 
             <div class="search-filter-area" style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1.2fr auto; gap: 10px; align-items: end; padding: 12px 16px;">
     
-			    <div class="filter-group">
+    			<div class="filter-group">
 			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">검색어</label>
-			        <input type="text" id="searchKeyword" class="form-control form-control-sm" placeholder="번호 / 제품명" oninput="filterLotList()">
+			        <input type="text" id="searchKeyword" class="form-control form-control-sm" placeholder="번호 / 제품명" onkeyup="if(event.key === 'Enter') filterLotList()">
 			    </div>
-			    
+    			
 			    <div class="filter-group" id="typeFilterGroup">
-			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">제품 구분</label>
-			        <select id="typeFilter" class="form-select form-select-sm" onchange="filterLotList()">
-			            <option value="ALL">전체</option>
-			            <option value="F">완제품 (Finished)</option>
-			            <option value="S">반제품 (Semi-finished)</option>
-			        </select>
-			    </div>
-			
+				    <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">제품 구분</label>
+				    <select id="typeFilter" class="form-select form-select-sm" onchange="filterLotList()">
+				        <option value="ALL">전체</option>
+				        <option value="3">완제품 (Finished)</option>  <option value="2">반제품 (Semi-finished)</option> </select>
+				</div>
+			    
 			    <div class="filter-group">
 			        <label class="form-label fw-bold" style="font-size: 12px; color: #475569; margin-bottom: 4px;">생산 상태</label>
 			        <select id="statusFilter" class="form-select form-select-sm" onchange="filterLotList()">
@@ -240,7 +247,7 @@
 				        <h3>LOT 계층구조</h3>
 				        <span id="lot-count" class="badge bg-light text-dark" style="font-size: 11px;">Total 0</span>
 				    </div>
-				    <div class="table-responsive" style="flex: 1; overflow-y: auto; max-height: 600px;">
+				    <div class="table-responsive" style="flex: 1;">
 				        <table class="table table-hover lot-list-table" style="font-size: 12px; margin-bottom: 0;">
 				            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
 				                <tr>
@@ -254,6 +261,7 @@
 				                </tbody>
 				        </table>
 				    </div>
+				    <nav id="lot-pagination" class="d-flex justify-content-center bg-white pt-3 pb-2 border-top" aria-label="Page navigation"></nav>
 				</div>
 
                 <div class="content-card" style="flex: 1.5;">
@@ -291,6 +299,10 @@ let selectedLotData = null;
 let currentMainTab = 'PROD';
 let selectedLotDetail = null;
 
+let currentFilteredData = []; 
+let currentPage = 1;         
+const itemsPerPage = 10;
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("1. 스크립트 로드됨");
     loadLotList();
@@ -299,11 +311,22 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadLotList() {
     try {
         const response = await fetch('/process/api/lots');
-        allLotData = await response.json(); 
+        const result = await response.json(); 
+        
+        // 서버가 리스트를 바로 주지 않고 객체를 줄 경우 대비
+        if (Array.isArray(result)) {
+            allLotData = result;
+        } else if (result && Array.isArray(result.data)) {
+            allLotData = result.data;
+        } else {
+            console.error("데이터 형식이 올바르지 않습니다:", result);
+            allLotData = []; // 에러 시 빈 배열로 초기화
+        }
         
         filterLotList(); 
     } catch (error) {
         console.error('데이터 로드 실패:', error);
+        allLotData = [];
     }
 }
 
@@ -315,20 +338,17 @@ function renderLotTable(lots) {
     lots.forEach(lot => {
         const date = new Date(lot.createdDate);
         const formattedDate = date.toLocaleDateString();
-        const isRawMaterial = (lot.lotType === 'M' || lot.lotType === 'RW');
+        const isRawMaterial = (lot.lotType === 'R' || lot.lotType === 'RW');
         
         const accordionContent = isRawMaterial
-            ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
-                   <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
-               </div>
-               <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
-               : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'PROCESS')">
-               <i class="bi bi-gear me-2"></i> 수행 공정 단계 <i class="bi bi-chevron-right ms-auto"></i>
+        ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
+               <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
            </div>
-           <div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'MATERIAL')">
-          	<i class="bi bi-box-seam me-2"></i> 투입 자재 이력 <i class="bi bi-chevron-right ms-auto"></i>
+           <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
+        : `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
+               <i class="bi bi-diagram-3 me-2"></i> 하위 LOT 목록 <i class="bi bi-chevron-right ms-auto"></i>
            </div>
-           <div id="process-menu-${lot.lotId}" class="process-menu-container" style="display:none; border-bottom: 1px solid #edf2f7;"></div>`;
+           <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`;
 
         // ... 기존 행(mainTr, accordionTr) 생성 로직 동일 ...
         const mainTr = document.createElement('tr');
@@ -400,40 +420,66 @@ async function selectLot(lot, mainTr, accordionTr) {
 
 function updateRightPanel(detail) {
     if(!detail) return;
-
     document.getElementById('empty-detail').style.display = 'none';
     const displayArea = document.getElementById('detail-display-area');
     displayArea.style.display = 'block';
-
     document.getElementById('selected-lot-code').innerText = `LOT: ${detail.lotId}`;
     
     const infoBox = document.getElementById('lot-summary-info');
-    
-    // 날짜 포맷팅 및 종료일 계산 로직 (종료일이 없을 경우 시작일 + 2시간 예시)
-    const startStr = detail.startDate ? detail.startDate.replace('T', ' ').substring(0, 16) : '-';
-    let endStr = detail.endDate ? detail.endDate.replace('T', ' ').substring(0, 16) : '-';
-    
-    if (detail.startDate && (!detail.endDate || detail.endDate === '-')) {
-        // 종료일이 DB에 없을 경우 로직으로 계산 (예: 시작일로부터 2시간 뒤)
-        let calcEnd = new Date(detail.startDate);
-        calcEnd.setHours(calcEnd.getHours() + 2);
-        endStr = calcEnd.toLocaleString();
-    }
 
-    infoBox.innerHTML = `
-        <div><span class="text-muted">LOT 코드:</span> <strong class="text-indigo">${detail.lotId || '-'}</strong></div>
-        <div><span class="text-muted">제품코드:</span> <strong>${detail.itemCode || '-'}</strong></div>
-        <div><span class="text-muted">제품명:</span> <strong>${detail.itemName || '-'}</strong></div>
-        <div><span class="text-muted">작업지시번호:</span> ${detail.instructCode || '-'}</div>
-        <div><span class="text-muted">생산수량:</span> <span class="fw-bold">${detail.instructQty || 0}</span> EA</div>
-        <div><span class="text-muted">불량수량:</span> <span class="text-danger fw-bold">${detail.defective || 0}</span> EA</div>
-        <div><span class="text-muted">시작일시:</span> ${startStr}</div>
-        <div><span class="text-muted">종료일시:</span> ${endStr}</div>
-    `;
+    if (detail.isRawMaterial) {
+    	let creationDate = '-';
+    	const dateMatch = detail.lotId.match(/\d{8}/);
+    	if (dateMatch) {
+    	    const rawDate = dateMatch[0]; // "20260306"
+    	    creationDate = `${rawDate.substring(0, 4)}-${rawDate.substring(4, 6)}-${rawDate.substring(6, 8)}`;
+    	}
+        
+        let typeStr = detail.itemType == '1' ? '원자재' : detail.itemType == '2' ? '반제품' : detail.itemType == '3' ? '완제품' : '-';
+
+        infoBox.innerHTML = `
+            <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-2 mb-1">LOT 상세</h6><hr class="mt-1 mb-2"></div>
+            <div><span class="text-muted">LOT 코드:</span> <strong class="text-indigo">${detail.lotId}</strong></div>
+            <div><span class="text-muted">자재 ID:</span> <strong>${detail.itemCode || '-'}</strong></div>
+            <div><span class="text-muted">자재명:</span> <strong>${detail.itemName || '-'}</strong></div>
+            <div><span class="text-muted">단위:</span> ${detail.uom || '-'}</div>
+            <div><span class="text-muted">LOT 유형:</span> ${typeStr}</div>
+            <div><span class="text-muted">LOT 생성일:</span> ${creationDate}</div>
+            
+            <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-3 mb-1">자재 관리 정보</h6><hr class="mt-1 mb-2"></div>
+            <div><span class="text-muted">보유량:</span> <span class="fw-bold">${detail.currentQuantity || 0}</span></div>
+            <div><span class="text-muted">유통기한:</span> ${detail.expirationDate || '-'}</div>
+            <div><span class="text-muted">보관장소:</span> ${detail.zone || '-'}</div>
+        `;
+    } else {
+        infoBox.innerHTML = `
+            <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-2 mb-1">LOT 기본 정보</h6><hr class="mt-1 mb-2"></div>
+            <div><span class="text-muted">LOT 코드:</span> <strong class="text-indigo">${detail.lotId || '-'}</strong></div>
+            <div><span class="text-muted">제품 코드:</span> <strong>${detail.itemCode || '-'}</strong></div>
+            <div><span class="text-muted">제품명:</span> <strong>${detail.itemName || '-'}</strong></div>
+            <div><span class="text-muted">작업지시번호:</span> ${detail.instructCode || '-'}</div>
+            
+            <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-3 mb-1">생산 관리 정보</h6><hr class="mt-1 mb-2"></div>
+            <div><span class="text-muted">생산수량:</span> <span class="fw-bold text-primary">${detail.productionQty || 0} EA</span></div>
+            <div><span class="text-muted">불량수량:</span> <span class="fw-bold text-danger">${detail.defectiveQty || 0} EA</span></div>
+            <div style="grid-column: span 2;"><span class="text-muted">생산일자:</span> ${detail.endTime ? detail.endTime.substring(0, 16).replace('T', ' ') : '-'}</div>
+        `;
+    }
 }
 
 async function loadSubDetail(lotId, type) {
-    const container = document.getElementById('sub-detail-content');
+    // 1. 타입에 따라 데이터를 렌더링할 정확한 위치를 찾아줍니다.
+    let containerId = `usage-list-${lotId}`;
+    if (type === 'FINISHED_USAGE') {
+        containerId = `usage-list-${lotId}`; // 원자재 아코디언 내부
+    } else if (type === 'PROCESS' || type === 'MATERIAL') {
+        containerId = `process-menu-${lotId}`; // 완제품/반제품 아코디언 내부
+    }
+    
+    const container = document.getElementById(containerId);
+    if (!container) return; // 요소를 찾지 못하면 중단
+
+    // 로딩 스피너 표시
     container.innerHTML = '<div class="p-4 text-center"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
 
     try {
@@ -442,12 +488,12 @@ async function loadSubDetail(lotId, type) {
 
         switch (type) {
             case 'PROCESS':
+                // (기존 프로세스 로직 유지)
                 if (data.length === 0) {
                     container.innerHTML = '<div class="p-4 text-center text-muted">진행된 공정 정보가 없습니다.</div>';
                 } else {
                     let html = '<ul class="list-group list-group-flush">';
                     data.forEach((step, index) => {
-                        // [수정 포인트] onclick 이벤트 추가 및 스타일 부여
                         html += `
                             <li class="list-group-item d-flex justify-content-between align-items-center py-3" 
                                 onclick="fetchStepDetail('${step.instructCode}')" 
@@ -478,10 +524,11 @@ async function loadSubDetail(lotId, type) {
                 break;
 
             case 'MATERIALS':
-                container.innerHTML = renderMaterials(data);
+                // container.innerHTML = renderMaterials(data);
                 break;
                 
             case 'FINISHED_USAGE':
+                // 직접 수정해주신 함수 이름 적용!
                 container.innerHTML = renderFinishedUsage(data);
                 break;
         }
@@ -501,11 +548,11 @@ function filterLotList() {
         // 1. 대분류 탭 필터링
         if (currentMainTab === 'PROD') {
             // 완제품(F)이나 반제품(S)만 통과
-            if (lot.lotType !== 'F' && lot.lotType !== 'S') return false;
-            if (typeVal !== 'ALL' && lot.lotType !== typeVal) return false;
+            if (lot.lotType !== '2' && lot.lotType !== '3' && lot.lotType !== 'F' && lot.lotType !== 'S') return false;
+            if (typeVal !== 'ALL' && String(lot.lotType) !== String(typeVal)) return false;
         } else {
-            // [수정] 원자재 탭: lotType이 M/RW이면서 동시에 LOT 코드가 'RW-'로 시작해야 함
-            const isRawType = (lot.lotType === 'M' || lot.lotType === 'RW');
+            // 원자재 탭: lotType이 M/RW이면서 동시에 LOT 코드가 'RW-'로 시작해야 함
+            const isRawType = (lot.lotType === 'R' || lot.lotType === 'RW');
             const isRawPrefix = lot.lotId && lot.lotId.startsWith('RW-');
             
             if (!(isRawType && isRawPrefix)) return false;
@@ -521,8 +568,12 @@ function filterLotList() {
         return true;
     });
 
-    renderLotTable(filtered);
-    document.getElementById('lot-count').innerText = `Total ${filtered.length}`;
+//     renderLotTable(filtered);
+//     document.getElementById('lot-count').innerText = `Total ${filtered.length}`;
+
+	    currentFilteredData = filtered; // 필터링된 데이터 저장
+	    currentPage = 1; // 필터가 바뀌면 무조건 1페이지로 초기화
+	    renderCurrentPage();
 }
 
 
@@ -564,30 +615,24 @@ function switchLotTab(tab) {
     filterLotList();
 }
 
-function renderFinishedUsageTable(data) {
-    if (!data || data.length === 0) {
-        return '<p class="text-muted p-3" style="font-size:12px;">사용된 완제품 이력이 없습니다.</p>';
-    }
+//아코디언 항목 클릭 시 원자재 탭이냐, 완제품 탭이냐에 따라 부르는 API 함수를 다르게 설정합니다.
+function renderFinishedUsage(data) {
+    if (!data || data.length === 0) return '<p class="text-muted p-3">하위 이력이 없습니다.</p>';
 
     let html = `<ul class="list-group list-group-flush" style="font-size: 12px; padding: 5px 10px;">`;
-
     data.forEach(item => {
-        const statusText = item.status === 'DONE' ? '생산 완료' : '진행중';
-        const statusClass = item.status === 'DONE' ? 'text-primary' : 'text-warning';
-
+        const clickFn = (currentMainTab === 'M') ? `showUsageSubDetail('${item.lotId}')` : `showProdSubDetail('${item.lotId}')`;
+        
         html += `
             <li class="list-group-item d-flex justify-content-between align-items-center py-2" style="background: transparent; border-bottom: 1px dashed #eee;">
                 <div class="d-flex flex-column">
-                    <span class="fw-bold text-indigo" style="cursor:pointer;" 
-                          onclick="showFinishedDetail('${item.lotId}')">
+                    <span class="fw-bold text-indigo" style="cursor:pointer;" onclick="${clickFn}">
                         ${item.lotId}
                     </span>
                     <span class="text-muted" style="font-size: 10px;">${item.itemName} (${item.quantity} EA)</span>
                 </div>
-                <span class="${statusClass} fw-bold" style="font-size: 10px;">${statusText}</span>
             </li>`;
     });
-
     html += `</ul>`;
     return html;
 }
@@ -670,6 +715,134 @@ async function fetchStepDetail(instructCode) {
         `;
     } catch (error) {
         console.error("공정 상세 조회 중 오류:", error);
+    }
+}
+
+async function showUsageSubDetail(lotId) {
+    try {
+        const response = await fetch(`/process/api/lot/subDetail/${lotId}`);
+        const data = await response.json();
+        
+        if(!data) return;
+
+        const container = document.getElementById('sub-detail-content');
+        
+        let typeStr = data.itemType == '1' ? '원자재' : data.itemType == '2' ? '반제품' : data.itemType == '3' ? '완제품' : '-';
+        
+        // 공정 라우트 판별 로직
+        let targetForRoute = (data.itemId && data.itemId !== '-') ? data.itemId : data.lotId;
+		let route = '-';
+		
+		if (targetForRoute) {
+		    if (targetForRoute.startsWith('SAM')) route = '프레스 → 사출 → 도장 → 모듈 장착 → 조립';
+		    else if (targetForRoute.startsWith('ST')) route = '프레스';
+		    else if (targetForRoute.startsWith('IN')) route = '사출';
+		    else if (targetForRoute.startsWith('PT')) route = '프레스 → 도장';
+		}
+
+        container.innerHTML = `
+            <div class="row g-3 px-2 py-1" style="font-size: 13px;">
+                <div class="col-6"><strong>LOT 코드:</strong> <span class="text-indigo fw-bold">${data.lotId || '-'}</span></div>
+                <div class="col-6"><strong>제품 코드:</strong> ${data.itemId || '-'}</div>
+                <div class="col-6"><strong>제품명:</strong> ${data.itemName || '-'}</div>
+                <div class="col-6"><strong>제품 유형:</strong> ${typeStr}</div>
+                <div class="col-6"><strong>작업지시번호:</strong> ${data.instructCode || '-'}</div>
+                <div class="col-6"><strong>생산수량:</strong> ${data.productionQty || 0} EA</div>
+                <div class="col-6"><strong>불량수량:</strong> <span class="text-danger fw-bold">${data.defectiveQty || 0}</span> EA</div>
+                <div class="col-6"><strong>시작일자:</strong> ${data.startTime ? data.startTime.substring(0, 16).replace('T', ' ') : '-'}</div>
+                <div class="col-6"><strong>종료일자:</strong> ${data.endTime ? data.endTime.substring(0, 16).replace('T', ' ') : '-'}</div>
+                <div class="col-12 mt-2">
+                    <div class="p-2" style="background:#f1f5f9; border-radius:6px;">
+                        <strong>공정라우트:</strong> <span class="text-primary fw-bold ms-1">${route}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("서브 상세정보 로드 실패:", error);
+    }
+}
+
+//현재 페이지에 해당하는 데이터만 잘라서 테이블 그리기
+function renderCurrentPage() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageData = currentFilteredData.slice(startIndex, endIndex); // 10개만 자르기
+
+    renderLotTable(pageData); // 잘라낸 데이터로 테이블 렌더링
+    renderPagination(currentFilteredData.length); // 하단 페이징 버튼 그리기
+    document.getElementById('lot-count').innerText = `Total ${currentFilteredData.length}`;
+}
+
+// 하단 페이징 번호 버튼 생성
+function renderPagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const paginationEl = document.getElementById('lot-pagination');
+    
+    if (totalPages <= 1) {
+        paginationEl.innerHTML = ''; // 1페이지 이하면 버튼 숨기기
+        return;
+    }
+
+    let html = '<ul class="pagination pagination-sm mb-0">';
+    
+    // 이전 버튼
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="javascript:void(0)" onclick="changePage(${currentPage - 1})">이전</a>
+             </li>`;
+             
+    // 페이지 번호 버튼
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="javascript:void(0)" onclick="changePage(${i})">${i}</a>
+                 </li>`;
+    }
+    
+    // 다음 버튼
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="javascript:void(0)" onclick="changePage(${currentPage + 1})">다음</a>
+             </li>`;
+             
+    html += '</ul>';
+    paginationEl.innerHTML = html;
+}
+
+// 페이지 번호 클릭 시 실행되는 함수
+function changePage(page) {
+    const totalPages = Math.ceil(currentFilteredData.length / itemsPerPage);
+    if (page < 1 || page > totalPages) return; // 범위를 벗어나면 무시
+    
+    currentPage = page;
+    renderCurrentPage(); // 바뀐 페이지로 다시 그리기
+    
+    // 페이지 이동 시 계층구조 스크롤을 맨 위로 올려주면 좋습니다
+    document.querySelector('.table-responsive').scrollTop = 0;
+}
+
+//완제품 아코디언 클릭 시 우측 하단에 렌더링하는 전용 함수
+async function showProdSubDetail(lotId) {
+    try {
+        const response = await fetch(`/process/api/lot/prodSubDetail/${lotId}`);
+        const data = await response.json();
+        
+        if(!data) return;
+
+        const container = document.getElementById('sub-detail-content');
+        
+        container.innerHTML = `
+            <div class="row g-3 px-2 py-1" style="font-size: 13px;">
+                <div class="col-6"><strong>공정명:</strong> <span class="text-indigo fw-bold">${data.operationName || '-'}</span></div>
+                <div class="col-6"><strong>공정코드:</strong> ${data.operationId || '-'}</div>
+                <div class="col-6"><strong>담당자:</strong> ${data.memberName || '-'}</div>
+                <div class="col-6"><strong>사번:</strong> ${data.employeeNumber || '-'}</div>
+                <div class="col-6"><strong>생산수량:</strong> ${data.productionQty || 0} EA</div>
+                <div class="col-6"><strong>불량수량:</strong> <span class="text-danger fw-bold">${data.defectiveQty || 0}</span> EA</div>
+                <div class="col-6"><strong>설비명:</strong> ${data.equipName || '-'}</div>
+                <div class="col-6"><strong>설비코드:</strong> ${data.equipCode || '-'}</div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("완제품 서브 상세정보 로드 실패:", error);
     }
 }
 </script>

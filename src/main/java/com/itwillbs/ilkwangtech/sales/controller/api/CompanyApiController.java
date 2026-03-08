@@ -30,8 +30,8 @@ public class CompanyApiController {
 
     // 2. 고객사 목록 조회
     @GetMapping("/list")
-    public ResponseEntity<ApiResponseDTO<PageResponseDTO<CompanyDTO>>> getCustomerList(Pageable pageable, @RequestParam CompanyCategory companyType) {
-        List<CompanyDTO> list = companyService.getCompanyList(pageable, companyType);
+    public ResponseEntity<ApiResponseDTO<PageResponseDTO<CompanyDTO>>> getCustomerList( @RequestParam CompanyCategory companyType, Pageable pageable) {
+        List<CompanyDTO> list = companyService.getCompanyList(companyType, pageable);
 
         for (CompanyDTO dto : list) {
             log.info(dto);

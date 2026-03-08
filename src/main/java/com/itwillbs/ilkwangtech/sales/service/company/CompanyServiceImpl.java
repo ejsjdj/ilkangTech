@@ -31,7 +31,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CompanyDTO> getCompanyList(Pageable pageable, CompanyCategory companyType) {
+    public List<CompanyDTO> getCompanyList(CompanyCategory companyType, Pageable pageable) {
         long offset = pageable.getOffset();
         long pageSize = pageable.getPageSize();
         return companyMapper.selectByPage(offset, pageSize, companyType);

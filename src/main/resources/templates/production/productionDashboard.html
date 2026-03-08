@@ -64,7 +64,7 @@
 
           <div class="col-md-3">
             <div class="dash-card">
-              <div class="text-muted mb-2">금일 완료 수량</div>
+              <div class="text-muted mb-2">금일 완료 계획</div>
               <div class="stat-num text-success" th:text="${todayCompletedQty}">
                 0
               </div>
@@ -82,7 +82,7 @@
 
           <div class="col-md-3">
             <div class="dash-card">
-              <div class="text-muted mb-2">납기 위험 건</div>
+              <div class="text-muted mb-2">지연 생산 건</div>
               <div class="stat-num text-danger" th:text="${delayRiskCount}">
                 0
               </div>
@@ -117,90 +117,14 @@
 
         <!-- ================= 납기 위험 리스트 ================= -->
         <div class="dash-card">
-          <h5 class="mb-3">납기 위험 생산계획</h5>
-
-          <table class="table table-bordered text-center align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>생산계획코드</th>
-                <th>품목명</th>
-                <th>납기일</th>
-                <th>진행률</th>
-                <th>상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="plan : ${delayList}">
-                <td th:text="${plan.planCode}">PP-001</td>
-                <td th:text="${plan.itemName}">제품A</td>
-                <td th:text="${plan.dueDate}">2026-03-05</td>
-                <td th:text="${plan.progressRate + '%'}">70%</td>
-                <td>
-                  <span
-                    th:class="${plan.status == '지연' ? 'badge bg-danger' : 'badge bg-warning'}"
-                    th:text="${plan.status}"
-                    >위험</span
-                  >
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <h5 class="mb-3">품목별 생산수량</h5>
+          <div id="itemChart" style="height: 350px"></div>
         </div>
       </div>
     </div>
 
     <th:block layout:fragment="script">
-      <script>
-        let chartInstance = null;
-
-        function loadChart(type) {
-          // 🔥 백엔드 대신 더미데이터
-          const dummyData = {
-            month: {
-              categories: ["1월", "2월", "3월", "4월", "5월", "6월"],
-              planData: [1200, 1400, 1300, 1600, 1700, 1500],
-              actualData: [1100, 1350, 1200, 1500, 1650, 1400],
-            },
-            week: {
-              categories: ["1주", "2주", "3주", "4주"],
-              planData: [300, 400, 350, 500],
-              actualData: [280, 390, 300, 480],
-            },
-            day: {
-              categories: ["월", "화", "수", "목", "금"],
-              planData: [200, 250, 230, 260, 240],
-              actualData: [190, 240, 210, 250, 220],
-            },
-          };
-
-          const data = dummyData[type];
-
-          const options = {
-            series: [
-              { name: "계획", type: "column", data: data.planData },
-              { name: "실적", type: "line", data: data.actualData },
-            ],
-            chart: { height: 400, type: "line", toolbar: { show: false } },
-            stroke: { width: [0, 3], curve: "smooth" },
-            labels: data.categories,
-            markers: { size: 4 },
-          };
-
-          if (!chartInstance) {
-            chartInstance = new ApexCharts(
-              document.querySelector("#productionChart"),
-              options,
-            );
-            chartInstance.render();
-          } else {
-            chartInstance.updateOptions(options);
-          }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-          loadChart("month");
-        });
-      </script>
+      <script th:src="@{/js/productionDashboard.js}"></script>
     </th:block>
   </body>
 </html>

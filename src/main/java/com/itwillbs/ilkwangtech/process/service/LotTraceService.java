@@ -16,10 +16,7 @@ import com.itwillbs.ilkwangtech.process.dto.ProcessStatusResponseDTO;
 import com.itwillbs.ilkwangtech.process.dto.ProcessStepDetailDTO;
 import com.itwillbs.ilkwangtech.process.entity.LotMaster;
 import com.itwillbs.ilkwangtech.process.repository.LotMasterRepository;
-import com.itwillbs.ilkwangtech.process.repository.PartProductionRepository;
 import com.itwillbs.ilkwangtech.process.repository.ProductionInstructRepository;
-import com.itwillbs.ilkwangtech.process.repository.QualityCheckRepository;
-import com.itwillbs.ilkwangtech.process.repository.RawMaterialRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -38,7 +35,7 @@ public class LotTraceService {
 
     public List<LotResponseDTO> getAllLotsWithItemName() {
         // 1. PART_PRODUCTION 및 ASSEMBLY에서 완제품/반제품 정보 가져오기 (최신순 정렬됨)
-        List<LotMasterRepository.LotSummaryMapping> prodResults = lotMasterRepository.findAllProdAndSemiLots();
+    	List<LotMasterRepository.LotSummaryMapping> prodResults = lotMasterRepository.findAllProdAndSemiLotsFromWorker();
         
         // 2. INVENTORY에서 원자재 정보 가져오기 (M)
         List<LotMasterRepository.LotSummaryMapping> inventoryResults = lotMasterRepository.findAllInventoryAsLots();
@@ -61,45 +58,37 @@ public class LotTraceService {
             dto.setItemName(res.getItemName() != null ? res.getItemName() : "N/A");
             dto.setStatus(res.getStatus());
             dto.setCreatedDate(res.getCreatedDate());
-            dto.setLotType("M");
+            dto.setLotType("R");
             combinedList.add(dto);
         });
 
         return combinedList;
     }
     
-    /* LotTraceService.java */
-
-    public LotDetailResponseDTO getLotDetail(String lotId) {
-        // 1. 먼저 기본 LOT 정보를 가져와서 타입을 확인합니다.
-        LotMaster master = lotMasterRepository.findById(lotId)
-                .orElseThrow(() -> new RuntimeException("LOT를 찾을 수 없습니다."));
-
-        LotMasterRepository.LotDetailMapping res;
-
-        // 2. 타입에 따라 다른 레포지토리 메소드 호출
-        if ("F".equals(master.getLotType())) {
-            res = lotMasterRepository.findFinishedLotDetail(lotId);
-        } else {
-            // 반제품(S, ST, IN 등)일 경우
-            res = lotMasterRepository.findSemiLotDetail(lotId);
+    public Object getLotDetail(String lotId) {
+        // 원자재인 경우
+        if (lotId.startsWith("RW-")) {
+            return getRawMaterialDetail(lotId);
         }
-
-        // 데이터가 없는 경우를 대비한 예외 처리
-        if (res == null) return new LotDetailResponseDTO(); 
-
-        // 3. DTO 매핑 (이 부분은 동일)
-        LotDetailResponseDTO dto = new LotDetailResponseDTO();
-        dto.setLotId(res.getLotId());
-        dto.setItemCode(res.getItemCode());
-        dto.setItemName(res.getItemName());
-        dto.setInstructCode(res.getInstructCode());
-        dto.setInstructQty(res.getInstructQty());
-        dto.setStartDate(res.getStartDate());
-        dto.setEndDate(res.getEndDate());
-        dto.setDefective(res.getDefective());
         
-        return dto;
+        // 완제품/반제품인 경우 새로운 쿼리 실행
+        LotMasterRepository.ProdLotDetailMapping res = lotMasterRepository.findProdLotDetail(lotId);
+        if (res == null) return null;
+        
+        Map<String, Object> map = new HashMap<>();
+        map.put("lotId", res.getLotId());
+        map.put("itemCode", res.getItemCode());
+        map.put("itemName", res.getItemName());
+        map.put("instructCode", res.getInstructCode());
+        map.put("productionQty", res.getProductionQty());
+        map.put("defectiveQty", res.getDefectiveQty());
+        map.put("endTime", res.getEndTime());
+        map.put("isRawMaterial", false); 
+        return map;
+    }
+    
+    public LotMasterRepository.ProdSubDetailMapping getProdSubDetailInfo(String lotId) {
+        return lotMasterRepository.findProdSubDetailByLotId(lotId);
     }
 
     public List<ProcessStatusResponseDTO> getAllProcessStatusList() {
@@ -192,5 +181,32 @@ public class LotTraceService {
         dto.setEquipCode(res.getEquipCode());
         
         return dto;
+    }
+    
+    public Map<String, Object> getRawMaterialDetail(String lotId) {
+        LotMasterRepository.RawMaterialDetailMapping res = lotMasterRepository.findRawMaterialDetail(lotId);
+        if (res == null) return null;
+        
+        Map<String, Object> map = new HashMap<>();
+        map.put("lotId", res.getLotId());
+        map.put("itemCode", res.getItemCode());
+        map.put("itemName", res.getItemName());
+        map.put("uom", res.getUom());
+        map.put("itemType", res.getItemType());
+        map.put("currentQuantity", res.getCurrentQuantity());
+        
+        String expDateStr = "-";
+        if (res.getExpirationDate() != null) {
+            expDateStr = res.getExpirationDate().toLocalDate().toString(); 
+        }
+        map.put("expirationDate", expDateStr);
+        
+        map.put("zone", res.getZone());
+        map.put("isRawMaterial", true); // 프론트엔드 구분용
+        return map;
+    }
+
+    public LotMasterRepository.SubDetailMapping getSubDetailInfo(String lotId) {
+        return lotMasterRepository.findSubDetailByLotId(lotId);
     }
 }

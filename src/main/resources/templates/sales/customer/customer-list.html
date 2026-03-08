@@ -96,12 +96,10 @@
                 <tbody id="list-body"></tbody>
             </table>
 
-            <!-- ✅ 페이지네이션 영역 -->
             <div id="pagination" class="cute-pagination"></div>
         </div>
     </div>
 
-    <!-- 모달 -->
     <div id="addModal" class="modal-overlay">
         <div class="modal-diary-page">
             <div class="masking-tape yellow-tape"></div>
@@ -143,7 +141,6 @@
     <script th:inline="javascript">
         'use strict';
 
-        // ✅ 페이지 상태 중앙 관리
         const state = {
             currentPage: 0,
             totalPages: 0,
@@ -178,7 +175,6 @@
             document.getElementById('list-title').textContent =
                 category === 'supplier' ? '협력사 리스트' : '고객사 리스트';
 
-            // ✅ 탭 전환 시 페이지 초기화
             loadList(category, 0);
         }
 

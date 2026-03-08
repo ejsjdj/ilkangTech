@@ -236,7 +236,4 @@ gradle-app.setting
 # 스프링 properties 파일 제외
 application-db.properties
 
-# QueryDSL QClass
-/src/main/generated/
-
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,java,gradle,intellij

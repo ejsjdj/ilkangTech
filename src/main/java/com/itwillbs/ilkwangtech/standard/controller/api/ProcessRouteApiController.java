@@ -5,7 +5,6 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.standard.dto.ProcessRouteDTO;
 import com.itwillbs.ilkwangtech.standard.dto.ProcessRouteDetailDTO;
 import com.itwillbs.ilkwangtech.standard.dto.ProcessRouteInsertDTO;
-import com.itwillbs.ilkwangtech.standard.dto.ProcessUpdateDTO;
 import com.itwillbs.ilkwangtech.standard.service.processService.ProcessRouteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -40,16 +39,12 @@ public class ProcessRouteApiController {
 
     // 라우팅 상세 조회
     @GetMapping("/process_mst/detail")
-    public List<ProcessRouteDetailDTO> getProcessDetail(@RequestParam(value = "routeCode") String routeCode){
-
-        System.out.println("라우팅 상세조회 Controller 실행됨!!");
-
-        return processRouteService.getProcessRouteDetail(routeCode);
-
+    public List<ProcessRouteDetailDTO> getProcessDetail(@RequestParam(name = "routeId") String routeId){
+        return processRouteService.getProcessRouteDetail(routeId);
     }
 
     // 신규 라우트 추가
-    @PostMapping("/process_mst/create")
+    @PostMapping("/process_mst/insert")
     @ResponseBody
     public void insertProcess(@RequestBody List<ProcessRouteInsertDTO> processRouteInsertDTO,
                               @AuthenticationPrincipal AccountLogin accountLogin){
@@ -57,17 +52,5 @@ public class ProcessRouteApiController {
         Long userId = accountLogin.getId();
 
         processRouteService.saveProcessRoute(processRouteInsertDTO, userId);
-    }
-
-    // 라우트 업데이트
-    @PostMapping("/process_mst/update")
-    @ResponseBody
-    public void updateProcess(@RequestBody List<ProcessUpdateDTO> processUpdateDTO,
-                              @RequestParam(value = "routeCode") String routeCode,
-                              @AuthenticationPrincipal AccountLogin accountLogin){
-
-        Long userId = accountLogin.getId();
-
-        processRouteService.updateProcessList(processUpdateDTO, userId, routeCode);
     }
 }

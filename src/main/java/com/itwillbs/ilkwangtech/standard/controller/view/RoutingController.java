@@ -6,11 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/process")
-public class ProcessStandardController {
+public class RoutingController {
 
-    @GetMapping("/process_list")
-    public String getProcessStandardList(){
+    @GetMapping("/list")
+    public String getProcessList() {
         return "standard/processList";
     }
-
 }

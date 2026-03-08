@@ -17,6 +17,4 @@ public interface ItemService {
 
     Page<ItemDTO> getList(ItemType type, Pageable pageable);
 
-    Page<ItemDTO> getBomList(ItemType type, Pageable pageable);
-
 }

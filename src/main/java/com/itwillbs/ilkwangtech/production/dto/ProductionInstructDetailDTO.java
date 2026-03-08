@@ -19,8 +19,10 @@ public class ProductionInstructDetailDTO {
     private String instructCode;
     // 생산계획코드
     private String planeCode;
+    // 진행 공정
+    private String operationCode;
     // 품목명
-    private String itemName;
+    private Long item;
     // 생산일자
     private String startDate;
     // 계획수량
@@ -36,12 +38,13 @@ public class ProductionInstructDetailDTO {
                 instructId(entity.getId()).
                 instructCode(entity.getInstructCode()).
                 planeCode(entity.getProductionId().getPlaneCode()).
-                itemName(entity.getItem().getItemName()).
+                operationCode(entity.getProcess().getName()).
+                item(entity.getItem()).
                 startDate(String.valueOf(entity.getStartDate())).
-                instructQty(entity.getInstructQty()).
-                worker(entity.getWorkers().stream()
-                        .map(ProductionWorkerDTO::fromList)
-                        .toList()).
+                instructQty(entity.getInstructQty())
+                .worker(entity.getWorkers().stream()
+                .map(ProductionWorkerDTO::fromList)
+                .toList()).
                 build();
     }
 }

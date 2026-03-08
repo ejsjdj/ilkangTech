@@ -1,10 +1,11 @@
 package com.itwillbs.ilkwangtech.production.service;
 
-import com.itwillbs.ilkwangtech.production.dto.*;
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDTO;
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneDetailDTO;
+import com.itwillbs.ilkwangtech.production.dto.ProductionPlaneInsertDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ProductionPlaneService {
@@ -20,13 +21,4 @@ public interface ProductionPlaneService {
 
     // 4. 생산계획 및 작업지시 취소
     void cancelProductionPlane(Long instructId);
-
-    // 5. 작업지시에서 생산계획 불러오기
-    List<ProcessRegisterDTO> getProcessInstructList(Long planeId);
-
-    // 6. 생산계획 전체 조회
-    List<ProductionPlaneAllDTO> getProductionPlaneAll();
-
-    // 7. 재고 검증
-    List<StockRequirementDTO> checkStock(Long itemId, Long productionQty);
 }

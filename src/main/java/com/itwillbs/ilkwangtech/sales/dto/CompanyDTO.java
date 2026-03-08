@@ -1,7 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.dto;
 
 import com.itwillbs.ilkwangtech.sales.constant.CompanyCategory;
-import com.itwillbs.ilkwangtech.sales.constant.CompanyStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,12 +11,23 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class CompanyDTO {
-    private Long CompanyId;
-    private String name;
-    private String email;
-    private String phone;
-    private String manager;
-    private CompanyCategory category;
-    private CompanyStatus valid;
+
+    //    CREATE TABLE Company (
+    //            company_id    NUMBER(19) GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    //    company_code  VARCHAR2(50)  NOT NULL UNIQUE,
+    //    company_name  VARCHAR2(50)  NOT NULL,
+    //    company_type  INTEGER,
+    //    company_email VARCHAR2(255),
+    //    CEO_name      VARCHAR2(50),
+    //    TEL_NO        VARCHAR2(20)
+    //);
+
+    private Long companyId;
+    private String companyCode;
+    private String companyName;
+    private String companyEmail;
+    private CompanyCategory companyType;
+    private String ceoName;
+    private String telNo;
 
 }

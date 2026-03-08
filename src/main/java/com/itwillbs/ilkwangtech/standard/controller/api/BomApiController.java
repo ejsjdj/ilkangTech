@@ -1,18 +1,17 @@
 package com.itwillbs.ilkwangtech.standard.controller.api;
 
 import com.itwillbs.ilkwangtech.common.dto.ApiResponseDTO;
+import com.itwillbs.ilkwangtech.item.dto.ItemDTO;
 import com.itwillbs.ilkwangtech.standard.dto.BomDTO;
-import com.itwillbs.ilkwangtech.standard.dto.ParentItemDTO;
 import com.itwillbs.ilkwangtech.standard.service.bom.BomService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/bom")
@@ -22,16 +21,15 @@ public class BomApiController {
 
     private final BomService bomService;
 
-    // 부품의 BOM 목록 조회
-    @GetMapping("/child/{id}")
-    public ResponseEntity<ApiResponseDTO<List<ParentItemDTO>>> getList(
-            @PathVariable("id") Long itemId,
+    @GetMapping("/parent/{id}")
+    public ResponseEntity<ApiResponseDTO<Page<BomDTO>>> getList(
+            @PathVariable("id") Long itemId, // 👈 URL의 {id}를 itemId 변수에 쏙!
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sortBy", defaultValue = "bomId") String sortBy,
             @RequestParam(name = "direction", defaultValue = "DESC") Sort.Direction direction) {
 
         Pageable pageable = PageRequest.of(page, 10, Sort.by(direction, sortBy));
-        List<ParentItemDTO> result = bomService.getListByItemId(itemId, pageable);
+        Page<BomDTO> result = bomService.getListByItemId(itemId, pageable);
 
         return ResponseEntity.ok(ApiResponseDTO.success("BOM 목록 조회에 성공했습니다.", result));
     }

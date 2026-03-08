@@ -11,7 +11,6 @@ public enum ItemType {
     RAW(1, "원자재"),
     WIP(2, "재공품"),
     FG(3, "완제품");
-    // SEMI(4, "반자재");
 
     private final int code;      // 숫자 코드
     private final String Description;    // 한글 명칭

@@ -1,7 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.entity;
 
 import com.itwillbs.ilkwangtech.member.entity.Member;
-import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,9 +26,8 @@ public class PurchaseRequestEntity {
     private PurchaseRequestHeaderEntity header;
 
     // 품목 ID
-    @ManyToOne
-    @JoinColumn(name = "item_id")
-    private ItemEntity item;
+    @Column(name = "item_id")
+    private Long itemId;
 
     // 수량
     @Column(name = "quantity")

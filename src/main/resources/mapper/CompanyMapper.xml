@@ -7,59 +7,54 @@
 
     <resultMap id="CompanyResultMap" type="com.itwillbs.ilkwangtech.sales.dto.CompanyDTO">
         <id property="companyId" column="companyId"/>
-        <result property="name" column="name"/>
-        <result property="email" column="email"/>
-        <result property="phone" column="phone"/>
-        <result property="manager" column="manager"/>
-        <result property="category" column="category"
+        <result property="companyCode" column="company_Code"/>
+        <result property="companyName" column="company_Name"/>
+        <result property="companyType" column="company_Type"
                 typeHandler="com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler"/>
-        <result property="valid" column="valid"
-                typeHandler="com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler"/>
-    </resultMap>
-
-    <resultMap id="PurchaseCompanyResultMap" type="com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO">
-        <id property="companyId" column="companyId"/>
-        <result property="name" column="company_name"/>
-        <result property="phone" column="tel_no"/>
-        <result property="manager" column="ceo_name"/>
+        <result property="companyEmail" column="company_Email"/>
+        <result property="ceoName" column="ceo_Name"/>
+        <result property="telNo" column="tel_No"/>
     </resultMap>
 
     <insert id="insertCompany" useGeneratedKeys="true" keyProperty="companyId" keyColumn="company_id">
-        INSERT INTO Company (name, email, phone, valid, manager, category)
+        INSERT INTO Company (company_Code, company_Name, company_Type, company_Email, ceo_Name, tel_No)
         VALUES (
-        #{name},
-        #{email, jdbcType=VARCHAR},
-        #{phone, jdbcType=VARCHAR},
-        1,
-        #{manager, jdbcType=VARCHAR},
-        #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+        #{companyCode},
+        #{companyName},
+        #{companyType, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler},
+        #{companyEmail},
+        #{ceoName},
+        #{telNo}
         )
     </insert>
 
     <select id="selectByName" resultMap="CompanyResultMap">
         SELECT
-        company_id AS companyId,
-            name,
-            email,
-            phone,
-            manager,
-            category,
-            valid
+        company_Id,
+        company_Code,
+        company_Name,
+        company_Type,
+        company_Email,
+        ceo_Name,
+        tel_No
         FROM Company
-        WHERE name = #{name}
+        WHERE company_Name = #{companyName}
     </select>
 
     <select id="selectByPage" resultMap="CompanyResultMap">
         SELECT
-        company_id AS companyId,
-        name,
-        phone,
-        manager
+            company_Id,
+            company_Code,
+            company_Name,
+            company_Type,
+            company_Email,
+            ceo_Name,
+            tel_No
         FROM Company
         WHERE
-        category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+        company_Type = #{companyType, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
         or
-        category = 3
+        company_Type = 3
         ORDER BY company_id ASC
         OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
     </select>
@@ -68,21 +63,10 @@
         SELECT COUNT(*)
         FROM Company
         <where>
-            <if test="category != null">
-                category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+            <if test="companyType != null">
+                company_type = #{companyType, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
             </if>
         </where>
-    </select>
-
-    <select id="selectCompanyType3" resultMap="PurchaseCompanyResultMap">
-        SELECT
-        company_id AS companyId,
-        company_name,
-        tel_no,
-        ceo_name
-        FROM Company
-        WHERE company_type  = 3
-        ORDER BY company_id ASC
     </select>
 
 </mapper>

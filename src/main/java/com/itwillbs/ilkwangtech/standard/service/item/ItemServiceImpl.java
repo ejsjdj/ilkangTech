@@ -48,29 +48,4 @@ public class ItemServiceImpl implements ItemService{
         return entityPage.map(entity -> modelMapper.map(entity, ItemDTO.class));
     }
 
-    @Override
-    public Page<ItemDTO> getBomList(ItemType itemType, Pageable pageable) {
-        Page<ItemEntity> entityPage;
-        if (itemType.getCode() == 2) {
-            itemType = ItemType.RAW;
-            log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
-            log.info("itemType: " + itemType);
-            log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
-            entityPage = itemRepository.findByItemType(itemType, pageable);
-        } else if (itemType.getCode() == 3) {
-            log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
-            log.info("FG");
-            log.info("itemType: " + itemType);
-            log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
-            entityPage = itemRepository.findByItemTypeNot(itemType, pageable);
-        } else {
-            log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
-            log.info("RAW");
-            log.info("itemType: " + itemType);
-            log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
-            entityPage = itemRepository.findByItemType(itemType, pageable);
-        }
-        return entityPage.map(entity -> modelMapper.map(entity, ItemDTO.class));
-    }
-
 }

@@ -2,22 +2,27 @@ package com.itwillbs.ilkwangtech.sales.service.order;
 
 import com.itwillbs.ilkwangtech.sales.constant.OrderStatus;
 import com.itwillbs.ilkwangtech.sales.dto.OrderDTO;
+import com.itwillbs.ilkwangtech.sales.mapper.OrderMapper;
+import com.itwillbs.ilkwangtech.sales.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public interface OrderService {
-    void createOrder(OrderDTO orderDTO);
+@Service
+@RequiredArgsConstructor
+public class OrderService {
 
-    List<OrderDTO> getOrderList(Pageable pageable);
+    private final OrderMapper orderMapper;
 
-    OrderDTO getOrder(Long id);
-
-    boolean isEditable(Long id);
-
-    void update(OrderDTO orderDTO);
-
-    void invalid(Long id);
-
-    void changeOrderStatus(Long id, OrderStatus status);
+    @Transactional
+    public List<OrderDTO> getOrderList(OrderStatus status, Pageable pageable) {
+        return orderMapper.selectByPageAndStatus(
+                status,
+                pageable.getOffset(),
+                pageable.getPageSize()
+        );
+    }
 }

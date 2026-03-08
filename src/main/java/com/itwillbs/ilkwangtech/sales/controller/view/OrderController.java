@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/orders")
 public class OrderController {
 
-    @GetMapping("/list")
+    @GetMapping("/order_list")
     public String getOrderList() {
-        return "sales/order/list";
+        return "sales/order/order_list";
     }
 
 }

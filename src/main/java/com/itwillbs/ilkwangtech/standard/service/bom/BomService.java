@@ -2,11 +2,8 @@ package com.itwillbs.ilkwangtech.standard.service.bom;
 
 import com.itwillbs.ilkwangtech.item.dto.ItemDTO;
 import com.itwillbs.ilkwangtech.standard.dto.BomDTO;
-import com.itwillbs.ilkwangtech.standard.dto.ParentItemDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 public interface BomService {
 
@@ -18,5 +15,5 @@ public interface BomService {
 
     Page<BomDTO> getList(Pageable pageable);
 
-    List<ParentItemDTO> getListByItemId(Long itemId, Pageable pageable);
+    Page<BomDTO> getListByItemId(Long itemId, Pageable pageable);
 }

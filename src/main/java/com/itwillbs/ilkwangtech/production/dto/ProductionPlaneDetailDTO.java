@@ -3,7 +3,6 @@ package com.itwillbs.ilkwangtech.production.dto;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,18 +10,19 @@ import java.util.List;
 
 @Getter
 @Builder
-@ToString
 public class ProductionPlaneDetailDTO {
 
     private List<ProductionPlaneItemDTO> details; // 계획상세
 
     private String planeCode; // 계획코드
 
+    private String routeCode;
+
     private LocalDateTime planeDate; // 계획일시
 
     private String memberName; // 등록자
 
-    private String itemName; // 폼목명
+    private Long item; // 폼목코드
 
     private Long totalQty; // 주문 총 수량
 
@@ -33,9 +33,10 @@ public class ProductionPlaneDetailDTO {
     public static ProductionPlaneDetailDTO fromDetail(ProductionPlaneEntity entity) {
         return ProductionPlaneDetailDTO.builder()
                 .planeCode(entity.getPlaneCode())
+                .routeCode(entity.getRoute().getRouteId())
                 .planeDate(entity.getPlaneDate().toLocalDate().atStartOfDay())
                 .memberName(entity.getMember().getName())
-                .itemName(entity.getItem().getItemName())
+                .item(entity.getItem())
                 .totalQty(entity.getTotalQty())
                 .status(entity.getStatus())
                 .memo(entity.getMemo())

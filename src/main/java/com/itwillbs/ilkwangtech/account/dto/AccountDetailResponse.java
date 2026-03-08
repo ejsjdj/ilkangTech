@@ -37,6 +37,17 @@ public class AccountDetailResponse {
     private String status;          // 재직 상태
 
     public static AccountDetailResponse of(Member member, String department, String position, String bank, List<ProfileImg> profileImgs) {
+        
+        // 프로필 이미지가 있을 경우, 대표 이미지(Y)가 가장 앞으로 오도록 정렬하고 나머지는 최신순(id 내림차순)으로 정렬합니다.
+        if (profileImgs != null && !profileImgs.isEmpty()) {
+            profileImgs.sort((o1, o2) -> {
+                if (!o1.getRepImgYn().equals(o2.getRepImgYn())) {
+                    return o2.getRepImgYn().compareTo(o1.getRepImgYn());
+                }
+                return o2.getId().compareTo(o1.getId());
+            });
+        }
+
         return AccountDetailResponse.builder()
                 .id(member.getId())
                 .employeeNumber(member.getEmployeeNumber())

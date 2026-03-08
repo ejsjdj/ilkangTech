@@ -20,4 +20,8 @@ public interface OrderService {
     void invalid(Long id);
 
     void changeOrderStatus(Long id, OrderStatus status);
+
+    void updateOrderStatusesBasedOnInventory();
+
+    void deliveryOrder(Long orderId);
 }

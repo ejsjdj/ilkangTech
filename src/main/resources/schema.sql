@@ -18,9 +18,16 @@ CREATE TABLE Company (
                          company_id NUMBER(19) GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                          company_code VARCHAR2(50) NOT NULL UNIQUE,
                          company_name VARCHAR2(50) NOT NULL,
+                         business_number VARCHAR2(20),
+                         ceo_name VARCHAR2(50),
                          company_type INTEGER,
-                         CEO_name VARCHAR2(50),
-                         TEL_NO VARCHAR2(20)
+                         tel_no VARCHAR2(20),
+                         fax_no VARCHAR2(20),
+                         email VARCHAR2(100),
+                         address VARCHAR2(255),
+                         manager_name VARCHAR2(50),
+                         manager_tel VARCHAR2(20),
+                         status INTEGER DEFAULT 1
 );
 
 CREATE TABLE Operation (
@@ -42,7 +49,7 @@ CREATE TABLE sales_order (
                              company_id NUMBER(19) NOT NULL REFERENCES Company(company_id),
                              order_date DATE DEFAULT SYSDATE,
                              expected_delivery_date DATE,
-                             order_status VARCHAR2(20) DEFAULT 'PENDING' -- 필수: 주문 상태
+                             order_status NUMBER(10) DEFAULT 10 -- 필수: 주문 상태
 );
 
 CREATE TABLE order_item (
@@ -50,7 +57,9 @@ CREATE TABLE order_item (
                             sales_order_id NUMBER(19) NOT NULL REFERENCES sales_order(sales_order_id),
                             item_id NUMBER(19) NOT NULL REFERENCES Item(item_id),
                             quantity NUMBER(10) NOT NULL,
-                            unit_price NUMBER(19) NOT NULL
+                            unit_price NUMBER(19) NOT NULL,
+                            delivery_date DATE,
+                            detail_status NUMBER(10) DEFAULT 10
 );
 
 
@@ -328,7 +337,7 @@ VALUES ('RW-503', 'packing', 1, 'EA');
 INSERT INTO ITEM (ITEM_CODE, ITEM_NAME, ITEM_TYPE, UOM)
 VALUES ('RW-504', 'board', 1, 'EA');
 
-INSERT INTO Company (company_code, company_name, company_type, CEO_name, TEL_NO)
+INSERT INTO Company (company_code, company_name, company_type, ceo_name, tel_no)
 VALUES ('C000000000000000001', '삼성전자', 3, '김철수', '010-1234-5678');
 
 INSERT INTO sales_order (company_id, order_date,EXPECTED_DELIVERY_DATE) VALUES (1, SYSDATE, SYSDATE + 100000);

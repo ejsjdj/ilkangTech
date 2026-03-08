@@ -6,6 +6,7 @@
 <mapper namespace="com.itwillbs.ilkwangtech.standard.mapper.BomMapper">
 
     <resultMap id="BomResultMap" type="com.itwillbs.ilkwangtech.standard.dto.ParentItemDTO">
+        <id property="bomId" column="bomId" />
         <id property="itemId" column="itemId" />
         <result property="code" column="code" />
         <result property="name" column="name" />
@@ -14,7 +15,8 @@
 
     <select id="selectBomList" resultMap="BomResultMap">
         select
-            I.item_id as item_id,
+            B.bom_id as bomId,
+            I.item_id as itemId,
             I.item_code as code,
             I.item_name as name,
             B.require_qty as unit

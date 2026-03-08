@@ -30,6 +30,9 @@ public class OrderApiController {
     @GetMapping
     public ResponseEntity<ApiResponseDTO<List<OrderDTO>>> getOrderList(Pageable pageable) {
 
+        // 수주 목록 조회 전 재고 기반 상태 업데이트 실행
+        orderService.updateOrderStatusesBasedOnInventory();
+
         List<OrderDTO> orderList = orderService.getOrderList(pageable);
 
         return ResponseEntity.ok(ApiResponseDTO.success(orderList));
@@ -79,6 +82,17 @@ public class OrderApiController {
 
         orderService.changeOrderStatus(id, status);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, "상태가 변경되었습니다.", status.getDescription()));
+    }
+
+    // 7. 납품 완료 처리 (POST)
+    @PostMapping("/{id}/delivery")
+    public ResponseEntity<ApiResponseDTO<String>> completeDelivery(@PathVariable Long id) {
+        try {
+            orderService.deliveryOrder(id);
+            return ResponseEntity.ok(ApiResponseDTO.success("납품 처리가 완료되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponseDTO.fail(e.getMessage()));
+        }
     }
 
 }

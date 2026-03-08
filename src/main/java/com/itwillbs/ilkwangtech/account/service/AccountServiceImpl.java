@@ -211,8 +211,8 @@ public class AccountServiceImpl implements AccountService {
 		loginsImgs.sort((o1, o2) -> {
 			// 1. Y를 우선순위로
 			if (!o1.getRepImgYn().equals(o2.getRepImgYn())) return o2.getRepImgYn().compareTo(o1.getRepImgYn());
-			// 2. 위치(날짜) 내림차순
-			return o2.getImgLocation().compareTo(o1.getImgLocation());
+			// 2. ID 내림차순 (최신 등록 순)
+			return o2.getId().compareTo(o1.getId());
 		});
 
 		login.updateSortImages(loginsImgs);

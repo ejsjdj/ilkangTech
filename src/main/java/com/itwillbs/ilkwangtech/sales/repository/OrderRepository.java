@@ -31,6 +31,14 @@ public class OrderRepository {
         return orderMapper.selectById(id);
     }
 
+    public List<OrderDetailDTO> getOrderDetails(Long orderId) {
+        return orderMapper.selectDetailsByOrderId(orderId);
+    }
+
+    public List<OrderDTO> getUncompletedOrders() {
+        return orderMapper.selectUncompletedOrders();
+    }
+
     public void updateOrder(OrderDTO orderDTO) {
         orderMapper.updateOrder(orderDTO);
     }

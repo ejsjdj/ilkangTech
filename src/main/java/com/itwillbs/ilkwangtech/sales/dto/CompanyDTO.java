@@ -12,12 +12,18 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class CompanyDTO {
-    private Long CompanyId;
-    private String name;
+    private Long companyId;
+    private String companyCode;
+    private String companyName;
+    private String businessNumber;
+    private String ceoName;
+    private CompanyCategory companyType;
+    private String telNo;
+    private String faxNo;
     private String email;
-    private String phone;
-    private String manager;
-    private CompanyCategory category;
-    private CompanyStatus valid;
+    private String address;
+    private String managerName;
+    private String managerTel;
+    private CompanyStatus status;
 
 }

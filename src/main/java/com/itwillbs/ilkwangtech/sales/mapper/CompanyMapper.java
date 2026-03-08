@@ -14,13 +14,13 @@ public interface CompanyMapper {
 
     void insertCompany(CompanyDTO companyDTO);
 
-    CompanyDTO selectByName(String name);
+    CompanyDTO selectByName(@Param("companyName") String companyName);
 
     List<CompanyDTO> selectByPage(@Param("offset") long offset,
                                   @Param("pageSize") long pageSize,
-                                  @Param("category") CompanyCategory category);
+                                  @Param("companyType") CompanyCategory companyType);
 
-    long selectCount(@Param("category") CompanyCategory category);
+    long selectCount(@Param("companyType") CompanyCategory companyType);
 
     List<PurchaseCompanyDTO> selectCompanyType3();
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 @Setter
 public class ParentItemDTO {
 
+    private Long bomId;
     private Long itemId;
     private String code;
     private String name;

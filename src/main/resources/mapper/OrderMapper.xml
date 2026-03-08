@@ -6,15 +6,100 @@
 <mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.OrderMapper">
 
     <resultMap id="OrderResultMap" type="com.itwillbs.ilkwangtech.sales.dto.OrderDTO">
-        <id property="orderId" column="order_id"/>
-        <result property="orderCode" column="order_code"/>
+        <id property="orderId" column="sales_order_id"/>
+        <result property="companyId" column="company_id"/>
         <result property="companyName" column="company_name"/>
-        <result property="expectedDeliveryDatetime" column="expected_delivery_datetime" />
+        <result property="orderDate" column="order_date"/>
+        <result property="expectedDeliveryDate" column="expected_delivery_date"/>
+        <result property="orderStatus" column="order_status"/>
     </resultMap>
 
     <resultMap id="OrderDetailResultMap" type="com.itwillbs.ilkwangtech.sales.dto.OrderDetailDTO">
-        <id property="orderId" column="order_id"/>
+        <id property="orderDetailId" column="order_item_id"/>
+        <result property="orderId" column="sales_order_id"/>
+        <result property="itemId" column="item_id"/>
+        <result property="itemName" column="item_name"/>
+        <result property="itemCode" column="item_code"/>
+        <result property="quantity" column="quantity"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="deliveryDate" column="delivery_date"/>
+        <result property="detailStatus" column="detail_status"/>
     </resultMap>
+
+    <insert id="insertOrder" useGeneratedKeys="true" keyProperty="orderId" keyColumn="sales_order_id">
+        INSERT INTO sales_order (
+            company_id, order_date, expected_delivery_date, order_status
+        ) VALUES (
+            #{companyId, jdbcType=NUMERIC},
+            COALESCE(#{orderDate, jdbcType=TIMESTAMP}, SYSDATE),
+            #{expectedDeliveryDate, jdbcType=TIMESTAMP},
+            COALESCE(#{orderStatus, jdbcType=INTEGER}, 10)
+        )
+    </insert>
+
+    <insert id="insertOrderDetails">
+        INSERT INTO order_item (
+            sales_order_id, item_id, quantity, unit_price, delivery_date, detail_status
+        )
+        <foreach collection="list" item="item" separator="UNION ALL">
+            SELECT 
+                #{item.orderId, jdbcType=NUMERIC}, 
+                #{item.itemId, jdbcType=NUMERIC}, 
+                #{item.quantity, jdbcType=NUMERIC}, 
+                #{item.unitPrice, jdbcType=NUMERIC}, 
+                #{item.deliveryDate, jdbcType=TIMESTAMP}, 
+                COALESCE(#{item.detailStatus, jdbcType=INTEGER}, 10) 
+            FROM DUAL
+        </foreach>
+    </insert>
+
+    <select id="selectByPage" resultMap="OrderResultMap">
+        SELECT
+            o.sales_order_id, o.company_id, c.company_name,
+            o.order_date, o.expected_delivery_date, o.order_status
+        FROM sales_order o
+        JOIN Company c ON o.company_id = c.company_id
+        ORDER BY o.sales_order_id DESC
+        OFFSET #{offset, jdbcType=NUMERIC} ROWS FETCH NEXT #{pageSize, jdbcType=INTEGER} ROWS ONLY
+    </select>
+
+    <select id="selectById" resultMap="OrderResultMap">
+        SELECT
+            o.sales_order_id, o.company_id, c.company_name,
+            o.order_date, o.expected_delivery_date, o.order_status
+        FROM sales_order o
+        JOIN Company c ON o.company_id = c.company_id
+        WHERE o.sales_order_id = #{id, jdbcType=NUMERIC}
+    </select>
+
+    <select id="selectDetailsByOrderId" resultMap="OrderDetailResultMap">
+        SELECT
+            oi.order_item_id, oi.sales_order_id, oi.item_id,
+            i.item_name, i.item_code, oi.quantity, oi.unit_price,
+            oi.delivery_date, oi.detail_status
+        FROM order_item oi
+        JOIN Item i ON oi.item_id = i.item_id
+        WHERE oi.sales_order_id = #{orderId, jdbcType=NUMERIC}
+    </select>
+
+    <select id="selectUncompletedOrders" resultMap="OrderResultMap">
+        SELECT
+            o.sales_order_id, o.company_id, c.company_name,
+            o.order_date, o.expected_delivery_date, o.order_status
+        FROM sales_order o
+        JOIN Company c ON o.company_id = c.company_id
+        WHERE o.order_status IN (10, 15, 16)
+        ORDER BY o.expected_delivery_date ASC
+    </select>
+
+    <update id="updateOrder">
+        UPDATE sales_order
+        SET
+            company_id = #{companyId, jdbcType=NUMERIC},
+            expected_delivery_date = #{expectedDeliveryDate, jdbcType=TIMESTAMP},
+            order_status = #{orderStatus, jdbcType=INTEGER}
+        WHERE sales_order_id = #{orderId, jdbcType=NUMERIC}
+    </update>
 
 
 

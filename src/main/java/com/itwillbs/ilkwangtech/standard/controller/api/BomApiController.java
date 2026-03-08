@@ -49,7 +49,7 @@ public class BomApiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<Void>> delete(@PathVariable("beforeItemId") Long bomId) {
+    public ResponseEntity<ApiResponseDTO<Void>> delete(@PathVariable("id") Long bomId) {
         bomService.delete(bomId);
         return ResponseEntity.ok(ApiResponseDTO.success("BOM이 성공적으로 삭제되었습니다."));
     }

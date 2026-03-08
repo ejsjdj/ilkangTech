@@ -20,5 +20,9 @@ public interface OrderMapper {
 
     Optional<OrderDTO> selectById(Long id);
 
+    List<OrderDetailDTO> selectDetailsByOrderId(Long orderId);
+    
+    List<OrderDTO> selectUncompletedOrders();
+
     void updateOrder(OrderDTO orderDTO);
 }

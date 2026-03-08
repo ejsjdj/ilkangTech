@@ -49,7 +49,7 @@ public class BomServiceImpl implements  BomService {
 
     @Override
     public void delete(Long id) {
-        bomRepository.delete(modelMapper.map(id, BomEntity.class));
+        bomRepository.deleteById(id);
     }
 
     @Override

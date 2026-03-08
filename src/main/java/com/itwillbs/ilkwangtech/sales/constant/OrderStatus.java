@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OrderStatus implements BaseEnum {
     PENDING(10, "결제대기"),
+    READY(15, "납기가능"),
+    NEED_PRODUCTION(16, "생산필요"),
     PROCESSING(20, "상품준비중"),
     SHIPPING(30, "배송중"),
     COMPLETED(40, "주문완료"),

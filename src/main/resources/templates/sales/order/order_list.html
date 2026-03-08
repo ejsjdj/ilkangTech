@@ -43,97 +43,365 @@
 
     <div layout:fragment="content">
         <div class="diary-wrapper">
-
             <div class="diary-bookmarks">
-                <button class="bookmark pink active"
-                        data-category="PENDING"
-                        onclick="showList(this)">납품예정</button>
-                <button class="bookmark yellow"
-                        data-category="COMPLETED"
-                        onclick="showList(this)">납품완료</button>
+                <button class="bookmark pink active" data-status="PENDING" onclick="changeStatus(this)">납품예정</button>
+                <button class="bookmark yellow" data-status="COMPLETED" onclick="changeStatus(this)">납품완료</button>
             </div>
 
             <div class="diary-page">
                 <div class="masking-tape"></div>
                 <div class="page-header">
-                    <h2 id="list-little">납품예정</h2>
-                    <button type="button" id="openModalBtn" class="btn-add-stcker">+ 추가하기</button>
+                    <h2 id="list-title">수주 현황 (납품예정)</h2>
+                    <button type="button" class="btn-add-sticker" onclick="openAddModal()">+ 신규 수주</button>
                 </div>
 
                 <table class="cute-table">
                     <thead>
                     <tr>
-                        <th>주문코드</th>
+                        <th>ID</th>
                         <th>고객사명</th>
-                        <th>납품예정일</th>
-                        <th>주문코드</th>
+                        <th>주문일시</th>
+                        <th>납기예정일</th>
+                        <th>상태</th>
+                        <th>관리</th>
                     </tr>
                     </thead>
                     <tbody id="list-body"></tbody>
                 </table>
+                <div id="pagination" class="cute-pagination"></div>
+            </div>
+        </div>
+
+        <!-- 1. 신규 수주 등록 모달 -->
+        <div id="addModal" class="modal-overlay">
+            <div class="modal-diary-page" style="width: 700px; max-height: 90vh; overflow-y: auto;">
+                <div class="masking-tape yellow-tape"></div>
+                <h3>✨ 신규 수주 등록</h3>
+                <form id="addOrderForm">
+                    <div class="row">
+                        <div class="col-md-6 input-group-cute">
+                            <label>고객사 <span class="text-danger">*</span></label>
+                            <select id="companySelect" class="form-select" required style="border: 2px dashed #FFDEE9; border-radius: 10px; padding: 10px;">
+                                <option value="">-- 고객사 선택 --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 input-group-cute">
+                            <label>납기 요청일시 <span class="text-danger">*</span></label>
+                            <input type="datetime-local" id="expectedDeliveryDate" required style="width: 100%; padding: 10px; border: 2px dashed #FFDEE9; border-radius: 10px; outline: none;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; border-top: 2px dashed #FFDEE9; padding-top: 20px;">
+                        <h5 style="color: #FF8E9E;">📦 주문 품목</h5>
+                        <table class="table table-sm" style="font-size: 0.9rem;">
+                            <thead>
+                                <tr>
+                                    <th>품목</th>
+                                    <th style="width: 100px;">수량</th>
+                                    <th style="width: 150px;">단가</th>
+                                    <th style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderItemsBody">
+                                <!-- 품목 행이 추가될 곳 -->
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addItemRow()">+ 품목 추가</button>
+                    </div>
+
+                    <div class="modal-btns">
+                        <button type="button" class="btn-sticker pink" onclick="closeModal('addModal')">닫기</button>
+                        <button type="submit" class="btn-sticker blue">등록하기!</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. 수주 상세 보기 모달 -->
+        <div id="detailModal" class="modal-overlay">
+            <div class="modal-diary-page" style="width: 600px;">
+                <div class="masking-tape yellow-tape"></div>
+                <h3>📖 수주 상세 내역</h3>
+                <div id="detailHeader" style="background: #FEF9E7; padding: 15px; border-radius: 15px; border: 2px dashed #F7DC6F; margin-bottom: 20px;">
+                    <!-- 상세 헤더 정보 -->
+                </div>
+                <h5 style="color: #FF8E9E;">📦 품목 리스트</h5>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table class="cute-table" style="font-size: 0.9rem;">
+                        <thead>
+                            <tr>
+                                <th>품목코드</th>
+                                <th>품목명</th>
+                                <th>수량</th>
+                                <th>단가</th>
+                                <th>합계</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailItemsBody"></tbody>
+                    </table>
+                </div>
+                <div class="modal-btns">
+                    <button type="button" class="btn-sticker blue" id="btnDeliver" style="display: none;">납기하기</button>
+                    <button type="button" class="btn-sticker pink" onclick="closeModal('detailModal')">닫기</button>
+                </div>
             </div>
         </div>
 
         <script th:inline="javascript">
-            function showList(element) {
-                document.querySelectorAll('.bookmark').forEach(btn => btn.classList.remove('active'));
-                element.classList.add('active');
+            'use strict';
 
-                const category = element.dataset.category;
-                if (!category) return;
+            const state = {
+                currentStatus: 'PENDING',
+                currentPage: 0,
+                totalPages: 0,
+                companies: [],
+                items: []
+            };
 
-                document.getElementById('list-little').textContent =
-                    category == 'PENDING' ? '납품예정' : '납품완료';
+            document.addEventListener('DOMContentLoaded', () => {
+                loadList('PENDING', 0);
+                fetchInitialData();
+                document.getElementById('addOrderForm').addEventListener('submit', handleOrderSubmit);
+            });
 
-                loadList(category);
+            async function fetchInitialData() {
+                try {
+                    // 고객사 목록 (client 타입만 또는 전체)
+                    const companyRes = await fetch('/api/sales/company/list?companyType=client&size=100');
+                    const companyJson = await companyRes.json();
+                    state.companies = companyJson.data?.content || [];
+                    
+                    const companySelect = document.getElementById('companySelect');
+                    state.companies.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.companyId;
+                        opt.textContent = c.companyName;
+                        companySelect.appendChild(opt);
+                    });
+
+                    // 품목 목록 (완제품 중심)
+                    const itemRes = await fetch('/api/item/list?type=FG&size=100');
+                    const itemJson = await itemRes.json();
+                    state.items = itemJson.data?.content || [];
+                } catch (err) {
+                    console.error('초기 데이터 로딩 실패:', err);
+                }
             }
 
-            async function loadList(category) {
+            function changeStatus(btn) {
+                document.querySelectorAll('.bookmark').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentStatus = btn.dataset.status;
+                document.getElementById('list-title').textContent = `수주 현황 (${btn.textContent})`;
+                loadList(state.currentStatus, 0);
+            }
+
+            async function loadList(status, page = 0) {
                 const tbody = document.getElementById('list-body');
-                if (!tbody) return;
-                const page = 0;
-                const url = `/api/orders/list?category=${category}&page=${page}&size=10`;
-
+                state.currentPage = page;
+                
                 try {
-
-                    const res = await fetch(url);
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+                    const res = await fetch(`/api/sales/orders?page=${page}&size=10&sort=orderId,desc`);
+                    if (!res.ok) throw new Error('서버 응답 오류');
                     const json = await res.json();
+                    
+                    const orders = json.data || [];
+                    // 클라이언트 사이드 필터링 (원래는 서버에서 처리해야 함)
+                    const filtered = orders.filter(o => {
+                        if (status === 'PENDING') {
+                            return ['PENDING', 'READY', 'NEED_PRODUCTION', '결제대기', '납기가능', '생산필요'].includes(o.orderStatus);
+                        }
+                        if (status === 'COMPLETED') {
+                            return ['COMPLETED', '주문완료', '납품완료'].includes(o.orderStatus);
+                        }
+                        return o.orderStatus === status;
+                    });
 
-                    if (!json.success) {
-                        alert(`로드 실패: ${json.message || '알 수 없는 오류'}`);
-                        return;
-                    }
-
-                    const orders = json.data?.content ?? [];
-
-                    tbody.innerHTML = orders.length === 0
-                        ? '<tr><td colspan="5" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>'
+                    tbody.innerHTML = filtered.length === 0 
+                        ? '<tr><td colspan="6" style="text-align:center; padding:30px;">내역이 없습니다.</td></tr>' 
                         : '';
 
-                    orders.forEach(order => {
+                    filtered.forEach(o => {
                         const tr = document.createElement('tr');
+                        const statusClass = (status) => {
+                            if (status === 'READY' || status === '납기가능') return 'bg-primary';
+                            if (status === 'NEED_PRODUCTION' || status === '생산필요') return 'bg-danger';
+                            if (status === 'PENDING' || status === '결제대기') return 'bg-info';
+                            if (status === 'COMPLETED' || status === '납품완료') return 'bg-success';
+                            if (status === 'CANCELED' || status === '주문취소') return 'bg-secondary';
+                            return 'bg-info';
+                        };
+
                         tr.innerHTML = `
-                            <td>${order.orderCode ?? '-'}</td>
-                            <td>${order.companyName ?? '-'}</td>
-                            <td>${order.deliveryDate ?? '-'}</td>
-                            <td>
-                                <button class="btn-add-stick"
-                                        onclick="openDetail(${order.orderId})">자세히</button>
-                            </td>
+                            <td>${o.orderId}</td>
+                            <td>${escapeHtml(o.companyName || '-')}</td>
+                            <td>${formatDate(o.orderDate)}</td>
+                            <td>${formatDate(o.expectedDeliveryDate)}</td>
+                            <td><span class="badge ${statusClass(o.orderStatus)}">${o.orderStatus}</span></td>
+                            <td><button class="btn btn-sm btn-outline-primary" onclick="loadOrderDetail(${o.orderId})">상세보기</button></td>
                         `;
                         tbody.appendChild(tr);
                     });
-
                 } catch (err) {
-                    console.error('리스트 로드 오류:', err);
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">서버 연결 오류가 발생했습니다.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">데이터를 불러오지 못했습니다.</td></tr>';
                 }
+            }
 
+            function openAddModal() {
+                document.getElementById('addModal').style.display = 'block';
+                document.getElementById('orderItemsBody').innerHTML = '';
+                addItemRow(); // 기본 행 하나 추가
+            }
+
+            function closeModal(id) {
+                document.getElementById(id).style.display = 'none';
+                if(id === 'addModal') document.getElementById('addOrderForm').reset();
+            }
+
+            function addItemRow() {
+                const tbody = document.getElementById('orderItemsBody');
+                const tr = document.createElement('tr');
+                
+                let itemOptions = state.items.map(it => `<option value="${it.itemId}" data-price="${it.standardPrice || 0}">[${it.itemCode}] ${it.itemName}</option>`).join('');
+
+                tr.innerHTML = `
+                    <td>
+                        <select class="form-select form-select-sm item-select" required onchange="updateRowPrice(this)">
+                            <option value="">-- 품목 선택 --</option>
+                            ${itemOptions}
+                        </select>
+                    </td>
+                    <td><input type="number" class="form-control form-control-sm item-qty" min="1" value="1" required></td>
+                    <td><input type="number" class="form-control form-control-sm item-price" min="0" value="0" required></td>
+                    <td><button type="button" class="btn btn-sm text-danger" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            function updateRowPrice(select) {
+                const opt = select.options[select.selectedIndex];
+                const price = opt.dataset.price || 0;
+                const row = select.closest('tr');
+                row.querySelector('.item-price').value = price;
+            }
+
+            async function handleOrderSubmit(e) {
+                e.preventDefault();
+                
+                const rows = document.querySelectorAll('#orderItemsBody tr');
+                const orderDetails = Array.from(rows).map(row => ({
+                    itemId: row.querySelector('.item-select').value,
+                    quantity: row.querySelector('.item-qty').value,
+                    unitPrice: row.querySelector('.item-price').value
+                }));
+
+                const payload = {
+                    companyId: document.getElementById('companySelect').value,
+                    expectedDeliveryDate: document.getElementById('expectedDeliveryDate').value,
+                    orderDetails: orderDetails
+                };
+
+                try {
+                    const res = await fetch('/api/sales/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (res.ok) {
+                        alert('수주가 성공적으로 등록되었습니다! ✨');
+                        closeModal('addModal');
+                        loadList(state.currentStatus, 0);
+                    } else {
+                        throw new Error('등록 실패');
+                    }
+                } catch (err) {
+                    alert('수주 등록 중 오류가 발생했습니다.');
+                }
+            }
+
+            async function loadOrderDetail(id) {
+                try {
+                    const res = await fetch(`/api/sales/orders/${id}`);
+                    const json = await res.json();
+                    const order = json.data;
+
+                    document.getElementById('detailHeader').innerHTML = `
+                        <div class="row">
+                            <div class="col-6"><strong>고객사:</strong> ${escapeHtml(order.companyName)}</div>
+                            <div class="col-6"><strong>상태:</strong> ${order.orderStatus}</div>
+                            <div class="col-6"><strong>주문일시:</strong> ${formatDate(order.orderDate)}</div>
+                            <div class="col-6"><strong>납기예정:</strong> ${formatDate(order.expectedDeliveryDate)}</div>
+                        </div>
+                    `;
+
+                    const itemsBody = document.getElementById('detailItemsBody');
+                    itemsBody.innerHTML = '';
+                    let total = 0;
+                    order.orderDetails.forEach(d => {
+                        const sum = (d.quantity || 0) * (d.unitPrice || 0);
+                        total += sum;
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${escapeHtml(d.itemCode || '-')}</td>
+                            <td>${escapeHtml(d.itemName || '-')}</td>
+                            <td>${d.quantity}</td>
+                            <td>${(d.unitPrice || 0).toLocaleString()}</td>
+                            <td>${sum.toLocaleString()}</td>
+                        `;
+                        itemsBody.appendChild(tr);
+                    });
+                    
+                    const totalTr = document.createElement('tr');
+                    totalTr.innerHTML = `<td colspan="4" style="text-align:right; font-weight:bold;">총 합계:</td><td style="font-weight:bold;">${total.toLocaleString()}</td>`;
+                    itemsBody.appendChild(totalTr);
+
+                    const btnDeliver = document.getElementById('btnDeliver');
+                    if (['READY', '납기가능'].includes(order.orderStatus)) {
+                        btnDeliver.style.display = 'block';
+                        btnDeliver.onclick = () => performDelivery(order.orderId);
+                    } else {
+                        btnDeliver.style.display = 'none';
+                    }
+
+                    document.getElementById('detailModal').style.display = 'block';
+                } catch (err) {
+                    alert('상세 정보를 불러오지 못했습니다.');
+                }
+            }
+
+            async function performDelivery(orderId) {
+                if (!confirm('납기 처리를 완료하시겠습니까?\n이 작업은 재고를 차감하며 되돌릴 수 없습니다.')) return;
+
+                try {
+                    const res = await fetch(`/api/sales/orders/${orderId}/delivery`, {
+                        method: 'POST'
+                    });
+                    const json = await res.json();
+
+                    if (res.ok && json.success) {
+                        alert('납기 처리가 완료되었습니다. ✨');
+                        closeModal('detailModal');
+                        loadList(state.currentStatus, state.currentPage);
+                    } else {
+                        throw new Error(json.message || '납기 처리 실패');
+                    }
+                } catch (err) {
+                    alert(`오류: ${err.message}`);
+                }
+            }
+
+            function formatDate(dtStr) {
+                if(!dtStr) return '-';
+                const d = new Date(dtStr);
+                return d.toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            }
+
+            function escapeHtml(unsafe) {
+                if(!unsafe) return '';
+                return unsafe.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
             }
         </script>
-
     </div>
 
 

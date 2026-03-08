@@ -11,9 +11,9 @@ public interface CompanyService {
 
     void createCompany(CompanyDTO companyDTO);
 
-    List<CompanyDTO> getCompanyList(Pageable pageable, CompanyCategory category);
+    List<CompanyDTO> getCompanyList(Pageable pageable, CompanyCategory companyType);
 
-    long getTotalCount(CompanyCategory category);
+    long getTotalCount(CompanyCategory companyType);
 
     List<PurchaseCompanyDTO> selectPurchaseCompany();
 

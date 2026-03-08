@@ -1,23 +1,24 @@
 package com.itwillbs.ilkwangtech.sales.dto;
 
-
 import com.itwillbs.ilkwangtech.sales.constant.OrderDetailStatus;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderDetailDTO {
 
     private Long orderDetailId;
     private Long orderId;
-    private Long productId;
+    private Long itemId;
+    private String itemName;
+    private String itemCode;
     private Long quantity;
-    private Double price;
+    private Long unitPrice;
 
     // 제품별 개별 출하 시기
     private LocalDateTime deliveryDate;

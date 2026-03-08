@@ -8,6 +8,8 @@ import com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO;
 import com.itwillbs.ilkwangtech.sales.service.company.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +31,11 @@ public class CompanyApiController {
 
     // 2. 고객사 목록 조회
     @GetMapping("/list")
-    public ResponseEntity<ApiResponseDTO<PageResponseDTO<CompanyDTO>>> getCustomerList(Pageable pageable, @RequestParam CompanyCategory category) {
-        List<CompanyDTO> list = companyService.getCompanyList(pageable, category);
-        long total = companyService.getTotalCount(category);
+    public ResponseEntity<ApiResponseDTO<PageResponseDTO<CompanyDTO>>> getCustomerList(
+            @PageableDefault(page = 0, size = 10, sort = "companyId", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam CompanyCategory companyType) {
+        List<CompanyDTO> list = companyService.getCompanyList(pageable, companyType);
+        long total = companyService.getTotalCount(companyType);
 
         PageResponseDTO<CompanyDTO> pageData = new PageResponseDTO<>(
                 list, total, (int) Math.ceil((double) total / pageable.getPageSize())

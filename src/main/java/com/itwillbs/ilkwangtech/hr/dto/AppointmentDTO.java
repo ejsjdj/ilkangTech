@@ -24,7 +24,7 @@ public class AppointmentDTO {
     private LocalDate approveDate;
 
     @Builder
-    public AppointmentDTO(Long appointmentId, String memberId, String preDept, String currentDept, String currentRank, String preRank, String workStatus, LocalDate approveDate){
+    public AppointmentDTO(Long appointmentId, String memberId, String preDept, String currentDept, String currentRank, String preRank, String workStatus, String approveStatus, LocalDate approveDate){
         super();
         this.appointmentId = appointmentId;
         this.memberId = memberId;
@@ -33,6 +33,7 @@ public class AppointmentDTO {
         this.preRank = preRank;
         this.currentRank = currentRank;
         this.workStatus = workStatus;
+        this.approveStatus = approveStatus;
         this.approveDate = approveDate;
     }
 

@@ -53,6 +53,7 @@ public class AppointmentService {
                     .preRank(preRankName)
                     .currentRank(currRankName)
                     .workStatus(appointmentEntity.getWorkStatus())
+                    .approveStatus(appointmentEntity.getApproveStatus())
                     .approveDate(appointmentEntity.getApproveDate())
                     .build();
         });

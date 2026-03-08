@@ -137,7 +137,7 @@ async function postDraft(generatedTitle, generatedContent) {
   let uploadedFile = null;
   const fileInput = document.getElementById("draftFile");
 
-  // 파일 업로드 (있을 때만)
+  // 파일 업로드
   if (fileInput.files.length > 0) {
     uploadedFile = await uploadFile();
     console.log("1. 서버에서 받은 파일 정보:", uploadedFile);

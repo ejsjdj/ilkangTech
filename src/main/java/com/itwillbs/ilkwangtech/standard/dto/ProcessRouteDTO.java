@@ -10,13 +10,13 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ProcessRouteDTO {
-    private String routeCode; // 공정라우트 코드
     private Long itemId;
+    private String routeCode; // 공정라우트 코드
     private String itemName; // 품목명
     private String routeName; // 라우트명
     private String description; // 공정라우트 설명
     private String createdAt; // 생성일시
-    private String constructor; // 생성자
+    private String memberName; // 생성자
 
     @Builder
     public ProcessRouteDTO(String routeCode, String description, Long itemId, String itemName, String createdAt, String routeName, String constructor){
@@ -27,7 +27,6 @@ public class ProcessRouteDTO {
         this.routeName = routeName;
         this.description = description;
         this.createdAt = createdAt;
-        this.constructor = constructor;
-
+        this.memberName = constructor;
     }
 }

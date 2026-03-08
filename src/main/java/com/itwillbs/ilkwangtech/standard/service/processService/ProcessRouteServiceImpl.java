@@ -43,7 +43,7 @@ public class ProcessRouteServiceImpl implements ProcessRouteService {
     public Page<ProcessRouteDTO> getProcessRouteList(Pageable pageable, Long itemId, String routeName){
 
         Page<ProcessRouteEntity> processEntities =
-                processRouteRepository.findDistinctRouteIdBy(itemId, routeName, pageable);
+                processRouteRepository.findDistinctRouteIdBy(pageable);
 
         return processEntities.map(processRouteEntity -> ProcessRouteDTO.builder()
                 .routeCode(processRouteEntity.getRouteCode())

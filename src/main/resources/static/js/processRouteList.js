@@ -18,8 +18,15 @@ document.addEventListener("DOMContentLoaded", function () {
     columns: [
       { header: "라우트코드", name: "routeCode", align: "center" },
       { header: "라우트명", name: "routeName", align: "center" },
-      { header: "생성자", name: "constructor", align: "center" },
-      { header: "생성일", name: "createdAt", align: "center" },
+      { header: "생성자", name: "memberName", align: "center" },
+      {
+        header: "생성일",
+        name: "createdAt",
+        align: "center",
+        formatter: ({ value }) => {
+          return value ? value.substring(0, 10) : "-";
+        },
+      },
       {
         header: "상세",
         name: "detail",
@@ -37,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch("/api/process_mst?page=0&size=10")
       .then((res) => res.json())
       .then((data) => {
+        console.log("라우트코드 데이터 : ", data);
         const list = data.content || data;
         grid.resetData(list);
       })
@@ -115,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
         bodyHeight: 300,
         rowHeaders: ["checkbox", "rowNum"],
         columns: [
-          { header: "순번", name: "sequence", editor: "text" },
+          { header: "순번", name: "sequence", editor: "text", align: "center" },
           { name: "id", hidden: true },
           { name: "operationId", hidden: true },
           { header: "공정코드", name: "operationCode" },
@@ -155,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const currentData = detailGrid.getData();
 
-      // 🔥 중복 방지
+      // 중복 방지
       if (currentData.some((r) => r.operationId === selectedProc.id)) {
         return alert("이미 추가된 공정입니다.");
       }

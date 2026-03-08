@@ -73,6 +73,7 @@ public class ProcessServiceImpl implements ProcessService{
                     description(processInsertDTO.getDescription()).
                     member(member).
                     createdAt(LocalDate.now()).
+                    status(ProcessStatus.ACTIVE).
                     build();
 
             processRepository.save(process);

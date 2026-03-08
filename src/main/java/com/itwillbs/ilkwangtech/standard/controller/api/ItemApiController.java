@@ -10,8 +10,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/item")
@@ -35,18 +40,22 @@ public class ItemApiController {
     public ResponseEntity<ApiResponseDTO<Page<ItemDTO>>> getBomList(
             @RequestParam(name = "type", defaultValue = "") ItemType type,
             @PageableDefault(page = 0, size = 10, sort = "itemId", direction = Sort.Direction.DESC) Pageable pageable) {
-        log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
-        log.info("bomList");
-        log.info("itemType: " + type);
-        log.info("😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂😂");
         Page<ItemDTO> result = itemService.getBomList(type, pageable);
 
         return ResponseEntity.ok(ApiResponseDTO.success("품목 목록 조회에 성공했습니다.", result));
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponseDTO<Void>> create(@RequestBody ItemDTO dto) {
-        itemService.create(dto);
+    @PreAuthorize("hasAnyAuthority('CEO', 'PRODUCTION')")
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<ApiResponseDTO<Void>> create(
+            @RequestPart("itemDTO") ItemDTO dto,
+            @RequestPart(value = "itemImgFile", required = false) List<MultipartFile> itemImgFileList) throws Exception {
+        
+        if(itemImgFileList == null || itemImgFileList.isEmpty()) {
+            itemService.create(dto);
+        } else {
+            itemService.create(dto, itemImgFileList);
+        }
         return ResponseEntity.ok(ApiResponseDTO.success("품목 등록에 성공했습니다."));
     }
 
@@ -56,13 +65,23 @@ public class ItemApiController {
         return ResponseEntity.ok(ApiResponseDTO.success("품목 조회에 성공했습니다.", item));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<Void>> update(@PathVariable Long id, @RequestBody ItemDTO dto) {
+    @PreAuthorize("hasAnyAuthority('CEO', 'PRODUCTION')")
+    @PutMapping(value = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<ApiResponseDTO<Void>> update(
+            @PathVariable Long id,
+            @RequestPart("itemDTO") ItemDTO dto,
+            @RequestPart(value = "itemImgFile", required = false) List<MultipartFile> itemImgFileList) throws Exception {
+        
         dto.setItemId(id);
-        itemService.update(dto);
+        if(itemImgFileList == null || itemImgFileList.isEmpty()) {
+            itemService.update(dto);
+        } else {
+            itemService.update(dto, itemImgFileList);
+        }
         return ResponseEntity.ok(ApiResponseDTO.success("품목 수정에 성공했습니다."));
     }
 
+    @PreAuthorize("hasAnyAuthority('CEO', 'PRODUCTION')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseDTO<Void>> delete(@PathVariable Long id) {
         itemService.delete(id);

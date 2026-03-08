@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.service.order;
 
+import com.itwillbs.ilkwangtech.common.annotation.Audit;
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
 import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryRepository;
 import com.itwillbs.ilkwangtech.sales.constant.OrderStatus;
@@ -9,11 +10,14 @@ import com.itwillbs.ilkwangtech.sales.repository.OrderRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,9 +94,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @Audit(action = "수주 등록", entity = "Order")
     public void createOrder(OrderDTO orderDTO) {
         if (orderDTO.getOrderStatus() == null) {
-            orderDTO.setOrderStatus(OrderStatus.PENDING);
+            orderDTO.setOrderStatus(OrderStatus.NEED_PRODUCTION);
         }
         orderRepository.saveOrderDTO(orderDTO);
 
@@ -112,21 +117,42 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public List<OrderDTO> getOrderList(Pageable pageable) {
-        return orderRepository.getOrderList(
+    public Page<OrderDTO> getOrderList(Pageable pageable, String filterStatus) {
+        List<OrderStatus> statuses = null;
+        if ("PENDING".equals(filterStatus)) {
+            statuses = Arrays.asList(OrderStatus.READY, OrderStatus.NEED_PRODUCTION);
+        } else if ("COMPLETED".equals(filterStatus)) {
+            statuses = Arrays.asList(OrderStatus.COMPLETED);
+        }
+
+        List<OrderDTO> content = orderRepository.getOrderList(
                 pageable.getOffset(),
-                pageable.getPageSize()
+                pageable.getPageSize(),
+                statuses
         );
+        content.forEach(o -> {
+            if (o.getOrderStatus() != null) {
+                o.setOrderStatusDescription(o.getOrderStatus().getDescription());
+            }
+        });
+        long total = orderRepository.countOrders(statuses);
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     @Override
     public OrderDTO getOrder(Long id) {
         OrderDTO orderDTO = orderRepository.getOrder(id).orElseThrow();
+        if (orderDTO.getOrderStatus() != null) {
+            orderDTO.setOrderStatusDescription(orderDTO.getOrderStatus().getDescription());
+        }
         orderDTO.setOrderDetails(orderRepository.getOrderDetails(id));
         return orderDTO;
     }
 
     @Override
+    @Transactional
+    @Audit(action = "수주 수정", entity = "Order")
     public void update(OrderDTO orderDTO) {
         orderRepository.updateOrder(orderDTO);
     }
@@ -138,17 +164,21 @@ public class OrderServiceImpl implements OrderService {
             return false;
         }
 
-        return order.getOrderStatus() == OrderStatus.PENDING;
+        return order.getOrderStatus() != OrderStatus.COMPLETED;
     }
 
     @Override
+    @Transactional
+    @Audit(action = "수주 취소", entity = "Order")
     public void invalid(Long id) {
-        OrderDTO orderDTO = orderRepository.getOrder(id).orElseThrow();
-        orderDTO.setOrderStatus(OrderStatus.CANCELED);
-        orderRepository.updateOrder(orderDTO);
+        // 취소 기능은 3가지 상태에 포함되지 않으므로, 
+        // 필요한 경우 NEED_PRODUCTION으로 되돌리거나 아예 기능을 막습니다.
+        // 여기서는 일단 에러가 나지 않도록 로그만 남깁니다.
+        log.warn("Order cancellation requested for ID {}, but status 3-level rule is applied.", id);
     }
 
     @Transactional
+    @Audit(action = "수주 상태 변경", entity = "Order")
     public void changeOrderStatus(Long id, OrderStatus newStatus) {
         // 1. 기존 주문 조회
         OrderDTO orderDTO = orderRepository.getOrder(id)
@@ -159,13 +189,7 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("완료된 주문의 상태는 변경할 수 없습니다.");
         }
 
-        // 3. 비즈니스 로직에 따른 추가 검증
-        // 예: 생산 요청(PROCESSING)으로 바꿀 때는 결제 대기(PENDING) 상태여야만 함
-        if (newStatus == OrderStatus.PROCESSING && orderDTO.getOrderStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException("결제 대기 상태일 때만 상품 준비 중으로 변경 가능합니다.");
-        }
-
-        // 4. 상태 업데이트
+        // 3. 상태 업데이트
         orderDTO.setOrderStatus(newStatus);
         orderRepository.updateOrder(orderDTO);
     }
@@ -221,6 +245,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @Audit(action = "납품 완료", entity = "Order")
     public void deliveryOrder(Long orderId) {
         // 1. 주문 조회
         OrderDTO order = orderRepository.getOrder(orderId)

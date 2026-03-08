@@ -1,6 +1,7 @@
 package com.itwillbs.ilkwangtech.standard.service.bom;
-
+import com.itwillbs.ilkwangtech.common.annotation.Audit;
 import com.itwillbs.ilkwangtech.standard.dto.BomDTO;
+import com.itwillbs.ilkwangtech.standard.dto.BomTreeDTO;
 import com.itwillbs.ilkwangtech.standard.dto.ParentItemDTO;
 import com.itwillbs.ilkwangtech.standard.entity.BomEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
@@ -13,8 +14,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,8 @@ public class BomServiceImpl implements  BomService {
     private final ModelMapper modelMapper;
 
     @Override
+    @Transactional
+    @Audit(action = "BOM 등록", entity = "BOM")
     public void create(BomDTO dto) {
         // 1. DTO의 ID로 ItemEntity 조회
         ItemEntity beforeItem = itemRepository.findById(dto.getParentItemId()).orElse(null);
@@ -43,11 +50,15 @@ public class BomServiceImpl implements  BomService {
     }
 
     @Override
+    @Transactional
+    @Audit(action = "BOM 수정", entity = "BOM")
     public void update(BomDTO dto) {
         bomRepository.save(modelMapper.map(dto, BomEntity.class));
     }
 
     @Override
+    @Transactional
+    @Audit(action = "BOM 삭제", entity = "BOM")
     public void delete(Long id) {
         bomRepository.deleteById(id);
     }
@@ -71,5 +82,15 @@ public class BomServiceImpl implements  BomService {
         List<ParentItemDTO> result = bomMapper.selectBomList(childItemId, pageable);
 
         return result;
+    }
+
+    @Override
+    public List<BomTreeDTO> getBomTree(Long itemId) {
+        return bomMapper.selectRecursiveForward(itemId);
+    }
+
+    @Override
+    public List<BomTreeDTO> getWhereUsedTree(Long itemId) {
+        return bomMapper.selectRecursiveReverse(itemId);
     }
 }

@@ -51,6 +51,7 @@ public class Member {
     private String residentNumber; // 주민등록번호
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "member")
+    @OrderBy("repImgYn DESC, id DESC")
     private List<ProfileImg> profileImgs;
 
     @Column(length = 100, nullable = false, unique = true)

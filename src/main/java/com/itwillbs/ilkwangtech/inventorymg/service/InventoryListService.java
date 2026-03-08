@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.inventorymg.service;
 
+import com.itwillbs.ilkwangtech.common.annotation.Audit;
 import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryHistoryDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.OutboundListDTO;
@@ -92,6 +93,7 @@ public class InventoryListService {
     
     // 실수량 조절 (증가/감소) 로직
     @Transactional
+    @Audit(action = "재고 조정", entity = "Inventory")
     public String adjustInventory(Long inventoryId, String type, Long qty, String reason) {
         InventoryEntity inv = inventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new RuntimeException("재고 정보를 찾을 수 없습니다."));
@@ -120,6 +122,7 @@ public class InventoryListService {
     
     // 폐기 로직
     @Transactional
+    @Audit(action = "재고 폐기", entity = "Inventory")
     public String discardInventory(Long inventoryId, Long qty, String reason) {
         InventoryEntity inv = inventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new RuntimeException("재고 정보를 찾을 수 없습니다."));

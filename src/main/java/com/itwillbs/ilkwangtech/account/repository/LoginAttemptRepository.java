@@ -18,23 +18,27 @@ public interface LoginAttemptRepository extends JpaRepository<LoginAttempt, Long
     boolean deleteByMemberId(Long id);
 
     @Query(value = """
-        select
-            a.id as loginAttemptId,
-            m.id as memberId,
-            m.employee_number as employeeNumber,
-            d.department_name as department,
-            p.position_name as position,
-            m.name as name,
-            m.phone_number as phoneNumber,
-            m.email as email,
-            a.lock_Time as lockDateTime
-        from login_attempts a
-        join members m
-        on a.MEMBER_ID = M.ID
-        join departments d
-        on d.id = m.department
-        join positions p
-        on p.id = m.position
-        """,nativeQuery = true)
+        select new com.itwillbs.ilkwangtech.account.dto.LoginAttemptDTO(
+            a.id,
+            m.id,
+            m.employeeNumber,
+            d.departmentName,
+            p.positionName,
+            m.name,
+            m.phoneNumber,
+            m.email,
+            a.lockTime
+        )
+        from LoginAttempt a
+        join a.member m
+        left join Department d on d.id = m.department
+        left join Position p on p.id = m.position
+        where a.accountNonLocked = false
+        """,
+        countQuery = """
+        select count(a)
+        from LoginAttempt a
+        where a.accountNonLocked = false
+        """)
     Page<LoginAttemptDTO> findAttemptLongingList(Pageable pageable);
 }

@@ -16,6 +16,8 @@ public interface CompanyMapper {
 
     CompanyDTO selectByName(@Param("companyName") String companyName);
 
+    CompanyDTO selectById(@Param("id") Long id);
+
     List<CompanyDTO> selectByPage(@Param("offset") long offset,
                                   @Param("pageSize") long pageSize,
                                   @Param("companyType") CompanyCategory companyType);

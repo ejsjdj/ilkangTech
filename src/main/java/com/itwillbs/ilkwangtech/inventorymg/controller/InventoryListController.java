@@ -6,6 +6,7 @@ import com.itwillbs.ilkwangtech.inventorymg.dto.OutboundListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.service.InventoryListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +42,7 @@ public class InventoryListController {
     }
     
     // 실수량 조절 API
+    @PreAuthorize("hasAnyAuthority('CEO', 'PRODUCTION', 'PURCHASING')")
     @PostMapping("/api/inventory/adjust")
     @ResponseBody
     public ResponseEntity<String> adjustInventory(
@@ -57,6 +59,7 @@ public class InventoryListController {
     }
 
     // 폐기 처리 API
+    @PreAuthorize("hasAnyAuthority('CEO', 'PRODUCTION', 'PURCHASING')")
     @PostMapping("/api/inventory/discard")
     @ResponseBody
     public ResponseEntity<String> discardInventory(

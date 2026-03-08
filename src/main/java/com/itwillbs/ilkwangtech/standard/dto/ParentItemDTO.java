@@ -20,5 +20,6 @@ public class ParentItemDTO {
     private String code;
     private String name;
     private Long unit;
+    private String imgUrl;
 
 }

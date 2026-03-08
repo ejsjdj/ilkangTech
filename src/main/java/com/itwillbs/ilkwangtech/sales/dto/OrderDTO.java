@@ -19,6 +19,8 @@ public class OrderDTO {
     private LocalDateTime orderDate; // 주문 접수 일자
     private LocalDateTime expectedDeliveryDate; // 납기 예정 일자
     private OrderStatus orderStatus;      // 주문 상태 (접수, 처리중, 완료 등)
+    private String orderStatusDescription; // 주문 상태 한글명
     private List<OrderDetailDTO> orderDetails;
+    private Long totalAmount;
 
 }

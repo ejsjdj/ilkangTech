@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.inventorymg.controller;
 
+import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryHistoryDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.OutboundListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.service.InventoryListService;
@@ -86,6 +87,24 @@ public class InventoryListController {
         // 서비스로 탭, 검색조건, 검색어 전달
         List<OutboundListDTO> resultList = inventoryListService.getOutboundListData(tab, searchType, keyword);
         
+        return ResponseEntity.ok(resultList);
+    }
+    
+    // 재고 이력 페이지 화면 연결
+    @GetMapping("/inventoryhistory")
+    public String inventoryHistory() {
+        return "inventorymg/inventoryhistory"; 
+    }
+    
+    // 재고 이력 데이터 로드 API
+    @GetMapping("/api/inventory-history-data")
+    @ResponseBody
+    public ResponseEntity<List<InventoryHistoryDTO>> getInventoryHistoryData(
+            @RequestParam(name = "tab", defaultValue = "ALL") String tab,
+            @RequestParam(name = "searchType", defaultValue = "itemName") String searchType,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword) {
+            
+        List<InventoryHistoryDTO> resultList = inventoryListService.getInventoryHistoryData(tab, searchType, keyword);
         return ResponseEntity.ok(resultList);
     }
 }

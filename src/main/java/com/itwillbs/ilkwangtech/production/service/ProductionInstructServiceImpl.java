@@ -9,9 +9,11 @@ import com.itwillbs.ilkwangtech.member.repository.MemberRepository;
 import com.itwillbs.ilkwangtech.production.dto.*;
 import com.itwillbs.ilkwangtech.production.entity.ProductionInstructEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
+import com.itwillbs.ilkwangtech.production.entity.ProductionStorageEntity;
 import com.itwillbs.ilkwangtech.production.entity.ProductionWorkerEntity;
 import com.itwillbs.ilkwangtech.production.repository.ProductionInsturctRepository;
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
+import com.itwillbs.ilkwangtech.production.repository.ProductionStorageRepository;
 import com.itwillbs.ilkwangtech.production.repository.ProductionWorkerRepository;
 import com.itwillbs.ilkwangtech.sales.dto.PurchaseOrderLineDTO;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
@@ -46,7 +48,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
     private final BomRepository bomRepository;
     private final InventoryHistoryRepository inventoryHistoryRepository;
     private final ProductionWorkerRepository productionWorkerRepository;
-
+    private final ProductionStorageRepository productionStorageRepository;
 
     @Override
     @Transactional
@@ -94,11 +96,6 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
 
         // 2. 작업자 엔티티 저장
         for(ProductionInstructWorkerInsertDTO lineDTO : productionInstructInsertDTO.getWorkers()){
-
-            System.out.println("processId = " + lineDTO.getProcessId());
-            System.out.println("memberId = " + lineDTO.getMemberId());
-            System.out.println("outputItemId = " + lineDTO.getOutputItemId());
-            System.out.println("additionQty = " + lineDTO.getAdditionQty());
 
             Member memberId = memberRepository.findById(lineDTO.getMemberId())
                     .orElseThrow(() -> new IllegalArgumentException("등록자 정보가 없습니다."));
@@ -204,6 +201,10 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         // 2. 작업지시 엔티티 가져오기
         ProductionInstructEntity currentInstruct = productionInsturctRepository.findById(instructId).orElseThrow();
 
+        ItemEntity itemEntity = itemRepository.findByItemId(workerEntity.getItem().getItemId());
+
+        ProductionStorageEntity storageEntity = new ProductionStorageEntity();
+
         // 3. 모든 작업자가 COMPLETE인지 확인
         boolean allWorkersComplete = currentInstruct.getWorkers().stream()
                 .allMatch(w -> "COMPLETE".equals(w.getStatus()));
@@ -212,6 +213,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
             currentInstruct.setStatus("COMPLETE");
 
             productionInsturctRepository.saveAndFlush(currentInstruct);
+
 
             // 5. 생산계획 엔티티 가져오기
             ProductionPlaneEntity planeEntity = productionPlaneRepository.findById(planeId).orElseThrow();
@@ -225,6 +227,14 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
             if (totalInstructs == completeCount) {
                 planeEntity.setStatus("COMPLETE");
                 productionPlaneRepository.save(planeEntity);
+
+                storageEntity.setInstruct(currentInstruct);
+                storageEntity.setItem(itemEntity);
+                storageEntity.setProductionQty(workerEntity.getProductionQty());
+                storageEntity.setStorageDate(LocalDateTime.now());
+
+                productionStorageRepository.save(storageEntity);
+
             }
         }
     }

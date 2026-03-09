@@ -64,7 +64,17 @@ public class DashboardService {
         for (String zone : zones) {
             for (String rack : racks) {
                 Long qty = inventoryRepository.sumQuantityByZoneAndRack(zone, rack);
-                String status = (qty == null || qty == 0) ? "none" : (qty < 10000 ? "normal" : "full");
+                String status = "none";
+                
+                if (qty != null && qty > 0) {
+                    if ("ZONE C".equals(zone)) {
+                        // 완제품(ZONE C)은 기존 기준 유지: 1만 개부터 '많음(빨간색)'
+                        status = (qty < 10000) ? "normal" : "full";
+                    } else {
+                        // 원자재(ZONE A), 반제품(ZONE B)은 5만 개부터 '많음(빨간색)'
+                        status = (qty < 50000) ? "normal" : "full";
+                    }
+                }
                 statusMap.put(zone + "_" + rack, status);
             }
         }
@@ -97,6 +107,8 @@ public class DashboardService {
                     history.setTransactionType("IN");
                     history.setQuantity(line.getQuantity());
                     historyRepository.save(history);
+                    
+                    prLineRepository.deleteByItemId(item.getItemId());
 
                     successCount++;
                 }
@@ -181,12 +193,17 @@ public class DashboardService {
         long safeStockThreshold = 3000L; 
 
         for (ItemEntity item : uniqueItems) {
-            if (item.getItemCode() != null && item.getItemCode().toUpperCase().startsWith("SAM-")) {
+        	if (item.getItemCode() == null || !item.getItemCode().toUpperCase().startsWith("RW-")) {
                 continue; 
             }
-            
+        	
             Long itemId = item.getItemId();
+            
             long currentStock = currentStockMap.getOrDefault(itemId, 0L);
+            if (currentStock == 0L) {
+                Long dbStock = inventoryRepository.sumCurrentQuantityByItemId(itemId);
+                currentStock = (dbStock != null) ? dbStock : 0L;
+            }
             long incomingStock = incomingStockMap.getOrDefault(itemId, 0L);
             long prodPlan = directPlanMap.getOrDefault(itemId, 0L) + dependentPlanMap.getOrDefault(itemId, 0L);
             long reservedStock = directReservedMap.getOrDefault(itemId, 0L) + dependentReservedMap.getOrDefault(itemId, 0L);
@@ -319,7 +336,7 @@ public class DashboardService {
                 if (line.getItem() != null) {
                     list.add(InboundItemDTO.builder()
                             .purchaseOrderCode(order.getPurchaseOrderCode())
-                            .company(order.getCompany().getCompanyName())
+                            .company(order.getCompany() != null ? order.getCompany().getCompanyName() : "자체발주")
                             .itemCode(line.getItem().getItemCode())
                             .itemName(line.getItem().getItemName())
                             .quantity(line.getQuantity())

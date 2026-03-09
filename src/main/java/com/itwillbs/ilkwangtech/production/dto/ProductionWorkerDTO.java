@@ -4,6 +4,9 @@ import com.itwillbs.ilkwangtech.production.entity.ProductionWorkerEntity;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 @Getter
 @Builder
 public class ProductionWorkerDTO {
@@ -21,8 +24,8 @@ public class ProductionWorkerDTO {
     private String name;
     private String status;
     private String lot;
-    private String startTime;
-    private String endTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private Long productionQty;
     private Long additionQty;
     private Long sequence;
@@ -34,8 +37,8 @@ public class ProductionWorkerDTO {
                 name(entity.getMember().getName()).
                 status(entity.getStatus()).
                 lot(entity.getLot()).
-                startTime(String.valueOf(entity.getStartTime())).
-                endTime(String.valueOf(entity.getEndTime())).
+                startTime(entity.getStartTime()).
+                endTime(entity.getEndTime()).
                 productionQty(entity.getProductionQty()).
                 additionQty(entity.getAdditionQty()).
                 sequence(entity.getSequence()).

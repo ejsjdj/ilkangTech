@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +56,7 @@ public class ProductionInstructApiController {
 
         productionInstructService.saveProductionInstruct(productionInstructInsertDTO, userId);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Collections.singletonMap("message", "등록 성공"));
     }
 
 

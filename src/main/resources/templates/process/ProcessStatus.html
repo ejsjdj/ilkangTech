@@ -172,7 +172,7 @@
 	                            <tr>
 	                                <th>단계</th><th>공정명</th><th>상태</th>
 	                                <th>시작시간</th><th>종료시간</th>
-	                                <th>양품수량</th><th>불량수량</th><th>폐기처리</th>
+	                                <th>양품수량</th><th>불량수량</th>
 	                            </tr>
 	                        </thead>
 	                        <tbody id="detail-tbody">
@@ -264,59 +264,53 @@ function renderTable(data) {
     const tbody = document.getElementById('status-tbody');
     if (!tbody) return;
 
-    tbody.innerHTML = data.map((d, i) => {
-        const shortOpName = formatOperationName(d.operationName);
-        
-        if (currentStatusTab === 'ING') {
-            // DB 상태값에 따른 UI 텍스트 및 스타일 분기
-            const isWaiting = (d.status === 'WAITING' || d.status === 'READY');
-            const statusText = isWaiting ? '대기 중' : '진행중';
-            const statusClass = isWaiting ? 'bg-waiting' : 'bg-ing';
-            const displayOpName = isWaiting ? '-' : (shortOpName || '-');
+    if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted">데이터가 없습니다.</td></tr>`;
+        return;
+    }
 
-            // --- [추가된 부분] 종료예정시간 계산 로직 ---
-            let expectedEndTimeStr = '-';
-            
-            // 전체 상태가 진행중(PROGRESS)이면서, 실제 공정명과 시작시간이 있는 경우에만 계산
-            if (d.status === 'PROGRESS' && d.operationName && d.startDate) {
-                const start = new Date(d.startDate);
-                const qty = d.instructQty || 0;
-                const opName = d.operationName || '';
-                
-                let addSeconds = 0;
-                // 사출은 수량 * 60초(1분), 나머지는 수량 * 3초
-                if (opName.includes('사출')) {
-                    addSeconds = qty * 60; 
-                } else {
-                    addSeconds = qty * 3;
-                }
-                
-                const expectedEnd = new Date(start.getTime() + (addSeconds * 1000));
-                
-                const ey = expectedEnd.getFullYear();
-                const em = String(expectedEnd.getMonth() + 1).padStart(2, '0');
-                const ed = String(expectedEnd.getDate()).padStart(2, '0');
-                const eh = String(expectedEnd.getHours()).padStart(2, '0');
-                const emm = String(expectedEnd.getMinutes()).padStart(2, '0');
-                
-                expectedEndTimeStr = `${ey}-${em}-${ed} ${eh}:${emm}`;
-            }
-            // ---------------------------------------------
+    tbody.innerHTML = data.map((d, i) => {
+        if (currentStatusTab === 'ING') {
+            // [진행 현황 탭]
+            const elapsed = calculateElapsed(d.startDate);
+            const statusBadge = d.status === 'PROGRESS' ? 'bg-ing' : 'bg-waiting';
+            const statusText = d.status === 'PROGRESS' ? '진행중' : '대기 중';
 
             return `
                 <tr>
                     <td>${i + 1}</td>
                     <td class="fw-bold text-indigo">${d.instructCode}</td>
-                    <td>${d.itemName}</td>
+                    <td>${d.itemName || '-'}</td>
                     <td>${d.instructQty || 0}</td>
                     <td>${d.startDate ? d.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-                    <td class="text-primary fw-bold">${expectedEndTimeStr}</td> <td><span class="badge-status ${statusClass}">${statusText}</span></td>
-                    <td>${displayOpName}</td>
-                    <td class="text-muted">${calculateElapsed(d.startDate)}</td>
+                    <td>-</td> 
+                    <td><span class="badge-status ${statusBadge}">${statusText}</span></td>
+                    <td class="fw-bold text-primary">${formatOperationName(d.operationName)}</td>
+                    <td class="text-muted">${elapsed}</td>
                     <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
                 </tr>`;
         } else {
+            // [완료 내역 탭] - 요청하신 완료일시 및 경과시간 표시 로직
             const productionQty = (d.instructQty || 0) - (d.defective || 0);
+
+            // 1. 완료일시: d.endDate (가장 마지막 공정 종료 시간)
+            const completedAt = d.endDate ? d.endDate.replace('T', ' ').substring(0, 16) : '-';
+
+            // 2. 총 경과시간 계산: 마지막 종료(endDate) - 첫 시작(startDate)
+            let totalElapsedStr = '-';
+            if (d.startDate && d.endDate) {
+                const start = new Date(d.startDate);
+                const end = new Date(d.endDate);
+                const diff = end - start;
+
+                if (diff > 0) {
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    totalElapsedStr = `${hours}시간 ${mins}분`;
+                } else {
+                    totalElapsedStr = '0시간 0분';
+                }
+            }
 
             return `
                 <tr>
@@ -326,8 +320,8 @@ function renderTable(data) {
                     <td>${d.instructQty || 0}</td>
                     <td class="text-primary fw-bold">${productionQty}</td>
                     <td class="text-danger fw-bold">${d.defective || 0}</td>
-                    <td>${d.endDate ? d.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-                    <td class="text-muted">${calculateElapsed(d.endDate)}</td>
+                    <td>${completedAt}</td> 
+                    <td class="text-muted">${totalElapsedStr}</td> 
                     <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
                 </tr>`;
         }
@@ -403,7 +397,6 @@ async function goDetail(code) {
                     
                     <td class="fw-bold text-primary modal-detail-text">${s.status === 'COMPLETE' ? goodQty : '-'}</td>
                     <td class="text-danger modal-detail-text">${displayDefective}</td>
-                    <td class="modal-detail-text">${isScrapped}</td>
                 </tr>`;
         }).join('');
 

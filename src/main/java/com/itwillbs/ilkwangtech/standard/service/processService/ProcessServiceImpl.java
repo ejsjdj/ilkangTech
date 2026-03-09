@@ -47,7 +47,7 @@ public class ProcessServiceImpl implements ProcessService{
     @Override
     @Transactional
     public List<ProcessDTO> getProcessListAll(){
-        List<ProcessEntity> entity = processRepository.findAll();
+        List<ProcessEntity> entity = processRepository.findByActive();
 
         return entity.stream().map(processEntity -> ProcessDTO.builder().
                 id(processEntity.getId()).

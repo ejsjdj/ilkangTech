@@ -224,7 +224,7 @@ function handleWork(button, type) {
   const planeId = button.dataset.planeId;
 
   // 불량 등록인 경우 모달만 띄우고 리턴
-  if (type === "defect") {
+z  if (type === "defect") {
     selectedDefectData = { workerId, instructId };
     document.getElementById("defectiveInput").value = "";
     document.getElementById("defectModal").style.display = "block";

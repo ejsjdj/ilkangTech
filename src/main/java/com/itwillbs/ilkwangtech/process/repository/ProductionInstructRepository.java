@@ -19,16 +19,14 @@ public interface ProductionInstructRepository extends JpaRepository<ProductionIn
 	            "       MAX(pi.instruct_qty) AS instructQty, " +
 	            "       MAX(NVL(pi.defective, 0)) AS defective, " +
 	            "       MAX(pi.status) AS status, " +
-	            "       MAX(oi.description) AS operationName, " +
-	            // 날짜 데이터를 프론트엔드에서 파싱하기 좋게 ISO 포맷의 문자열로 강제 변환합니다.
+	            "       MAX(oi_pw.name) KEEP (DENSE_RANK FIRST ORDER BY " +
+	            "           CASE pw.status WHEN 'PROGRESS' THEN 1 WHEN 'WAITING' THEN 2 ELSE 3 END, pw.id ASC) AS operationName, " +
 	            "       TO_CHAR(MIN(pw.start_time), 'YYYY-MM-DD\"T\"HH24:MI:SS') AS startDate, " +
 	            "       TO_CHAR(MAX(pw.end_time), 'YYYY-MM-DD\"T\"HH24:MI:SS') AS endDate " +
 	            "FROM production_instruct pi " +
-	            // 타입 충돌(ORA-01722) 방지를 위해 양쪽 모두 TO_CHAR로 감싸서 비교합니다.
 	            "LEFT JOIN item i ON TO_CHAR(pi.item_id) = TO_CHAR(i.item_id) " +
-	            "LEFT JOIN operation_info oi ON TO_CHAR(pi.operation_id) = TO_CHAR(oi.operation_id) " +
 	            "LEFT JOIN production_worker pw ON pi.id = pw.instruct_id " +
-	            // 코드를 기준으로 묶고 나머지는 MAX로 가져와서 쿼리를 가볍고 안전하게 만듭니다.
+	            "LEFT JOIN operation_info oi_pw ON pw.process_id = oi_pw.id " +
 	            "GROUP BY pi.instruct_code " +
 	            "ORDER BY pi.instruct_code DESC", nativeQuery = true)
 	List<ProcessStatusMapping> findAllProcessStatus();

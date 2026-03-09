@@ -16,11 +16,11 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrderEnti
     List<PurchaseOrderEntity> findByHeaderId(Long headerId);
     
     // 입고 예정인 발주 건수 조회 (출하완료 또는 검수완료 상태)
-    @Query("SELECT COUNT(h) FROM PurchaseOrderHeaderEntity h WHERE h.status = 'COMPLETE'")
+    @Query("SELECT COUNT(h) FROM PurchaseOrderHeaderEntity h WHERE UPPER(TRIM(h.status)) = 'COMPLETE'")
     long countInboundScheduled();
     
     // 상태가 'COMPLETE'인 발주 목록과 상세 라인을 한 번에 조회
-    @Query("SELECT DISTINCT h FROM PurchaseOrderHeaderEntity h LEFT JOIN FETCH h.lines WHERE h.status = 'COMPLETE'")
+    @Query("SELECT DISTINCT h FROM PurchaseOrderHeaderEntity h LEFT JOIN FETCH h.lines WHERE UPPER(TRIM(h.status)) = 'COMPLETE'")
     List<PurchaseOrderHeaderEntity> findCompleteOrders();
     
     // 특정 품목의 입고 예정(CONFIRMED, COMPLETE 상태) 수량 총합 구하기

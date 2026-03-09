@@ -1,9 +1,9 @@
 package com.itwillbs.ilkwangtech.process.repository;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.itwillbs.ilkwangtech.production.entity.ProductionWorkerEntity;
 
@@ -63,4 +63,8 @@ public interface ProcessWorkerRepository extends JpaRepository<ProductionWorkerE
     void insertLotMaster(@Param("lotId") String lotId, @Param("lotType") String lotType, 
                          @Param("parentLotId") String parentLotId, @Param("productId") String productId, 
                          @Param("quantity") Integer quantity);
+    
+    @Query(value = "SELECT lot_id FROM production_worker " +
+	            "WHERE instruct_id = :instructId AND lot_id LIKE 'SAM-%' AND ROWNUM = 1", nativeQuery = true)
+	String findExistingSamLotId(@Param("instructId") Long instructId);
 }

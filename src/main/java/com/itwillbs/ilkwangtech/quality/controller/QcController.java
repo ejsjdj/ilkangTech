@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.itwillbs.ilkwangtech.quality.dto.DisposalHistoryDto;
 import com.itwillbs.ilkwangtech.quality.dto.QcHistoryDto;
 import com.itwillbs.ilkwangtech.quality.dto.RejectReasonRequest;
 import com.itwillbs.ilkwangtech.quality.entity.QcItem;
@@ -63,7 +64,7 @@ public class QcController {
         return "quality/DisposalList"; 
     }
     
-    // 폐기 사유 데이터 등록
+    // 폐기 사유 데이터 추가
     @PostMapping("/api/saveRejectReason")
     @ResponseBody
     public ResponseEntity<String> saveRejectReason(@RequestBody RejectReasonRequest request) {
@@ -74,6 +75,26 @@ public class QcController {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("fail");
         }
+    }
+    
+    // 폐기 이력 데이터 추가
+    @PostMapping("/api/dispose")
+    @ResponseBody
+    public ResponseEntity<String> saveDisposal(@RequestBody java.util.Map<String, Long> payload) {
+        try {
+            Long workerId = payload.get("workerId");
+            qcItemService.saveDisposalHistory(workerId);
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("fail");
+        }
+    }
+    
+    @GetMapping("/api/disposalList")
+    @ResponseBody
+    public List<DisposalHistoryDto> getDisposalList() {
+        return qcItemService.getDisposalList();
     }
 }
 

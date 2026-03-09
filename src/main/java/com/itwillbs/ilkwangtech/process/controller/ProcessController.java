@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.process.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -153,20 +154,23 @@ public class ProcessController {
 	}
 	
 	@PostMapping("/api/worker/timeUpdate")
-    @ResponseBody
-    public ResponseEntity<String> updateWorkerTime(
-            @RequestParam("workerId") Long workerId, 
-            @RequestParam("type") String type) {
-        try {
-            if ("START".equalsIgnoreCase(type)) {
-                lotTraceService.startProcessWork(workerId);
-            } else if ("END".equalsIgnoreCase(type)) {
-                lotTraceService.completeProcessWork(workerId);
-            }
-            return ResponseEntity.ok("Success");
-        } catch (Exception e) {
-            log.error("작업 시간/LOT 업데이트 실패 - workerId: " + workerId, e);
-            return ResponseEntity.status(500).body("Fail");
-        }
-    }
+	@ResponseBody
+	public ResponseEntity<Map<String, String>> updateWorkerTime(
+	        @RequestParam("workerId") Long workerId, 
+	        @RequestParam("type") String type) {
+	    try {
+	        Map<String, String> result = new HashMap<>();
+	        if ("START".equalsIgnoreCase(type)) {
+	            lotTraceService.startProcessWork(workerId);
+	            result.put("status", "Success");
+	        } else if ("END".equalsIgnoreCase(type)) {
+	            String generatedLotId = lotTraceService.completeProcessWork(workerId);
+	            result.put("status", "Success");
+	            result.put("lotId", generatedLotId); // 생성된(혹은 공유된) LOT ID 전달
+	        }
+	        return ResponseEntity.ok(result);
+	    } catch (Exception e) {
+	        return ResponseEntity.status(500).build();
+	    }
+	}
 }

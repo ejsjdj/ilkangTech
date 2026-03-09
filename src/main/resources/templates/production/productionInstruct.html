@@ -387,44 +387,32 @@
     
     <!-- 호준 스크립트 -->
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-          const workerTable = document.getElementById('workerTable');
+    const originalHandleWork = window.handleWork;
 
-          if (workerTable) {
-              workerTable.addEventListener('click', (e) => {
-                  const targetBtn = e.target.closest('button');
-                  if (!targetBtn) return;
+    window.handleWork = async function(button, type) {
+        const workerId = button.dataset.workerId;
+        
+        if (type === 'start' || type === 'complete') {
+            const customType = type === 'start' ? 'START' : 'END';
+            try {
+                const response = await fetch(`/process/api/worker/timeUpdate?workerId=${workerId}&type=${customType}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    console.log(`[내 로직 성공] ${customType} 시간 기록 완료`);
+                } else {
+                    console.error('[내 로직 에러] 시간 기록 실패');
+                }
+            } catch (error) {
+                console.error('Fetch 에러:', error);
+            }
+        }
 
-                  // 다른 사람이 버튼에 심어둔 data-worker-id 추출
-                  const workerId = targetBtn.dataset.workerId; 
-                  if (!workerId) return;
-
-                  // 버튼 텍스트나 클래스로 클릭 구분
-                  const btnText = targetBtn.innerText.trim();
-
-                  if (btnText === '시작') {
-                      // 다른 JS의 기본동작 취소가 필요하다면 e.preventDefault() 등을 쓸 수 있습니다.
-                      sendTimeUpdate(workerId, 'START');
-                  } else if (btnText === '완료') {
-                      sendTimeUpdate(workerId, 'END');
-                  }
-              });
-          }
-      });
-
-      function sendTimeUpdate(workerId, type) {
-          fetch(`/process/api/worker/timeUpdate?workerId=${workerId}&type=${type}`, {
-              method: 'POST'
-          })
-          .then(response => {
-              if (response.ok) {
-                  console.log(type === 'START' ? '시작 처리 및 시간 기록 완료' : '종료 처리 및 LOT 생성 완료');
-              } else {
-                  console.error('시간 기록 중 오류 발생');
-              }
-          })
-          .catch(error => console.error('Fetch 에러:', error));
-      }
-    </script>
+        if (typeof originalHandleWork === 'function') {
+            originalHandleWork(button, type);
+        }
+    };
+  </script>
   </th:block>
 </html>

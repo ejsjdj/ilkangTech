@@ -250,6 +250,7 @@
                     <div class="d-flex align-items-center justify-content-center gap-2">
                         ${displayReason}
                         <button class="btn btn-sm ${btnClass}" onclick="openReasonModal(${d.workerId}, '${reasonText.replace(/'/g, "\\'")}')" style="padding: 2px 8px; font-size: 11px;">${btnText}</button>
+                        <button class="btn btn-sm btn-danger" onclick="disposeItem(${d.workerId})" style="padding: 2px 8px; font-size: 11px;">폐기</button>
                     </div>`;
             }
 
@@ -335,6 +336,28 @@
         // 검색 후에는 항상 1페이지로 돌아가도록 초기화
         currentPage = 1;
         renderTable();
+    }
+    
+    async function disposeItem(workerId) {
+        if (!confirm('해당 불량품을 폐기 처리하시겠습니까? (폐기 이력에 저장됩니다)')) return;
+
+        try {
+            const response = await fetch('/quality/api/dispose', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ workerId: workerId }) // Map 구조로 받을 수 있게 전송
+            });
+
+            if (response.ok) {
+                alert('폐기 처리가 완료되었습니다.');
+                fetchData(); // 화면 새로고침
+            } else {
+                alert('폐기 처리 중 오류가 발생했습니다.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('서버와 통신 중 오류가 발생했습니다.');
+        }
     }
 </script>
 </th:block>

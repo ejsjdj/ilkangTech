@@ -211,7 +211,6 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
         if (allWorkersComplete) {
             currentInstruct.setStatus("COMPLETE");
 
-            // 중요: DB와 영속성 컨텍스트를 동기화하여 다음 조회 시 COMPLETE 상태가 반영되도록 함
             productionInsturctRepository.saveAndFlush(currentInstruct);
 
             // 5. 생산계획 엔티티 가져오기
@@ -222,8 +221,6 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
             long completeCount = planeEntity.getInstruct().stream()
                     .filter(i -> "COMPLETE".equals(i.getStatus()))
                     .count();
-
-            System.out.println("전체 지시 수: " + totalInstructs + ", 완료된 지시 수: " + completeCount);
 
             if (totalInstructs == completeCount) {
                 planeEntity.setStatus("COMPLETE");

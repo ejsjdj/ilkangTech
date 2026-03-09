@@ -98,6 +98,7 @@ function openDetailModal(instructId) {
   fetch(`/api/production_instruct/detail?instructId=${instructId}`)
     .then((res) => res.json())
     .then((data) => {
+      console.log(data);
       // 상단 기본정보 표시 (그리드 박스 레이아웃)
       document.getElementById("detailInfo").innerHTML = `
                 <div class="detail-info-grid">

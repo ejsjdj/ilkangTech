@@ -1,9 +1,11 @@
 package com.itwillbs.ilkwangtech.production.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
@@ -15,12 +17,12 @@ public class ProductionInstructWorkerInsertDTO {
     private Long memberId;
     private Long productionQty;
     private Long additionQty;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private Long outputItemId;
     private Long sequence;
 
-    public ProductionInstructWorkerInsertDTO(Long processId, Long memberId, Long productionQty, Long additionQty, LocalTime startTime, LocalTime endTime, Long outputItemId, Long sequence ){
+    public ProductionInstructWorkerInsertDTO(Long processId, Long memberId, Long productionQty, Long additionQty, LocalDateTime startTime, LocalDateTime endTime, Long outputItemId, Long sequence ){
         this.processId = processId;
         this.memberId = memberId;
         this.productionQty = productionQty;

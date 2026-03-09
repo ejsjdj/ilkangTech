@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.production.entity;
 
+import com.itwillbs.ilkwangtech.equipment.entity.Equipment;
 import com.itwillbs.ilkwangtech.member.entity.Member;
 import com.itwillbs.ilkwangtech.sales.entity.PurchaseOrderEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
@@ -8,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -40,10 +42,10 @@ public class ProductionWorkerEntity{
     private String lot;
 
     @Column(name = "start_time")
-    private LocalTime startTime;
+    private LocalDateTime startTime;
 
     @Column(name = "end_time")
-    private LocalTime endTime;
+    private LocalDateTime endTime;
 
     @Column(name = "production_qty")
     private Long productionQty;
@@ -64,13 +66,15 @@ public class ProductionWorkerEntity{
     @JoinColumn(name = "item_id")
     private ItemEntity item;
 
-
+    @OneToOne
+    @JoinColumn(name = "eq_id")
+    private Equipment equipment;
 
     public static ProductionWorkerEntity create(ProcessEntity process,
                                                 Member member,
                                                 String lot,
-                                                LocalTime startTime,
-                                                LocalTime endTime,
+                                                LocalDateTime startTime,
+                                                LocalDateTime endTime,
                                                 Long productionQty,
                                                 Long additionQty,
                                                 ItemEntity item,

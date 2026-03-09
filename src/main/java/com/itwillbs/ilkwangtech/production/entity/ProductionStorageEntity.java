@@ -3,11 +3,13 @@ package com.itwillbs.ilkwangtech.production.entity;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @Table(name = "production_storage")
 public class ProductionStorageEntity {
 
@@ -28,6 +30,6 @@ public class ProductionStorageEntity {
     private Long productionQty;
 
     @Column(name = "storage_date")
-    private LocalDateTime storage_date;
+    private LocalDateTime storageDate;
 
 }

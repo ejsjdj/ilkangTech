@@ -11,10 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  registerBtn.addEventListener("click", function () {
-    console.log("버튼 클릭됨");
-  });
-
   loadProductionPlanes();
   loadMembers();
 
@@ -126,8 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const memberId = 1;
       const additionQty = Number(additionInput.value || 0);
 
-      const startTime = startTimeInput.value;
-      const endTime = endTimeInput.value;
+      const startTime = toLocalDateTime(startTimeInput.value);
+      const endTime = toLocalDateTime(endTimeInput.value);
 
       workerData.push({
         processId: processId,
@@ -211,4 +207,11 @@ function loadMembers() {
     { id: 1, name: "관리자(임시)" },
     { id: 2, name: "작업자1" },
   ];
+}
+
+function toLocalDateTime(timeValue) {
+  if (!timeValue) return null;
+
+  const today = new Date().toISOString().split("T")[0];
+  return `${today}T${timeValue}`;
 }

@@ -181,10 +181,10 @@ public class DashboardService {
         long safeStockThreshold = 3000L; 
 
         for (ItemEntity item : uniqueItems) {
-            if (item.getItemCode() != null && item.getItemCode().toUpperCase().startsWith("SAM-")) {
+        	if (item.getItemCode() == null || !item.getItemCode().toUpperCase().startsWith("RW-")) {
                 continue; 
             }
-            
+        	
             Long itemId = item.getItemId();
             long currentStock = currentStockMap.getOrDefault(itemId, 0L);
             long incomingStock = incomingStockMap.getOrDefault(itemId, 0L);

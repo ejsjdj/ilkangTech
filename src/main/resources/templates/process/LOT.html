@@ -744,8 +744,6 @@ async function fetchStepDetail(instructCode) {
                     <div class="col-6"><strong>공정코드:</strong> ${data.operationId}</div>
                     <div class="col-6"><strong>담당자:</strong> ${data.memberName} (${data.memberId})</div>
                     <div class="col-6"><strong>생산량:</strong> ${data.operationQty} / <strong>불량:</strong> ${data.defectiveQty}</div>
-                    <div class="col-6"><strong>설비명:</strong> ${data.equipName || '-'}</div>
-                    <div class="col-6"><strong>설비코드:</strong> ${data.equipCode || '-'}</div>
                 </div>
             </div>
         `;
@@ -873,8 +871,6 @@ async function showProdSubDetail(lotId) {
                 <div class="col-6"><strong>사번:</strong> ${data.employeeNumber || '-'}</div>
                 <div class="col-6"><strong>생산수량:</strong> ${data.productionQty || 0} EA</div>
                 <div class="col-6"><strong>불량수량:</strong> <span class="text-danger fw-bold">${data.defectiveQty || 0}</span> EA</div>
-                <div class="col-6"><strong>설비명:</strong> ${data.equipName || '-'}</div>
-                <div class="col-6"><strong>설비코드:</strong> ${data.equipCode || '-'}</div>
             </div>
         `;
     } catch (error) {
@@ -903,8 +899,6 @@ function showProcessDetailBox(lotId, index) {
             <div class="col-6"><strong>사번:</strong> ${data.employeeNumber || '-'}</div>
             <div class="col-6"><strong>생산수량:</strong> ${data.productionQty || 0} EA</div>
             <div class="col-6"><strong>불량수량:</strong> <span class="text-danger fw-bold">${data.defectiveQty || 0}</span> EA</div>
-            <div class="col-6"><strong>설비명:</strong> ${data.equipName || '-'}</div>
-            <div class="col-6"><strong>설비코드:</strong> ${data.equipCode || '-'}</div>
         </div>
     `;
 }

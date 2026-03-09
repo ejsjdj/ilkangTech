@@ -14,15 +14,23 @@ import jakarta.transaction.Transactional;
 
 public interface ProductionInstructRepository extends JpaRepository<ProductionInstruct, Long> {
 
-	@Query(value = "SELECT p.instruct_code AS instructCode, i.item_name AS itemName, " +
-            "p.instruct_qty AS instructQty, p.defective AS defective, " +
-            "p.status AS status, o.name AS operationName, " +
-            "p.start_date AS startDate, p.end_date AS endDate " +
-            "FROM production_instruct p " +
-            "LEFT JOIN item i ON p.item_id = i.item_id " +
-            "LEFT JOIN production_worker w ON p.id = w.instruct_id AND w.status = 'PROGRESS' " +
-            "LEFT JOIN operation_info o ON w.process_id = o.id " + 
-            "ORDER BY p.start_date DESC NULLS LAST", nativeQuery = true)
+	@Query(value = "SELECT pi.instruct_code AS instructCode, " +
+	            "       MAX(i.item_name) AS itemName, " +
+	            "       MAX(pi.instruct_qty) AS instructQty, " +
+	            "       MAX(NVL(pi.defective, 0)) AS defective, " +
+	            "       MAX(pi.status) AS status, " +
+	            "       MAX(oi.description) AS operationName, " +
+	            // 날짜 데이터를 프론트엔드에서 파싱하기 좋게 ISO 포맷의 문자열로 강제 변환합니다.
+	            "       TO_CHAR(MIN(pw.start_time), 'YYYY-MM-DD\"T\"HH24:MI:SS') AS startDate, " +
+	            "       TO_CHAR(MAX(pw.end_time), 'YYYY-MM-DD\"T\"HH24:MI:SS') AS endDate " +
+	            "FROM production_instruct pi " +
+	            // 타입 충돌(ORA-01722) 방지를 위해 양쪽 모두 TO_CHAR로 감싸서 비교합니다.
+	            "LEFT JOIN item i ON TO_CHAR(pi.item_id) = TO_CHAR(i.item_id) " +
+	            "LEFT JOIN operation_info oi ON TO_CHAR(pi.operation_id) = TO_CHAR(oi.operation_id) " +
+	            "LEFT JOIN production_worker pw ON pi.id = pw.instruct_id " +
+	            // 코드를 기준으로 묶고 나머지는 MAX로 가져와서 쿼리를 가볍고 안전하게 만듭니다.
+	            "GROUP BY pi.instruct_code " +
+	            "ORDER BY pi.instruct_code DESC", nativeQuery = true)
 	List<ProcessStatusMapping> findAllProcessStatus();
 	
 	interface ProcessStatusMapping {

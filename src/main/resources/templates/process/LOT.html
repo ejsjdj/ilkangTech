@@ -331,36 +331,56 @@ async function loadLotList() {
     }
 }
 
-/* LOT.html - renderLotTable 함수 수정 */
 function renderLotTable(lots) {
     const tbody = document.getElementById('lot-tbody');
     tbody.innerHTML = ''; 
 
     lots.forEach(lot => {
-        const date = new Date(lot.createdDate);
-        const formattedDate = date.toLocaleDateString();
-        const isRawMaterial = (lot.lotType === 'R' || lot.lotType === 'RW');
-        
-        const accordionContent = isRawMaterial
-        ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
-               <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
-           </div>
-           <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
-        : `<div class="acc-item" onclick="toggleMenu('process-list-${lot.lotId}'); loadSubDetail('${lot.lotId}', 'PROD_PROCESS')">
-               <i class="bi bi-play-fill text-secondary me-1"></i> 공정
-           </div>
-           <div id="process-list-${lot.lotId}" class="usage-list-container" style="display:none; background: #fff; padding-left: 20px;"></div>
-           
-           <div class="acc-item" onclick="toggleMenu('material-list-${lot.lotId}'); loadSubDetail('${lot.lotId}', 'PROD_MATERIAL')">
-               <i class="bi bi-play-fill text-secondary me-1"></i> 자재
-           </div>
-           <div id="material-list-${lot.lotId}" class="usage-list-container" style="display:none; background: #fff; padding-left: 20px;"></div>`;
+        let displayDate = '-';
 
-        // ... 기존 행(mainTr, accordionTr) 생성 로직 동일 ...
+        if (currentMainTab === 'M') {
+            // LOT ID(예: RW-001-20260309-0001)에서 숫자 8자리 추출
+            const dateMatch = lot.lotId.match(/\d{8}/); 
+            
+            if (dateMatch) {
+                const rawDateStr = dateMatch[0]; // "20260309"
+                const y = rawDateStr.substring(0, 4);
+                const m = rawDateStr.substring(4, 6);
+                const d = rawDateStr.substring(6, 8);
+
+                // 1년을 빼지 않고 그대로 "2026. 03. 09." 형식으로 출력
+                displayDate = `${y}. ${m}. ${d}.`;
+            } else {
+                // 날짜 패턴이 없는 경우 기존 생성일 필드 사용
+                const date = new Date(lot.createdDate);
+                displayDate = isNaN(date) ? '-' : date.toLocaleDateString();
+            }
+        } else {
+            // 완제품/반제품 탭은 기존 로직 유지
+            const date = new Date(lot.createdDate);
+            displayDate = isNaN(date) ? '-' : date.toLocaleDateString();
+        }
+
+        // --- 이하 HTML 생성 및 아코디언 로직 (기존과 동일) ---
+        const isRawMaterial = (lot.lotType === 'R' || lot.lotType === 'RW');
+        const accordionContent = isRawMaterial
+            ? `<div class="acc-item" onclick="loadSubDetail('${lot.lotId}', 'FINISHED_USAGE')">
+                   <i class="bi bi-box-seam me-2"></i> 사용한 완제품 LOT <i class="bi bi-chevron-right ms-auto"></i>
+               </div>
+               <div id="usage-list-${lot.lotId}" class="usage-list-container" style="background: #fff; border-top: 1px solid #edf2f7;"></div>`
+            : `<div class="acc-item" onclick="toggleMenu('process-list-${lot.lotId}'); loadSubDetail('${lot.lotId}', 'PROD_PROCESS')">
+                   <i class="bi bi-play-fill text-secondary me-1"></i> 공정
+               </div>
+               <div id="process-list-${lot.lotId}" class="usage-list-container" style="display:none; background: #fff; padding-left: 20px;"></div>
+               <div class="acc-item" onclick="toggleMenu('material-list-${lot.lotId}'); loadSubDetail('${lot.lotId}', 'PROD_MATERIAL')">
+                   <i class="bi bi-play-fill text-secondary me-1"></i> 자재
+               </div>
+               <div id="material-list-${lot.lotId}" class="usage-list-container" style="display:none; background: #fff; padding-left: 20px;"></div>`;
+
         const mainTr = document.createElement('tr');
         mainTr.className = 'main-row';
         mainTr.innerHTML = `
-            <td><span class="date-text">${formattedDate}</span></td>
+            <td><span class="date-text">${displayDate}</span></td>
             <td><span class="fw-bold text-indigo">${lot.lotId}</span></td>
             <td>${lot.itemName}</td> 
             <td><span class="badge-status ${lot.status === 'DONE' ? 'bg-done' : 'bg-ing'}">${lot.status === 'DONE' ? '완료' : '진행중'}</span></td>
@@ -434,12 +454,21 @@ function updateRightPanel(detail) {
     const infoBox = document.getElementById('lot-summary-info');
 
     if (detail.isRawMaterial) {
-    	let creationDate = '-';
-    	const dateMatch = detail.lotId.match(/\d{8}/);
-    	if (dateMatch) {
-    	    const rawDate = dateMatch[0]; // "20260306"
-    	    creationDate = `${rawDate.substring(0, 4)}-${rawDate.substring(4, 6)}-${rawDate.substring(6, 8)}`;
-    	}
+        let creationDate = '-';
+        const dateMatch = detail.lotId.match(/\d{8}/);
+        if (dateMatch) {
+            const rawDate = dateMatch[0]; 
+            const parsedDate = new Date(
+                rawDate.substring(0, 4), 
+                parseInt(rawDate.substring(4, 6)) - 1, 
+                rawDate.substring(6, 8)
+            );
+            
+            if (!isNaN(parsedDate)) {
+                parsedDate.setFullYear(parsedDate.getFullYear() - 1);
+                creationDate = parsedDate.toLocaleDateString();
+            }
+        }
         
         let typeStr = detail.itemType == '1' ? '원자재' : detail.itemType == '2' ? '반제품' : detail.itemType == '3' ? '완제품' : '-';
 
@@ -450,13 +479,11 @@ function updateRightPanel(detail) {
             <div><span class="text-muted">자재명:</span> <strong>${detail.itemName || '-'}</strong></div>
             <div><span class="text-muted">단위:</span> ${detail.uom || '-'}</div>
             <div><span class="text-muted">LOT 유형:</span> ${typeStr}</div>
-            <div><span class="text-muted">LOT 생성일:</span> ${creationDate}</div>
-            
-            <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-3 mb-1">자재 관리 정보</h6><hr class="mt-1 mb-2"></div>
+            <div><span class="text-muted">LOT 생성일:</span> <strong>${creationDate}</strong></div> <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-3 mb-1">자재 관리 정보</h6><hr class="mt-1 mb-2"></div>
             <div><span class="text-muted">보유량:</span> <span class="fw-bold">${detail.currentQuantity || 0}</span></div>
             <div><span class="text-muted">유통기한:</span> ${detail.expirationDate || '-'}</div>
             <div><span class="text-muted">보관장소:</span> ${detail.zone || '-'}</div>
-        `;
+        `; // 닫는 템플릿 리터럴 확인
     } else {
         infoBox.innerHTML = `
             <div style="grid-column: span 2;"><h6 class="fw-bold text-primary mt-2 mb-1">LOT 기본 정보</h6><hr class="mt-1 mb-2"></div>
@@ -689,10 +716,6 @@ async function showProcessDetail(instructCode) {
                 <div class="col-6">
                     <label class="text-muted small">생산/불량 수량</label>
                     <div><span class="text-primary fw-bold">${data.operationQty}</span> / <span class="text-danger">${data.defectiveQty}</span> EA</div>
-                </div>
-                <div class="col-6">
-                    <label class="text-muted small">설비명(코드)</label>
-                    <div><strong>${data.equipName || '-'}</strong> <span class="text-secondary">(${data.equipCode || '-'})</span></div>
                 </div>
             </div>
         `;

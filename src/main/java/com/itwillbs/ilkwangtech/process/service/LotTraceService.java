@@ -267,48 +267,38 @@ public class LotTraceService {
     }
 
     @Transactional
-    public void completeProcessWork(Long workerId) {
-        // 1. 해당 작업(공정)의 기본 정보 가져오기
-    	ProcessWorkerRepository.WorkerInfoMapping info = processWorkerRepository.findWorkerInfoById(workerId);
-        if (info == null) return;
+    public String completeProcessWork(Long workerId) {
+        ProcessWorkerRepository.WorkerInfoMapping info = processWorkerRepository.findWorkerInfoById(workerId);
+        if (info == null) return null;
 
-        // 2. LOT TYPE 결정 (공정명 기준)
         String processName = info.getProcessName();
-        String lotType = "ETC";
-        if (processName.contains("프레스")) lotType = "ST";
-        else if (processName.contains("사출")) lotType = "IN";
-        else if (processName.contains("도장") || processName.contains("도색")) lotType = "PT";
-        else if (processName.contains("조립")) lotType = "SAM";
+        String finalLotId = null;
 
-        // 3. LOT 코드 생성
-        // 3-1. 날짜 (예: 20260308)
-        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        if (processName.contains("조립")) {
+            finalLotId = processWorkerRepository.findExistingSamLotId(info.getInstructId());
+
+            if (finalLotId == null) {
+                String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                String[] codeParts = info.getInstructCode().split("-");
+                String shortInstructCode = codeParts[codeParts.length - 1];
+                
+                Integer seq = processWorkerRepository.getNextLotSequence(info.getItemCode());
+                String seqStr = String.format("%03d", seq);
+                
+                finalLotId = String.format("SAM-%s-%s-%s", dateStr, shortInstructCode, seqStr);
+                
+                String parentLotId = processWorkerRepository.findParentLotId(info.getInstructId(), workerId);
+                processWorkerRepository.insertLotMaster(
+                    finalLotId, "F", parentLotId, info.getItemCode(), info.getProductionQty()
+                );
+            }
+
+            processWorkerRepository.updateEndTimeAndLotId(workerId, finalLotId);
+            
+        } else {
+            processWorkerRepository.updateEndTimeAndLotId(workerId, null);
+        }
         
-        // 3-2. 작업지시번호 생략버전 (예: INS300 추출)
-        String fullInstructCode = info.getInstructCode();
-        String[] codeParts = fullInstructCode.split("-");
-        String shortInstructCode = codeParts[codeParts.length - 1]; // 맨 마지막 부분 추출
-        
-        // 3-3. 시퀀스 채번 (오늘 날짜, 동일 아이템 기준)
-        Integer seq = processWorkerRepository.getNextLotSequence(info.getItemCode());
-        String seqStr = String.format("%03d", seq); // 3자리 숫자 (예: 001)
-
-        // 완성된 LOT_ID 조립 (예: ST-008-20260307-INS300-001)
-        String generatedLotId = String.format("%s-%s-%s-%s", info.getItemCode(), dateStr, shortInstructCode, seqStr);
-
-        // 4. PARENT_LOT_ID 찾기 (이전 공정의 LOT)
-        String parentLotId = processWorkerRepository.findParentLotId(info.getInstructId(), workerId);
-
-        // 5. lot_master 테이블에 Insert (회원님 정정 내역 반영: product_id에 item_code 삽입)
-        processWorkerRepository.insertLotMaster(
-                generatedLotId, 
-                lotType, 
-                parentLotId, 
-                info.getItemCode(), 
-                info.getProductionQty()
-        );
-
-        // 6. production_worker 테이블의 end_time 업데이트 및 생성된 lot_id 부여
-        processWorkerRepository.updateEndTimeAndLotId(workerId, generatedLotId);
+        return finalLotId; // 마지막 조립 완료 시 이 값을 화면에 띄울 수 있음
     }
 }

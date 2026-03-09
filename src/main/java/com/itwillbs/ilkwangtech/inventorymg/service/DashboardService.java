@@ -64,7 +64,17 @@ public class DashboardService {
         for (String zone : zones) {
             for (String rack : racks) {
                 Long qty = inventoryRepository.sumQuantityByZoneAndRack(zone, rack);
-                String status = (qty == null || qty == 0) ? "none" : (qty < 10000 ? "normal" : "full");
+                String status = "none";
+                
+                if (qty != null && qty > 0) {
+                    if ("ZONE C".equals(zone)) {
+                        // 완제품(ZONE C)은 기존 기준 유지: 1만 개부터 '많음(빨간색)'
+                        status = (qty < 10000) ? "normal" : "full";
+                    } else {
+                        // 원자재(ZONE A), 반제품(ZONE B)은 5만 개부터 '많음(빨간색)'
+                        status = (qty < 50000) ? "normal" : "full";
+                    }
+                }
                 statusMap.put(zone + "_" + rack, status);
             }
         }

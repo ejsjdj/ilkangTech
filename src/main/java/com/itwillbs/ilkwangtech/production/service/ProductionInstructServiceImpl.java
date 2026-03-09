@@ -217,7 +217,7 @@ public class ProductionInstructServiceImpl implements ProductionInstructService 
             // 5. 생산계획 엔티티 가져오기
             ProductionPlaneEntity planeEntity = productionPlaneRepository.findById(planeId).orElseThrow();
 
-            // 6. 상태 검사 (로그를 찍어보세요)
+            // 6. 상태 검사
             long totalInstructs = planeEntity.getInstruct().size();
             long completeCount = planeEntity.getInstruct().stream()
                     .filter(i -> "COMPLETE".equals(i.getStatus()))

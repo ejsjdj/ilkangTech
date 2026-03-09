@@ -189,12 +189,11 @@
  let allData = [];
  let currentStatusTab = 'ING';
 
-   // 1. 헤더 정의 (순서: No, 지시번호, 제품명, 수량, [가변컬럼], 비고) [cite: 2026-03-04]
 const HEADERS = {
  ING: `<tr>
          <th style="width: 50px;">No.</th>
          <th>작업지시번호</th><th>제품명</th><th>계획수량</th>
-         <th>시작시간</th><th>상태</th><th>현재공정</th>
+         <th>시작시간</th><th>종료예정시간</th><th>상태</th><th>현재공정</th>
          <th style="width: 130px;">경과시간</th><th style="width: 100px;">비고</th>
        </tr>`,
  DONE: `<tr>
@@ -202,7 +201,7 @@ const HEADERS = {
          <th>작업지시번호</th><th>제품명</th><th>계획수량</th>
          <th>생산량</th><th>불량</th><th>완료일시</th>
          <th style="width: 130px;">경과시간</th><th style="width: 100px;">비고</th>
-       </tr>` // 처리결과 삭제 후 경과시간 추가 [cite: 2026-03-04]
+       </tr>` 
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -266,42 +265,72 @@ function renderTable(data) {
     if (!tbody) return;
 
     tbody.innerHTML = data.map((d, i) => {
-  	const shortOpName = formatOperationName(d.operationName);
-  	if (currentStatusTab === 'ING') {
-  	    // DB 상태값에 따른 UI 텍스트 및 스타일 분기 [cite: 2026-03-04]
-  	    const isWaiting = d.status === 'WAITING';
-  	    const statusText = isWaiting ? '대기 중' : '진행중';
-  	    const statusClass = isWaiting ? 'bg-waiting' : 'bg-ing';
-  	    const displayOpName = isWaiting ? '-' : (shortOpName || '-');
+        const shortOpName = formatOperationName(d.operationName);
+        
+        if (currentStatusTab === 'ING') {
+            // DB 상태값에 따른 UI 텍스트 및 스타일 분기
+            const isWaiting = (d.status === 'WAITING' || d.status === 'READY');
+            const statusText = isWaiting ? '대기 중' : '진행중';
+            const statusClass = isWaiting ? 'bg-waiting' : 'bg-ing';
+            const displayOpName = isWaiting ? '-' : (shortOpName || '-');
 
-  	    return `
-  	        <tr>
-  	            <td>${i + 1}</td>
-  	            <td class="fw-bold text-indigo">${d.instructCode}</td>
-  	            <td>${d.itemName}</td>
-  	            <td>${d.instructQty || 0}</td>
-  	            <td>${d.startDate ? d.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-  	            <td><span class="badge-status ${statusClass}">${statusText}</span></td>
-  	            <td>${displayOpName}</td>
-  	            <td class="text-muted">${calculateElapsed(d.startDate)}</td>
-  	            <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
-  	        </tr>`;
-  	} else {
-  	    const productionQty = (d.instructQty || 0) - (d.defective || 0);
+            // --- [추가된 부분] 종료예정시간 계산 로직 ---
+            let expectedEndTimeStr = '-';
+            
+            // 전체 상태가 진행중(PROGRESS)이면서, 실제 공정명과 시작시간이 있는 경우에만 계산
+            if (d.status === 'PROGRESS' && d.operationName && d.startDate) {
+                const start = new Date(d.startDate);
+                const qty = d.instructQty || 0;
+                const opName = d.operationName || '';
+                
+                let addSeconds = 0;
+                // 사출은 수량 * 60초(1분), 나머지는 수량 * 3초
+                if (opName.includes('사출')) {
+                    addSeconds = qty * 60; 
+                } else {
+                    addSeconds = qty * 3;
+                }
+                
+                const expectedEnd = new Date(start.getTime() + (addSeconds * 1000));
+                
+                const ey = expectedEnd.getFullYear();
+                const em = String(expectedEnd.getMonth() + 1).padStart(2, '0');
+                const ed = String(expectedEnd.getDate()).padStart(2, '0');
+                const eh = String(expectedEnd.getHours()).padStart(2, '0');
+                const emm = String(expectedEnd.getMinutes()).padStart(2, '0');
+                
+                expectedEndTimeStr = `${ey}-${em}-${ed} ${eh}:${emm}`;
+            }
+            // ---------------------------------------------
 
-  	    return `
-  	        <tr>
-  	            <td>${i + 1}</td>
-  	            <td class="fw-bold text-indigo">${d.instructCode}</td>
-  	            <td>${d.itemName || '-'}</td> 
-  	            <td>${d.instructQty || 0}</td>
-  	            <td class="text-primary fw-bold">${productionQty}</td>
-  	            <td class="text-danger fw-bold">${d.defective || 0}</td>
-  	            <td>${d.endDate ? d.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-  	            <td class="text-muted">${calculateElapsed(d.endDate)}</td>
-  	            <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
-  	        </tr>`;
-  	}
+            return `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td class="fw-bold text-indigo">${d.instructCode}</td>
+                    <td>${d.itemName}</td>
+                    <td>${d.instructQty || 0}</td>
+                    <td>${d.startDate ? d.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+                    <td class="text-primary fw-bold">${expectedEndTimeStr}</td> <td><span class="badge-status ${statusClass}">${statusText}</span></td>
+                    <td>${displayOpName}</td>
+                    <td class="text-muted">${calculateElapsed(d.startDate)}</td>
+                    <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
+                </tr>`;
+        } else {
+            const productionQty = (d.instructQty || 0) - (d.defective || 0);
+
+            return `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td class="fw-bold text-indigo">${d.instructCode}</td>
+                    <td>${d.itemName || '-'}</td> 
+                    <td>${d.instructQty || 0}</td>
+                    <td class="text-primary fw-bold">${productionQty}</td>
+                    <td class="text-danger fw-bold">${d.defective || 0}</td>
+                    <td>${d.endDate ? d.endDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+                    <td class="text-muted">${calculateElapsed(d.endDate)}</td>
+                    <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
+                </tr>`;
+        }
     }).join('');
 }
 
@@ -318,40 +347,43 @@ function calculateElapsed(startDate) {
 async function goDetail(code) {
     try {
         const response = await fetch(`/process/api/processDetail/${code}`);
+        
+        if (!response.ok) {
+            throw new Error(`서버 응답 오류 (상태 코드: ${response.status})`);
+        }
+        
         const data = await response.json();
+        
+        if (!data || !data.instructCode) {
+            alert("해당 공정은 아직 상세 정보가 등록되지 않았습니다.");
+            return;
+        }
         
         document.getElementById('modalInstructCode').innerText = data.instructCode || '-';
         document.getElementById('modalItemName').innerText = data.itemName || '-';
         document.getElementById('modalInstructQty').innerText = (data.instructQty || 0).toLocaleString() + ' EA';
 
         const tbody = document.getElementById('detail-tbody');
-        const steps = data.steps || [];
+        let steps = data.steps || [];
 
-        // DB에서 받아온 지시 시작 시간을 기준점으로 설정
-        let currentStartTime = data.startDate ? new Date(data.startDate) : new Date(); 
+        // ✅ 1. COMPLETE 상태인 공정을 맨 위로 정렬
+        steps.sort((a, b) => {
+            if (a.status === 'COMPLETE' && b.status !== 'COMPLETE') return -1;
+            if (a.status !== 'COMPLETE' && b.status === 'COMPLETE') return 1;
+            return 0; // 둘 다 COMPLETE이거나 둘 다 아니면 DB에서 가져온 순서 유지
+        });
+
         let runningQty = data.instructQty || 0; 
 
+        // ✅ 2. DB에서 가져온 시간 데이터 렌더링
         tbody.innerHTML = steps.map((s, i) => {
-            const inputQty = runningQty;
             const defective = s.defectiveQty || 0;
-            const goodQty = inputQty - defective;
+            const goodQty = runningQty - defective;
             runningQty = goodQty; 
 
-            // 2. 공정별 소요 시간 계산
-            let durationSeconds = 0;
-            const processName = s.processName || "";
-            if (processName.includes("사출")) {
-                durationSeconds = inputQty * 60; // 사출: 수량 * 60초
-            } else {
-                durationSeconds = inputQty * 3;  // 프레스, 도장, 조립: 수량 * 3초
-            }
-
-            // 3. 현재 공정의 시작 시간과 종료 시간 확정
-            const startTime = new Date(currentStartTime);
-            const endTime = new Date(startTime.getTime() + durationSeconds * 1000);
-            
-            // 4. 다음 공정의 시작 시간은 현재 공정의 종료 시간으로 업데이트
-            currentStartTime = new Date(endTime);
+            // DB에서 시간이 넘어왔으면 포맷팅, 없으면 '-' 처리
+            const startTimeStr = s.startDate ? formatDateTime(new Date(s.startDate)) : '-';
+            const endTimeStr = s.endDate ? formatDateTime(new Date(s.endDate)) : '-';
 
             const isScrapped = defective > 0 ? '<span class="text-danger modal-detail-text">폐기완료</span>' : '-';
             const displayDefective = s.status === 'COMPLETE' ? defective : '-';
@@ -363,11 +395,11 @@ async function goDetail(code) {
             return `
                 <tr>
                     <td class="modal-detail-text">${i + 1}</td>
-                    <td><span class="modal-detail-text text-process-name">${processName}</span></td>
+                    <td><span class="modal-detail-text text-process-name">${s.processName || '-'}</span></td>
                     <td><span class="modal-detail-text ${statusColorClass}">${s.status}</span></td>
                     
-                    <td class="modal-detail-text">${formatDateTime(startTime)}</td>
-                    <td class="modal-detail-text">${formatDateTime(endTime)}</td>
+                    <td class="modal-detail-text">${startTimeStr}</td>
+                    <td class="modal-detail-text">${endTimeStr}</td>
                     
                     <td class="fw-bold text-primary modal-detail-text">${s.status === 'COMPLETE' ? goodQty : '-'}</td>
                     <td class="text-danger modal-detail-text">${displayDefective}</td>
@@ -379,6 +411,7 @@ async function goDetail(code) {
         detailModal.show();
     } catch (e) {
         console.error("상세 정보 로드 실패", e);
+        alert("데이터를 불러오는 중 오류가 발생했습니다.");
     }
 }
    

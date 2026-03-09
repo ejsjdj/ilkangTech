@@ -1,245 +1,520 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
     <meta charset="UTF-8">
-    <title>제품 관리</title>
+    <title>품목 관리</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap');
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
 
-        body { background-color: #FFF5F7; font-family: 'Gamja Flower', cursive; }
-        .diary-wrapper { display: flex; max-width: 900px; margin: 50px auto; }
-        .diary-bookmarks { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; }
-        .bookmark { border: none; padding: 15px 20px; border-radius: 20px 0 0 20px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; box-shadow: -4px 4px 0px rgba(0,0,0,0.05); }
-        .bookmark.pink { background-color: #FFDEE9; color: #FF8E9E; }
-        .bookmark.yellow { background-color: #FEF9E7; color: #F7DC6F; }
-        .bookmark.blue { background-color: #E0F7FA; color: #00BCD4; }
-        .bookmark.active { transform: translateX(10px); font-weight: bold; box-shadow: none; }
-        .diary-page { flex: 1; background: white; border: 5px solid #FFDEE9; border-radius: 40px; padding: 40px; min-height: 600px; position: relative; box-shadow: 15px 15px 0px #FFEDF2; }
-        .masking-tape { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 120px; height: 35px; background: rgba(173, 216, 230, 0.6); border-left: 2px dashed #fff; border-right: 2px dashed #fff; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-add-sticker { background: #FF8E9E; color: white; border: none; border-radius: 50px; padding: 8px 20px; box-shadow: 2px 4px 0px #FF5E7E; cursor: pointer; }
-        .btn-add-bom { background: #F7DC6F; color: #8A6D3B; border: none; border-radius: 50px; padding: 5px 15px; box-shadow: 2px 4px 0px #E5C354; cursor: pointer; font-size: 0.9rem; }
-        .cute-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .cute-table th { color: #FF8E9E; border-bottom: 2px solid #FFDEE9; padding: 10px; }
-        .cute-table td { padding: 15px 10px; border-bottom: 1px solid #F0F0F0; }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 20px 24px;
+            border-radius: 12px 12px 0 0 !important;
+        }
 
-        /* 모달 스타일 */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); z-index: 9999; backdrop-filter: blur(3px); }
-        .modal-diary-page { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 30px; border: 4px solid #ADE8F4; box-shadow: 20px 20px 0px rgba(173, 232, 244, 0.5); }
-        .yellow-tape { background: rgba(254, 249, 231, 0.8) !important; width: 100px !important; }
-        .input-group-cute { margin-bottom: 20px; }
-        .input-group-cute label { display: block; color: #FF8E9E; margin-bottom: 5px; }
-        .input-group-cute input, .input-group-cute select { width: 100%; padding: 10px; border: 2px dashed #FFDEE9; border-radius: 10px; outline: none; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 30px; }
-        .btn-sticker { flex: 1; border: none; padding: 10px; border-radius: 20px; color: white; font-weight: bold; cursor: pointer; }
-        .btn-sticker.pink { background: #FF8E9E; }
-        .btn-sticker.blue { background: #ADE8F4; color: #0077B6; }
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .nav-pills .nav-link {
+            color: #6b7280;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #4f46e5;
+            color: #fff;
+        }
+
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            padding: 14px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: inset 0 -1px 0 #f0f0f0;
+        }
+
+        .table td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f9fafb;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #fcfdfe;
+        }
+
+        .btn-primary {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+
+        .btn-outline-primary {
+            color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #4f46e5;
+            color: #fff;
+        }
+
+        /* Modal */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 24px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        /* Tree View */
+        #bomTree {
+            padding: 15px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow-y: auto;
+        }
+
+        .jstree-default .jstree-anchor {
+            font-family: inherit !important;
+        }
+
+        .detail-info-box {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .img-thumbnail-custom {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .img-thumbnail-custom:hover {
+            transform: scale(1.05);
+        }
+
+        /* JSTree Custom Icon */
+        .jstree-anchor .jstree-themeicon {
+            background-size: cover !important;
+            border-radius: 4px;
+            width: 24px !important;
+            height: 24px !important;
+        }
+        .jstree-anchor {
+            height: 32px !important;
+            line-height: 32px !important;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
 
-<div layout:fragment="content">
-    <div class="diary-wrapper">
-        <div class="diary-bookmarks">
-            <button class="bookmark pink active" data-type="FG" onclick="showList(this)">완제품</button>
-            <button class="bookmark yellow" data-type="WIP" onclick="showList(this)">중간제품</button>
-            <button class="bookmark blue" data-type="RAW" onclick="showList(this)">원자재</button>
-        </div>
+<div layout:fragment="content" class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title" id="list-title">품목 관리</h2>
+                        <p class="text-muted small mb-0">제품 및 자재를 등록하고 BOM(소요자재)을 구성합니다.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="openAddModal()">
+                        <i class="bi bi-plus-lg me-2"></i>신규 품목 등록
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <!-- 탭 메뉴 -->
+                    <div class="px-4 pt-3 pb-2 border-bottom bg-light">
+                        <ul class="nav nav-pills" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-type="FG" onclick="showList(this)">완제품</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-type="WIP" onclick="showList(this)">중간제품</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-type="RAW" onclick="showList(this)">원자재</button>
+                            </li>
+                        </ul>
+                    </div>
 
-        <div class="diary-page">
-            <div class="masking-tape"></div>
-            <div class="page-header">
-                <h2 id="list-title">완제품 리스트</h2>
-                <button type="button" id="openModalBtn" class="btn-add-sticker" onclick="openModal('addModal')">+ 신규 등록</button>
+                    <!-- 테이블 영역 -->
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="table-layout: fixed;">
+                            <thead class="bg-light">
+                            <tr>
+                                <th style="width: 20%; padding-left: 24px;">품목코드</th>
+                                <th style="width: 45%;">품목명</th>
+                                <th style="width: 15%;" class="text-center">타입</th>
+                                <th style="width: 20%; padding-right: 24px;" class="text-center">액션</th>
+                            </tr>
+                            </thead>
+                            <tbody id="list-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 페이지네이션 -->
+                    <div class="px-4 py-3 border-top">
+                        <nav aria-label="Page navigation">
+                            <ul id="pagination" class="pagination pagination-sm mb-0 justify-content-center"></ul>
+                        </nav>
+                    </div>
+                </div>
             </div>
-
-            <table class="cute-table">
-                <thead>
-                <tr>
-                    <th>제품코드</th>
-                    <th>제품이름</th>
-                    <th>제품타입</th>
-                    <th>상세보기</th>
-                </tr>
-                </thead>
-                <tbody id="list-body"></tbody>
-            </table>
         </div>
     </div>
 
-    <!-- 1. 제품 등록 모달 -->
-    <div id="addModal" class="modal-overlay">
-        <div class="modal-diary-page" style="width: 450px;">
-            <div class="masking-tape yellow-tape"></div>
-            <h3>✨ 새 제품 등록</h3>
-
-            <form id="addForm">
-                <div class="input-group-cute">
-                    <label>제품코드 <span class="text-danger">*</span></label>
-                    <input type="text" id="newCode" placeholder="예: ITEM-001" required>
+    <!-- 1. 품목 등록 모달 -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">✨ 신규 품목 등록</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="input-group-cute">
-                    <label>제품이름 <span class="text-danger">*</span></label>
-                    <input type="text" id="newName" placeholder="예: 최고급 원두" required>
-                </div>
-                <div class="input-group-cute">
-                    <label>제품타입 <span class="text-danger">*</span></label>
-                    <select id="newType" required>
-                        <option value="FG">완제품</option>
-                        <option value="WIP">중간제품</option>
-                        <option value="RAW">원자재</option>
-                    </select>
-                </div>
-
-                <div class="row">
-                    <div class="col-6 input-group-cute">
-                        <label>단위 (UOM)</label>
-                        <input type="text" id="newUom" placeholder="예: EA, BOX" maxlength="10">
+                <form id="addForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">품목코드 <span class="text-danger">*</span></label>
+                                <input type="text" id="newCode" class="form-control" placeholder="예: ITEM-001" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">품목이름 <span class="text-danger">*</span></label>
+                                <input type="text" id="newName" class="form-control" placeholder="예: 최고급 자두" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">품목타입 <span class="text-danger">*</span></label>
+                                <select id="newType" class="form-select" required>
+                                    <option value="FG">완제품</option>
+                                    <option value="WIP">중간제품</option>
+                                    <option value="RAW">원자재</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">단위 (UOM)</label>
+                                <input type="text" id="newUom" class="form-control" placeholder="EA, BOX" maxlength="10">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">기준단가 (₩)</label>
+                                <input type="number" id="newPrice" class="form-control" placeholder="0" min="0">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">품목 사진</label>
+                                <input type="file" id="newItemImg" class="form-control" accept="image/*" multiple>
+                                <div id="newImgPreview" class="d-flex gap-2 mt-2 flex-wrap"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-6 input-group-cute">
-                        <label>기준단가 (₩)</label>
-                        <input type="number" id="newPrice" placeholder="0" min="0">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="submit" class="btn btn-primary">등록하기</button>
                     </div>
-                </div>
-
-                <div class="modal-btns">
-                    <button type="button" class="btn-sticker pink" onclick="closeModal('addModal')">닫기</button>
-                    <button type="submit" class="btn-sticker blue">등록하기!</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- 2. 상세조회 & BOM 리스트 모달 -->
-    <div id="detailModal" class="modal-overlay">
-        <div class="modal-diary-page" style="width: 550px;">
-            <div class="masking-tape yellow-tape"></div>
-            <h3>✨ 제품 상세 & BOM 정보</h3>
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">📖 품목 상세 & BOM 정보</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 기본 정보 박스 -->
+                    <div id="detailContent" class="detail-info-box"></div>
+                    
+                    <!-- 이미지 섹션 -->
+                    <div id="itemImgContainer" class="mb-4 px-1" style="display: none;">
+                        <label class="form-label d-block fw-bold text-primary mb-2">🖼️ 품목 사진</label>
+                        <div id="detailImgList" class="d-flex gap-3 overflow-x-auto pb-2 border rounded p-2 bg-light"></div>
+                        <div id="editImgInput" class="mt-2" style="display: none;">
+                            <input type="file" id="detailNewImg" class="form-control form-control-sm" accept="image/*" multiple>
+                        </div>
+                    </div>
 
-            <!-- 제품 기본 정보 영역 -->
-            <div id="detailContent" style="margin-bottom: 20px; background: #FEF9E7; padding: 15px; border-radius: 15px; border: 2px dashed #F7DC6F;">
-                <!-- 동적으로 채움 -->
-            </div>
+                    <!-- 분석 액션 버튼 -->
+                    <div class="d-flex gap-2 mb-4">
+                        <button type="button" class="btn btn-outline-info flex-fill fw-bold" onclick="showBomTree()">
+                            <i class="bi bi-diagram-3 me-2"></i>BOM 보기
+                        </button>
+                        <button type="button" class="btn btn-outline-warning flex-fill fw-bold" onclick="showWhereUsed()">
+                            <i class="bi bi-search me-2"></i>사용처 리스트
+                        </button>
+                    </div>
 
-            <!-- BOM 리스트 타이틀 & 자재 추가 버튼 -->
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed #FFDEE9; padding-top: 20px;">
-                <h5 style="color: #FF8E9E; font-weight: bold; margin: 0;">📦 소요 자재 (BOM)</h5>
-                <button type="button" class="btn-add-bom" id="btnAddBom" onclick="openBomAddModal()">+ 자재 추가</button>
-            </div>
-
-            <!-- BOM 리스트 영역 -->
-            <div id="bomContent" style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
-                <table class="cute-table" style="font-size: 0.95rem; margin-top: 10px;">
-                    <thead>
-                    <tr>
-                        <th style="position: sticky; top: 0; background: white;">자재코드</th>
-                        <th style="position: sticky; top: 0; background: white;">자재이름</th>
-                        <th style="position: sticky; top: 0; background: white;">소요수량</th>
-                    </tr>
-                    </thead>
-                    <tbody id="bom-list-body">
-                    <!-- 동적으로 채움 -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="modal-btns">
-                <button type="button" class="btn-sticker pink" onclick="closeModal('detailModal')">닫기</button>
+                    <!-- BOM 리스트 -->
+                    <div class="border-top pt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-box me-2"></i>소요 자재 (BOM)</h6>
+                            <button type="button" class="btn btn-sm btn-success" id="btnAddBom" onclick="openBomAddModal()">
+                                <i class="bi bi-plus-lg me-1"></i>자재 추가
+                            </button>
+                        </div>
+                        <div class="table-responsive border rounded-3" style="max-height: 250px;">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3" style="width: 15%;">사진</th>
+                                    <th style="width: 20%;">자재코드</th>
+                                    <th style="width: 35%;">자재이름</th>
+                                    <th class="text-end" style="width: 15%;">소요수량</th>
+                                    <th class="text-center" style="width: 15%;">관리</th>
+                                </tr>
+                                </thead>
+                                <tbody id="bom-list-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" id="btnEditToggle" onclick="toggleEdit()">품목 수정</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- 3. BOM 추가용 서브 모달 -->
-    <div id="bomAddModal" class="modal-overlay" style="z-index: 10000;">
-        <div class="modal-diary-page" style="width: 400px; border-color: #F7DC6F;">
-            <div class="masking-tape" style="background: rgba(255, 142, 158, 0.6);"></div>
-            <h4 style="color: #8A6D3B;">🎀 새 자재 추가</h4>
-
-            <form id="bomAddForm">
-                <!-- 추가: 현재 아이템 ID와 타입을 임시로 저장할 hidden 요소 -->
-                <input type="hidden" id="childItemId">
-                <input type="hidden" id="currentItemType">
-
-                <div class="input-group-cute">
-                    <label>추가될 제품 (Parent Item) <span class="text-danger">*</span></label>
-                    <select id="parentItemId" required>
-                        <option value="">-- 제품 선택 --</option>
-                    </select>
+    <div class="modal fade" id="bomAddModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-warning shadow">
+                <div class="modal-header bg-warning-subtle">
+                    <h5 class="modal-title fw-bold">📎 새 자재 추가</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <form id="bomAddForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="parentItemId">
+                        <input type="hidden" id="currentItemType">
+                        <div class="mb-3">
+                            <label class="form-label">추가할 품목 <span class="text-danger">*</span></label>
+                            <select id="childItemIdSelect" class="form-select" required>
+                                <option value="">-- 품목 선택 --</option>
+                            </select>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label">소요 수량 <span class="text-danger">*</span></label>
+                            <input type="number" id="bomQuantity" class="form-control" min="1" value="1" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="submit" class="btn btn-sm btn-warning fw-bold">추가하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-                <div class="input-group-cute">
-                    <label>소요 수량 <span class="text-danger">*</span></label>
-                    <input type="number" id="bomQuantity" min="1" placeholder="예: 2" required>
+    <!-- 4. BOM 트리 모달 -->
+    <div class="modal fade" id="bomTreeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="treeTitle">🌲 다단계 BOM 트리</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="modal-body p-0">
+                    <!-- 정전개(다단계 BOM) 영역 -->
+                    <div id="bomTreeArea" class="p-3" style="display: none;">
+                        <div id="bomTree" style="height: 500px; overflow-y: auto; border: none; background: white;"></div>
+                    </div>
 
-                <div class="modal-btns">
-                    <button type="button" class="btn-sticker pink" onclick="closeModal('bomAddModal')">취소</button>
-                    <button type="submit" class="btn-sticker blue" style="background: #F7DC6F; color: #8A6D3B;">추가하기!</button>
+                    <!-- 역전개(사용처 리스트) 영역 -->
+                    <div id="whereUsedArea" class="p-3" style="display: none;">
+                        <div class="alert alert-info py-2 small mb-3">
+                            <i class="bi bi-info-circle me-2"></i>선택한 자재가 포함된 모든 상위 제품 목록입니다.
+                        </div>
+                        <div class="table-responsive" style="height: 450px; overflow-y: auto;">
+                            <table class="table table-hover align-middle border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 15%">사진</th>
+                                        <th style="width: 25%">품목코드</th>
+                                        <th style="width: 30%">품목명</th>
+                                        <th style="width: 15%" class="text-center">타입</th>
+                                        <th style="width: 15%" class="text-center">상세</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="whereUsedListBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 이미지 크게 보기 모달 (Lightbox) -->
+    <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body p-0 text-center position-relative">
+                    <img id="lightboxImage" src="" class="img-fluid rounded shadow-lg" style="max-height: 85vh; border: 3px solid white;">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="filter: drop-shadow(0 0 2px black);"></button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script th:inline="javascript">
         'use strict';
 
+        const state = {
+            currentType: 'FG',
+            currentPage: 0,
+            totalPages: 0
+        };
+
+        let addModal, detailModal, bomAddModal, bomTreeModal, imageLightboxModal;
+
         document.addEventListener('DOMContentLoaded', () => {
-            loadList('FG');
+            addModal = new bootstrap.Modal(document.getElementById('addModal'));
+            detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+            bomAddModal = new bootstrap.Modal(document.getElementById('bomAddModal'));
+            bomTreeModal = new bootstrap.Modal(document.getElementById('bomTreeModal'));
+            imageLightboxModal = new bootstrap.Modal(document.getElementById('imageLightboxModal'));
 
-            const addForm = document.getElementById('addForm');
-            if (addForm) addForm.addEventListener('submit', handleAddSubmit);
-
-            const bomAddForm = document.getElementById('bomAddForm');
-            if (bomAddForm) bomAddForm.addEventListener('submit', handleBomAddSubmit);
+            loadList('FG', 0);
+            document.getElementById('addForm')?.addEventListener('submit', handleAddSubmit);
+            document.getElementById('bomAddForm')?.addEventListener('submit', handleBomAddSubmit);
+            
+            // 이미지 미리보기 이벤트 추가
+            document.getElementById('newItemImg')?.addEventListener('change', function(e) {
+                const preview = document.getElementById('newImgPreview');
+                preview.innerHTML = '';
+                Array.from(e.target.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(ex) {
+                        const img = document.createElement('img');
+                        img.src = ex.target.result;
+                        img.style.width = '60px';
+                        img.style.height = '60px';
+                        img.style.borderRadius = '10px';
+                        img.style.objectFit = 'cover';
+                        img.style.border = '1px solid #e5e7eb';
+                        preview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
         });
 
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.style.display = 'block';
+        function openAddModal() {
+            addModal.show();
         }
 
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.style.display = 'none';
-                const form = modal.querySelector('form');
-                if (form) form.reset();
+        function openLightbox(imgUrl) {
+            const lightboxImg = document.getElementById('lightboxImage');
+            if (lightboxImg) {
+                lightboxImg.src = imgUrl;
+                imageLightboxModal.show();
             }
         }
 
         function showList(element) {
-            document.querySelectorAll('.bookmark').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
 
             const type = element.dataset.type;
-            const title = type === 'FG' ? '완제품 리스트' : (type === 'WIP' ? '중간제품 리스트' : '원자재 리스트');
-            document.getElementById('list-title').textContent = title;
+            const titleMap = { FG: '완제품 관리', WIP: '중간제품 관리', RAW: '원자재 관리' };
+            document.getElementById('list-title').textContent = titleMap[type] ?? '품목 관리';
 
-            loadList(type);
+            loadList(type, 0);
         }
 
-        // 1. 목록 조회
-        async function loadList(type) {
+        async function loadList(type, page = 0) {
             const tbody = document.getElementById('list-body');
             if (!tbody) return;
 
+            state.currentType = type;
+            state.currentPage = page;
+
             try {
-                const res = await fetch(`/api/item/list?type=${type}&page=0&size=10`);
+                const res = await fetch(`/api/item/list?type=${type}&page=${page}&size=10`);
                 if (!res.ok) throw new Error(`서버 응답 오류 (HTTP ${res.status})`);
 
                 const responseDto = await res.json();
+                const pageData = responseDto.data;
+
                 let items = [];
-                if (responseDto.data && responseDto.data.content) items = responseDto.data.content;
-                else if (Array.isArray(responseDto.data)) items = responseDto.data;
+                if (pageData?.content) items = pageData.content;
+                else if (Array.isArray(pageData)) items = pageData;
                 else if (Array.isArray(responseDto)) items = responseDto;
 
+                state.totalPages = pageData?.totalPages ?? 0;
+                renderPagination();
+
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">등록된 내역이 없습니다.</td></tr>';
                     return;
                 }
 
@@ -248,52 +523,113 @@
                     const pk = item.itemId || item.id || item.item_id || '';
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${escapeHtml(item.itemCode ?? '')}</td>
+                        <td class="fw-bold" style="padding-left: 24px;">${escapeHtml(item.itemCode ?? '')}</td>
                         <td>${escapeHtml(item.itemName ?? '')}</td>
-                        <td>${escapeHtml(item.itemType ?? '')}</td>
-                        <td><button class="btn-add-sticker" style="padding:2px 10px; font-size:0.8rem;" onclick="loadDetail('${pk}')">상세보기</button></td>
+                        <td class="text-center"><span class="badge bg-light text-dark border">${escapeHtml(item.itemType ?? '')}</span></td>
+                        <td class="text-center" style="padding-right: 24px;">
+                            <button class="btn btn-sm btn-outline-primary" style="border-radius: 6px;" onclick="loadDetail('${pk}')">상세정보</button>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-danger">${err.message}</td></tr>`;
             }
         }
 
-        // 2. 제품 등록
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (state.totalPages <= 1) return;
+
+            // 이전 버튼
+            const prevItem = document.createElement('li');
+            prevItem.className = `page-item ${state.currentPage === 0 ? 'disabled' : ''}`;
+            const prevLink = document.createElement('button');
+            prevLink.className = 'page-link';
+            prevLink.innerHTML = '<i class="bi bi-chevron-left"></i>';
+            if (state.currentPage > 0) {
+                prevLink.addEventListener('click', () => loadList(state.currentType, state.currentPage - 1));
+            }
+            prevItem.appendChild(prevLink);
+            container.appendChild(prevItem);
+
+            const { start, end } = getPageWindow(state.currentPage, state.totalPages, 5);
+            for (let i = start; i < end; i++) {
+                const pageItem = document.createElement('li');
+                pageItem.className = `page-item ${i === state.currentPage ? 'active' : ''}`;
+                const pageLink = document.createElement('button');
+                pageLink.className = 'page-link';
+                pageLink.textContent = String(i + 1);
+                pageLink.addEventListener('click', () => loadList(state.currentType, i));
+                pageItem.appendChild(pageLink);
+                container.appendChild(pageItem);
+            }
+
+            // 다음 버튼
+            const nextItem = document.createElement('li');
+            nextItem.className = `page-item ${state.currentPage >= state.totalPages - 1 ? 'disabled' : ''}`;
+            const nextLink = document.createElement('button');
+            nextLink.className = 'page-link';
+            nextLink.innerHTML = '<i class="bi bi-chevron-right"></i>';
+            if (state.currentPage < state.totalPages - 1) {
+                nextLink.addEventListener('click', () => loadList(state.currentType, state.currentPage + 1));
+            }
+            nextItem.appendChild(nextLink);
+            container.appendChild(nextItem);
+        }
+
+        function getPageWindow(current, total, windowSize) {
+            let start = Math.max(0, current - Math.floor(windowSize / 2));
+            let end = start + windowSize;
+            if (end > total) {
+                end = total;
+                start = Math.max(0, end - windowSize);
+            }
+            return { start, end };
+        }
+
         async function handleAddSubmit(e) {
             e.preventDefault();
-            const payload = {
+            const formData = new FormData();
+            const itemDTO = {
                 itemCode: document.getElementById('newCode')?.value.trim() ?? '',
                 itemName: document.getElementById('newName')?.value.trim() ?? '',
                 itemType: document.getElementById('newType')?.value ?? '',
                 uom: document.getElementById('newUom')?.value.trim() ?? '',
-                standardPrice: document.getElementById('newPrice')?.value ? Number(document.getElementById('newPrice').value) : 0
+                standardPrice: Number(document.getElementById('newPrice')?.value || 0)
             };
+
+            formData.append('itemDTO', new Blob([JSON.stringify(itemDTO)], { type: 'application/json' }));
+            
+            const files = document.getElementById('newItemImg').files;
+            if(files.length > 0) {
+                Array.from(files).forEach(file => {
+                    formData.append('itemImgFile', file);
+                });
+            }
 
             try {
                 const res = await fetch('/api/item', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: formData
                 });
                 if (!res.ok) throw new Error(`등록 실패 (HTTP ${res.status})`);
 
-                alert('성공적으로 등록되었습니다! ✨');
-                closeModal('addModal');
-
-                const activeType = document.querySelector('.bookmark.active')?.dataset.type ?? 'FG';
-                loadList(activeType);
+                alert('성공적으로 등록되었습니다.');
+                addModal.hide();
+                loadList(state.currentType, state.currentPage);
             } catch (err) {
                 alert(err.message);
             }
         }
 
-        // 3. 상세 조회 (400 에러 방어)
         async function loadDetail(itemId) {
             if (!itemId || itemId === 'undefined' || itemId === 'null') {
-                alert('해당 제품의 고유 ID 값을 찾을 수 없습니다.');
+                alert('해당 품목의 ID를 찾을 수 없습니다.');
                 return;
             }
 
@@ -301,133 +637,435 @@
                 const res = await fetch(`/api/item/${itemId}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status} 오류`);
                 const responseDto = await res.json();
-
-                const item = responseDto.data ? responseDto.data : responseDto;
+                const item = responseDto.data ?? responseDto;
 
                 document.getElementById('detailContent').innerHTML = `
-                    <div class="row" style="line-height: 1.8;">
-                        <div class="col-6"><strong>🔖 코드:</strong> ${escapeHtml(item.itemCode ?? '')}</div>
-                        <div class="col-6"><strong>🏷️ 이름:</strong> ${escapeHtml(item.itemName ?? '')}</div>
-                        <div class="col-6"><strong>📌 타입:</strong> ${escapeHtml(item.itemType ?? '')}</div>
-                        <div class="col-6"><strong>📏 단위:</strong> ${escapeHtml(item.uom ?? '-')}</div>
-                        <div class="col-12" style="margin-top: 8px;">
-                            <strong>💰 기준단가:</strong> ${escapeHtml(item.standardPrice ? item.standardPrice.toLocaleString() + ' ₩' : '0 ₩')}
+                    <div class="row g-3">
+                        <input type="hidden" id="detailItemId" value="${item.itemId ?? itemId}">
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted mb-1">품목코드</label>
+                            <input id="detailItemCode" class="form-control bg-white" value="${escapeHtml(item.itemCode ?? '')}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted mb-1">품목이름</label>
+                            <input id="detailItemName" class="form-control bg-white" value="${escapeHtml(item.itemName ?? '')}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted mb-1">품목타입</label>
+                            <select id="detailItemType" class="form-select bg-white" disabled>
+                                <option value="FG" ${item.itemType === 'FG' ? 'selected' : ''}>완제품</option>
+                                <option value="WIP" ${item.itemType === 'WIP' ? 'selected' : ''}>중간제품</option>
+                                <option value="RAW" ${item.itemType === 'RAW' ? 'selected' : ''}>원자재</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted mb-1">단위 (UOM)</label>
+                            <input id="detailItemUom" class="form-control bg-white" value="${escapeHtml(item.uom ?? '')}" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small text-muted mb-1">기준단가</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">₩</span>
+                                <input id="detailItemPrice" type="number" min="0" class="form-control bg-white text-end fw-bold" value="${Number(item.standardPrice ?? 0)}" readonly>
+                            </div>
                         </div>
                     </div>
                 `;
 
-                // 수정됨: 현재 아이템 ID와 타입을 hidden 필드에 저장
-                document.getElementById('childItemId').value = itemId;
+                // 이미지 처리
+                const imgContainer = document.getElementById('itemImgContainer');
+                const imgList = document.getElementById('detailImgList');
+                imgList.innerHTML = '';
+                
+                if (item.itemImgList && item.itemImgList.length > 0) {
+                    imgContainer.style.display = 'block';
+                    item.itemImgList.forEach(img => {
+                        const imgDiv = document.createElement('div');
+                        imgDiv.style.position = 'relative';
+                        imgDiv.innerHTML = `
+                            <img src="${img.imgUrl}" class="img-thumbnail-custom border-${img.repImgYn === 'Y' ? 'primary' : 'light'}" onclick="openLightbox('${img.imgUrl}')">
+                            ${img.repImgYn === 'Y' ? '<span class="badge bg-primary position-absolute top-0 start-0 m-1" style="font-size:10px;">대표</span>' : ''}
+                        `;
+                        imgList.appendChild(imgDiv);
+                    });
+                } else {
+                    imgContainer.style.display = 'none';
+                }
+
+                document.getElementById('btnEditToggle').textContent = '품목 수정';
+                document.getElementById('btnEditToggle').className = 'btn btn-outline-primary';
+
+                document.getElementById('parentItemId').value = itemId;
                 document.getElementById('currentItemType').value = item.itemType;
 
-                console.log(itemId);
                 await loadBomList(itemId);
-                openModal('detailModal');
+                detailModal.show();
             } catch (err) {
                 alert(`상세 정보를 가져오는데 실패했습니다.\n사유: ${err.message}`);
             }
         }
 
-        // 4. BOM 리스트 로드
         async function loadBomList(itemId) {
             const bomTbody = document.getElementById('bom-list-body');
-            bomTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">로딩 중... ☁️</td></tr>';
+            bomTbody.innerHTML = '<tr><td colspan="4" class="text-center py-3">로딩 중...</td></tr>';
 
             try {
                 const res = await fetch(`/api/bom/child/${itemId}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const responseDto = await res.json();
-
-                let bomList = responseDto.data;
+                const bomList = responseDto.data ?? [];
 
                 if (bomList.length === 0) {
-                    bomTbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">등록된 하위 자재(BOM)가 없습니다 🍃</td></tr>';
-                } else {
-                    bomTbody.innerHTML = '';
-                    bomList.forEach(bom => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${escapeHtml(bom.code || '-')}</td>
-                            <td>${escapeHtml(bom.name || '-')}</td>
-                            <td>${escapeHtml(bom.unit || 1)}</td>
-                        `;
-                        bomTbody.appendChild(tr);
-                    });
+                    bomTbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted small">등록된 소요자재(BOM)가 없습니다.</td></tr>';
+                    return;
                 }
+
+                bomTbody.innerHTML = '';
+                bomList.forEach(bom => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="ps-3">
+                            <img src="${bom.imgUrl || 'https://placehold.co/40x40?text=No+Img'}" 
+                                 class="rounded border" style="width: 32px; height: 32px; object-fit: cover; cursor: pointer;"
+                                 onclick="openLightbox(this.src)">
+                        </td>
+                        <td><a href="#" class="text-decoration-none fw-bold" onclick="loadDetail('${bom.itemId}'); return false;">${escapeHtml(bom.code || '-')}</a></td>
+                        <td>${escapeHtml(bom.name || '-')}</td>
+                        <td class="text-end fw-bold">${escapeHtml(bom.unit || 1)} EA</td>
+                        <td class="text-center"><button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="deleteBom('${bom.bomId}', '${itemId}')"><i class="bi bi-trash"></i></button></td>
+                    `;
+                    bomTbody.appendChild(tr);
+                });
             } catch (err) {
-                bomTbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#FF8E9E;">조회 실패: ${err.message}</td></tr>`;
+                bomTbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger small">조회 실패: ${err.message}</td></tr>`;
             }
         }
 
-        // 5. BOM 자재 추가 모달
-        async function openBomAddModal() {
-            const selectBox = document.getElementById('parentItemId');
-            selectBox.innerHTML = '<option value="">-- 자재 로딩 중... --</option>';
-            openModal('bomAddModal');
+        function toggleEdit() {
+            const btn = document.getElementById('btnEditToggle');
+            const isEditing = btn.textContent === '변경사항 적용';
+            const fields = [
+                document.getElementById('detailItemCode'),
+                document.getElementById('detailItemName'),
+                document.getElementById('detailItemType'),
+                document.getElementById('detailItemUom'),
+                document.getElementById('detailItemPrice')
+            ];
+
+            if (!isEditing) {
+                // 활성화
+                fields.forEach(f => {
+                    if (f.tagName === 'SELECT') f.disabled = false;
+                    else f.readOnly = false;
+                    f.classList.remove('bg-white');
+                });
+                document.getElementById('itemImgContainer').style.display = 'block';
+                document.getElementById('editImgInput').style.display = 'block';
+                btn.textContent = '변경사항 적용';
+                btn.className = 'btn btn-primary';
+            } else {
+                // 반영 후 비활성화
+                saveCurrentItem();
+            }
+        }
+
+        async function saveCurrentItem() {
+            const id = document.getElementById('detailItemId')?.value;
+            if (!id) {
+                alert('수정할 품목 ID가 없습니다.');
+                return;
+            }
+
+            const formData = new FormData();
+            const itemDTO = {
+                itemCode: document.getElementById('detailItemCode')?.value.trim() ?? '',
+                itemName: document.getElementById('detailItemName')?.value.trim() ?? '',
+                itemType: document.getElementById('detailItemType')?.value ?? '',
+                uom: document.getElementById('detailItemUom')?.value.trim() ?? '',
+                standardPrice: Number(document.getElementById('detailItemPrice')?.value || 0)
+            };
+
+            formData.append('itemDTO', new Blob([JSON.stringify(itemDTO)], { type: 'application/json' }));
+            
+            const files = document.getElementById('detailNewImg').files;
+            if(files.length > 0) {
+                Array.from(files).forEach(file => {
+                    formData.append('itemImgFile', file);
+                });
+            }
 
             try {
-                // 수정됨: 신규 등록 폼(newType)이 아니라 현재 상세 조회 중인 아이템의 타입을 가져옴
-                const currentType = document.getElementById('currentItemType').value;
+                const res = await fetch(`/api/item/${id}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+                if (!res.ok) throw new Error(`품목 수정 실패 (HTTP ${res.status})`);
 
-                // 가져온 currentType을 기준으로 API 요청을 보냄
+                alert('품목 정보가 수정되었습니다.');
+                await loadDetail(id);
+                await loadList(state.currentType, state.currentPage);
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function deleteBom(bomId, childItemId) {
+            if (!bomId) {
+                alert('삭제할 BOM ID가 없습니다.');
+                return;
+            }
+            if (!confirm('해당 BOM 항목을 삭제하시겠습니까?')) return;
+
+            try {
+                const res = await fetch(`/api/bom/${bomId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(`BOM 삭제 실패 (HTTP ${res.status})`);
+                await loadBomList(childItemId);
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function openBomAddModal() {
+            const selectBox = document.getElementById('childItemIdSelect');
+            selectBox.innerHTML = '<option value="">-- 소요자재 로딩 중... --</option>';
+            
+            const itemId = document.getElementById('detailItemId').value;
+            document.getElementById('parentItemId').value = itemId;
+
+            bomAddModal.show();
+
+            try {
+                const currentType = document.getElementById('currentItemType').value;
                 const res = await fetch(`/api/item/bomList?type=${currentType}&page=0&size=100`);
                 const responseDto = await res.json();
 
                 let items = [];
-                if (responseDto.data && responseDto.data.content) items = responseDto.data.content;
+                if (responseDto.data?.content) items = responseDto.data.content;
                 else if (Array.isArray(responseDto.data)) items = responseDto.data;
                 else if (Array.isArray(responseDto)) items = responseDto;
 
-                selectBox.innerHTML = '<option value="">-- 자재 선택 --</option>';
+                selectBox.innerHTML = '<option value="">-- 소요자재 선택 --</option>';
                 items.forEach(item => {
                     const pk = item.itemId || item.id || item.item_id || '';
-                    selectBox.innerHTML += `<option value="${pk}">[${item.itemCode}] ${item.itemName}</option>`;
+                    if (String(pk) !== String(itemId)) {
+                        selectBox.innerHTML += `<option value="${pk}">[${item.itemCode}] ${item.itemName}</option>`;
+                    }
                 });
-
-            } catch (err) {
+            } catch {
                 selectBox.innerHTML = '<option value="">목록 로드 실패</option>';
             }
         }
 
-        // 6. BOM 추가 제출
         async function handleBomAddSubmit(e) {
             e.preventDefault();
-
-            const parentId = document.getElementById('parentItemId').value;
-            const childId = document.getElementById('childItemId').value;
+            const assemblyId = document.getElementById('parentItemId').value; 
+            const componentId = document.getElementById('childItemIdSelect').value;
             const requiredQty = document.getElementById('bomQuantity').value;
-            console.log(requiredQty);
-            if (!childId || !requiredQty) return;
+
+            if (!assemblyId || !componentId || !requiredQty) return;
 
             try {
                 const res = await fetch('/api/bom/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        parentItemId: Number(parentId),
-                        childItemId: Number(childId),
+                        parentItemId: Number(componentId),
+                        childItemId: Number(assemblyId),
                         requiredQty: Number(requiredQty)
                     })
                 });
-
                 if (!res.ok) throw new Error(`BOM 등록 실패 (HTTP ${res.status})`);
 
-                alert('자재가 쏙! 추가되었어요 🎀');
-                closeModal('bomAddModal');
-
-                await loadBomList(childId);
-
+                alert('소요자재가 추가되었습니다.');
+                bomAddModal.hide();
+                await loadBomList(assemblyId);
             } catch (err) {
                 alert(err.message);
             }
         }
 
-        // XSS 방지
+        async function showBomTree() {
+            const itemId = document.getElementById('detailItemId').value;
+            const itemName = document.getElementById('detailItemName').value;
+            if (!itemId) return;
+
+            document.getElementById('treeTitle').textContent = `🌲 ${itemName} - 다단계 BOM`;
+            
+            // 영역 전환: 트리는 보이고, 리스트는 숨김
+            document.getElementById('bomTreeArea').style.display = 'block';
+            document.getElementById('whereUsedArea').style.display = 'none';
+            
+            bomTreeModal.show();
+
+            try {
+                const res = await fetch(`/api/bom/tree/${itemId}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const responseDto = await res.json();
+                const rawData = responseDto.data || [];
+
+                const treeData = rawData.map(item => {
+                    const isRoot = item.level === 0;
+                    const id = isRoot ? String(item.itemId) : `bom_${item.bomId}`;
+                    let parent = '#';
+                    
+                    if (!isRoot) {
+                        const parentNode = rawData.find(p => p.itemId === item.parentItemId && p.level === item.level - 1);
+                        parent = (item.level === 1) ? String(item.parentItemId) : (parentNode ? `bom_${parentNode.bomId}` : String(item.parentItemId));
+                    }
+                    
+                    return {
+                        id: id,
+                        parent: parent,
+                        text: isRoot ? `[기준] ${item.itemName}` : `${item.itemName} (${item.requireQty} EA)`,
+                        icon: item.imgUrl ? item.imgUrl : ((item.itemType === 'RAW') ? 'bi bi-box-seam text-secondary' : 
+                              (item.itemType === 'SEMI' || item.itemType === 'WIP') ? 'bi bi-gear-wide-connected text-primary' : 'bi bi-box-fill text-success'),
+                        data: { itemId: item.itemId, itemName: item.itemName, itemType: item.itemType },
+                        state: { opened: isRoot }
+                    };
+                });
+
+                $('#bomTree').jstree("destroy").jstree({
+                    'core': { 
+                        'data': treeData,
+                        'themes': { 'name': 'default', 'dots': true, 'icons': true }
+                    },
+                    'plugins': ['search', 'types']
+                });
+            } catch (err) {
+                document.getElementById('bomTree').innerHTML = `<p class="text-danger p-4 text-center">트리 로딩 실패: ${err.message}</p>`;
+            }
+        }
+
+        async function showWhereUsed() {
+            const itemId = document.getElementById('detailItemId').value;
+            const itemName = document.getElementById('detailItemName').value;
+            if (!itemId) return;
+
+            document.getElementById('treeTitle').textContent = `🔍 ${itemName} - 사용처 리스트`;
+            
+            // 영역 전환: 트리는 숨기고, 리스트만 보임
+            document.getElementById('bomTreeArea').style.display = 'none';
+            document.getElementById('whereUsedArea').style.display = 'block';
+
+            bomTreeModal.show();
+
+            try {
+                const res = await fetch(`/api/bom/where-used/${itemId}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const responseDto = await res.json();
+                const rawData = responseDto.data || [];
+
+                // 리스트 렌더링 (최상위 완제품 또는 상위 품목들)
+                renderWhereUsedList(rawData, itemId);
+            } catch (err) {
+                document.getElementById('whereUsedListBody').innerHTML = `<tr><td colspan="4" class="text-center text-danger">리스트 로딩 실패: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderWhereUsedList(data, currentId) {
+            const listBody = document.getElementById('whereUsedListBody');
+            if (!listBody) return;
+            listBody.innerHTML = '';
+
+            // 자기 자신 제외하고 상위 품목만 추출 (중복 제거)
+            const parentItems = [];
+            const seen = new Set();
+
+            data.forEach(item => {
+                if (String(item.itemId) !== String(currentId) && !seen.has(item.itemId)) {
+                    parentItems.push(item);
+                    seen.add(item.itemId);
+                }
+            });
+
+            if (parentItems.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">해당 자재를 사용하는 상위 품목이 없습니다.</td></tr>';
+                return;
+            }
+
+            // 타입 우선순위 (완제품 -> 중간제품 -> 원자재)
+            const typePriority = { 'FIN': 1, 'FG': 1, '완제품': 1, 'SEMI': 2, 'WIP': 2, '중간제품': 2, 'RAW': 3, '원자재': 3 };
+
+            parentItems.sort((a, b) => {
+                const pA = typePriority[a.itemType] || 99;
+                const pB = typePriority[b.itemType] || 99;
+                return pA - pB;
+            });
+
+            parentItems.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-2">
+                        <img src="${item.imgUrl || 'https://placehold.co/40x40?text=No+Img'}" 
+                             class="rounded border" style="width: 32px; height: 32px; object-fit: cover; cursor: pointer;"
+                             onclick="openLightbox(this.src)">
+                    </td>
+                    <td class="fw-bold">${escapeHtml(item.itemCode)}</td>
+                    <td>${escapeHtml(item.itemName)}</td>
+                    <td class="text-center"><span class="badge ${item.itemType === 'FIN' || item.itemType === 'FG' || item.itemType === '완제품' ? 'bg-success' : 'bg-primary'}">${escapeHtml(item.itemType)}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-info" onclick="bomTreeModal.hide(); loadDetail('${item.itemId}')">이동</button>
+                    </td>
+                `;
+                listBody.appendChild(tr);
+            });
+        }
+
+        async function expandIngredients(node) {
+            const itemId = node.data.itemId;
+            const itemName = node.data.itemName;
+            
+            const tree = $('#bomTree').jstree(true);
+            const groupId = `ing_group_${itemId}_${Math.random().toString(36).substr(2, 5)}`;
+            
+            try {
+                const res = await fetch(`/api/bom/tree/${itemId}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const responseDto = await res.json();
+                const rawData = responseDto.data || [];
+
+                if (rawData.length <= 1) {
+                    alert('하위 자재 정보가 없습니다.');
+                    return;
+                }
+
+                tree.create_node(node, {
+                    id: groupId,
+                    text: `[${itemName}]의 하위 자재 구성`,
+                    icon: 'bi bi-box-seam text-info',
+                    state: { opened: true }
+                }, 'last');
+
+                rawData.forEach(item => {
+                    if (item.level === 0) return;
+
+                    const parentNode = rawData.find(p => p.itemId === item.parentItemId && p.level === item.level - 1);
+                    const parentId = (item.level === 1) ? groupId : `ing_${parentNode.bomId}_under_${itemId}`;
+                    const currentId = `ing_${item.bomId}_under_${itemId}`;
+
+                    tree.create_node(parentId, {
+                        id: currentId,
+                        text: `${item.itemName} (${item.requireQty} EA)`,
+                        icon: (item.itemType === 'RAW') ? 'bi bi-box-seam text-secondary' : 
+                              (item.itemType === 'SEMI' || item.itemType === 'WIP') ? 'bi bi-gear-wide-connected text-primary' : 'bi bi-box-fill text-success',
+                        data: { itemId: item.itemId, itemName: item.itemName, itemType: item.itemType }
+                    }, 'last');
+                });
+                
+                tree.open_node(node);
+            } catch (err) {
+                alert('하위 자재 로드 실패: ' + err.message);
+            }
+        }
+
         function escapeHtml(unsafe) {
-            if (!unsafe) return '';
-            return String(unsafe).replace(/[&<"'>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[c]);
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe).replace(/[&<>"']/g, c =>
+                ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[c]
+            );
         }
     </script>
 </div>
 </body>
 </html>
+

@@ -7,14 +7,20 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ItemType {
+public enum ItemType implements BaseEnum {
     RAW(1, "원자재"),
     WIP(2, "재공품"),
     FG(3, "완제품");
     // SEMI(4, "반자재");
 
     private final int code;      // 숫자 코드
-    private final String Description;    // 한글 명칭
+    private final String description;    // 한글 명칭
+
+    @Override
+    public int getCode() { return code; }
+
+    @Override
+    public String getDescription() { return description; }
 
     public static ItemType fromCode(Integer code) {
         if (code == null) return null;

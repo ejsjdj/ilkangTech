@@ -8,5 +8,5 @@ import java.util.List;
 public interface ProfileImgRepository extends JpaRepository<ProfileImg, Long> {
     List<ProfileImg> findByMemberIdAndRepImgYn(Long memberId, String repImgYn);
 
-    List<ProfileImg> findByMemberId(Long id);
+    List<ProfileImg> findByMemberIdOrderByRepImgYnDescIdDesc(Long memberId);
 }

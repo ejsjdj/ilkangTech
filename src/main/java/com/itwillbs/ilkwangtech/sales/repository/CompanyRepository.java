@@ -20,16 +20,16 @@ public class CompanyRepository {
         companyMapper.insertCompany(companyDTO);
     }
 
-    public CompanyDTO findByName(String name) {
-        return companyMapper.selectByName(name);
+    public CompanyDTO findByName(String companyName) {
+        return companyMapper.selectByName(companyName);
     }
 
-    public List<CompanyDTO> selectByPage(Long offset, Long pageSize, CompanyCategory category) {
-        return companyMapper.selectByPage(offset, pageSize, category);
+    public List<CompanyDTO> selectByPage(Long offset, Long pageSize, CompanyCategory companyType) {
+        return companyMapper.selectByPage(offset, pageSize, companyType);
     }
 
-    public long selectCount(CompanyCategory category) {
-        return companyMapper.selectCount(category);
+    public long selectCount(CompanyCategory companyType) {
+        return companyMapper.selectCount(companyType);
     }
 
     public List<PurchaseCompanyDTO> selectCompanyType3(){

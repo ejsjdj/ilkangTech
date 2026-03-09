@@ -5,14 +5,14 @@ import com.itwillbs.ilkwangtech.account.dto.AccountLogin;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterRequestDTO;
 import com.itwillbs.ilkwangtech.account.dto.AccountRegisterResponseDTO;
 import com.itwillbs.ilkwangtech.account.service.*;
+import com.itwillbs.ilkwangtech.common.service.AuditLogService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -20,6 +20,9 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -36,6 +39,7 @@ public class AccountController {
     private final BankService bankService;
     private final AccountService accountService;
     private final ListService listService;
+    private final AuditLogService auditLogService;
 
     /**
      * 회원가입 페이지를 요청합니다.
@@ -157,5 +161,96 @@ public class AccountController {
             redirectAttributes.addFlashAttribute("errorMessage", "정보 수정에 실패했습니다.");
 
         return "redirect:/account/myInfo";
+    }
+
+    /**
+     * 사원의 비밀번호를 '1234'로 초기화합니다. (관리자 전용)
+     */
+    @PreAuthorize("hasAnyAuthority('CEO', 'HR')")
+    @PostMapping("/resetPassword")
+    @ResponseBody
+    public ResponseEntity<String> resetPassword(@RequestParam Long id) {
+        if (accountService.resetPassword(id)) {
+            return ResponseEntity.ok("비밀번호가 '1234'로 초기화되었습니다.");
+        } else {
+            return ResponseEntity.badRequest().body("비밀번호 초기화에 실패했습니다.");
+        }
+    }
+
+    /**
+     * 사용자가 직접 비밀번호를 변경합니다.
+     */
+    @PostMapping("/changePassword")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> changePassword(@AuthenticationPrincipal AccountLogin user,
+                                                              @RequestParam String oldPassword,
+                                                              @RequestParam String newPassword) {
+        Map<String, Object> response = new HashMap<>();
+        if (accountService.changePassword(user.getId(), oldPassword, newPassword)) {
+            response.put("success", true);
+            response.put("message", "비밀번호가 성공적으로 변경되었습니다.");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("success", false);
+            response.put("message", "기존 비밀번호가 일치하지 않거나 변경에 실패했습니다.");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * 비밀번호 찾기(본인 확인) 페이지를 요청합니다.
+     */
+    @GetMapping("/forgotPassword")
+    public String forgotPassword() {
+        return "account/forgotPassword";
+    }
+
+    /**
+     * 본인 확인을 통해 비밀번호를 재설정합니다.
+     */
+    @PostMapping("/forgotPassword")
+    public String resetPasswordBySelf(@RequestParam String employeeNumber,
+                                      @RequestParam String name,
+                                      @RequestParam String email,
+                                      @RequestParam String newPassword,
+                                      RedirectAttributes rttr) {
+        if (accountService.verifyMember(employeeNumber, name, email)) {
+            if (accountService.resetPassword(employeeNumber, newPassword)) {
+                rttr.addFlashAttribute("successMessage", "비밀번호가 재설정되었습니다. 새로운 비밀번호로 로그인해주세요.");
+                return "redirect:/account/login";
+            } else {
+                rttr.addFlashAttribute("errorMessage", "비밀번호 재설정에 실패했습니다.");
+            }
+        } else {
+            rttr.addFlashAttribute("errorMessage", "입력하신 정보가 일치하지 않습니다.");
+        }
+        return "redirect:/account/forgotPassword";
+    }
+
+    /**
+     * 활동 로그 페이지를 요청합니다. (관리자 전용)
+     */
+    @PreAuthorize("hasAnyAuthority('CEO', 'HR', 'INFORMATION')")
+    @GetMapping("/audit-log")
+    public String auditLog() {
+        return "account/auditLog";
+    }
+
+    /**
+     * 활동 로그 데이터를 조회합니다. (관리자 전용)
+     */
+    @PreAuthorize("hasAnyAuthority('CEO', 'HR', 'INFORMATION')")
+    @GetMapping("/audit-log/data")
+    @ResponseBody
+    public ResponseEntity<List<com.itwillbs.ilkwangtech.common.entity.AuditLog>> getAuditLogData(
+            @RequestParam(required = false) String employeeNumber) {
+        
+        List<com.itwillbs.ilkwangtech.common.entity.AuditLog> logs;
+        if (employeeNumber != null && !employeeNumber.isEmpty()) {
+            logs = auditLogService.findByEmployeeNumber(employeeNumber);
+        } else {
+            logs = auditLogService.findAll();
+        }
+        return ResponseEntity.ok(logs);
     }
 }

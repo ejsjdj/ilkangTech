@@ -5,8 +5,10 @@ import com.itwillbs.ilkwangtech.sales.constant.OrderStatus;
 import com.itwillbs.ilkwangtech.sales.dto.OrderDTO;
 import com.itwillbs.ilkwangtech.sales.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,7 @@ public class OrderApiController {
 
     // 1. 신규 수주 등록 (POST)
     // 수주 헤더(날짜, 고객사)와 상세 내역(품목, 수량)을 한 번에 받습니다.
+    @PreAuthorize("hasAnyAuthority('CEO', 'SALES')")
     @PostMapping
     public void createOrder(@RequestBody OrderDTO orderDTO) {
         orderService.createOrder(orderDTO);
@@ -28,11 +31,16 @@ public class OrderApiController {
     // 2. 수주 목록 조회 (GET)
     // 기간, 고객사명, 진행 상태별 필터링이 필수입니다.
     @GetMapping
-    public ResponseEntity<ApiResponseDTO<List<OrderDTO>>> getOrderList(Pageable pageable) {
+    public ResponseEntity<ApiResponseDTO<Page<OrderDTO>>> getOrderList(
+            Pageable pageable,
+            @RequestParam(required = false) String filterStatus) {
 
-        List<OrderDTO> orderList = orderService.getOrderList(pageable);
+        // 수주 목록 조회 전 재고 기반 상태 업데이트 실행
+        orderService.updateOrderStatusesBasedOnInventory();
 
-        return ResponseEntity.ok(ApiResponseDTO.success(orderList));
+        Page<OrderDTO> orderPage = orderService.getOrderList(pageable, filterStatus);
+
+        return ResponseEntity.ok(ApiResponseDTO.success(orderPage));
     }
 
     // 3. 수주 상세 조회 (GET)
@@ -45,6 +53,7 @@ public class OrderApiController {
 
     // 4. 수주 정보 수정 (PUT)
     // 수주가 이미 '생산 시작' 또는 '출고' 상태라면 수정을 제한하는 로직이 필요합니다.
+    @PreAuthorize("hasAnyAuthority('CEO', 'SALES')")
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponseDTO<OrderDTO>> updateOrder(@PathVariable Long id, @RequestBody OrderDTO orderDTO) {
         if (orderService.isEditable(id)) {
@@ -56,6 +65,7 @@ public class OrderApiController {
 
     // 5. 수주 삭제 (PUT)
     // 이력을 남기기 위해 '주문 취소'
+    @PreAuthorize("hasAnyAuthority('CEO', 'SALES')")
     @PutMapping("/delete/{id}")
     public ResponseEntity<ApiResponseDTO<OrderDTO>> deleteOrder(@PathVariable Long id) {
 
@@ -72,6 +82,7 @@ public class OrderApiController {
 
     // 6. 수주 상태 일괄 변경 (PATCH)
     // 수주 확정, 생산 요청 등 상태값만 바꿀 때 유용합니다.
+    @PreAuthorize("hasAnyAuthority('CEO', 'SALES')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponseDTO<String>> changeOrderStatus(
             @PathVariable Long id,
@@ -79,6 +90,18 @@ public class OrderApiController {
 
         orderService.changeOrderStatus(id, status);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, "상태가 변경되었습니다.", status.getDescription()));
+    }
+
+    // 7. 납품 완료 처리 (POST)
+    @PreAuthorize("hasAnyAuthority('CEO', 'SALES')")
+    @PostMapping("/{id}/delivery")
+    public ResponseEntity<ApiResponseDTO<String>> completeDelivery(@PathVariable Long id) {
+        try {
+            orderService.deliveryOrder(id);
+            return ResponseEntity.ok(ApiResponseDTO.success("납품 처리가 완료되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponseDTO.fail(e.getMessage()));
+        }
     }
 
 }

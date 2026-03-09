@@ -3,6 +3,7 @@ package com.itwillbs.ilkwangtech.common.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
+@EnableMethodSecurity
 public class WebSecurityConfig {
 
 	private final CustomAuthenticationFailureHandler authenticationFailureHandler;
@@ -26,9 +28,12 @@ public class WebSecurityConfig {
 		http
 				// 접근 권한 설정
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/account/login", "/css/**", "/js/**", "/img/**", "/error").permitAll()
-						.requestMatchers("/account/role").hasAnyAuthority("CEO","INFORMATION")
-						.requestMatchers("/account/lockAccount").hasAnyAuthority("CEO", "HR")
+						.requestMatchers("/account/login", "/account/forgotPassword", "/css/**", "/js/**", "/img/**", "/error").permitAll()
+						.requestMatchers("/account/role", "/api/account/role/**").hasAnyAuthority("CEO", "INFORMATION")
+						.requestMatchers("/account/lockAccount", "/api/account/lock/**").hasAnyAuthority("CEO", "HR")
+						.requestMatchers("/sales/**", "/api/sales/**").hasAnyAuthority("CEO", "SALES", "PURCHASING")
+						.requestMatchers("/inventorymg/**", "/api/inventory/**").hasAnyAuthority("CEO", "PRODUCTION", "PURCHASING")
+						.requestMatchers("/standard/**", "/api/standard/**", "/api/item/**", "/api/bom/**").hasAnyAuthority("CEO", "INFORMATION", "PRODUCTION")
 						.anyRequest().authenticated()
 				);
 

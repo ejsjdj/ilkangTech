@@ -1,5 +1,6 @@
 package com.itwillbs.ilkwangtech.sales.repository;
 
+import com.itwillbs.ilkwangtech.sales.constant.OrderStatus;
 import com.itwillbs.ilkwangtech.sales.dto.OrderDTO;
 import com.itwillbs.ilkwangtech.sales.dto.OrderDetailDTO;
 import com.itwillbs.ilkwangtech.sales.mapper.OrderMapper;
@@ -23,12 +24,24 @@ public class OrderRepository {
         orderMapper.insertOrderDetails(orderDetails);
     }
 
-    public List<OrderDTO> getOrderList(long offset, int pageSize) {
-        return orderMapper.selectByPage(offset, pageSize);
+    public List<OrderDTO> getOrderList(long offset, int pageSize, List<OrderStatus> statuses) {
+        return orderMapper.selectByPage(offset, pageSize, statuses);
+    }
+
+    public long countOrders(List<OrderStatus> statuses) {
+        return orderMapper.countOrders(statuses);
     }
 
     public Optional<OrderDTO> getOrder(Long id) {
         return orderMapper.selectById(id);
+    }
+
+    public List<OrderDetailDTO> getOrderDetails(Long orderId) {
+        return orderMapper.selectDetailsByOrderId(orderId);
+    }
+
+    public List<OrderDTO> getUncompletedOrders() {
+        return orderMapper.selectUncompletedOrders();
     }
 
     public void updateOrder(OrderDTO orderDTO) {

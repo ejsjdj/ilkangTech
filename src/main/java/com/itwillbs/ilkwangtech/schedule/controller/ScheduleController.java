@@ -54,7 +54,6 @@ public class ScheduleController {
 	private final ScheduleService scheduleService;
 	private final NoticeService noticeService;
 	
-	// [추가 1] 빈 문자열("")을 null로 변환하여 LocalDate 바인딩 에러 방지
 	@InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
@@ -92,7 +91,6 @@ public class ScheduleController {
 		// 3. 모델에 담기
 		model.addAttribute("schedules", result); // Page 객체 자체를 넘김
 
-		// [추가] 페이지네이션 UI 계산 (보여줄 페이지 번호 범위)
 		// 현재 페이지를 기준으로 앞뒤 5페이지씩, 총 10페이지 표시
 		int blockLimit = 10;
 		int startPage = (((int)(Math.ceil((double)page / blockLimit))) - 1) * blockLimit + 1;
@@ -170,7 +168,7 @@ public class ScheduleController {
         }
     }
     
-    // [추가] 캘린더용 일정 데이터 조회 (JSON 반환)
+    // 캘린더용 일정 데이터 조회 (JSON 반환)
     @GetMapping("/api/events")
     @ResponseBody
     public ResponseEntity<List<ScheduleDTO>> getCalendarEvents(
@@ -245,7 +243,7 @@ public class ScheduleController {
                 .body(resource);
     }
     
-    // [추가] 개별 파일 삭제 요청 처리
+    // 개별 파일 삭제 요청 처리
     @PostMapping("/file/delete")
     @ResponseBody
     public ResponseEntity<String> deleteFile(@RequestParam("fileId") Long fileId,

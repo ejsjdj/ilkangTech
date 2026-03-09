@@ -2,6 +2,7 @@ package com.itwillbs.ilkwangtech.sales.service.order;
 
 import com.itwillbs.ilkwangtech.sales.constant.OrderStatus;
 import com.itwillbs.ilkwangtech.sales.dto.OrderDTO;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 public interface OrderService {
     void createOrder(OrderDTO orderDTO);
 
-    List<OrderDTO> getOrderList(Pageable pageable);
+    Page<OrderDTO> getOrderList(Pageable pageable, String filterStatus);
 
     OrderDTO getOrder(Long id);
 
@@ -20,4 +21,8 @@ public interface OrderService {
     void invalid(Long id);
 
     void changeOrderStatus(Long id, OrderStatus status);
+
+    void updateOrderStatusesBasedOnInventory();
+
+    void deliveryOrder(Long orderId);
 }

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>재고 이력</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+
+    <th:block layout:fragment="style">
+	    <style>
+	        .page-container { background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); min-height: 800px; display: flex; flex-direction: column; }
+	        .search-box { background: #ffffff; border-radius: 10px; padding: 25px; margin-bottom: 20px; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+	        .nav-tabs .nav-link { color: #495057; font-weight: bold; padding: 12px 25px; }
+	        .nav-tabs .nav-link.active { color: #0d6efd; border-bottom: 3px solid #0d6efd; background-color: transparent; border-top: none; border-left: none; border-right: none; }
+	    </style>
+	</th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-container">
+            <h4 class="mb-4 text-secondary">재고 관리 / <span class="text-dark fw-bold">재고 이력 추적</span></h4>
+
+            <ul class="nav nav-tabs mb-4" id="historyTabs">
+                <li class="nav-item"><a class="nav-link active" href="#" data-tab="ALL">전체 내역</a></li>
+                <li class="nav-item"><a class="nav-link text-primary" href="#" data-tab="IN">입고/증가</a></li>
+                <li class="nav-item"><a class="nav-link text-warning" href="#" data-tab="OUT">출고/감소</a></li>
+                <li class="nav-item"><a class="nav-link text-danger" href="#" data-tab="DISCARD">폐기</a></li>
+            </ul>
+
+            <div class="search-box">
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <select class="form-select" id="searchType">
+                            <option value="itemName" selected>품목명</option>
+                            <option value="transactionDate">변동일</option>
+                            <option value="transactionType">변동유형</option>
+                            <option value="itemType">품목구분</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="keyword" placeholder="검색어를 입력하세요" onkeypress="if(event.keyCode==13) loadGridData();">
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary px-4" onclick="loadGridData()"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="grid"></div>
+        </div>
+    </div>
+
+<th:block layout:fragment="script">
+    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <script th:inline="javascript">
+        let grid;
+        let currentTab = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            grid = new tui.Grid({
+                el: document.getElementById('grid'),
+                scrollX: false, scrollY: false, minBodyHeight: 400,
+                rowHeaders: ['rowNum'],
+                pageOptions: { useClient: true, perPage: 15, visiblePages: 10 },
+                columns: [
+                    { header: '변동 일자', name: 'transactionDate', align: 'center', sortable: true, width: 150 },
+                    { header: '변동 유형', name: 'transactionType', align: 'center', sortable: true, width: 120,
+                      formatter: ({value}) => {
+                          if(value.includes('입고')) return `<span class="badge bg-primary">${value}</span>`;
+                          if(value.includes('폐기')) return `<span class="badge bg-danger">${value}</span>`;
+                          if(value.includes('출고')) return `<span class="badge bg-warning text-dark">${value}</span>`;
+                          return `<span class="badge bg-secondary">${value}</span>`;
+                      }
+                    },
+                    { header: '품목 구분', name: 'itemType', align: 'center', sortable: true, width: 120 },
+                    { header: '품목명', name: 'itemName', align: 'left', minWidth: 200 },
+                    { header: '변동 수량', name: 'quantity', align: 'right', width: 150,
+                      formatter: ({value, row}) => {
+                          let color = row.transactionType.includes('입고') ? 'text-primary' : 'text-danger';
+                          let prefix = row.transactionType.includes('입고') ? '+' : '-';
+                          return `<span class="${color} fw-bold">${prefix} ${value.toLocaleString()}</span>`;
+                      }
+                    }
+                ]
+            });
+
+            loadGridData();
+
+            document.querySelectorAll('#historyTabs .nav-link').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('#historyTabs .nav-link').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTab = this.getAttribute('data-tab');
+                    document.getElementById('keyword').value = '';
+                    loadGridData();
+                });
+            });
+        });
+
+        function loadGridData() {
+            const searchType = document.getElementById('searchType').value;
+            const keyword = document.getElementById('keyword').value;
+
+            fetch(`/inventorymg/api/inventory-history-data?tab=${currentTab}&searchType=${searchType}&keyword=${keyword}`)
+                .then(response => response.json())
+                .then(data => grid.resetData(data))
+                .catch(error => console.error('데이터 로드 실패:', error));
+        }
+    </script>
+</th:block>
+</body>
+</html>

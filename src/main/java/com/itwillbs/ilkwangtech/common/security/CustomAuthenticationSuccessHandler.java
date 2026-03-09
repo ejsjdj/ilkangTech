@@ -28,7 +28,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                                         Authentication authentication) throws IOException {
 
         AccountLogin accountLogin = (AccountLogin) authentication.getPrincipal();
-        accountLogin.updateSortImages(profileImgRepository.findByMemberId(accountLogin.getId()));
+        accountLogin.updateSortImages(profileImgRepository.findByMemberIdOrderByRepImgYnDescIdDesc(accountLogin.getId()));
 
         // 로그인 성공 시 실패 횟수 초기화
         loginAttemptRepository.findByMemberId(accountLogin.getId()).ifPresent(loginAttempt -> {

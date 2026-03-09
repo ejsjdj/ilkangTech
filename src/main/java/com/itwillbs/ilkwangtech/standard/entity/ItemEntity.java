@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "item")
 @Getter
@@ -24,4 +27,7 @@ public class ItemEntity {
     private String uom;
 
     private Long standardPrice;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemImg> itemImgs = new ArrayList<>();
 }

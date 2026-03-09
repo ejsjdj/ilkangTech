@@ -6,83 +6,102 @@
 <mapper namespace="com.itwillbs.ilkwangtech.sales.mapper.CompanyMapper">
 
     <resultMap id="CompanyResultMap" type="com.itwillbs.ilkwangtech.sales.dto.CompanyDTO">
-        <id property="companyId" column="companyId"/>
-        <result property="name" column="name"/>
+        <id property="companyId" column="company_id"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="companyName" column="company_name"/>
+        <result property="businessNumber" column="business_number"/>
+        <result property="ceoName" column="ceo_name"/>
+        <result property="companyType" column="company_type"/>
+        <result property="telNo" column="tel_no"/>
+        <result property="faxNo" column="fax_no"/>
         <result property="email" column="email"/>
-        <result property="phone" column="phone"/>
-        <result property="manager" column="manager"/>
-        <result property="category" column="category"
-                typeHandler="com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler"/>
-        <result property="valid" column="valid"
-                typeHandler="com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler"/>
-    </resultMap>
-
-    <resultMap id="PurchaseCompanyResultMap" type="com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO">
-        <id property="companyId" column="companyId"/>
-        <result property="name" column="company_name"/>
-        <result property="phone" column="tel_no"/>
-        <result property="manager" column="ceo_name"/>
+        <result property="address" column="address"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerTel" column="manager_tel"/>
+        <result property="status" column="status"/>
     </resultMap>
 
     <insert id="insertCompany" useGeneratedKeys="true" keyProperty="companyId" keyColumn="company_id">
-        INSERT INTO Company (name, email, phone, valid, manager, category)
+        INSERT INTO COMPANY (
+            company_code, company_name, business_number, ceo_name, company_type, 
+            tel_no, fax_no, email, address, manager_name, manager_tel, status
+        )
         VALUES (
-        #{name},
-        #{email, jdbcType=VARCHAR},
-        #{phone, jdbcType=VARCHAR},
-        1,
-        #{manager, jdbcType=VARCHAR},
-        #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
+            #{companyCode},
+            #{companyName},
+            #{businessNumber},
+            #{ceoName},
+            #{companyType},
+            #{telNo},
+            #{faxNo},
+            #{email},
+            #{address},
+            #{managerName},
+            #{managerTel},
+            #{status}
         )
     </insert>
 
     <select id="selectByName" resultMap="CompanyResultMap">
         SELECT
-        company_id AS companyId,
-            name,
-            email,
-            phone,
-            manager,
-            category,
-            valid
-        FROM Company
-        WHERE name = #{name}
+            company_id, company_code, company_name, business_number, ceo_name, company_type,
+            tel_no, fax_no, email, address, manager_name, manager_tel, status
+        FROM COMPANY
+        WHERE company_name = #{companyName}
+    </select>
+
+    <select id="selectById" resultMap="CompanyResultMap">
+        SELECT
+            company_id, company_code, company_name, business_number, ceo_name, company_type,
+            tel_no, fax_no, email, address, manager_name, manager_tel, status
+        FROM COMPANY
+        WHERE company_id = #{id}
     </select>
 
     <select id="selectByPage" resultMap="CompanyResultMap">
         SELECT
-        company_id AS companyId,
-        name,
-        phone,
-        manager
-        FROM Company
-        WHERE
-        category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
-        or
-        category = 3
+            company_id, company_code, company_name, business_number, ceo_name, company_type,
+            tel_no, fax_no, email, address, manager_name, manager_tel, status
+        FROM COMPANY
+        <where>
+            <choose>
+                <when test="companyType != null">
+                    (company_type = #{companyType}
+                    OR company_type = 3)
+                </when>
+                <otherwise>
+                    1=1
+                </otherwise>
+            </choose>
+        </where>
         ORDER BY company_id ASC
         OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
     </select>
 
     <select id="selectCount" resultType="long">
         SELECT COUNT(*)
-        FROM Company
+        FROM COMPANY
         <where>
-            <if test="category != null">
-                category = #{category, typeHandler=com.itwillbs.ilkwangtech.sales.constant.CommonEnumTypeHandler}
-            </if>
+            <choose>
+                <when test="companyType != null">
+                    (company_type = #{companyType}
+                    OR company_type = 3)
+                </when>
+                <otherwise>
+                    1=1
+                </otherwise>
+            </choose>
         </where>
     </select>
 
-    <select id="selectCompanyType3" resultMap="PurchaseCompanyResultMap">
+    <select id="selectCompanyType3" resultType="com.itwillbs.ilkwangtech.sales.dto.PurchaseCompanyDTO">
         SELECT
-        company_id AS companyId,
-        company_name,
-        tel_no,
-        ceo_name
-        FROM Company
-        WHERE company_type  = 3
-        ORDER BY company_id ASC
+            company_id AS companyId,
+            company_name AS name,
+            tel_no AS phone,
+            manager_name AS manager
+        FROM COMPANY
+        WHERE company_type = 1 OR company_type = 3
     </select>
 
 </mapper>

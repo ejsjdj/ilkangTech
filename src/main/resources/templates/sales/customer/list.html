@@ -10,148 +10,338 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap');
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
 
-        body { background-color: #FFF5F7; font-family: 'Gamja Flower', cursive; }
-        .diary-wrapper { display: flex; max-width: 900px; margin: 50px auto; }
-        .diary-bookmarks { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; }
-        .bookmark { border: none; padding: 15px 20px; border-radius: 20px 0 0 20px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; box-shadow: -4px 4px 0px rgba(0,0,0,0.05); }
-        .bookmark.pink { background-color: #FFDEE9; color: #FF8E9E; }
-        .bookmark.yellow { background-color: #FEF9E7; color: #F7DC6F; }
-        .bookmark.active { transform: translateX(10px); font-weight: bold; box-shadow: none; }
-        .diary-page { flex: 1; background: white; border: 5px solid #FFDEE9; border-radius: 40px; padding: 40px; min-height: 600px; position: relative; box-shadow: 15px 15px 0px #FFEDF2; }
-        .masking-tape { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 120px; height: 35px; background: rgba(173, 216, 230, 0.6); border-left: 2px dashed #fff; border-right: 2px dashed #fff; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-add-sticker { background: #FF8E9E; color: white; border: none; border-radius: 50px; padding: 8px 20px; box-shadow: 2px 4px 0px #FF5E7E; cursor: pointer; }
-        .cute-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .cute-table th { color: #FF8E9E; border-bottom: 2px solid #FFDEE9; padding: 10px; }
-        .cute-table td { padding: 15px 10px; border-bottom: 1px solid #F0F0F0; }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 20px 24px;
+            border-radius: 12px 12px 0 0 !important;
+        }
 
-        /* 모달 스타일 */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); z-index: 9999; backdrop-filter: blur(3px); }
-        .modal-diary-page { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 30px; border: 4px solid #ADE8F4; width: 400px; box-shadow: 20px 20px 0px rgba(173, 232, 244, 0.5); }
-        .yellow-tape { background: rgba(254, 249, 231, 0.8) !important; width: 100px !important; }
-        .input-group-cute { margin-bottom: 20px; }
-        .input-group-cute label { display: block; color: #FF8E9E; margin-bottom: 5px; }
-        .input-group-cute input, .input-group-cute select { width: 100%; padding: 10px; border: 2px dashed #FFDEE9; border-radius: 10px; outline: none; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 30px; }
-        .btn-sticker { flex: 1; border: none; padding: 10px; border-radius: 20px; color: white; font-weight: bold; cursor: pointer; }
-        .btn-sticker.pink { background: #FF8E9E; }
-        .btn-sticker.blue { background: #ADE8F4; color: #0077B6; }
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .nav-pills .nav-link {
+            color: #6b7280;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #4f46e5;
+            color: #fff;
+        }
+
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .table-container {
+            padding: 0 24px 24px;
+        }
+
+        .table {
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
+
+        .table th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 12px 16px;
+            border-top: none;
+        }
+
+        .table td {
+            padding: 16px;
+            color: #1f2937;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .btn-primary {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            padding: 8px 16px;
+            font-weight: 500;
+            border-radius: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+            border-color: #4338ca;
+        }
+
+        .btn-outline-secondary {
+            color: #4b5563;
+            border-color: #d1d5db;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+            color: #1f2937;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .badge-info {
+            background-color: #e0e7ff;
+            color: #4338ca;
+        }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .page-link {
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+            margin: 0 3px;
+            border-radius: 6px;
+        }
+
+        .page-item.active .page-link {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        /* Modal */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 24px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #f3f4f6;
+            padding: 20px 24px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            padding: 10px 14px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
     </style>
 </head>
 <body>
 
-<div layout:fragment="content">
-    <div class="diary-wrapper">
-        <div class="diary-bookmarks">
-            <button class="bookmark pink active"
-                    data-category="supplier"
-                    onclick="showList(this)">협력사</button>
-            <button class="bookmark yellow"
-                    data-category="client"
-                    onclick="showList(this)">고객사</button>
-        </div>
+<div layout:fragment="content" class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title" id="list-title">협력사 관리</h2>
+                        <p class="text-muted small mb-0">업체 정보를 등록하고 관리합니다.</p>
+                    </div>
+                    <button type="button" id="openModalBtn" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>업체 등록
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <!-- 탭 메뉴 -->
+                    <div class="px-4 pt-3 pb-2 border-bottom bg-light">
+                        <ul class="nav nav-pills" id="customerTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-category="supplier" onclick="showList(this)" type="button">협력사</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-category="client" onclick="showList(this)" type="button">고객사</button>
+                            </li>
+                        </ul>
+                    </div>
 
-        <div class="diary-page">
-            <div class="masking-tape"></div>
-            <div class="page-header">
-                <h2 id="list-title">협력사 리스트</h2>
-                <button type="button" id="openModalBtn" class="btn-add-sticker">+ 추가하기</button>
+                    <!-- 테이블 영역 -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>업체명</th>
+                                <th>대표 번호</th>
+                                <th>담당자 정보</th>
+                                <th class="text-center">상세보기</th>
+                            </tr>
+                            </thead>
+                            <tbody id="list-body">
+                            <!-- 로딩 중 또는 데이터 표시 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 페이지네이션 -->
+                    <div class="px-4 py-3 border-top">
+                        <nav aria-label="Page navigation">
+                            <ul id="pagination" class="pagination mb-0"></ul>
+                        </nav>
+                    </div>
+                </div>
             </div>
-
-            <table class="cute-table">
-                <thead>
-                <tr>
-                    <th>이름</th>
-                    <th>전화번호</th>
-                    <th>이메일/메모</th>
-                    <th>상세보기</th>
-                </tr>
-                </thead>
-                <tbody id="list-body"></tbody>
-            </table>
         </div>
     </div>
 
-    <!-- 모달 -->
-    <div id="addModal" class="modal-overlay">
-        <div class="modal-diary-page">
-            <div class="masking-tape yellow-tape"></div>
-            <h3>✨ 새 거래처 등록</h3>
-
-            <form id="addForm">
-                <div class="input-group-cute">
-                    <label>거래처 명</label>
-                    <input type="text" id="newName" placeholder="회사 이름을 적어주세요" required>
+    <!-- 등록 모달 -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold" id="addModalLabel">✨ 새 거래처 등록</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="input-group-cute">
-                    <label>연락처</label>
-                    <input type="text" id="newPhone" placeholder="010-0000-0000">
-                </div>
-                <div class="input-group-cute">
-                    <label>이메일/메모</label>
-                    <input type="text" id="newEmail" placeholder="특이사항을 적어주세요">
-                </div>
-                <div class="input-group-cute">
-                    <label>담당자 이름</label>
-                    <input type="text" id="newManager" placeholder="담당자 이름">
-                </div>
-                <div class="input-group-cute">
-                    <label>구분</label>
-                    <select id="newCategory">
-                        <option value="supplier">협력사</option>
-                        <option value="client">고객사</option>
-                        <option value="partner">둘 다 (협력/고객)</option>
-                    </select>
-                </div>
-                <div class="modal-btns">
-                    <button type="button" class="btn-sticker pink" onclick="closeModal()">닫기</button>
-                    <button type="submit" class="btn-sticker blue">저장하기!</button>
-                </div>
-            </form>
+                <form id="addForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">업체 코드</label>
+                                <input type="text" id="newCode" class="form-control" placeholder="예: COMP-001">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">업체 명 <span class="text-danger">*</span></label>
+                                <input type="text" id="newName" class="form-control" placeholder="회사 이름" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">사업자번호</label>
+                                <input type="text" id="newBusinessNumber" class="form-control" placeholder="000-00-00000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">대표자명</label>
+                                <input type="text" id="newCeoName" class="form-control" placeholder="대표자 이름">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">대표 전화</label>
+                                <input type="text" id="newTelNo" class="form-control" placeholder="02-000-0000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">팩스 번호</label>
+                                <input type="text" id="newFaxNo" class="form-control" placeholder="02-000-0000">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">이메일</label>
+                                <input type="email" id="newEmail" class="form-control" placeholder="abc@example.com">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">주소</label>
+                                <input type="text" id="newAddress" class="form-control" placeholder="회사 주소">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">담당자명</label>
+                                <input type="text" id="newManagerName" class="form-control" placeholder="담당자 이름">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">담당자 연락처</label>
+                                <input type="text" id="newManagerTel" class="form-control" placeholder="010-0000-0000">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">구분 <span class="text-danger">*</span></label>
+                                <select id="newCompanyType" class="form-select" required>
+                                    <option value="supplier">협력사</option>
+                                    <option value="client">고객사</option>
+                                    <option value="partner">둘 다 (협력/고객)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="submit" class="btn btn-primary">저장하기</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script th:inline="javascript">
         'use strict';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadList('supplier');  // 초기 로드
+        const state = {
+            currentCategory: 'supplier',
+            currentPage: 0,
+            totalPages: 0
+        };
 
+        let addModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadList('supplier', 0);  // 초기 로드
+
+            addModal = new bootstrap.Modal(document.getElementById('addModal'));
             document.getElementById('openModalBtn')?.addEventListener('click', openModal);
             document.getElementById('addForm')?.addEventListener('submit', handleFormSubmit);
         });
 
         function openModal() {
-            document.getElementById('addModal').style.display = 'block';
+            addModal.show();
         }
 
         function closeModal() {
-            const modal = document.getElementById('addModal');
-            const form = document.getElementById('addForm');
-            modal.style.display = 'none';
-            form?.reset();
+            addModal.hide();
+            document.getElementById('addForm')?.reset();
         }
 
         function showList(element) {
-            document.querySelectorAll('.bookmark').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
 
             const category = element.dataset.category;
             if (!category) return;
 
-            const title = category === 'supplier' ? '협력사 리스트' : '고객사 리스트';
+            const title = category === 'supplier' ? '협력사 관리' : '고객사 관리';
             document.getElementById('list-title').textContent = title;
 
-            loadList(category);
+            loadList(category, 0);
         }
 
-        async function loadList(category) {
+        async function loadList(category, page = 0) {
             const tbody = document.getElementById('list-body');
             if (!tbody) return;
 
-            const url = `/api/sales/company/list?category=${category}&page=0&size=10`;
+            state.currentCategory = category;
+            state.currentPage = page;
+
+            const url = `/api/sales/company/list?companyType=${category}&page=${page}&size=10`;
 
             try {
                 const res = await fetch(url);
@@ -165,47 +355,111 @@
                     return;
                 }
 
-                const items = json.data?.content ?? [];
+                const pageData = json.data;
+                const items = pageData?.content ?? [];
+                state.totalPages = pageData?.totalPages ?? 0;
+
+                renderPagination();
 
                 tbody.innerHTML = items.length === 0
-                    ? '<tr><td colspan="4" style="text-align:center; padding:30px;">등록된 내역이 없어요 ☁️</td></tr>'
+                    ? '<tr><td colspan="4" class="text-center py-5 text-muted">등록된 내역이 없습니다.</td></tr>'
                     : '';
 
                 items.forEach(item => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${escapeHtml(item.name ?? '')}</td>
-                        <td>${escapeHtml(item.phone ?? '-')}</td>
-                        <td>${escapeHtml(item.email ?? '-')} <br>
-                            <small style="color:#FF8E9E;">담당: ${escapeHtml(item.manager ?? '없음')}</small>
+                        <td class="fw-bold">${escapeHtml(item.companyName ?? '')}</td>
+                        <td>${escapeHtml(item.telNo ?? '-')}</td>
+                        <td>
+                            <div class="text-muted smaller">담당: ${escapeHtml(item.managerName ?? '없음')}</div>
                         </td>
-                        <td><button class="btn-add-sticker" style="padding:2px 10px; font-size:0.8rem;">보기</button></td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary" onclick="location.href='/sales/customer/detail/${item.companyId}'">상세보기</button>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (err) {
                 console.error('리스트 로드 오류:', err);
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">서버 연결 오류가 발생했습니다.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-danger">서버 연결 오류가 발생했습니다.</td></tr>';
             }
+        }
+
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (state.totalPages <= 1) return;
+
+            // 이전 버튼
+            const prevItem = document.createElement('li');
+            prevItem.className = `page-item ${state.currentPage === 0 ? 'disabled' : ''}`;
+            const prevLink = document.createElement('button');
+            prevLink.className = 'page-link';
+            prevLink.textContent = '이전';
+            if (state.currentPage > 0) {
+                prevLink.addEventListener('click', () => loadList(state.currentCategory, state.currentPage - 1));
+            }
+            prevItem.appendChild(prevLink);
+            container.appendChild(prevItem);
+
+            // 페이지 번호 (5개씩 표시)
+            const windowSize = 5;
+            let start = Math.max(0, state.currentPage - Math.floor(windowSize / 2));
+            let end = start + windowSize;
+            if (end > state.totalPages) {
+                end = state.totalPages;
+                start = Math.max(0, end - windowSize);
+            }
+
+            for (let i = start; i < end; i++) {
+                const pageItem = document.createElement('li');
+                pageItem.className = `page-item ${i === state.currentPage ? 'active' : ''}`;
+                const pageLink = document.createElement('button');
+                pageLink.className = 'page-link';
+                pageLink.textContent = String(i + 1);
+                pageLink.addEventListener('click', () => loadList(state.currentCategory, i));
+                pageItem.appendChild(pageLink);
+                container.appendChild(pageItem);
+            }
+
+            // 다음 버튼
+            const nextItem = document.createElement('li');
+            nextItem.className = `page-item ${state.currentPage >= state.totalPages - 1 ? 'disabled' : ''}`;
+            const nextLink = document.createElement('button');
+            nextLink.className = 'page-link';
+            nextLink.textContent = '다음';
+            if (state.currentPage < state.totalPages - 1) {
+                nextLink.addEventListener('click', () => loadList(state.currentCategory, state.currentPage + 1));
+            }
+            nextItem.appendChild(nextLink);
+            container.appendChild(nextItem);
         }
 
         async function handleFormSubmit(e) {
             e.preventDefault();
 
             const payload = {
-                name:    document.getElementById('newName')?.value.trim() ?? '',
-                phone:   document.getElementById('newPhone')?.value.trim() ?? '',
-                email:   document.getElementById('newEmail')?.value.trim() ?? '',
-                manager: document.getElementById('newManager')?.value.trim() ?? '',
-                category: document.getElementById('newCategory')?.value ?? ''
+                companyCode:    document.getElementById('newCode')?.value.trim() ?? '',
+                companyName:    document.getElementById('newName')?.value.trim() ?? '',
+                businessNumber: document.getElementById('newBusinessNumber')?.value.trim() ?? '',
+                ceoName:        document.getElementById('newCeoName')?.value.trim() ?? '',
+                telNo:          document.getElementById('newTelNo')?.value.trim() ?? '',
+                faxNo:          document.getElementById('newFaxNo')?.value.trim() ?? '',
+                email:          document.getElementById('newEmail')?.value.trim() ?? '',
+                address:        document.getElementById('newAddress')?.value.trim() ?? '',
+                managerName:    document.getElementById('newManagerName')?.value.trim() ?? '',
+                managerTel:     document.getElementById('newManagerTel')?.value.trim() ?? '',
+                companyType:    document.getElementById('newCompanyType')?.value ?? ''
             };
 
-            if (!payload.name) {
+            if (!payload.companyName) {
                 alert('거래처 명은 필수입니다!');
                 return;
             }
 
-            if (!['supplier', 'client', 'partner'].includes(payload.category)) {
+            if (!['supplier', 'client', 'partner'].includes(payload.companyType)) {
                 alert('구분을 올바르게 선택해주세요!');
                 return;
             }

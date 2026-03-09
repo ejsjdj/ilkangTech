@@ -1,6 +1,5 @@
 package com.itwillbs.ilkwangtech.production.service;
 
-import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
 import com.itwillbs.ilkwangtech.inventorymg.repository.InventoryRepository;
 import com.itwillbs.ilkwangtech.item.constant.ItemType;
 import com.itwillbs.ilkwangtech.member.entity.Member;
@@ -11,7 +10,6 @@ import com.itwillbs.ilkwangtech.production.entity.ProductionPlaneEntity;
 import com.itwillbs.ilkwangtech.production.repository.ProductionPlaneRepository;
 import com.itwillbs.ilkwangtech.standard.entity.BomEntity;
 import com.itwillbs.ilkwangtech.standard.entity.ItemEntity;
-import com.itwillbs.ilkwangtech.standard.entity.ProcessRouteEntity;
 import com.itwillbs.ilkwangtech.standard.repository.BomRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ItemRepository;
 import com.itwillbs.ilkwangtech.standard.repository.ProcessRouteRepository;
@@ -21,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 

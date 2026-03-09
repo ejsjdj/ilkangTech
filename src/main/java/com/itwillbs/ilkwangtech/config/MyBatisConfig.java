@@ -19,12 +19,13 @@ public class MyBatisConfig {
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource);
 
-        // 중요: XML 매퍼 파일의 위치를 알려줘야 합니다!
-        // classpath 뒤의 경로를 폴더 구조에 맞게 수정하세요.
-//        factoryBean.setMapperLocations(applicationContext.getResources("classpath:mapper/salesMapper/*.xml"));
-//        factoryBean.setMapperLocations(applicationContext.getResources("classpath:mapper/itemMapper/*.xml"));
+        // MyBatis Configuration 설정
+        org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        factoryBean.setConfiguration(configuration);
 
         factoryBean.setMapperLocations(applicationContext.getResources("classpath:mapper/*.xml"));
+        factoryBean.setTypeHandlersPackage("com.itwillbs.ilkwangtech.sales.constant");
         return factoryBean.getObject();
     }
 }

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>수주 내역</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 20px 24px;
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .nav-pills .nav-link {
+            color: #6b7280;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #4f46e5;
+            color: #fff;
+        }
+
+        .table th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 12px 16px;
+        }
+
+        .table td {
+            padding: 16px;
+            vertical-align: middle;
+        }
+
+        /* Modal */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 24px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .order-detail-header {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .order-detail-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .order-detail-item span {
+            font-weight: 600;
+            color: #111827;
+        }
+    </style>
+</head>
+<body>
+
+    <div layout:fragment="content" class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title" id="list-title">수주 현황</h2>
+                            <p class="text-muted small mb-0">고객사로부터 접수된 수주 내역을 확인하고 관리합니다.</p>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="openAddModal()">
+                            <i class="bi bi-plus-lg me-2"></i>신규 수주 등록
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- 탭 메뉴 -->
+                        <div class="px-4 pt-3 pb-2 border-bottom bg-light">
+                            <ul class="nav nav-pills" role="tablist">
+                                <li class="nav-item">
+                                    <button class="nav-link active" data-status="PENDING" onclick="changeStatus(this)">수주현황</button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-status="COMPLETED" onclick="changeStatus(this)">납품완료</button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- 테이블 영역 -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th class="ps-4">No.</th>
+                                    <th>고객사명</th>
+                                    <th>주문일시</th>
+                                    <th>납기예정일</th>
+                                    <th>상태</th>
+                                    <th class="text-center pe-4">관리</th>
+                                </tr>
+                                </thead>
+                                <tbody id="list-body"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- 페이지네이션 -->
+                        <div class="px-4 py-3 border-top">
+                            <nav aria-label="Page navigation">
+                                <ul id="pagination" class="pagination pagination-sm mb-0 justify-content-center"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. 신규 수주 등록 모달 -->
+        <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">✨ 신규 수주 등록</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="addOrderForm">
+                        <div class="modal-body">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">고객사 <span class="text-danger">*</span></label>
+                                    <select id="companySelect" class="form-select" required>
+                                        <option value="">-- 고객사 선택 --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">납기 요청일시 <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" id="expectedDeliveryDate" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="border-top pt-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-box me-2"></i>주문 품목</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItemRow()">
+                                        <i class="bi bi-plus-lg me-1"></i>품목 추가
+                                    </button>
+                                </div>
+                                <div class="table-responsive border rounded-3">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-3">품목 선택</th>
+                                                <th style="width: 120px;">수량</th>
+                                                <th style="width: 180px;">단가</th>
+                                                <th style="width: 50px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="orderItemsBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="submit" class="btn btn-primary px-4">등록하기</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 수주 상세 보기 모달 -->
+        <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">📖 수주 상세 내역</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="detailHeader" class="order-detail-header">
+                            <!-- 상세 헤더 정보 -->
+                        </div>
+                        <h6 class="fw-bold mb-3 px-1"><i class="bi bi-list-ul me-2 text-primary"></i>품목 리스트</h6>
+                        <div class="table-responsive border rounded-3">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">품목코드</th>
+                                        <th>품목명</th>
+                                        <th class="text-end">수량</th>
+                                        <th class="text-end">단가</th>
+                                        <th class="text-end pe-3">합계</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailItemsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success px-4" id="btnDeliver" style="display: none;">납기 처리</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            'use strict';
+
+            const state = {
+                currentStatus: 'PENDING',
+                currentPage: 0,
+                totalPages: 0,
+                companies: [],
+                items: []
+            };
+
+            let addModal, detailModal;
+
+            document.addEventListener('DOMContentLoaded', () => {
+                addModal = new bootstrap.Modal(document.getElementById('addModal'));
+                detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+                loadList('PENDING', 0);
+                fetchInitialData();
+                document.getElementById('addOrderForm').addEventListener('submit', handleOrderSubmit);
+            });
+
+            async function fetchInitialData() {
+                try {
+                    // 고객사 목록 (client 타입만)
+                    const companyRes = await fetch('/api/sales/company/list?companyType=client&size=100');
+                    const companyJson = await companyRes.json();
+                    state.companies = companyJson.data?.content || [];
+                    
+                    const companySelect = document.getElementById('companySelect');
+                    state.companies.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.companyId;
+                        opt.textContent = c.companyName;
+                        companySelect.appendChild(opt);
+                    });
+
+                    // 품목 목록 (완제품)
+                    const itemRes = await fetch('/api/item/list?type=FG&size=100');
+                    const itemJson = await itemRes.json();
+                    state.items = itemJson.data?.content || [];
+                } catch (err) {
+                    console.error('초기 데이터 로딩 실패:', err);
+                }
+            }
+
+            function changeStatus(btn) {
+                document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentStatus = btn.dataset.status;
+                const title = state.currentStatus === 'PENDING' ? '수주현황' : '납품완료 내역';
+                document.getElementById('list-title').textContent = title;
+                loadList(state.currentStatus, 0);
+            }
+
+            async function loadList(status, page = 0) {
+                const tbody = document.getElementById('list-body');
+                state.currentStatus = status;
+                state.currentPage = page;
+                
+                try {
+                    const res = await fetch(`/api/sales/orders?page=${page}&size=10&filterStatus=${status}`);
+                    if (!res.ok) throw new Error('서버 응답 오류');
+                    const json = await res.json();
+                    
+                    const pageData = json.data;
+                    const orders = pageData.content || [];
+                    state.totalPages = pageData.totalPages;
+
+                    tbody.innerHTML = orders.length === 0 
+                        ? '<tr><td colspan="6" class="text-center py-5 text-muted">내역이 존재하지 않습니다.</td></tr>' 
+                        : '';
+
+                    orders.forEach((o, index) => {
+                        const tr = document.createElement('tr');
+                        const statusClass = (s) => {
+                            if (['READY', '준비완료'].includes(s)) return 'bg-primary-subtle text-primary';
+                            if (['NEED_PRODUCTION', '생산필요'].includes(s)) return 'bg-danger-subtle text-danger';
+                            if (['COMPLETED', '납품완료'].includes(s)) return 'bg-success-subtle text-success';
+                            return 'bg-info-subtle text-info';
+                        };
+
+                        tr.innerHTML = `
+                            <td class="ps-4 fw-bold text-muted">${page * 10 + index + 1}</td>
+                            <td class="fw-bold text-dark">${escapeHtml(o.companyName || '-')}</td>
+                            <td class="small text-muted">${formatDate(o.orderDate)}</td>
+                            <td class="small fw-medium">${formatDate(o.expectedDeliveryDate)}</td>
+                            <td><span class="badge ${statusClass(o.orderStatusDescription)}">${o.orderStatusDescription}</span></td>
+                            <td class="text-center pe-4">
+                                <button class="btn btn-sm btn-outline-primary" style="border-radius:6px;" onclick="loadOrderDetail(${o.orderId})">상세보기</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    renderPagination();
+                } catch (err) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-danger">데이터를 불러오지 못했습니다.</td></tr>';
+                }
+            }
+
+            function renderPagination() {
+                const pagination = document.getElementById('pagination');
+                pagination.innerHTML = '';
+                
+                if (state.totalPages <= 1) return;
+
+                // 이전 버튼
+                const prevLi = document.createElement('li');
+                prevLi.className = `page-item ${state.currentPage === 0 ? 'disabled' : ''}`;
+                const prevA = document.createElement('button');
+                prevA.className = 'page-link';
+                prevA.innerHTML = '<i class="bi bi-chevron-left"></i>';
+                prevA.onclick = () => state.currentPage > 0 && loadList(state.currentStatus, state.currentPage - 1);
+                prevLi.appendChild(prevA);
+                pagination.appendChild(prevLi);
+
+                const startPage = Math.max(0, state.currentPage - 2);
+                const endPage = Math.min(state.totalPages - 1, startPage + 4);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const li = document.createElement('li');
+                    li.className = `page-item ${i === state.currentPage ? 'active' : ''}`;
+                    const btn = document.createElement('button');
+                    btn.className = 'page-link';
+                    btn.textContent = i + 1;
+                    btn.onclick = () => loadList(state.currentStatus, i);
+                    li.appendChild(btn);
+                    pagination.appendChild(li);
+                }
+
+                // 다음 버튼
+                const nextLi = document.createElement('li');
+                nextLi.className = `page-item ${state.currentPage === state.totalPages - 1 ? 'disabled' : ''}`;
+                const nextA = document.createElement('button');
+                nextA.className = 'page-link';
+                nextA.innerHTML = '<i class="bi bi-chevron-right"></i>';
+                nextA.onclick = () => state.currentPage < state.totalPages - 1 && loadList(state.currentStatus, state.currentPage + 1);
+                nextLi.appendChild(nextA);
+                pagination.appendChild(nextLi);
+            }
+
+            function openAddModal() {
+                document.getElementById('orderItemsBody').innerHTML = '';
+                addItemRow();
+                addModal.show();
+            }
+
+            function closeModal(id) {
+                if(id === 'addModal') addModal.hide();
+                else if(id === 'detailModal') detailModal.hide();
+            }
+
+            function addItemRow() {
+                const tbody = document.getElementById('orderItemsBody');
+                const tr = document.createElement('tr');
+                
+                let itemOptions = state.items.map(it => `<option value="${it.itemId}" data-price="${it.standardPrice || 0}">[${it.itemCode}] ${it.itemName}</option>`).join('');
+
+                tr.innerHTML = `
+                    <td class="ps-3">
+                        <select class="form-select form-select-sm" required onchange="updateRowPrice(this)">
+                            <option value="">-- 품목 선택 --</option>
+                            ${itemOptions}
+                        </select>
+                    </td>
+                    <td><input type="number" class="form-control form-control-sm text-end" min="1" value="1" required></td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">₩</span>
+                            <input type="number" class="form-control text-end fw-bold" min="0" value="0" required>
+                        </div>
+                    </td>
+                    <td class="text-center"><button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            function updateRowPrice(select) {
+                const opt = select.options[select.selectedIndex];
+                const price = opt.dataset.price || 0;
+                const row = select.closest('tr');
+                row.querySelector('input[type="number"].text-end.fw-bold').value = price;
+            }
+
+            async function handleOrderSubmit(e) {
+                e.preventDefault();
+                
+                const rows = document.querySelectorAll('#orderItemsBody tr');
+                const orderDetails = Array.from(rows).map(row => {
+                    const inputs = row.querySelectorAll('input');
+                    return {
+                        itemId: row.querySelector('select').value,
+                        quantity: inputs[0].value,
+                        unitPrice: inputs[1].value
+                    };
+                });
+
+                const payload = {
+                    companyId: document.getElementById('companySelect').value,
+                    expectedDeliveryDate: document.getElementById('expectedDeliveryDate').value,
+                    orderDetails: orderDetails
+                };
+
+                try {
+                    const res = await fetch('/api/sales/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (res.ok) {
+                        alert('수주가 성공적으로 등록되었습니다.');
+                        addModal.hide();
+                        document.getElementById('addOrderForm').reset();
+                        loadList(state.currentStatus, 0);
+                    } else {
+                        throw new Error('등록 실패');
+                    }
+                } catch (err) {
+                    alert('수주 등록 중 오류가 발생했습니다.');
+                }
+            }
+
+            async function loadOrderDetail(id) {
+                try {
+                    const res = await fetch(`/api/sales/orders/${id}`);
+                    const json = await res.json();
+                    const order = json.data;
+
+                    const statusClass = (s) => {
+                        if (['READY', '준비완료'].includes(s)) return 'bg-primary-subtle text-primary';
+                        if (['NEED_PRODUCTION', '생산필요'].includes(s)) return 'bg-danger-subtle text-danger';
+                        if (['COMPLETED', '납품완료'].includes(s)) return 'bg-success-subtle text-success';
+                        return 'bg-info-subtle text-info';
+                    };
+
+                    document.getElementById('detailHeader').innerHTML = `
+                        <div class="order-detail-item">
+                            <label>고객사명</label>
+                            <span>${escapeHtml(order.companyName)}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <label>현재 상태</label>
+                            <span class="badge ${statusClass(order.orderStatusDescription)}">${order.orderStatusDescription}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <label>주문일시</label>
+                            <span>${formatDate(order.orderDate)}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <label>납기예정일</label>
+                            <span>${formatDate(order.expectedDeliveryDate)}</span>
+                        </div>
+                    `;
+
+                    const itemsBody = document.getElementById('detailItemsBody');
+                    itemsBody.innerHTML = '';
+                    let total = 0;
+                    order.orderDetails.forEach(d => {
+                        const sum = (d.quantity || 0) * (d.unitPrice || 0);
+                        total += sum;
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="ps-3 fw-medium">${escapeHtml(d.itemCode || '-')}</td>
+                            <td>${escapeHtml(d.itemName || '-')}</td>
+                            <td class="text-end">${d.quantity.toLocaleString()}</td>
+                            <td class="text-end">${(d.unitPrice || 0).toLocaleString()}</td>
+                            <td class="text-end pe-3 fw-bold">${sum.toLocaleString()}</td>
+                        `;
+                        itemsBody.appendChild(tr);
+                    });
+                    
+                    const totalTr = document.createElement('tr');
+                    totalTr.className = 'bg-light-subtle';
+                    totalTr.innerHTML = `<td colspan="4" class="text-end py-3 fw-bold text-muted">최종 합계 금액:</td><td class="text-end pe-3 py-3 fw-bold text-primary" style="font-size:1.1rem;">${total.toLocaleString()}원</td>`;
+                    itemsBody.appendChild(totalTr);
+
+                    const btnDeliver = document.getElementById('btnDeliver');
+                    if (['READY', '준비완료'].includes(order.orderStatus)) {
+                        btnDeliver.style.display = 'block';
+                        btnDeliver.onclick = () => performDelivery(order.orderId);
+                    } else {
+                        btnDeliver.style.display = 'none';
+                    }
+
+                    detailModal.show();
+                } catch (err) {
+                    alert('상세 정보를 불러오지 못했습니다.');
+                }
+            }
+
+            async function performDelivery(orderId) {
+                if (!confirm('납기 처리를 완료하시겠습니까?\n이 작업은 재고를 차감하며 되돌릴 수 없습니다.')) return;
+
+                try {
+                    const res = await fetch(`/api/sales/orders/${orderId}/delivery`, {
+                        method: 'POST'
+                    });
+                    const json = await res.json();
+
+                    if (res.ok && json.success) {
+                        alert('납기 처리가 완료되었습니다. ✨');
+                        closeModal('detailModal');
+                        loadList(state.currentStatus, state.currentPage);
+                    } else {
+                        throw new Error(json.message || '납기 처리 실패');
+                    }
+                } catch (err) {
+                    alert(`오류: ${err.message}`);
+                }
+            }
+
+            function formatDate(dtStr) {
+                if(!dtStr) return '-';
+                const d = new Date(dtStr);
+                return d.toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            }
+
+            function escapeHtml(unsafe) {
+                if(!unsafe) return '';
+                return unsafe.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+            }
+        </script>
+    </div>
+
+
+
+</body>
+</html>

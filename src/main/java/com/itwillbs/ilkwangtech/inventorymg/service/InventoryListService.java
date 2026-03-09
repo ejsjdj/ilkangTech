@@ -1,5 +1,7 @@
 package com.itwillbs.ilkwangtech.inventorymg.service;
 
+import com.itwillbs.ilkwangtech.common.annotation.Audit;
+import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryHistoryDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.InventoryListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.dto.OutboundListDTO;
 import com.itwillbs.ilkwangtech.inventorymg.entity.InventoryEntity;
@@ -91,6 +93,7 @@ public class InventoryListService {
     
     // 실수량 조절 (증가/감소) 로직
     @Transactional
+    @Audit(action = "재고 조정", entity = "Inventory")
     public String adjustInventory(Long inventoryId, String type, Long qty, String reason) {
         InventoryEntity inv = inventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new RuntimeException("재고 정보를 찾을 수 없습니다."));
@@ -119,6 +122,7 @@ public class InventoryListService {
     
     // 폐기 로직
     @Transactional
+    @Audit(action = "재고 폐기", entity = "Inventory")
     public String discardInventory(Long inventoryId, Long qty, String reason) {
         InventoryEntity inv = inventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new RuntimeException("재고 정보를 찾을 수 없습니다."));
@@ -242,5 +246,65 @@ public class InventoryListService {
         if (dateObj == null) return LocalDate.now().toString();
         String dateStr = dateObj.toString();
         return dateStr.length() >= 10 ? dateStr.substring(0, 10) : dateStr;
+    }
+    
+ // 💡 재고 이력(History) 데이터 조회 핵심 로직
+    @Transactional(readOnly = true)
+    public List<InventoryHistoryDTO> getInventoryHistoryData(String tab, String searchType, String keyword) {
+        
+        List<InventoryHistoryEntity> historyList = historyRepository.findAll();
+
+        return historyList.stream()
+            .filter(h -> h.getItem() != null) // 삭제된 품목 방어
+            .map(h -> {
+                String code = h.getItem().getItemCode() != null ? h.getItem().getItemCode().toUpperCase() : "UNKNOWN";
+                String itemType = code.startsWith("RW") ? "원자재" : (code.startsWith("SAM") ? "완제품" : "반제품");
+                
+                // DB의 영문 상태값을 한글로 예쁘게 변환
+                String txType = h.getTransactionType() != null ? h.getTransactionType().toUpperCase() : "";
+                String korTxType = switch (txType) {
+                    case "IN" -> "입고 (증가)";
+                    case "OUT" -> "출고 (감소)";
+                    case "DISCARD" -> "폐기";
+                    default -> "기타 이동";
+                };
+
+                return InventoryHistoryDTO.builder()
+                        .transactionDate(h.getTransactionDate().toString())
+                        .transactionType(korTxType)
+                        .itemType(itemType)
+                        .itemName(h.getItem().getItemName())
+                        .quantity(h.getQuantity())
+                        .build();
+            })
+            // 탭 필터링 (전체/입고/출고/폐기)
+            .filter(dto -> {
+                if ("ALL".equals(tab)) return true;
+                if ("IN".equals(tab) && dto.getTransactionType().contains("입고")) return true;
+                if ("OUT".equals(tab) && dto.getTransactionType().contains("출고")) return true;
+                if ("DISCARD".equals(tab) && dto.getTransactionType().contains("폐기")) return true;
+                return false;
+            })
+            // 검색어 필터링 (품목명, 변동일, 변동유형, 품목구분 조건 추가)
+            .filter(dto -> {
+                if (keyword == null || keyword.trim().isEmpty()) return true;
+                
+                String k = keyword.toLowerCase();
+                switch (searchType) {
+                    case "itemName": 
+                        return dto.getItemName() != null && dto.getItemName().toLowerCase().contains(k);
+                    case "transactionDate": 
+                        return dto.getTransactionDate() != null && dto.getTransactionDate().contains(k);
+                    case "transactionType": 
+                        return dto.getTransactionType() != null && dto.getTransactionType().toLowerCase().contains(k);
+                    case "itemType": 
+                        return dto.getItemType() != null && dto.getItemType().toLowerCase().contains(k);
+                    default: 
+                        return true;
+                }
+            })
+            // 최신순 정렬
+            .sorted((a, b) -> b.getTransactionDate().compareTo(a.getTransactionDate()))
+            .collect(Collectors.toList());
     }
 }

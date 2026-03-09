@@ -276,6 +276,35 @@ function renderTable(data) {
             const statusBadge = d.status === 'PROGRESS' ? 'bg-ing' : 'bg-waiting';
             const statusText = d.status === 'PROGRESS' ? '진행중' : '대기 중';
 
+            // --- 💡 종료예정시간 계산 로직 복구 ---
+            let expectedEndTimeStr = '-';
+            
+            if (d.status === 'PROGRESS' && d.operationName && d.startDate) {
+                const start = new Date(d.startDate);
+                const qty = d.instructQty || 0;
+                const opName = d.operationName || '';
+                
+                let addSeconds = 0;
+                
+                // 사출은 1분(60초), 나머지는 3초
+                if (opName.includes('사출')) {
+                    addSeconds = qty * 60; 
+                } else {
+                    addSeconds = qty * 3;
+                }
+                
+                const expectedEnd = new Date(start.getTime() + (addSeconds * 1000));
+                
+                const ey = expectedEnd.getFullYear();
+                const em = String(expectedEnd.getMonth() + 1).padStart(2, '0');
+                const ed = String(expectedEnd.getDate()).padStart(2, '0');
+                const eh = String(expectedEnd.getHours()).padStart(2, '0');
+                const emm = String(expectedEnd.getMinutes()).padStart(2, '0');
+                
+                expectedEndTimeStr = `${ey}-${em}-${ed} ${eh}:${emm}`;
+            }
+            // ----------------------------------
+
             return `
                 <tr>
                     <td>${i + 1}</td>
@@ -283,20 +312,16 @@ function renderTable(data) {
                     <td>${d.itemName || '-'}</td>
                     <td>${d.instructQty || 0}</td>
                     <td>${d.startDate ? d.startDate.replace('T', ' ').substring(0, 16) : '-'}</td>
-                    <td>-</td> 
-                    <td><span class="badge-status ${statusBadge}">${statusText}</span></td>
+                    <td class="text-primary fw-bold">${expectedEndTimeStr}</td> <td><span class="badge-status ${statusBadge}">${statusText}</span></td>
                     <td class="fw-bold text-primary">${formatOperationName(d.operationName)}</td>
                     <td class="text-muted">${elapsed}</td>
                     <td><button class="btn-detail" onclick="goDetail('${d.instructCode}')">상세</button></td>
                 </tr>`;
         } else {
-            // [완료 내역 탭] - 요청하신 완료일시 및 경과시간 표시 로직
+            // [완료 내역 탭]
             const productionQty = (d.instructQty || 0) - (d.defective || 0);
-
-            // 1. 완료일시: d.endDate (가장 마지막 공정 종료 시간)
             const completedAt = d.endDate ? d.endDate.replace('T', ' ').substring(0, 16) : '-';
 
-            // 2. 총 경과시간 계산: 마지막 종료(endDate) - 첫 시작(startDate)
             let totalElapsedStr = '-';
             if (d.startDate && d.endDate) {
                 const start = new Date(d.startDate);

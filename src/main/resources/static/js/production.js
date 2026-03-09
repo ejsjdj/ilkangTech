@@ -218,7 +218,7 @@ function setDetailForm(data) {
         text = "생산완료";
         className += "status-complete";
         break;
-      case "CACEL":
+      case "CAN":
         text = "중단";
         className += "status-cancel";
         break;
